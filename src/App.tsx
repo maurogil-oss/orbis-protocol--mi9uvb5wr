@@ -23,6 +23,8 @@ import Login from './pages/Login'
 import PainelCliente from './pages/PainelCliente'
 import ConsoleAuditor from './pages/ConsoleAuditor'
 import TestCatalog from './pages/TestCatalog'
+import Privacidade from './pages/Privacidade'
+import Planos from './pages/Planos'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -43,12 +45,21 @@ const App = () => (
             <Route path="/solucoes/portal-corporativo" element={<PortalCorporativo />} />
             <Route path="/solucoes/case-cdverde" element={<CaseCDVerde />} />
             <Route path="/solucoes/cadeias-produtivas" element={<CadeiasProdutivasPage />} />
-            <Route path="/financeiro" element={<Financeiro />} />
             <Route path="/verificador" element={<Verificador />} />
             <Route path="/login" element={<Login />} />
             <Route path="/teste" element={<TestCatalog />} />
+            <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/planos" element={<Planos />} />
 
             {/* Protected Routes (Require Authentication) */}
+            <Route
+              path="/financeiro"
+              element={
+                <ProtectedRoute>
+                  <Financeiro />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/painel"
               element={
@@ -60,7 +71,7 @@ const App = () => (
             <Route
               path="/console-do-auditor"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireRole="adminOrPerito">
                   <ConsoleAuditor />
                 </ProtectedRoute>
               }

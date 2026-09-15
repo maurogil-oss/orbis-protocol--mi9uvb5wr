@@ -139,7 +139,7 @@ export const CADEIAS_PRODUTIVAS: CadeiaProdutiva[] = [
       'Créditos IPI apurados',
       'Passaporte Digital de Peças',
     ],
-    tipoLaudo: 'Dossiê Técnico Probatório MOVER / IPI',
+    tipoLaudo: 'Dossiê Técnico Probatório MOVER / IPI (Exclusivo CDVs e Montadoras)',
   },
   {
     id: 'alimentos',

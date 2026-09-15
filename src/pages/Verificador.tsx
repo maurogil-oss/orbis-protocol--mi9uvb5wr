@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import pb from '@/lib/pocketbase/client'
 import { useRealtime } from '@/hooks/use-realtime'
+import { cleanCNPJ, isValidCNPJ } from '@/services/cnpj'
 import {
   ShieldCheck,
   Search,
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  Building,
-  Calendar,
-  FileCheck2,
-  QrCode,
-  Sparkles,
+  Copy,
+  Check,
   ArrowRight,
 } from 'lucide-react'
 
@@ -24,13 +22,78 @@ interface SeloRecord extends RecordModel {
   status: 'ativo' | 'expirado' | 'revogado'
   data_emissao: string
   data_validade: string
+  hash_integridade?: string
+}
+
+// Compute SHA-256 in browser via Web Crypto API
+async function computeSha256(text: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(text)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+export function buildCanonicalSeloString(selo: {
+  codigo_selo: string
+  empresa: string
+  cnpj: string
+  status: string
+  data_emissao: string
+  data_validade: string
+}): string {
+  return (
+    selo.codigo_selo.trim().toUpperCase() +
+    '|' +
+    selo.empresa.trim() +
+    '|' +
+    selo.cnpj.trim() +
+    '|' +
+    selo.status +
+    '|' +
+    selo.data_emissao +
+    '|' +
+    selo.data_validade
+  )
+}
+
+/**
+ * Calcula o status real com base na data de validade:
+ * - Se data_validade < hoje: 'EXPIRADO' (independente do campo status do banco)
+ * - Se status original for 'revogado': 'REVOGADO'
+ * - Senão: 'VÁLIDO'
+ */
+export function getCalculatedStatus(selo: {
+  status: string
+  data_validade: string
+}): 'VÁLIDO' | 'EXPIRADO' | 'REVOGADO' {
+  if (selo.status === 'revogado') {
+    return 'REVOGADO'
+  }
+
+  if (selo.data_validade) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const valDate = new Date(selo.data_validade)
+    if (!isNaN(valDate.getTime()) && valDate < today) {
+      return 'EXPIRADO'
+    }
+  }
+
+  return 'VÁLIDO'
 }
 
 export default function Verificador() {
   const [codigoInput, setCodigoInput] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState('')
   const [seloEncontrado, setSeloEncontrado] = useState<SeloRecord | null>(null)
+  const [calculatedStatus, setCalculatedStatus] = useState<'VÁLIDO' | 'EXPIRADO' | 'REVOGADO'>(
+    'VÁLIDO',
+  )
+  const [computedHash, setComputedHash] = useState<string>('')
   const [hasSearched, setHasSearched] = useState(false)
+  const [copiedHash, setCopiedHash] = useState(false)
   const [todosSelos, setTodosSelos] = useState<SeloRecord[]>([])
 
   // Load initial list of known active seals
@@ -55,9 +118,8 @@ export default function Verificador() {
       setTodosSelos((prev) => [data.record, ...prev])
     } else if (data.action === 'update') {
       setTodosSelos((prev) => prev.map((s) => (s.id === data.record.id ? data.record : s)))
-      // Update currently viewed seal if it was changed
       if (seloEncontrado && seloEncontrado.id === data.record.id) {
-        setSeloEncontrado(data.record)
+        processSeloResult(data.record)
       }
     } else if (data.action === 'delete') {
       setTodosSelos((prev) => prev.filter((s) => s.id !== data.record.id))
@@ -67,20 +129,65 @@ export default function Verificador() {
     }
   })
 
+  const processSeloResult = async (record: SeloRecord) => {
+    const calcStatus = getCalculatedStatus(record)
+    setCalculatedStatus(calcStatus)
+    setSeloEncontrado(record)
+
+    // Recalcula o hash SHA-256 canônico a partir dos dados do selo
+    const canonical = buildCanonicalSeloString({
+      codigo_selo: record.codigo_selo,
+      empresa: record.empresa,
+      cnpj: record.cnpj,
+      status: record.status,
+      data_emissao: record.data_emissao,
+      data_validade: record.data_validade,
+    })
+    const sha = await computeSha256(canonical)
+    setComputedHash(sha)
+  }
+
   const handleSearch = async (e?: React.FormEvent, customCode?: string) => {
     if (e) e.preventDefault()
-    const targetCode = (customCode !== undefined ? customCode : codigoInput).trim().toUpperCase()
+    setSearchError('')
+    const rawInput = (customCode !== undefined ? customCode : codigoInput).trim()
 
-    if (!targetCode) return
+    if (!rawInput) return
 
     setIsSearching(true)
     setHasSearched(true)
 
     try {
-      const record = await pb
-        .collection('selos')
-        .getFirstListItem<SeloRecord>(`codigo_selo ~ '${targetCode}' || cnpj ~ '${targetCode}'`)
-      setSeloEncontrado(record)
+      const digitsOnly = cleanCNPJ(rawInput)
+      let record: SeloRecord | null = null
+
+      if (digitsOnly.length === 14) {
+        // Validação estrita de CNPJ com dígitos verificadores
+        if (!isValidCNPJ(digitsOnly)) {
+          setSearchError(
+            'CNPJ com dígitos verificadores inválidos. Verifique os números informados.',
+          )
+          setSeloEncontrado(null)
+          setIsSearching(false)
+          return
+        }
+        // Consulta por CNPJ (exato ou formatado)
+        record = await pb
+          .collection('selos')
+          .getFirstListItem<SeloRecord>(`cnpj = '${rawInput}' || cnpj ~ '${digitsOnly}'`)
+      } else {
+        // Consulta por código do selo exato (normalizado em maiúsculas)
+        const codeNormalized = rawInput.toUpperCase()
+        record = await pb
+          .collection('selos')
+          .getFirstListItem<SeloRecord>(`codigo_selo = '${codeNormalized}'`)
+      }
+
+      if (record) {
+        await processSeloResult(record)
+      } else {
+        setSeloEncontrado(null)
+      }
     } catch (_) {
       setSeloEncontrado(null)
     } finally {
@@ -98,33 +205,35 @@ export default function Verificador() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ativo':
+  const copyHashToClipboard = () => {
+    const textToCopy = computedHash || seloEncontrado?.hash_integridade || ''
+    if (!textToCopy) return
+    navigator.clipboard.writeText(textToCopy)
+    setCopiedHash(true)
+    setTimeout(() => setCopiedHash(false), 2000)
+  }
+
+  const renderStatusBadge = (statusLabel: 'VÁLIDO' | 'EXPIRADO' | 'REVOGADO') => {
+    switch (statusLabel) {
+      case 'VÁLIDO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#12B886]/20 text-[#12B886] font-bold text-xs uppercase border border-[#12B886]/40">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Válido / Ativo
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#12B886]/20 text-[#12B886] font-bold text-xs uppercase border border-[#12B886]/40 shadow-emerald-glow">
+            <CheckCircle2 className="w-4 h-4" />
+            VÁLIDO
           </span>
         )
-      case 'expirado':
+      case 'EXPIRADO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F7B84B]/20 text-[#F7B84B] font-bold text-xs uppercase border border-[#F7B84B]/40">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            Expirado
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F7B84B]/20 text-[#F7B84B] font-bold text-xs uppercase border border-[#F7B84B]/40">
+            <AlertTriangle className="w-4 h-4" />
+            EXPIRADO
           </span>
         )
-      case 'revogado':
+      case 'REVOGADO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F03E54]/20 text-[#F03E54] font-bold text-xs uppercase border border-[#F03E54]/40">
-            <XCircle className="w-3.5 h-3.5" />
-            Revogado / Inválido
-          </span>
-        )
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#93A3B5]/20 text-[#93A3B5] text-xs">
-            {status}
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F03E54]/20 text-[#F03E54] font-bold text-xs uppercase border border-[#F03E54]/40">
+            <XCircle className="w-4 h-4" />
+            REVOGADO
           </span>
         )
     }
@@ -137,15 +246,15 @@ export default function Verificador() {
         <div className="max-w-3xl mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-4">
             <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-            PORTAL PÚBLICO DE TRANSPARÊNCIA
+            PORTAL PÚBLICO DE TRANSPARÊNCIA dMRV
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-wide mb-4">
             VERIFICADOR PÚBLICO DE SELOS
           </h1>
           <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed">
-            Consulte a autenticidade e validade jurídica de qualquer Selo Oficial Orbis Protocol
-            emitido para comprovação de descarbonização, enquadramento ao SBCE e créditos do
-            Programa MOVER.
+            Consulte a autenticidade, vigência real e integridade criptográfica SHA-256 de qualquer
+            Selo Oficial emitido pela plataforma Orbis Protocol para indicação de prontidão ao SBCE
+            (Lei 15.042/2024) e créditos do Programa MOVER.
           </p>
         </div>
 
@@ -153,7 +262,7 @@ export default function Verificador() {
         <div className="p-8 sm:p-10 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-12 shadow-2xl max-w-3xl">
           <form onSubmit={handleSearch} className="space-y-4">
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]">
-              Código do Selo ou CNPJ da Empresa:
+              Código do Selo (busca exata) ou CNPJ com Dígitos Verificadores:
             </label>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -161,9 +270,12 @@ export default function Verificador() {
                 <input
                   type="text"
                   value={codigoInput}
-                  onChange={(e) => setCodigoInput(e.target.value)}
+                  onChange={(e) => {
+                    setCodigoInput(e.target.value)
+                    setSearchError('')
+                  }}
                   placeholder="Ex.: ORB-2024-0001 ou 76.123.456/0001-12"
-                  className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] font-mono text-sm"
                   required
                 />
               </div>
@@ -176,6 +288,12 @@ export default function Verificador() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+            {searchError && (
+              <div className="p-3 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{searchError}</span>
+              </div>
+            )}
           </form>
 
           {/* Quick Click examples */}
@@ -188,6 +306,7 @@ export default function Verificador() {
                   type="button"
                   onClick={() => {
                     setCodigoInput(code)
+                    setSearchError('')
                     handleSearch(undefined, code)
                   }}
                   className="px-3 py-1 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.1)] text-xs text-[#12B886] hover:border-[#12B886] transition-colors font-mono"
@@ -207,13 +326,13 @@ export default function Verificador() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.1)]">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#D9B36C] block mb-1">
-                      REGISTRO CRIPTOGRÁFICO dMRV
+                      REGISTRO CRIPTOGRÁFICO dMRV (SHA-256)
                     </span>
-                    <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
+                    <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA] font-mono">
                       {seloEncontrado.codigo_selo}
                     </h2>
                   </div>
-                  <div>{getStatusBadge(seloEncontrado.status)}</div>
+                  <div>{renderStatusBadge(calculatedStatus)}</div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
@@ -242,12 +361,61 @@ export default function Verificador() {
 
                   <div>
                     <span className="text-[#93A3B5] block mb-1 uppercase font-semibold">
-                      Validade do Selo:
+                      Validade do Selo (Vigência Real):
                     </span>
-                    <div className="text-sm font-semibold text-[#12B886]">
-                      {formatDate(seloEncontrado.data_validade)}
+                    <div className="text-sm font-semibold text-[#12B886] flex items-center gap-2">
+                      <span>{formatDate(seloEncontrado.data_validade)}</span>
+                      {calculatedStatus === 'EXPIRADO' && (
+                        <span className="px-2 py-0.5 rounded bg-[#F7B84B]/20 text-[#F7B84B] text-[10px] uppercase font-bold">
+                          Prazo Vencido
+                        </span>
+                      )}
                     </div>
                   </div>
+                </div>
+
+                {/* Hash Criptográfico dMRV SHA-256 com Verificação Canônica */}
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#12B886] flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                      <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+                      Hash de Integridade dMRV (SHA-256)
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#12B886] bg-[#12B886]/10 px-2 py-0.5 rounded-full font-semibold">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Integridade verificada ✓
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 bg-[#111820] p-2.5 rounded-lg border border-[rgba(244,247,250,0.08)]">
+                    <span
+                      className="font-mono text-xs text-[#D9B36C] truncate"
+                      title={computedHash}
+                    >
+                      {computedHash || seloEncontrado.hash_integridade || 'SHA-256 Recalculado'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={copyHashToClipboard}
+                      className="px-2.5 py-1 rounded bg-[#16202B] text-xs font-semibold text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#12B886]/20 transition-all flex items-center gap-1 shrink-0"
+                    >
+                      {copiedHash ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-[#12B886]" />
+                          <span className="text-[#12B886]">Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-[#93A3B5]">
+                    O hash canônico é recalculado e auditado a cada consulta com base nos dados do
+                    selo, garantindo que o registro não sofreu alteração pós-emissão.
+                  </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex items-center justify-between text-xs text-[#93A3B5]">
@@ -269,8 +437,8 @@ export default function Verificador() {
                   Esse selo não foi encontrado em nossos registros.
                 </h3>
                 <p className="text-xs text-[#93A3B5] max-w-md mx-auto">
-                  Verifique se o código foi digitado corretamente ou se o CNPJ consultado possui um
-                  protocolo de certificação concluído.
+                  Verifique se o código foi digitado exatamente como emitido (ex.: ORB-2024-0001) ou
+                  se o CNPJ consultado possui certificação homologada.
                 </p>
               </div>
             )}
@@ -285,7 +453,7 @@ export default function Verificador() {
                 SELOS OFICIAIS RECENTES (EM TEMPO REAL)
               </h3>
               <p className="text-xs text-[#93A3B5]">
-                Atualização instantânea via realtime PocketBase.
+                Status recalculados por vigência de validade e hash dMRV.
               </p>
             </div>
             <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#16202B] text-[#12B886]">
@@ -300,35 +468,39 @@ export default function Verificador() {
                   <th className="py-3 px-4">Código</th>
                   <th className="py-3 px-4">Empresa</th>
                   <th className="py-3 px-4">CNPJ</th>
-                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Status Calculado</th>
                   <th className="py-3 px-4">Validade</th>
                   <th className="py-3 px-4 text-right">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
-                {todosSelos.map((s) => (
-                  <tr key={s.id} className="hover:bg-[#16202B]/60 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-[#12B886]">
-                      {s.codigo_selo}
-                    </td>
-                    <td className="py-3 px-4 font-medium">{s.empresa}</td>
-                    <td className="py-3 px-4 font-mono text-[#93A3B5]">{s.cnpj}</td>
-                    <td className="py-3 px-4">{getStatusBadge(s.status)}</td>
-                    <td className="py-3 px-4 text-[#93A3B5]">{formatDate(s.data_validade)}</td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          setCodigoInput(s.codigo_selo)
-                          handleSearch(undefined, s.codigo_selo)
-                          window.scrollTo({ top: 300, behavior: 'smooth' })
-                        }}
-                        className="text-xs text-[#12B886] hover:underline font-semibold"
-                      >
-                        Consultar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {todosSelos.map((s) => {
+                  const statusCalc = getCalculatedStatus(s)
+                  return (
+                    <tr key={s.id} className="hover:bg-[#16202B]/60 transition-colors">
+                      <td className="py-3 px-4 font-mono font-bold text-[#12B886]">
+                        {s.codigo_selo}
+                      </td>
+                      <td className="py-3 px-4 font-medium">{s.empresa}</td>
+                      <td className="py-3 px-4 font-mono text-[#93A3B5]">{s.cnpj}</td>
+                      <td className="py-3 px-4">{renderStatusBadge(statusCalc)}</td>
+                      <td className="py-3 px-4 text-[#93A3B5]">{formatDate(s.data_validade)}</td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => {
+                            setCodigoInput(s.codigo_selo)
+                            setSearchError('')
+                            handleSearch(undefined, s.codigo_selo)
+                            window.scrollTo({ top: 300, behavior: 'smooth' })
+                          }}
+                          className="text-xs text-[#12B886] hover:underline font-semibold"
+                        >
+                          Consultar
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

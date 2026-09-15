@@ -15,16 +15,16 @@ import {
 export default function PortalCorporativo() {
   const recursos = [
     {
-      titulo: 'Ingestão Automatizada de SPED / XML NF-e',
-      desc: 'Processamento em massa de notas fiscais de entrada e saída. Classificação automática de insumos por CFOP e NCM para cálculo de fatores de emissão oficiais MCTI/IPCC.',
+      titulo: 'Preparação para Ingestão de SPED / XML NF-e (Roadmap)',
+      desc: 'Diagnóstico documental e estrutura de dados preparada para ingestão contínua de documentos fiscais de entrada e saída com mapeamento de CFOP e NCM aos fatores de emissão oficiais.',
     },
     {
       titulo: 'Integração Nativa com ERPs Enterprise',
       desc: 'Conectores prontos para SAP S/4HANA, Totvs Protheus, Senior e Oracle Cloud via REST API e webhook seguro.',
     },
     {
-      titulo: 'Relatórios Prontos para IFRS S2 e CVM 244',
-      desc: 'Exportação padronizada de demonstrativos climáticos auditáveis para o mercado de capitais e comitês de auditoria estatutários.',
+      titulo: 'Reporte Voluntário IFRS S1/S2 e Resolução CVM 193',
+      desc: 'Exportação padronizada de demonstrativos climáticos com preparação para asseguração conforme as diretrizes voluntárias da Resolução CVM 193.',
     },
     {
       titulo: 'Rastreabilidade de Escopos 1, 2 e 3 em Tempo Real',

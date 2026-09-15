@@ -18,7 +18,7 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const location = useLocation()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, logout, isAdminOrPerito } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,16 +38,16 @@ export default function Layout() {
     { label: 'O Protocolo', path: '/#o-que-e' },
     { label: 'Trilhas', path: '/trilhas' },
     { label: 'Soluções', path: '/solucoes' },
-    { label: 'Financeiro', path: '/financeiro' },
+    { label: 'Planos', path: '/planos' },
     { label: 'Verificador de Selos', path: '/verificador' },
+    ...(isAuthenticated ? [{ label: 'Financeiro', path: '/financeiro' }] : []),
   ]
 
   const regulations = [
-    'LEI 15.042/2024',
-    'SISTEMA SBCE LEI 14.902/2024',
-    'PROGRAMA MOVER (CDVerde)',
-    'DIRETRIZES IFRS S1/S2',
-    'CRÉDITO BACEN 4.945',
+    'LEI 15.042/2024 (DIRETRIZES SBCE)',
+    'PROGRAMA MOVER LEI 14.902/2024 (AUTOMOTIVO & CDV)',
+    'REPORTE VOLUNTÁRIO IFRS S1/S2 (RES. CVM 193)',
+    'PREPARAÇÃO ESG CREDORES (RES. BCB 4.945/2021)',
     'NBR ISO 14064',
     'NBC TO 3000 & ART TÉCNICA',
     'REFORMA TRIBUTÁRIA NOVO IVA',
@@ -200,16 +200,19 @@ export default function Layout() {
                   </Link>
                 ))}
 
-                <Link
-                  to="/console-do-auditor"
-                  className="flex items-center justify-between py-2.5 px-3 rounded-lg text-base font-medium text-[#D9B36C] hover:bg-[#16202B] transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <FileCheck2 className="w-4 h-4" />
-                    Console do Auditor
-                  </span>
-                  <Lock className="w-3.5 h-3.5" />
-                </Link>
+                {isAdminOrPerito && (
+                  <Link
+                    to="/console-do-auditor"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-2.5 px-3 rounded-lg text-base font-medium text-[#D9B36C] hover:bg-[#16202B] transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <FileCheck2 className="w-4 h-4" />
+                      Console do Auditor
+                    </span>
+                    <Lock className="w-3.5 h-3.5" />
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -272,7 +275,7 @@ export default function Layout() {
               </p>
               <div className="flex items-center gap-3 text-xs text-[#D9B36C]">
                 <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
-                <span>MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.598.964/0001-01</span>
+                <span>MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.958.964/0001-01</span>
               </div>
             </div>
 
@@ -319,11 +322,11 @@ export default function Layout() {
               <ul className="flex flex-col gap-2 text-sm text-[#93A3B5]">
                 <li>
                   <Link
-                    to="/solucoes/bureau-acp"
-                    className="hover:text-[#12B886] transition-colors"
+                    to="/planos"
+                    className="text-[#93A3B5] hover:text-[#F4F7FA] transition-colors"
                   >
-                    Bureau ACP Paraná
-                  </Link>
+                    Planos & Preços
+                  </Link>{' '}
                 </li>
                 <li>
                   <Link
@@ -370,18 +373,20 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link to="/financeiro" className="hover:text-[#12B886] transition-colors">
-                    Planos e Faturamento
+                    Módulo Financeiro (Protegido)
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/console-do-auditor"
-                    className="hover:text-[#12B886] transition-colors flex items-center gap-1.5"
-                  >
-                    Console do Auditor
-                    <Lock className="w-3 h-3 text-[#D9B36C]" />
-                  </Link>
-                </li>
+                {isAdminOrPerito && (
+                  <li>
+                    <Link
+                      to="/console-do-auditor"
+                      className="hover:text-[#12B886] transition-colors flex items-center gap-1.5"
+                    >
+                      Console do Auditor
+                      <Lock className="w-3 h-3 text-[#D9B36C]" />
+                    </Link>
+                  </li>
+                )}
                 <li>
                   <Link to="/teste" className="text-xs text-[#93A3B5]/60 hover:text-[#93A3B5]">
                     Catálogo de Teste
@@ -398,9 +403,12 @@ export default function Layout() {
               os direitos reservados.
             </p>
             <div className="flex items-center gap-6">
-              <span className="text-[11px] text-[#93A3B5]/80">
-                Conformidade LGPD • Lei 13.709/2018
-              </span>
+              <Link
+                to="/privacidade"
+                className="text-[11px] text-[#93A3B5]/80 hover:text-[#12B886] underline"
+              >
+                Política de Privacidade LGPD
+              </Link>
               <span className="text-[#12B886] font-semibold">Selo Oficial Registrado</span>
             </div>
           </div>

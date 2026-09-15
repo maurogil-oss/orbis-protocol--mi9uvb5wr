@@ -44,7 +44,7 @@ export default function Index() {
       icon: Layers,
       tag: 'PADRONIZAÇÃO GLOBAL',
       title: 'Dados Oficiais e Padronizados',
-      desc: 'Calibração com diretrizes do IPCC, normas ABNT ISO 14064, matriz energética oficial do SIN/MCTI e regulamentações do Novo IVA e SBCE.',
+      desc: 'Calibração preparatória com diretrizes do IPCC, normas ABNT ISO 14064, matriz energética oficial do SIN/MCTI e alinhamento à Lei 15.042/2024 (SBCE).',
     },
   ]
 
@@ -62,7 +62,7 @@ export default function Index() {
     {
       step: '03',
       title: 'Ingestão & Validação',
-      desc: 'Entrada de dados operacionais, fiscais (SPED/NF-e) e ambientais com verificação automatizada de consistência e integridade.',
+      desc: 'Diagnóstico documental, preparação para ingestão de dados fiscais (SPED/NF-e em implantação) e verificação técnica de consistência pericial.',
     },
     {
       step: '04',
@@ -79,27 +79,27 @@ export default function Index() {
   const regulamentacoesCards = [
     {
       lei: 'Lei 15.042/2024',
-      nome: 'Regulamentação do Sistema Brasileiro de Comércio de Emissões (SBCE)',
+      nome: 'Diretrizes do Sistema Brasileiro de Comércio de Emissões (SBCE)',
       impacto:
-        'Obrigatoriedade de inventários auditados para empresas com emissões superiores a 10.000 tCO2e/ano e tributação na fronteira.',
+        'Preparação documental e inventários técnicos alinhados aos limiares do SBCE (reporte a partir de 10.000 tCO2e/ano e metas acima de 25.000 tCO2e/ano).',
     },
     {
       lei: 'Lei 14.902/2024',
-      nome: 'Programa MOVER & Mobilidade Verde',
+      nome: 'Programa MOVER (Automotivo & CDV)',
       impacto:
-        'Créditos financeiros de IPI sobre descarbonização, reciclabilidade e Passaporte Digital de Produto (DPP).',
+        'Créditos de IPI específicos para montadoras, importadores e Centrais de Desmontagem de Veículos (CDVs DETRAN) via Passaporte Digital de Produto.',
     },
     {
-      lei: 'Diretrizes IFRS S1 & S2',
-      nome: 'Normas Internacionais de Divulgação de Sustentabilidade',
+      lei: 'Resolução CVM 193 / IFRS S1 & S2',
+      nome: 'Divulgação Climática Voluntária e Asseguração',
       impacto:
-        'Adoção pela CVM (Resolução 244) tornando compulsória a transparência climática em demonstrações financeiras.',
+        'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração e governança de sustentabilidade para o mercado de capitais.',
     },
     {
-      lei: 'Crédito Bacen 4.945',
-      nome: 'Política de Responsabilidade Social, Ambiental e Climática (PRSAC)',
+      lei: 'Resolução BCB 4.945/2021',
+      nome: 'Exigências ESG de Credores e Instituições Financeiras',
       impacto:
-        'Taxas de juros e spread bancário indexados a comprovação auditável de mitigação climática e compliance.',
+        'Preparação para as exigências da Política PRSAC aplicadas pelos bancos credores, viabilizando melhores condições de financiamento verde.',
     },
   ]
 

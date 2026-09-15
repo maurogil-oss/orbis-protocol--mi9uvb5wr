@@ -23,22 +23,22 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     lei: 'Lei 14.902/2024',
     titulo: 'Mobilidade Verde & Programa MOVER',
     subtitulo:
-      'Rastreabilidade de economia circular para fabricantes, sistemistas, concessionárias e CDVs DETRAN.',
+      'Rastreabilidade de economia circular exclusiva para fabricantes de veículos, sistemistas de autopeças e Centrais de Desmontagem de Veículos (CDVs DETRAN).',
     descricao:
-      'Capacitação completa e protocolo técnico para habilitação de incentivos fiscais de IPI através de rastreabilidade de peças reaproveitadas, Passaporte Digital de Produto (DPP) e governança de desmanches credenciados pelo DETRAN.',
+      'Capacitação preparatória e protocolo técnico para habilitação de incentivos fiscais de IPI — restritos por lei a fabricantes/importadores automotivos e CDVs credenciados — via rastreabilidade de peças reaproveitadas, Passaporte Digital de Produto (DPP) e governança técnica.',
     publico:
-      'Centros de Desmontagem Veicular (CDV), Montadoras, Sistemistas de Autopeças, Recicladores e Oficinas.',
+      'Centros de Desmontagem Veicular (CDV), Fabricantes/Montadoras de Veículos, Sistemistas de Autopeças e Recicladores Automotivos.',
     destaques: [
-      'Passaporte Digital de Produto (DPP) & Selo DETRAN',
-      'Habilitação e auditoria de créditos financeiros de IPI',
-      'Case Integrado CDVerde: peças de reúso e desmanche legal',
+      'Passaporte Digital de Produto (DPP) & Selo DETRAN para CDVs',
+      'Auditoria preparatória para créditos financeiros de IPI do MOVER',
+      'Case Integrado CDVerde: peças de reúso automotivo e desmanche legal',
       'Rastreio de baterias elétricas automotivas (2ª Vida)',
     ],
     objetivos: [
-      'Implementar rotina de inventário com rastreio QR Code por peça desmontada',
+      'Implementar rotina de inventário com rastreio QR Code por peça desmontada em CDVs',
       'Validar o Passaporte Digital de Produto em conformidade com as diretrizes do MDIC',
-      'Apurar índice de reciclabilidade e comprovar créditos financeiros do MOVER',
-      'Gerar dossiê técnico de conformidade para auditoria da Receita Federal',
+      'Apurar índice de reciclabilidade e preparar comprovação para créditos de IPI do MOVER no segmento automotivo',
+      'Gerar dossiê técnico de conformidade preparatória para auditoria da Receita Federal',
     ],
     modulos: [
       {
@@ -80,22 +80,22 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     lei: 'Lei 15.042/2024',
     titulo: 'Mercado SBCE & Finanças Verdes',
     subtitulo:
-      'Contabilidade de carbono e alíquotas reguladas SBCE, mitigação tributária CBAM para exportação e captação bancária verde.',
+      'Preparação contábil para o SBCE (Lei 15.042/2024), mitigação tributária CBAM para exportação e atendimento às exigências ESG de credores.',
     descricao:
-      'Guia definitivo para CFOs, gestores de compliance e auditores sobre o Sistema Brasileiro de Comércio de Emissões de GEE, conformidade com IFRS S1/S2 e captação de crédito verde com spread reduzido.',
+      'Guia definitivo para CFOs, gestores de compliance e auditores sobre o Sistema Brasileiro de Comércio de Emissões de GEE (Lei 15.042/2024), reporte voluntário IFRS S1/S2 (Resolução CVM 193) e preparação para exigências socioambientais de instituições financeiras (Resolução BCB 4.945/2021).',
     publico:
-      'Indústrias de Grande Porte, Exportadores para a União Europeia, Gestores Financeiros e Tesourarias.',
+      'Indústrias com potencial emissor, Exportadores para a União Europeia, Gestores Financeiros e Tesourarias.',
     destaques: [
-      'Dossiê Verde para redução de spread (Bancos Públicos e Cooperativas)',
-      'Gateway CBAM União Europeia: deduza tributo pago no BR',
-      'Relatórios prontos para IFRS S2, GHG Protocol e Resolução CVM 244',
-      'Cálculo de Cotas Brasileiras de Emissão (CBE)',
+      'Preparação para exigências ESG de credores e redução de spread',
+      'Gateway preparatório CBAM União Europeia: comprovação de emissões incorporadas',
+      'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração',
+      'Estimativa preliminar de Cotas Brasileiras de Emissão (CBE)',
     ],
     objetivos: [
       'Estruturar o inventário corporativo de Escopo 1, 2 e 3 conforme GHG Protocol Brasil',
-      'Calcular o impacto financeiro da Lei 15.042/2024 no planejamento tributário anual',
-      'Construir a declaração para o mecanismo de fronteira de carbono europeu (CBAM)',
-      'Habilitar a empresa aos descontos de spread bancário regulados pela Resolução Bacen 4.945',
+      'Avaliar a prontidão para a Lei 15.042/2024 (limiares de 10.000 e 25.000 tCO2e)',
+      'Construir documentação técnica para o mecanismo de fronteira europeu (CBAM)',
+      'Preparar dossiê técnico para atender às exigências ESG de instituições financeiras (Res. BCB 4.945/2021)',
     ],
     modulos: [
       {
@@ -103,7 +103,7 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
         titulo: 'Arquitetura do SBCE: Lei 15.042/2024 e o Novo Mercado de Carbono',
         duracao: '50 min',
         conteudo:
-          'Estrutura institucional do SBCE, limites de emissão acima de 10.000 tCO2e e 25.000 tCO2e, funcionamento das Cotas Brasileiras de Emissão (CBE) e Certificados de Redução Verificada de Emissões (CRVE).',
+          'Estrutura institucional do SBCE (Lei 15.042/2024), limiares de reporte (>10.000 tCO2e) e de compensação (>25.000 tCO2e), funcionamento preliminar das Cotas Brasileiras de Emissão (CBE).',
         requerLogin: false,
       },
       {
@@ -111,23 +111,23 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
         titulo: 'Mecanismo de Ajuste Fronteiriço CBAM (União Europeia)',
         duracao: '80 min',
         conteudo:
-          'Como exportadores de aço, alumínio, cimento, fertilizantes e químicos devem apurar e comprovar emissões incorporadas, evitando bitributação na aduana europeia.',
+          'Como exportadores de aço, alumínio, cimento, fertilizantes e hidrogênio devem apurar emissões incorporadas e emitir declarações técnicas preparatórias para aduanas europeias.',
         requerLogin: true,
       },
       {
         numero: 'Módulo 03',
-        titulo: 'Normas IFRS S1/S2 e Resolução CVM 244',
+        titulo: 'Reporte Voluntário IFRS S1/S2 e Resolução CVM 193',
         duracao: '60 min',
         conteudo:
-          'Demonstrações financeiras climáticas: conciliação entre riscos climáticos físicos, riscos de transição e as métricas contábeis auditáveis exigidas pelo mercado de capitais.',
+          'Demonstrações financeiras climáticas voluntárias: orientações da Resolução CVM 193 e esclarecimentos da CVM quanto ao cronograma de asseguração e preparação de métricas auditáveis.',
         requerLogin: true,
       },
       {
         numero: 'Módulo 04',
-        titulo: 'Dossiê Bancário Bacen 4.945 & Redução de Spread',
+        titulo: 'Preparação para Exigências ESG de Credores (Res. BCB 4.945/2021)',
         duracao: '60 min',
         conteudo:
-          'Passo a passo para estruturação do Dossiê Verde e negociação de taxas diferenciadas em linhas de BNDES, Banco do Brasil, Caixa e cooperativas de crédito (Sicredi/Sicoob).',
+          'Como estruturar o dossiê socioambiental e climático para atender às políticas PRSAC das instituições financeiras, qualificando a empresa a spreads e linhas verdes de crédito.',
         requerLogin: true,
       },
     ],
@@ -167,7 +167,7 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
         titulo: 'Ingestão e Verificação de Dados Fiscais (SPED/NF-e)',
         duracao: '70 min',
         conteudo:
-          'Rotinas de conferência de CFOPs de insumos, fatores de emissão oficiais MCTI e conciliação de estoques de carbono e resíduos industriais.',
+          'Diagnóstico documental e preparação para ingestão e conferência de CFOPs fiscais, fatores de emissão oficiais MCTI e conciliação de estoques de carbono (em implantação no roadmap).',
         requerLogin: true,
       },
       {

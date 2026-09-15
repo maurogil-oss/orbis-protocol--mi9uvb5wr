@@ -30,10 +30,9 @@ export default function SolucoesIndex() {
     {
       tag: 'IFRS S2 / SPED',
       titulo: 'Portal Corporativo',
-      subtitulo:
-        'Ingestão em lote de notas fiscais (NF-e/SPED) e relatórios corporativos para indústrias.',
+      subtitulo: 'Preparação documental e conciliação de emissões corporativas para indústrias.',
       descricao:
-        'Ambiente enterprise integrável via API a sistemas ERP (SAP, Totvs, Senior), automatizando conciliações de emissões de Escopo 1 e 2 com base na matriz do SIN/MCTI.',
+        'Ambiente enterprise com preparação para conector ERP e ingestão de documentos fiscais (em roadmap), automatizando conciliações de emissões com base na matriz do SIN/MCTI.',
       link: '/solucoes/portal-corporativo',
       ctaText: 'Acesso Corporativo (Gestor)',
     },

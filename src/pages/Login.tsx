@@ -30,12 +30,6 @@ export default function Login() {
     }
   }
 
-  const fillTestAdmin = () => {
-    setEmail('maurog1@hotmail.com')
-    setPassword('Skip@Pass')
-    setError('')
-  }
-
   return (
     <div className="min-h-screen py-16 flex items-center justify-center bg-[#0A0E12] px-4">
       <div className="w-full max-w-md p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-2xl relative">
@@ -98,18 +92,6 @@ export default function Login() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Quick Test Demo Credentials */}
-        <div className="mt-6 pt-5 border-t border-[rgba(244,247,250,0.08)] text-center">
-          <p className="text-xs text-[#93A3B5] mb-2">Conta de Auditor / Admin pré-cadastrada:</p>
-          <button
-            type="button"
-            onClick={fillTestAdmin}
-            className="text-xs font-mono py-1.5 px-3 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.12)] text-[#D9B36C] hover:border-[#D9B36C] transition-all"
-          >
-            Usar: maurog1@hotmail.com (Skip@Pass)
-          </button>
-        </div>
 
         <div className="mt-6 text-center text-xs text-[#93A3B5]">
           Não tem cadastro ainda?{' '}

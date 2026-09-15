@@ -7,6 +7,8 @@ interface AuthContextType {
   token: string
   isAuthenticated: boolean
   isLoading: boolean
+  role: 'admin' | 'perito' | 'cliente' | string
+  isAdminOrPerito: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   refreshAuth: () => void
@@ -57,6 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(pb.authStore.token)
   }
 
+  const role = (user as any)?.role || 'cliente'
+  const isAdminOrPerito = role === 'admin' || role === 'perito'
+
   return (
     <AuthContext.Provider
       value={{
@@ -64,6 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         isAuthenticated: !!token && !!user,
         isLoading,
+        role,
+        isAdminOrPerito,
         login,
         logout,
         refreshAuth,

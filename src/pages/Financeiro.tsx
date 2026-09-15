@@ -34,11 +34,11 @@ const PLANOS: Plano[] = [
     descricao:
       'Ideal para comércios, pequenas empresas e associados ACP buscando conformidade e Selo Oficial.',
     beneficios: [
-      'Diagnóstico anual automatizado por CNPJ',
-      'Emissão do Selo Oficial Orbis Protocol',
-      'Atestado de conformidade para bancos parceiros',
+      'Diagnóstico anual preliminar por CNPJ',
+      'Emissão do Selo Oficial Orbis Protocol dMRV',
+      'Atestado preparatório para exigências ESG bancárias',
       'Suporte técnico via e-mail e comunidade',
-      'Validação de até 500 NF-e/mês',
+      'Diagnóstico documental e preparação para ingestão de NF-e (em implantação no roadmap)',
     ],
   },
   {
@@ -51,10 +51,10 @@ const PLANOS: Plano[] = [
     destaque: true,
     beneficios: [
       'Tudo do plano Essencial',
-      'Habilitação e apuração de créditos do Programa MOVER',
-      'Passaporte Digital de Produto (DPP) ilimitado',
+      'Dossiê preparatório para créditos do Programa MOVER (exclusivo segmento automotivo/CDVs)',
+      'Passaporte Digital de Produto (DPP) automotivo',
       'Laudo pericial preliminar com ART técnica acoplada',
-      'Ingestão contínua de até 5.000 NF-e/mês',
+      'Preparação para ingestão em lote de NF-e e SPED (em implantação no roadmap)',
       'Suporte prioritário via WhatsApp',
     ],
   },
@@ -67,11 +67,11 @@ const PLANOS: Plano[] = [
       'Para grandes corporações, indústrias intensivas em carbono e exportadores com exigência CBAM.',
     beneficios: [
       'Tudo do plano Profissional',
-      'Gestão multi-CNPJ e filiais ilimitadas',
-      'Relatórios prontos para IFRS S2 e CVM 244',
-      'Conectores diretos para SAP, Totvs e Senior ERP',
+      'Gestão multi-CNPJ e filiais corporativas',
+      'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração',
+      'Conectores diretos para ERPs em fase de homologação',
       'Auditor técnico dedicado dMRV',
-      'Volume de NF-e e SPED customizado',
+      'Preparação de governança documental e volumetria SPED customizada (roadmap)',
     ],
   },
 ]
@@ -100,8 +100,9 @@ export default function Financeiro() {
             PORTAL FINANCEIRO & PLANOS DE ASSINATURA
           </h1>
           <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed">
-            Escolha o nível de infraestrutura probatória adequado ao porte e às exigências
-            regulatórias da sua organização (SBCE, MOVER, IFRS ou Bureau ACP).
+            Escolha o nível de infraestrutura probatória adequado ao porte e às exigências da sua
+            organização (preparatório para SBCE Lei 15.042/2024, MOVER automotivo, IFRS S1/S2
+            voluntário ou Bureau ACP).
           </p>
         </div>
 
@@ -118,7 +119,7 @@ export default function Financeiro() {
             >
               {plano.destaque && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#12B886] text-[#0A0E12] text-xs font-extrabold uppercase tracking-wider shadow-md">
-                  MAIS ESCOLHIDO • PROGRAMA MOVER
+                  EXCLUSIVO SEGMENTO AUTOMOTIVO & CDV
                 </div>
               )}
 

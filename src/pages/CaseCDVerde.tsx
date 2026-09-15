@@ -27,8 +27,8 @@ export default function CaseCDVerde() {
       desc: 'Protocolo de diagnóstico de degradação das células de tração (SoH), viabilizando reutilização em sistemas estacionários de energia solar.',
     },
     {
-      titulo: 'Habilitação aos Créditos do Programa MOVER',
-      desc: 'Geração de atestados de reciclabilidade automotiva e comprovação de atendimento à Lei 14.902/2024 para desconto e crédito fiscal de IPI.',
+      titulo: 'Dossiê Preparatório para Créditos do Programa MOVER',
+      desc: 'Geração de atestados preparatórios de reciclabilidade automotiva para instrução de desconto e crédito fiscal de IPI sob a Lei 14.902/2024 para o setor automotivo.',
     },
   ]
 

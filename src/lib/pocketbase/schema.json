@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T23:13:47.534Z",
+  "generatedAt": "2026-09-15T23:34:03.730Z",
   "collections": [
     {
       "name": "users",
@@ -37,6 +37,13 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "role",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["admin", "perito", "cliente"]
         }
       ],
       "indexes": [
@@ -48,11 +55,11 @@
       "name": "leads_diagnostico",
       "type": "base",
       "apiRules": {
-        "list": "",
-        "view": "",
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
         "create": "",
-        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.id = id)",
-        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.id = id)"
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
       },
       "fields": [
         {
@@ -158,6 +165,59 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "consumo_energia",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "frota_propria",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["sim", "nao"]
+        },
+        {
+          "name": "inventario_ghg",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["sim", "nao", "em_andamento"]
+        },
+        {
+          "name": "iso_14001",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["sim", "nao"]
+        },
+        {
+          "name": "faixa_emissoes",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["abaixo_10k", "entre_10k_25k", "acima_25k", "nao_sei_calcular"]
+        },
+        {
+          "name": "enquadramento_sbce",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "exporta_ue_cbam",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["sim", "nao"]
+        },
+        {
+          "name": "cbam_bens",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -170,11 +230,11 @@
       "name": "selos",
       "type": "base",
       "apiRules": {
-        "list": "",
+        "list": "@request.auth.id != '' || codigo_selo != ''",
         "view": "",
-        "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != ''",
-        "delete": "@request.auth.id != ''"
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')"
       },
       "fields": [
         {
@@ -227,6 +287,12 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "hash_integridade",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [

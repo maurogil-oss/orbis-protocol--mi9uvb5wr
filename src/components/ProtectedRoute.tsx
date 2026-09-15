@@ -2,8 +2,13 @@ import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 
-export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth()
+interface ProtectedRouteProps {
+  children: React.ReactNode
+  requireRole?: 'admin' | 'perito' | 'adminOrPerito'
+}
+
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole }) => {
+  const { isAuthenticated, isLoading, isAdminOrPerito, role } = useAuth()
   const location = useLocation()
 
   if (isLoading) {
@@ -16,6 +21,18 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  if (requireRole === 'adminOrPerito' && !isAdminOrPerito) {
+    return <Navigate to="/painel" replace />
+  }
+
+  if (requireRole === 'admin' && role !== 'admin') {
+    return <Navigate to="/painel" replace />
+  }
+
+  if (requireRole === 'perito' && role !== 'perito' && role !== 'admin') {
+    return <Navigate to="/painel" replace />
   }
 
   return <>{children}</>

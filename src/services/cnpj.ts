@@ -26,7 +26,7 @@ export interface DadosEmpresaCNPJ {
   data_inicio_atividade?: string
   natureza_juridica?: string
   porte?: string
-  regime_tributario_sugerido?: 'Lucro Real' | 'Lucro Presumido' | 'Simples Nacional'
+  regime_tributario_sugerido?: 'Simples Nacional' | 'Lucro Presumido' | 'Lucro Real' | 'A confirmar'
   fonte: 'brasilapi' | 'minhareceita'
 }
 
@@ -90,17 +90,11 @@ function inferRegime(
   opcaoPeloSimples?: boolean | null,
   porte?: string,
   capitalSocial?: number,
-): 'Lucro Real' | 'Lucro Presumido' | 'Simples Nacional' {
+): 'Simples Nacional' | 'Lucro Presumido' | 'Lucro Real' | 'A confirmar' {
   if (opcaoPeloSimples === true) {
     return 'Simples Nacional'
   }
-  if (capitalSocial && capitalSocial > 78000000) {
-    return 'Lucro Real'
-  }
-  if (porte === 'ME' || porte === 'EPP') {
-    return 'Lucro Presumido'
-  }
-  return 'Lucro Real'
+  return 'A confirmar'
 }
 
 /**

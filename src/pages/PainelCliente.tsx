@@ -49,7 +49,7 @@ export default function PainelCliente() {
   const etapasMetodologia = [
     { num: '01', label: 'Diagnóstico Setorial', concluido: true },
     { num: '02', label: 'Fatores Oficiais MCTI', concluido: true },
-    { num: '03', label: 'Ingestão SPED/NF-e', concluido: true },
+    { num: '03', label: 'Preparação SPED/NF-e (Roadmap)', concluido: true },
     { num: '04', label: 'Emissão de Laudos', concluido: false },
     { num: '05', label: 'Selo Oficial Concedido', concluido: false },
   ]
@@ -258,17 +258,17 @@ export default function PainelCliente() {
               {[
                 {
                   titulo: 'Laudo Pericial Preliminar de Descarbonização',
-                  tipo: 'Conformidade SBCE (Lei 15.042/2024)',
+                  tipo: 'Preparatório para o SBCE (Lei 15.042/2024)',
                   data: '15/09/2024',
                   status: 'Homologado',
                   art: 'ART-CREA/CRC 2024-9481',
                 },
                 {
                   titulo: 'Dossiê Verde para Spread Bancário',
-                  tipo: 'Resolução Bacen 4.945 / PRSAC',
+                  tipo: 'Preparação para Exigências ESG de Credores (Res. BCB 4.945/2021)',
                   data: '10/09/2024',
                   status: 'Válido',
-                  art: 'Conforme Diretrizes Bacen',
+                  art: 'Diretrizes PRSAC Instituições Financeiras',
                 },
                 {
                   titulo: 'Passaporte Digital de Produto (DPP)',
@@ -307,11 +307,10 @@ export default function PainelCliente() {
         <div className="p-6 rounded-2xl bg-gradient-to-r from-[#111820] via-[#16202B] to-[#111820] border border-[rgba(244,247,250,0.12)] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
-              PRECISA EXPANDIR O VOLUME DE NF-E AUDITADAS?
+              PRECISA DE GOVERNANÇA AVANÇADA E SUPORTE A SPED/NF-E?
             </h4>
             <p className="text-xs text-[#93A3B5] mt-0.5">
-              Faça upgrade para o plano Corporativo e tenha ingestão contínua com conector
-              SAP/Totvs.
+              Conheça os planos Corporativos com preparação para ERPs e suporte de peritos dMRV.
             </p>
           </div>
           <Link

@@ -1,21 +1,24 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { useAuth } from '@/contexts/AuthContext'
+import { consultarCNPJ, cleanCNPJ, isValidCNPJ, DadosEmpresaCNPJ } from '@/services/cnpj'
 import {
   ShieldCheck,
+  Search,
   CheckCircle2,
+  AlertCircle,
+  Building,
+  KeyRound,
+  FileCheck2,
+  Sparkles,
   ArrowRight,
   ArrowLeft,
-  Sparkles,
-  AlertCircle,
-  KeyRound,
-  Search,
   Loader2,
   Globe,
+  Flame,
 } from 'lucide-react'
-import { consultarCNPJ, cleanCNPJ, isValidCNPJ, type DadosEmpresaCNPJ } from '@/services/cnpj'
 
 // Masks helper
 function maskCNPJ(value: string) {
@@ -46,6 +49,13 @@ interface TestModel {
   categoria_profissional: string
   conselho: string
   vinculo_institucional: string
+  consumo_energia?: string
+  frota_propria?: 'sim' | 'nao'
+  inventario_ghg?: 'sim' | 'nao' | 'em_andamento'
+  iso_14001?: 'sim' | 'nao'
+  faixa_emissoes?: 'abaixo_10k' | 'entre_10k_25k' | 'acima_25k' | 'nao_sei_calcular'
+  exporta_ue_cbam?: 'sim' | 'nao'
+  cbam_bens?: string
 }
 
 const MODELOS_TESTE: TestModel[] = [
@@ -59,6 +69,13 @@ const MODELOS_TESTE: TestModel[] = [
     categoria_profissional: 'Empresário / Diretor / Gestor da Empresa',
     conselho: 'CRA-PR 12948',
     vinculo_institucional: 'Associado ACP (Paraná)',
+    consumo_energia: 'Consumo moderado de refrigeração e logística urbana (baixa tensão)',
+    frota_propria: 'sim',
+    inventario_ghg: 'nao',
+    iso_14001: 'nao',
+    faixa_emissoes: 'abaixo_10k',
+    exporta_ue_cbam: 'nao',
+    cbam_bens: '',
   },
   {
     razao_social: 'Metalúrgica & Peças Industriais Confiança Ltda',
@@ -70,6 +87,13 @@ const MODELOS_TESTE: TestModel[] = [
     categoria_profissional: 'Engenheiro Mecânico / Ambiental (CREA - Resp. Técnico)',
     conselho: 'CREA-SP 5061234',
     vinculo_institucional: 'Mercado Nacional (Bahia, SP, Brasil)',
+    consumo_energia: 'Alto consumo eletrointensivo industrial (alta tensão 138kV)',
+    frota_propria: 'sim',
+    inventario_ghg: 'em_andamento',
+    iso_14001: 'sim',
+    faixa_emissoes: 'entre_10k_25k',
+    exporta_ue_cbam: 'sim',
+    cbam_bens: 'aço e fixadores industriais',
   },
   {
     razao_social: 'Transportes & Logística de Cargas Expresso Verde Ltda',
@@ -81,6 +105,13 @@ const MODELOS_TESTE: TestModel[] = [
     categoria_profissional: 'Consultor de Sustentabilidade & Compliance',
     conselho: 'CRBio 04981',
     vinculo_institucional: 'Mercado Nacional (Bahia, SP, Brasil)',
+    consumo_energia: 'Frota pesada de caminhões diesel S-10 e matriz elétrica em galpões',
+    frota_propria: 'sim',
+    inventario_ghg: 'sim',
+    iso_14001: 'sim',
+    faixa_emissoes: 'acima_25k',
+    exporta_ue_cbam: 'nao',
+    cbam_bens: '',
   },
   {
     razao_social: 'Centro de Desmontagem Veicular Renova Peças (CDV DETRAN)',
@@ -92,6 +123,13 @@ const MODELOS_TESTE: TestModel[] = [
     categoria_profissional: 'Centro de Desmontagem Veicular (CDV / Desmanche Credenciado)',
     conselho: 'DETRAN-SP 0842/2022',
     vinculo_institucional: 'Cadeia Automotiva / CDV (Programa MOVER)',
+    consumo_energia: 'Pátio de desmontagem com energia solar fotovoltaica e compressores',
+    frota_propria: 'nao',
+    inventario_ghg: 'nao',
+    iso_14001: 'nao',
+    faixa_emissoes: 'abaixo_10k',
+    exporta_ue_cbam: 'nao',
+    cbam_bens: '',
   },
   {
     razao_social: 'Comércio & Serviços Varejistas Prime Ltda (MGM)',
@@ -103,8 +141,31 @@ const MODELOS_TESTE: TestModel[] = [
     categoria_profissional: 'Contador / Auditor Independente (CRC)',
     conselho: 'CRC-PR 054812',
     vinculo_institucional: 'Associado ACP (Paraná)',
+    consumo_energia: 'Escritório corporativo de serviços contábeis e consultoria',
+    frota_propria: 'nao',
+    inventario_ghg: 'nao',
+    iso_14001: 'nao',
+    faixa_emissoes: 'abaixo_10k',
+    exporta_ue_cbam: 'nao',
+    cbam_bens: '',
   },
 ]
+
+export function calcularEnquadramentoSBCE(
+  faixa: 'abaixo_10k' | 'entre_10k_25k' | 'acima_25k' | 'nao_sei_calcular',
+): string {
+  switch (faixa) {
+    case 'abaixo_10k':
+      return 'Abaixo do limiar de reporte no SBCE (< 10.000 tCO₂e/ano)'
+    case 'entre_10k_25k':
+      return 'Sujeito a reporte no SBCE (10.000 a 25.000 tCO₂e/ano)'
+    case 'acima_25k':
+      return 'Sujeito a reporte e obrigação de compensação no SBCE (> 25.000 tCO₂e/ano)'
+    case 'nao_sei_calcular':
+    default:
+      return 'Avaliação preliminar pendente de inventário técnico'
+  }
+}
 
 export default function Diagnostico() {
   const navigate = useNavigate()
@@ -113,7 +174,7 @@ export default function Diagnostico() {
   // Tab: 'novo' | 'retomar'
   const [tab, setTab] = useState<'novo' | 'retomar'>('novo')
 
-  // Wizard Step: 1, 2, 3, 4, 5 (success)
+  // Wizard Step: 1, 2, 3, 4 (Triagem de emissões), 5 (Consentimento LGPD), 6 (Sucesso)
   const [step, setStep] = useState<number>(1)
 
   // CNPJ Consultation State
@@ -134,7 +195,19 @@ export default function Diagnostico() {
     categoria_profissional: 'Empresário / Diretor / Gestor da Empresa',
     conselho: '',
     vinculo_institucional: 'Mercado Nacional (Bahia, SP, Brasil)',
-    regime_tributario: 'Lucro Real',
+    regime_tributario: 'A confirmar',
+    // Triagem de Emissões & CBAM
+    consumo_energia: '',
+    frota_propria: 'nao' as 'sim' | 'nao',
+    inventario_ghg: 'nao' as 'sim' | 'nao' | 'em_andamento',
+    iso_14001: 'nao' as 'sim' | 'nao',
+    faixa_emissoes: 'nao_sei_calcular' as
+      | 'abaixo_10k'
+      | 'entre_10k_25k'
+      | 'acima_25k'
+      | 'nao_sei_calcular',
+    exporta_ue_cbam: 'nao' as 'sim' | 'nao',
+    cbam_bens: '',
     aceite_lgpd: false,
   })
 
@@ -153,6 +226,7 @@ export default function Diagnostico() {
     cnpj: string
     razao_social: string
     status: string
+    enquadramento_sbce?: string
   } | null>(null)
 
   // Consulta de CNPJ (Modelos de teste ou APIs Públicas)
@@ -190,7 +264,7 @@ export default function Diagnostico() {
         razao_social: data.razao_social || prev.razao_social,
         email: data.email || prev.email,
         whatsapp: data.ddd_telefone ? maskPhone(data.ddd_telefone) : prev.whatsapp,
-        regime_tributario: data.regime_tributario_sugerido || prev.regime_tributario,
+        regime_tributario: data.regime_tributario_sugerido || 'A confirmar',
       }))
 
       // Limpa eventuais erros de campo antigos
@@ -227,8 +301,15 @@ export default function Diagnostico() {
       conselho: model.conselho,
       vinculo_institucional: model.vinculo_institucional,
       regime_tributario: model.regime_tributario,
-      senha: prev.senha || 'Orbis@2026',
-      confirmaSenha: prev.confirmaSenha || 'Orbis@2026',
+      consumo_energia: model.consumo_energia || prev.consumo_energia,
+      frota_propria: model.frota_propria || prev.frota_propria,
+      inventario_ghg: model.inventario_ghg || prev.inventario_ghg,
+      iso_14001: model.iso_14001 || prev.iso_14001,
+      faixa_emissoes: model.faixa_emissoes || prev.faixa_emissoes,
+      exporta_ue_cbam: model.exporta_ue_cbam || prev.exporta_ue_cbam,
+      cbam_bens: model.cbam_bens || prev.cbam_bens,
+      senha: prev.senha,
+      confirmaSenha: prev.confirmaSenha,
       aceite_lgpd: true,
     }))
     setFieldErrors({})
@@ -277,11 +358,17 @@ export default function Diagnostico() {
     return true
   }
 
+  // Validate step 4 (Triagem de emissões)
+  const validateStep4 = () => {
+    return true
+  }
+
   // Handle Step Advancement
   const nextStep = () => {
     if (step === 1 && !validateStep1()) return
     if (step === 2 && !validateStep2()) return
     if (step === 3 && !validateStep3()) return
+    if (step === 4 && !validateStep4()) return
     setStep((s) => s + 1)
   }
 
@@ -302,6 +389,8 @@ export default function Diagnostico() {
     setGeneralError('')
     setFieldErrors({})
 
+    const enquadramentoPreliminar = calcularEnquadramentoSBCE(formData.faixa_emissoes)
+
     try {
       let createdUserId = ''
 
@@ -312,6 +401,7 @@ export default function Diagnostico() {
           password: formData.senha,
           passwordConfirm: formData.confirmaSenha,
           name: formData.responsavel,
+          role: 'cliente',
         })
         createdUserId = newUser.id
         // Auto-login newly created user
@@ -330,36 +420,36 @@ export default function Diagnostico() {
 
       // 2. Check if lead with this CNPJ already exists
       let leadRecord
+      const leadPayload = {
+        cnpj: formData.cnpj,
+        razao_social: formData.razao_social,
+        email: formData.email,
+        whatsapp: formData.whatsapp,
+        responsavel: formData.responsavel,
+        categoria_profissional: formData.categoria_profissional,
+        conselho: formData.conselho,
+        vinculo_institucional: formData.vinculo_institucional,
+        regime_tributario: formData.regime_tributario,
+        consumo_energia: formData.consumo_energia,
+        frota_propria: formData.frota_propria,
+        inventario_ghg: formData.inventario_ghg,
+        iso_14001: formData.iso_14001,
+        faixa_emissoes: formData.faixa_emissoes,
+        enquadramento_sbce: enquadramentoPreliminar,
+        exporta_ue_cbam: formData.exporta_ue_cbam,
+        cbam_bens: formData.cbam_bens,
+        status: 'novo',
+        ...(createdUserId ? { usuario: createdUserId } : {}),
+      }
+
       try {
         const existingLead = await pb
           .collection('leads_diagnostico')
           .getFirstListItem(`cnpj='${formData.cnpj}'`)
-        leadRecord = await pb.collection('leads_diagnostico').update(existingLead.id, {
-          razao_social: formData.razao_social,
-          email: formData.email,
-          whatsapp: formData.whatsapp,
-          responsavel: formData.responsavel,
-          categoria_profissional: formData.categoria_profissional,
-          conselho: formData.conselho,
-          vinculo_institucional: formData.vinculo_institucional,
-          regime_tributario: formData.regime_tributario,
-          ...(createdUserId ? { usuario: createdUserId } : {}),
-        })
+        leadRecord = await pb.collection('leads_diagnostico').update(existingLead.id, leadPayload)
       } catch (_) {
         // Create new lead
-        leadRecord = await pb.collection('leads_diagnostico').create({
-          cnpj: formData.cnpj,
-          razao_social: formData.razao_social,
-          email: formData.email,
-          whatsapp: formData.whatsapp,
-          responsavel: formData.responsavel,
-          categoria_profissional: formData.categoria_profissional,
-          conselho: formData.conselho,
-          vinculo_institucional: formData.vinculo_institucional,
-          regime_tributario: formData.regime_tributario,
-          status: 'novo',
-          ...(createdUserId ? { usuario: createdUserId } : {}),
-        })
+        leadRecord = await pb.collection('leads_diagnostico').create(leadPayload)
       }
 
       setProtocoloGerado({
@@ -367,8 +457,9 @@ export default function Diagnostico() {
         cnpj: leadRecord.cnpj,
         razao_social: leadRecord.razao_social,
         status: leadRecord.status || 'novo',
+        enquadramento_sbce: enquadramentoPreliminar,
       })
-      setStep(5) // Success screen
+      setStep(6) // Success screen
     } catch (err: unknown) {
       const fieldErrs = extractFieldErrors(err)
       if (Object.keys(fieldErrs).length > 0) {
@@ -389,8 +480,10 @@ export default function Diagnostico() {
     setIsRetomando(true)
 
     try {
-      const cleanCNPJ = retomarCNPJ.trim()
-      const lead = await pb.collection('leads_diagnostico').getFirstListItem(`cnpj='${cleanCNPJ}'`)
+      const cleanInput = cleanCNPJ(retomarCNPJ.trim())
+      const lead = await pb
+        .collection('leads_diagnostico')
+        .getFirstListItem(`cnpj='${retomarCNPJ.trim()}' || cnpj ~ '${cleanInput}'`)
 
       if (!lead) {
         setRetomarError('Nenhum diagnóstico encontrado para este CNPJ.')
@@ -407,15 +500,9 @@ export default function Diagnostico() {
         }
       }
 
-      // If cannot auth directly by email, check if demo password matches
-      if (retomarSenha === 'Skip@Pass' || retomarSenha === 'Orbis@2026') {
-        // Try fallback demo user
-        await login('maurog1@hotmail.com', 'Skip@Pass')
-        navigate('/painel')
-        return
-      }
-
-      setRetomarError('Senha incorreta para este CNPJ. Tente novamente ou inicie novo diagnóstico.')
+      setRetomarError(
+        'Credenciais incorretas para este CNPJ. Digite a senha cadastrada pelo responsável.',
+      )
     } catch (err: unknown) {
       setRetomarError('Diagnóstico não localizado ou erro de credencial.')
     } finally {
@@ -430,15 +517,15 @@ export default function Diagnostico() {
         <div className="max-w-3xl mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-4">
             <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-            FUNIL QUALIFICADO • RADAR FISCAL
+            FUNIL QUALIFICADO • RADAR FISCAL & EMISSÕES
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-3">
             DIAGNÓSTICO & QUALIFICAÇÃO TRIBUTÁRIA POR CNPJ
           </h1>
           <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
-            Informe os dados da sua organização para realizarmos o cálculo de elegibilidade às
-            diretrizes do SBCE (Lei 15.042/2024), créditos de descarbonização do MOVER (Lei
-            14.902/2024) e emissão do protocolo pericial.
+            Informe os dados da sua organização para realizarmos o cálculo de elegibilidade
+            preparatória às diretrizes do SBCE (Lei 15.042/2024), créditos de descarbonização do
+            MOVER (Lei 14.902/2024 para o setor automotivo) e emissão do protocolo pericial.
           </p>
         </div>
 
@@ -514,13 +601,10 @@ export default function Diagnostico() {
                   type="password"
                   value={retomarSenha}
                   onChange={(e) => setRetomarSenha(e.target.value)}
-                  placeholder="Digite sua senha"
+                  placeholder="Digite sua senha cadastrada"
                   className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                   required
                 />
-                <span className="text-[11px] text-[#93A3B5] mt-1 block">
-                  Dica de teste: utilize a senha definida no cadastro ou o modelo pré-cadastrado.
-                </span>
               </div>
 
               <button
@@ -539,21 +623,22 @@ export default function Diagnostico() {
             {/* WIZARD FORM (COL 1..7) */}
             <div className="lg:col-span-7 bg-[#111820] border border-[rgba(244,247,250,0.12)] rounded-2xl p-6 sm:p-8 shadow-2xl relative">
               {/* Progress Bar */}
-              {step < 5 && (
+              {step < 6 && (
                 <div className="mb-8">
                   <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-2">
                     <span className="text-[#12B886]">
-                      Etapa {step} de 4: {step === 1 && 'Dados da Empresa'}
+                      Etapa {step} de 5: {step === 1 && 'Dados da Empresa'}
                       {step === 2 && 'Responsável e Perfil'}
                       {step === 3 && 'Vínculo Institucional'}
-                      {step === 4 && 'Conformidade LGPD'}
+                      {step === 4 && 'Triagem de Emissões & CBAM'}
+                      {step === 5 && 'Conformidade LGPD'}
                     </span>
-                    <span>{step * 25}%</span>
+                    <span>{Math.round((step / 5) * 100)}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-[#0A0E12] overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-[#12B886] to-[#27C08C] transition-all duration-300"
-                      style={{ width: `${step * 25}%` }}
+                      style={{ width: `${(step / 5) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -598,7 +683,6 @@ export default function Diagnostico() {
                             setFormData({ ...formData, cnpj: formatted })
                             setCnpjLookupError('')
                             if (cleanCNPJ(formatted).length === 14) {
-                              // Dispara consulta automática se completou 14 dígitos
                               handleConsultarCNPJ(formatted)
                             }
                           }}
@@ -946,16 +1030,16 @@ export default function Diagnostico() {
                 </div>
               )}
 
-              {/* STEP 3: VÍNCULO INSTITUCIONAL */}
+              {/* STEP 3: VÍNCULO INSTITUCIONAL & REGIME DECLARADO */}
               {step === 3 && (
                 <div className="space-y-5 animate-fade-in">
                   <div className="border-b border-[rgba(244,247,250,0.08)] pb-3">
                     <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                      3. VÍNCULO INSTITUCIONAL & ORIGEM DO CNPJ
+                      3. VÍNCULO INSTITUCIONAL & REGIME TRIBUTÁRIO
                     </h2>
                     <p className="text-xs text-[#93A3B5]">
-                      Selecione seu enquadramento institucional para aplicar regras e subsídios
-                      específicos.
+                      Selecione seu enquadramento institucional e informe o regime tributário
+                      declarado.
                     </p>
                   </div>
 
@@ -964,7 +1048,7 @@ export default function Diagnostico() {
                       {
                         val: 'Mercado Nacional (Bahia, SP, Brasil)',
                         title: 'Mercado Nacional (Bahia, SP, Brasil)',
-                        sub: 'Tabela de Mercado • Sem filiação específica • Validação SBCE e IFRS',
+                        sub: 'Tabela de Mercado • Sem filiação específica • Validação preparatória SBCE e IFRS',
                       },
                       {
                         val: 'Associado ACP (Paraná)',
@@ -974,7 +1058,7 @@ export default function Diagnostico() {
                       {
                         val: 'Cadeia Automotiva / CDV (Programa MOVER)',
                         title: 'Cadeia Automotiva / CDV (Programa MOVER)',
-                        sub: 'Programa MOVER • Desmanches DETRAN, Oficinas e Sistemistas',
+                        sub: 'Programa MOVER • Exclusivo para fabricantes e desmanches DETRAN credenciados',
                       },
                     ].map((opt) => (
                       <label
@@ -1007,7 +1091,7 @@ export default function Diagnostico() {
 
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-                      Regime Tributário Declarado
+                      Regime tributário: a confirmar pelo contribuinte
                     </label>
                     <select
                       value={formData.regime_tributario}
@@ -1016,10 +1100,204 @@ export default function Diagnostico() {
                       }
                       className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                     >
-                      <option value="Lucro Real">Lucro Real (Obrigatório acima de R$ 78M)</option>
-                      <option value="Lucro Presumido">Lucro Presumido</option>
+                      <option value="A confirmar">A confirmar pelo contribuinte (padrão)</option>
                       <option value="Simples Nacional">Simples Nacional</option>
+                      <option value="Lucro Presumido">Lucro Presumido</option>
+                      <option value="Lucro Real">Lucro Real</option>
                     </select>
+                    <span className="text-[11px] text-[#93A3B5] mt-1 block">
+                      O regime é informado pelo contribuinte e verificado na auditoria documental —
+                      nunca inferido do capital social.
+                    </span>
+                  </div>
+
+                  <div className="pt-4 flex justify-between">
+                    <button
+                      type="button"
+                      onClick={prevStep}
+                      className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold border border-[rgba(244,247,250,0.2)] text-[#93A3B5] hover:text-[#F4F7FA]"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Voltar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={nextStep}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
+                    >
+                      Avançar para Triagem de Emissões
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 4: NOVO PASSO DE TRIAGEM DE EMISSÕES & CBAM */}
+              {step === 4 && (
+                <div className="space-y-5 animate-fade-in">
+                  <div className="border-b border-[rgba(244,247,250,0.08)] pb-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Flame className="w-4 h-4 text-[#D9B36C]" />
+                      <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                        4. TRIAGEM DE EMISSÕES & FRONTEIRA CBAM
+                      </h2>
+                    </div>
+                    <p className="text-xs text-[#93A3B5]">
+                      Avaliação preliminar para enquadramento aos limiares da Lei 15.042/2024 (SBCE)
+                      e comércio exterior.
+                    </p>
+                  </div>
+
+                  {/* Consumo aproximado de energia */}
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                      Porte / Consumo Aproximado de Energia
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.consumo_energia}
+                      onChange={(e) =>
+                        setFormData({ ...formData, consumo_energia: e.target.value })
+                      }
+                      placeholder="Ex.: Baixa tensão comercial / Alta tensão industrial (MWh/ano)"
+                      className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
+                    />
+                  </div>
+
+                  {/* Frota própria e Certificações */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                        Possui Frota Própria?
+                      </label>
+                      <select
+                        value={formData.frota_propria}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            frota_propria: e.target.value as 'sim' | 'nao',
+                          })
+                        }
+                        className="w-full px-3 py-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886] text-xs"
+                      >
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim (Diesel / Flex / Elétrico)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                        Inventário GHG Protocol?
+                      </label>
+                      <select
+                        value={formData.inventario_ghg}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            inventario_ghg: e.target.value as 'sim' | 'nao' | 'em_andamento',
+                          })
+                        }
+                        className="w-full px-3 py-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886] text-xs"
+                      >
+                        <option value="nao">Não possui</option>
+                        <option value="em_andamento">Em andamento</option>
+                        <option value="sim">Sim (Concluído)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                        Certificação ISO 14001?
+                      </label>
+                      <select
+                        value={formData.iso_14001}
+                        onChange={(e) =>
+                          setFormData({ ...formData, iso_14001: e.target.value as 'sim' | 'nao' })
+                        }
+                        className="w-full px-3 py-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886] text-xs"
+                      >
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Faixa de Emissões Anuais */}
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                      Estimativa Aproximada de Emissões Anuais (Escopo 1 e 2)
+                    </label>
+                    <select
+                      value={formData.faixa_emissoes}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          faixa_emissoes: e.target.value as
+                            | 'abaixo_10k'
+                            | 'entre_10k_25k'
+                            | 'acima_25k'
+                            | 'nao_sei_calcular',
+                        })
+                      }
+                      className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886]"
+                    >
+                      <option value="abaixo_10k">&lt; 10.000 tCO₂e / ano</option>
+                      <option value="entre_10k_25k">10.000 a 25.000 tCO₂e / ano</option>
+                      <option value="acima_25k">&gt; 25.000 tCO₂e / ano</option>
+                      <option value="nao_sei_calcular">
+                        Não sei calcular (avaliação pendente)
+                      </option>
+                    </select>
+
+                    {/* Feedback preliminar SBCE */}
+                    <div className="mt-2.5 p-3 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/30 text-xs flex items-center justify-between">
+                      <span className="text-[#93A3B5]">Enquadramento preliminar SBCE:</span>
+                      <span className="font-semibold text-[#D9B36C]">
+                        {calcularEnquadramentoSBCE(formData.faixa_emissoes)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Pergunta CBAM União Europeia */}
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <label className="block text-xs font-bold text-[#F4F7FA]">
+                          A empresa exporta produtos para a União Europeia? (Mecanismo CBAM)
+                        </label>
+                        <span className="text-[11px] text-[#93A3B5]">
+                          Requer cálculo de emissões incorporadas para aduanas europeias.
+                        </span>
+                      </div>
+                      <select
+                        value={formData.exporta_ue_cbam}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            exporta_ue_cbam: e.target.value as 'sim' | 'nao',
+                          })
+                        }
+                        className="px-3 py-1.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886] text-xs shrink-0"
+                      >
+                        <option value="nao">Não exporta para UE</option>
+                        <option value="sim">Sim, exporta para UE</option>
+                      </select>
+                    </div>
+
+                    {formData.exporta_ue_cbam === 'sim' && (
+                      <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] animate-fade-in">
+                        <label className="block text-[11px] font-semibold text-[#D9B36C] uppercase mb-1">
+                          Bens cobertos exportados:
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.cbam_bens}
+                          onChange={(e) => setFormData({ ...formData, cbam_bens: e.target.value })}
+                          placeholder="Ex.: Aço, alumínio, cimento, fertilizantes, hidrogênio ou outros"
+                          className="w-full px-3.5 py-2.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 text-xs focus:outline-none focus:ring-2 focus:ring-[#12B886]"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-4 flex justify-between">
@@ -1043,15 +1321,16 @@ export default function Diagnostico() {
                 </div>
               )}
 
-              {/* STEP 4: ACEITE LGPD E SUBMISSÃO */}
-              {step === 4 && (
+              {/* STEP 5: ACEITE LGPD E SUBMISSÃO */}
+              {step === 5 && (
                 <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
                   <div className="border-b border-[rgba(244,247,250,0.08)] pb-3">
                     <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                      4. CONSENTIMENTO & TERMOS LGPD
+                      5. CONSENTIMENTO & TERMOS LGPD
                     </h2>
                     <p className="text-xs text-[#93A3B5]">
-                      Termo de autorização de tratamento de dados cadastrais e fiscais.
+                      Termo de autorização de tratamento de dados cadastrais, fiscais e
+                      operacionais.
                     </p>
                   </div>
 
@@ -1066,8 +1345,16 @@ export default function Diagnostico() {
                       <span className="font-semibold text-[#12B886]">{formData.cnpj}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-[rgba(244,247,250,0.05)]">
-                      <span className="text-[#93A3B5]">Responsável:</span>
-                      <span className="font-semibold text-[#F4F7FA]">{formData.responsavel}</span>
+                      <span className="text-[#93A3B5]">Regime Declarado:</span>
+                      <span className="font-semibold text-[#F4F7FA]">
+                        {formData.regime_tributario}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-[rgba(244,247,250,0.05)]">
+                      <span className="text-[#93A3B5]">Enquadramento SBCE:</span>
+                      <span className="font-semibold text-[#D9B36C]">
+                        {calcularEnquadramentoSBCE(formData.faixa_emissoes)}
+                      </span>
                     </div>
                     <div className="flex justify-between py-1">
                       <span className="text-[#93A3B5]">Vínculo:</span>
@@ -1089,14 +1376,23 @@ export default function Diagnostico() {
                         className="mt-1 w-4 h-4 rounded text-[#12B886] focus:ring-[#12B886] bg-[#111820]"
                       />
                       <span className="text-xs text-[#93A3B5] leading-relaxed">
-                        Concordo com o tratamento dos dados cadastrais e fiscais pela{' '}
+                        Concordo com o tratamento dos dados cadastrais, operacionais e fiscais pela{' '}
                         <strong className="text-[#F4F7FA]">ORBIS PROTOCOL</strong> e pela{' '}
                         <strong className="text-[#F4F7FA]">
-                          MGM CONSULTORIA EMPRESARIAL LTDA (CNPJ 19.598.964/0001-01)
+                          MGM CONSULTORIA EMPRESARIAL LTDA (CNPJ 19.958.964/0001-01)
                         </strong>
-                        . Finalidade restrita à análise de elegibilidade tributária, inventário de
-                        emissões e emissão do protocolo pericial preliminar conforme a Lei Geral de
-                        Proteção de Dados (Lei 13.709/2018).
+                        , com finalidade restrita à análise preliminar de elegibilidade tributária,
+                        triagem de emissões e emissão do protocolo pericial preliminar, em
+                        conformidade com a{' '}
+                        <a
+                          href="/privacidade"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#12B886] underline font-semibold hover:text-[#12B886]/80"
+                        >
+                          Política de Privacidade LGPD
+                        </a>{' '}
+                        (Lei 13.709/2018).
                       </span>
                     </label>
                     {fieldErrors.aceite_lgpd && (
@@ -1127,8 +1423,8 @@ export default function Diagnostico() {
                 </form>
               )}
 
-              {/* STEP 5: TELA DE SUCESSO / RESUMO */}
-              {step === 5 && protocoloGerado && (
+              {/* STEP 6: TELA DE SUCESSO / RESUMO */}
+              {step === 6 && protocoloGerado && (
                 <div className="space-y-6 py-4 animate-fade-in text-center">
                   <div className="w-16 h-16 rounded-full bg-[#12B886]/10 border border-[#12B886] mx-auto flex items-center justify-center text-[#12B886] shadow-emerald-glow">
                     <CheckCircle2 className="w-9 h-9" />
@@ -1143,7 +1439,7 @@ export default function Diagnostico() {
                     </h2>
                     <p className="text-sm text-[#93A3B5] mt-2 max-w-lg mx-auto">
                       Seu cadastro foi salvo na infraestrutura do Orbis Protocol. O sistema iniciou
-                      a análise automatizada de enquadramento ao SBCE e MOVER.
+                      a análise técnica preparatória de enquadramento ao SBCE e MOVER.
                     </p>
                   </div>
 
@@ -1165,6 +1461,14 @@ export default function Diagnostico() {
                       <span className="text-[#93A3B5]">CNPJ:</span>
                       <span className="font-semibold text-[#12B886]">{protocoloGerado.cnpj}</span>
                     </div>
+                    {protocoloGerado.enquadramento_sbce && (
+                      <div className="flex justify-between items-center text-xs border-b border-[rgba(244,247,250,0.08)] pb-2">
+                        <span className="text-[#93A3B5]">Enquadramento SBCE:</span>
+                        <span className="font-semibold text-[#D9B36C] text-right">
+                          {protocoloGerado.enquadramento_sbce}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-[#93A3B5]">Status Inicial:</span>
                       <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-semibold uppercase text-[10px]">
@@ -1198,7 +1502,14 @@ export default function Diagnostico() {
                           categoria_profissional: 'Empresário / Diretor / Gestor da Empresa',
                           conselho: '',
                           vinculo_institucional: 'Mercado Nacional (Bahia, SP, Brasil)',
-                          regime_tributario: 'Lucro Real',
+                          regime_tributario: 'A confirmar',
+                          consumo_energia: '',
+                          frota_propria: 'nao',
+                          inventario_ghg: 'nao',
+                          iso_14001: 'nao',
+                          faixa_emissoes: 'nao_sei_calcular',
+                          exporta_ue_cbam: 'nao',
+                          cbam_bens: '',
                           aceite_lgpd: false,
                         })
                       }}
@@ -1237,12 +1548,26 @@ export default function Diagnostico() {
                             {m.razao_social}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-[#93A3B5] mb-3">
+                        <div className="flex items-center gap-3 text-[11px] text-[#93A3B5] mb-2">
                           <span className="font-mono text-[#D9B36C]">{m.cnpj}</span>
                           <span>•</span>
                           <span className="px-1.5 py-0.5 rounded bg-[#16202B] text-[#93A3B5] text-[10px]">
                             {m.regime_tributario}
                           </span>
+                        </div>
+                        <div className="text-[11px] text-[#93A3B5] mb-3">
+                          <span className="text-[#12B886]">SBCE: </span>
+                          <span>
+                            {m.faixa_emissoes === 'abaixo_10k' && '< 10k tCO₂e'}
+                            {m.faixa_emissoes === 'entre_10k_25k' && '10k–25k tCO₂e (Reporte)'}
+                            {m.faixa_emissoes === 'acima_25k' && '> 25k tCO₂e (Compensação)'}
+                            {!m.faixa_emissoes && 'Avaliação pendente'}
+                          </span>
+                          {m.exporta_ue_cbam === 'sim' && (
+                            <span className="ml-2 px-1.5 py-0.2 rounded bg-[#D9B36C]/20 text-[#D9B36C] text-[9px] font-bold">
+                              CBAM UE
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -1265,9 +1590,9 @@ export default function Diagnostico() {
                   Segurança e Integridade do Diagnóstico:
                 </span>
                 <p>
-                  Todos os dados submetidos são criptografados e vinculados à sua chave de CNPJ. Os
-                  laudos periciais têm validade para o Sistema SBCE e habilitação de créditos no
-                  MOVER.
+                  Todos os dados submetidos são protegidos por controle estrito de acesso e
+                  vinculados ao seu CNPJ. Os laudos periciais têm caráter preparatório para o
+                  Sistema SBCE (Lei 15.042/2024) e para o Programa MOVER automotivo.
                 </p>
               </div>
             </div>
