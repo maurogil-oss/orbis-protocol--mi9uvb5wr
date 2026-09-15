@@ -6,19 +6,16 @@ import { useAuth } from '@/contexts/AuthContext'
 import {
   ShieldCheck,
   CheckCircle2,
-  Building2,
-  UserCheck,
-  Building,
-  FileCheck2,
   ArrowRight,
   ArrowLeft,
   Sparkles,
-  Lock,
   AlertCircle,
-  HelpCircle,
   KeyRound,
-  FileText,
+  Search,
+  Loader2,
+  Globe,
 } from 'lucide-react'
+import { consultarCNPJ, cleanCNPJ, isValidCNPJ, type DadosEmpresaCNPJ } from '@/services/cnpj'
 
 // Masks helper
 function maskCNPJ(value: string) {
@@ -119,6 +116,12 @@ export default function Diagnostico() {
   // Wizard Step: 1, 2, 3, 4, 5 (success)
   const [step, setStep] = useState<number>(1)
 
+  // CNPJ Consultation State
+  const [isConsultingCNPJ, setIsConsultingCNPJ] = useState(false)
+  const [cnpjLookupError, setCnpjLookupError] = useState<string>('')
+  const [cnpjSuccessData, setCnpjSuccessData] = useState<DadosEmpresaCNPJ | null>(null)
+  const [isModelMode, setIsModelMode] = useState<boolean>(false)
+
   // Form Fields
   const [formData, setFormData] = useState({
     cnpj: '',
@@ -152,8 +155,67 @@ export default function Diagnostico() {
     status: string
   } | null>(null)
 
+  // Consulta de CNPJ (Modelos de teste ou APIs Públicas)
+  const handleConsultarCNPJ = async (cnpjToSearch?: string) => {
+    const rawCNPJ = cnpjToSearch || formData.cnpj
+    const digits = cleanCNPJ(rawCNPJ)
+
+    if (digits.length !== 14) {
+      setCnpjLookupError('Informe um CNPJ completo com 14 dígitos numéricos.')
+      return
+    }
+
+    setCnpjLookupError('')
+    setCnpjSuccessData(null)
+    setIsModelMode(false)
+
+    // 1. Verifica se corresponde a um dos 5 modelos de teste semeados
+    const matchingModel = MODELOS_TESTE.find((m) => cleanCNPJ(m.cnpj) === digits)
+    if (matchingModel) {
+      applyModel(matchingModel)
+      setIsModelMode(true)
+      return
+    }
+
+    // 2. Se não for modelo de teste, busca na API pública (BrasilAPI / Minha Receita)
+    setIsConsultingCNPJ(true)
+    try {
+      const data = await consultarCNPJ(digits)
+      setCnpjSuccessData(data)
+      setIsModelMode(false)
+
+      setFormData((prev) => ({
+        ...prev,
+        cnpj: maskCNPJ(digits),
+        razao_social: data.razao_social || prev.razao_social,
+        email: data.email || prev.email,
+        whatsapp: data.ddd_telefone ? maskPhone(data.ddd_telefone) : prev.whatsapp,
+        regime_tributario: data.regime_tributario_sugerido || prev.regime_tributario,
+      }))
+
+      // Limpa eventuais erros de campo antigos
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next.cnpj
+        delete next.razao_social
+        return next
+      })
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : 'Não foi possível consultar os dados na Receita Federal.'
+      setCnpjLookupError(msg)
+    } finally {
+      setIsConsultingCNPJ(false)
+    }
+  }
+
   // Apply quick test model
   const applyModel = (model: TestModel) => {
+    setIsModelMode(true)
+    setCnpjSuccessData(null)
+    setCnpjLookupError('')
     setFormData((prev) => ({
       ...prev,
       cnpj: model.cnpj,
@@ -175,8 +237,11 @@ export default function Diagnostico() {
   // Validate step 1
   const validateStep1 = () => {
     const errors: Record<string, string> = {}
-    if (!formData.cnpj || formData.cnpj.length < 18) {
+    const digits = cleanCNPJ(formData.cnpj)
+    if (digits.length !== 14) {
       errors.cnpj = 'Informe um CNPJ válido com 14 dígitos'
+    } else if (!isValidCNPJ(digits)) {
+      errors.cnpj = 'CNPJ inválido (dígitos verificadores incorretos)'
     }
     if (!formData.razao_social.trim()) {
       errors.razao_social = 'A razão social é obrigatória'
@@ -515,20 +580,163 @@ export default function Diagnostico() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-                      CNPJ da Empresa *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.cnpj}
-                      onChange={(e) => setFormData({ ...formData, cnpj: maskCNPJ(e.target.value) })}
-                      placeholder="00.000.000/0000-00"
-                      className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]">
+                        CNPJ da Empresa *
+                      </label>
+                      <span className="text-[11px] text-[#93A3B5]/80">
+                        Consulta pública automática na Receita Federal
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={formData.cnpj}
+                          onChange={(e) => {
+                            const formatted = maskCNPJ(e.target.value)
+                            setFormData({ ...formData, cnpj: formatted })
+                            setCnpjLookupError('')
+                            if (cleanCNPJ(formatted).length === 14) {
+                              // Dispara consulta automática se completou 14 dígitos
+                              handleConsultarCNPJ(formatted)
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              handleConsultarCNPJ()
+                            }
+                          }}
+                          placeholder="00.000.000/0000-00"
+                          className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] font-mono"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleConsultarCNPJ()}
+                        disabled={isConsultingCNPJ}
+                        className="px-5 py-3 rounded-lg bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all font-semibold text-xs flex items-center gap-2 shrink-0 disabled:opacity-50"
+                        title="Consultar dados cadastrais na Receita"
+                      >
+                        {isConsultingCNPJ ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="hidden sm:inline">Consultando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Search className="w-4 h-4" />
+                            <span>Consultar</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                     {fieldErrors.cnpj && (
                       <span className="text-xs text-[#F03E54] mt-1 block">{fieldErrors.cnpj}</span>
                     )}
                   </div>
+
+                  {/* Feedback de Consulta: Loading */}
+                  {isConsultingCNPJ && (
+                    <div className="p-3.5 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.12)] flex items-center gap-3 animate-pulse">
+                      <Loader2 className="w-4 h-4 text-[#12B886] animate-spin shrink-0" />
+                      <span className="text-xs text-[#93A3B5]">
+                        Varrendo bases públicas da Receita Federal (BrasilAPI & Minha Receita)...
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Feedback de Consulta: Erro com opção de preenchimento manual */}
+                  {cnpjLookupError && (
+                    <div className="p-4 rounded-xl bg-[#F03E54]/10 border border-[#F03E54]/30 space-y-2">
+                      <div className="flex items-start gap-2.5 text-xs text-[#F03E54]">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="block font-semibold">
+                            Consulta automática indisponível
+                          </strong>
+                          <span>{cnpjLookupError}</span>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-[#93A3B5] pl-6">
+                        Você pode verificar o CNPJ digitado ou prosseguir preenchendo a{' '}
+                        <strong>Razão Social</strong> manualmente nos campos abaixo.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Feedback de Consulta: Empresa Real Encontrada */}
+                  {cnpjSuccessData && (
+                    <div className="p-4 rounded-xl bg-[#12B886]/10 border border-[#12B886]/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#12B886] animate-ping" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#12B886] flex items-center gap-1.5">
+                            <Globe className="w-3.5 h-3.5" />
+                            Dados Oficiais Obtidos via{' '}
+                            {cnpjSuccessData.fonte === 'brasilapi' ? 'BrasilAPI' : 'Minha Receita'}
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-semibold text-[10px] uppercase">
+                          Situação: {cnpjSuccessData.descricao_situacao_cadastral || 'ATIVA'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs border-t border-[rgba(18,184,134,0.15)] pt-2.5">
+                        {cnpjSuccessData.cnae_fiscal_descricao && (
+                          <div className="sm:col-span-2">
+                            <span className="text-[#93A3B5] block text-[11px]">
+                              CNAE Principal:
+                            </span>
+                            <span className="text-[#F4F7FA] font-medium">
+                              {cnpjSuccessData.cnae_fiscal} —{' '}
+                              {cnpjSuccessData.cnae_fiscal_descricao}
+                            </span>
+                          </div>
+                        )}
+                        {(cnpjSuccessData.municipio || cnpjSuccessData.uf) && (
+                          <div>
+                            <span className="text-[#93A3B5] block text-[11px]">Localidade:</span>
+                            <span className="text-[#F4F7FA]">
+                              {[
+                                cnpjSuccessData.logradouro,
+                                cnpjSuccessData.numero,
+                                cnpjSuccessData.bairro,
+                                cnpjSuccessData.municipio,
+                                cnpjSuccessData.uf,
+                              ]
+                                .filter(Boolean)
+                                .join(', ')}
+                            </span>
+                          </div>
+                        )}
+                        {cnpjSuccessData.porte && (
+                          <div>
+                            <span className="text-[#93A3B5] block text-[11px]">
+                              Porte da Empresa:
+                            </span>
+                            <span className="text-[#D9B36C] font-semibold">
+                              {cnpjSuccessData.porte}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Feedback de Consulta: Modelo de Teste Ativo */}
+                  {isModelMode && (
+                    <div className="p-3.5 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/40 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 text-[#D9B36C]">
+                        <Sparkles className="w-4 h-4 shrink-0" />
+                        <span>
+                          <strong>Modelo de Teste Homologado:</strong> Dados pré-configurados para
+                          simulação rápida.
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
@@ -547,7 +755,6 @@ export default function Diagnostico() {
                       </span>
                     )}
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
@@ -977,6 +1184,9 @@ export default function Diagnostico() {
                     <button
                       onClick={() => {
                         setStep(1)
+                        setCnpjSuccessData(null)
+                        setCnpjLookupError('')
+                        setIsModelMode(false)
                         setFormData({
                           cnpj: '',
                           razao_social: '',
