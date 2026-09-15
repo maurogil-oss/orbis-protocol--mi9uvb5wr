@@ -275,7 +275,7 @@ export default function Layout() {
               </p>
               <div className="flex items-center gap-3 text-xs text-[#D9B36C]">
                 <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
-                <span>MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.958.964/0001-01</span>
+                <span>MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.598.964/0001-01</span>
               </div>
             </div>
 

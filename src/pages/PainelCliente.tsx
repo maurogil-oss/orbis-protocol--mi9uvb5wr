@@ -16,7 +16,13 @@ import {
   Layers,
   ChevronRight,
   ExternalLink,
+  Scale,
 } from 'lucide-react'
+import {
+  calcularComparativoTributario,
+  ResultadoComparativoTributario,
+} from '@/services/tributosReforma'
+import { ComparativoTributarioView } from '@/components/ComparativoTributarioView'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -129,6 +135,37 @@ export default function PainelCliente() {
             </Link>
           </div>
         </div>
+
+        {/* Comparativo da Reforma Tributária Registrado no Lead */}
+        {currentLead && (
+          <div className="p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-10 shadow-xl">
+            <div className="flex items-center gap-2 mb-4">
+              <Scale className="w-5 h-5 text-[#12B886]" />
+              <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                DIAGNÓSTICO TRIBUTÁRIO • REFORMA EC 132/2023 (IBS/CBS)
+              </h2>
+            </div>
+            <ComparativoTributarioView
+              comparativo={
+                (currentLead.comparativo_tributario_json as ResultadoComparativoTributario) ||
+                calcularComparativoTributario({
+                  regime_tributario: currentLead.regime_tributario,
+                  categoria_profissional: currentLead.categoria_profissional,
+                  vinculo_institucional: currentLead.vinculo_institucional,
+                  faixa_emissoes: currentLead.faixa_emissoes,
+                  exporta_ue_cbam: currentLead.exporta_ue_cbam,
+                  cbam_bens: currentLead.cbam_bens,
+                  razao_social: currentLead.razao_social,
+                })
+              }
+              regimeDeclarado={currentLead.regime_tributario}
+              exportaUE={currentLead.exporta_ue_cbam === 'sim'}
+              cbamBens={currentLead.cbam_bens}
+              enquadramentoSBCE={currentLead.enquadramento_sbce}
+              modoRevisao={true}
+            />
+          </div>
+        )}
 
         {/* 1. PROGRESSO DO DIAGNÓSTICO (5 ETAPAS) */}
         <div className="p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-10 shadow-xl">

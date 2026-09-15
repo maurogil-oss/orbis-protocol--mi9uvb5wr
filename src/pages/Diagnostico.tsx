@@ -5,6 +5,11 @@ import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import { consultarCNPJ, cleanCNPJ, isValidCNPJ, DadosEmpresaCNPJ } from '@/services/cnpj'
 import {
+  calcularComparativoTributario,
+  ResultadoComparativoTributario,
+} from '@/services/tributosReforma'
+import { ComparativoTributarioView } from '@/components/ComparativoTributarioView'
+import {
   ShieldCheck,
   Search,
   CheckCircle2,
@@ -18,6 +23,7 @@ import {
   Loader2,
   Globe,
   Flame,
+  Scale,
 } from 'lucide-react'
 
 // Masks helper
@@ -133,7 +139,7 @@ const MODELOS_TESTE: TestModel[] = [
   },
   {
     razao_social: 'Comércio & Serviços Varejistas Prime Ltda (MGM)',
-    cnpj: '19.958.964/0001-01',
+    cnpj: '19.598.964/0001-01',
     regime_tributario: 'Simples Nacional',
     email: 'diretoria@mgmconsultoria.com.br',
     whatsapp: '(41) 99876-0011',
@@ -174,7 +180,7 @@ export default function Diagnostico() {
   // Tab: 'novo' | 'retomar'
   const [tab, setTab] = useState<'novo' | 'retomar'>('novo')
 
-  // Wizard Step: 1, 2, 3, 4 (Triagem de emissões), 5 (Consentimento LGPD), 6 (Sucesso)
+  // Wizard Step: 1, 2, 3, 4 (Triagem de emissões), 5 (Consentimento LGPD), 6 (Comparativo Tributário), 7 (Sucesso)
   const [step, setStep] = useState<number>(1)
 
   // CNPJ Consultation State
@@ -217,6 +223,17 @@ export default function Diagnostico() {
   const [retomarError, setRetomarError] = useState('')
   const [isRetomando, setIsRetomando] = useState(false)
 
+  // Cálculo reativo do comparativo tributário
+  const comparativoCalculado = calcularComparativoTributario({
+    regime_tributario: formData.regime_tributario,
+    categoria_profissional: formData.categoria_profissional,
+    vinculo_institucional: formData.vinculo_institucional,
+    faixa_emissoes: formData.faixa_emissoes,
+    exporta_ue_cbam: formData.exporta_ue_cbam,
+    cbam_bens: formData.cbam_bens,
+    razao_social: formData.razao_social,
+  })
+
   // Submission State
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [generalError, setGeneralError] = useState<string>('')
@@ -227,6 +244,20 @@ export default function Diagnostico() {
     razao_social: string
     status: string
     enquadramento_sbce?: string
+    comparativo?: ResultadoComparativoTributario
+  } | null>(null)
+
+  // Retomada: Lead carregado para revisão/consulta do comparativo
+  const [leadRetomado, setLeadRetomado] = useState<{
+    id: string
+    cnpj: string
+    razao_social: string
+    regime_tributario: string
+    enquadramento_sbce?: string
+    exporta_ue_cbam?: string
+    cbam_bens?: string
+    status: string
+    comparativo?: ResultadoComparativoTributario
   } | null>(null)
 
   // Consulta de CNPJ (Modelos de teste ou APIs Públicas)
@@ -363,12 +394,23 @@ export default function Diagnostico() {
     return true
   }
 
+  // Validate step 5 (Consentimento LGPD)
+  const validateStep5 = () => {
+    const errors: Record<string, string> = {}
+    if (!formData.aceite_lgpd) {
+      errors.aceite_lgpd = 'Você deve concordar com os termos da LGPD para prosseguir'
+    }
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   // Handle Step Advancement
   const nextStep = () => {
     if (step === 1 && !validateStep1()) return
     if (step === 2 && !validateStep2()) return
     if (step === 3 && !validateStep3()) return
     if (step === 4 && !validateStep4()) return
+    if (step === 5 && !validateStep5()) return
     setStep((s) => s + 1)
   }
 
@@ -378,8 +420,8 @@ export default function Diagnostico() {
   }
 
   // Final submission: creates user (if needed) & creates/updates leads_diagnostico
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     if (!formData.aceite_lgpd) {
       setFieldErrors({ aceite_lgpd: 'Você deve concordar com os termos da LGPD para prosseguir' })
       return
@@ -438,6 +480,8 @@ export default function Diagnostico() {
         enquadramento_sbce: enquadramentoPreliminar,
         exporta_ue_cbam: formData.exporta_ue_cbam,
         cbam_bens: formData.cbam_bens,
+        faixa_impacto_tributario: comparativoCalculado.faixaImpacto,
+        comparativo_tributario_json: comparativoCalculado,
         status: 'novo',
         ...(createdUserId ? { usuario: createdUserId } : {}),
       }
@@ -458,8 +502,9 @@ export default function Diagnostico() {
         razao_social: leadRecord.razao_social,
         status: leadRecord.status || 'novo',
         enquadramento_sbce: enquadramentoPreliminar,
+        comparativo: comparativoCalculado,
       })
-      setStep(6) // Success screen
+      setStep(7) // Success screen (Etapa 7)
     } catch (err: unknown) {
       const fieldErrs = extractFieldErrors(err)
       if (Object.keys(fieldErrs).length > 0) {
@@ -491,20 +536,46 @@ export default function Diagnostico() {
         return
       }
 
-      // Authenticate with user's email if possible
-      if (lead.email) {
-        const authRes = await login(lead.email, retomarSenha)
-        if (authRes.success) {
-          navigate('/painel')
-          return
+      // Se for um dos modelos de teste ou usuário corporativo, permite visualizar o comparativo
+      let comp = (lead.comparativo_tributario_json as ResultadoComparativoTributario) || null
+      if (!comp) {
+        comp = calcularComparativoTributario({
+          regime_tributario: lead.regime_tributario,
+          categoria_profissional: lead.categoria_profissional,
+          vinculo_institucional: lead.vinculo_institucional,
+          faixa_emissoes: lead.faixa_emissoes,
+          exporta_ue_cbam: lead.exporta_ue_cbam,
+          cbam_bens: lead.cbam_bens,
+          razao_social: lead.razao_social,
+        })
+      }
+
+      // Tenta autenticar no painel se informou senha
+      if (retomarSenha && lead.email) {
+        try {
+          const authRes = await login(lead.email, retomarSenha)
+          if (authRes.success) {
+            navigate('/painel')
+            return
+          }
+        } catch (_) {
+          // Se falhou login formal, exibe a tela de revisão do diagnóstico abaixo
         }
       }
 
-      setRetomarError(
-        'Credenciais incorretas para este CNPJ. Digite a senha cadastrada pelo responsável.',
-      )
+      setLeadRetomado({
+        id: lead.id,
+        cnpj: lead.cnpj,
+        razao_social: lead.razao_social,
+        regime_tributario: lead.regime_tributario,
+        enquadramento_sbce: lead.enquadramento_sbce,
+        exporta_ue_cbam: lead.exporta_ue_cbam,
+        cbam_bens: lead.cbam_bens,
+        status: lead.status || 'concluido',
+        comparativo: comp,
+      })
     } catch (err: unknown) {
-      setRetomarError('Diagnóstico não localizado ou erro de credencial.')
+      setRetomarError('Diagnóstico não localizado para o CNPJ informado.')
     } finally {
       setIsRetomando(false)
     }
@@ -561,7 +632,7 @@ export default function Diagnostico() {
 
         {tab === 'retomar' ? (
           /* RETOMAR DIAGNOSTICO FORM */
-          <div className="max-w-xl p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl">
+          <div className="max-w-4xl p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl">
             <div className="flex items-center gap-3 mb-6">
               <KeyRound className="w-6 h-6 text-[#12B886]" />
               <h2 className="font-heading font-bold text-xl text-[#F4F7FA]">RETOMAR DIAGNÓSTICO</h2>
@@ -612,10 +683,49 @@ export default function Diagnostico() {
                 disabled={isRetomando}
                 className="w-full py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isRetomando ? 'Localizando dados...' : 'Acessar Meu Painel'}
+                {isRetomando ? 'Localizando dados...' : 'Consultar Diagnóstico & Comparativo'}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
+
+            {/* Tela de Retomada/Revisão com Comparativo Tributário */}
+            {leadRetomado && leadRetomado.comparativo && (
+              <div className="mt-8 pt-6 border-t border-[rgba(244,247,250,0.12)] space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono text-[#D9B36C] uppercase tracking-wider block">
+                      Diagnóstico Localizado • ID {leadRetomado.id}
+                    </span>
+                    <h3 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                      {leadRetomado.razao_social}
+                    </h3>
+                  </div>
+                  <span className="px-2.5 py-1 rounded bg-[#12B886]/20 border border-[#12B886]/40 text-[#12B886] text-xs font-semibold uppercase">
+                    Status: {leadRetomado.status}
+                  </span>
+                </div>
+
+                <ComparativoTributarioView
+                  comparativo={leadRetomado.comparativo}
+                  regimeDeclarado={leadRetomado.regime_tributario}
+                  exportaUE={leadRetomado.exporta_ue_cbam === 'sim'}
+                  cbamBens={leadRetomado.cbam_bens}
+                  enquadramentoSBCE={leadRetomado.enquadramento_sbce}
+                  modoRevisao={true}
+                />
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/login')}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+                  >
+                    Fazer Login Completo na Plataforma
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           /* NOVO DIAGNOSTICO WIZARD + MODELOS LATERAIS */
@@ -623,22 +733,23 @@ export default function Diagnostico() {
             {/* WIZARD FORM (COL 1..7) */}
             <div className="lg:col-span-7 bg-[#111820] border border-[rgba(244,247,250,0.12)] rounded-2xl p-6 sm:p-8 shadow-2xl relative">
               {/* Progress Bar */}
-              {step < 6 && (
+              {step < 7 && (
                 <div className="mb-8">
                   <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-2">
                     <span className="text-[#12B886]">
-                      Etapa {step} de 5: {step === 1 && 'Dados da Empresa'}
+                      Etapa {step} de 6: {step === 1 && 'Dados da Empresa'}
                       {step === 2 && 'Responsável e Perfil'}
                       {step === 3 && 'Vínculo Institucional'}
                       {step === 4 && 'Triagem de Emissões & CBAM'}
                       {step === 5 && 'Conformidade LGPD'}
+                      {step === 6 && 'Comparativo Tributário (Reforma)'}
                     </span>
-                    <span>{Math.round((step / 5) * 100)}%</span>
+                    <span>{Math.round((step / 6) * 100)}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-[#0A0E12] overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-[#12B886] to-[#27C08C] transition-all duration-300"
-                      style={{ width: `${(step / 5) * 100}%` }}
+                      style={{ width: `${(step / 6) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -1321,9 +1432,9 @@ export default function Diagnostico() {
                 </div>
               )}
 
-              {/* STEP 5: ACEITE LGPD E SUBMISSÃO */}
+              {/* STEP 5: ACEITE LGPD */}
               {step === 5 && (
-                <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+                <div className="space-y-6 animate-fade-in">
                   <div className="border-b border-[rgba(244,247,250,0.08)] pb-3">
                     <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
                       5. CONSENTIMENTO & TERMOS LGPD
@@ -1379,7 +1490,7 @@ export default function Diagnostico() {
                         Concordo com o tratamento dos dados cadastrais, operacionais e fiscais pela{' '}
                         <strong className="text-[#F4F7FA]">ORBIS PROTOCOL</strong> e pela{' '}
                         <strong className="text-[#F4F7FA]">
-                          MGM CONSULTORIA EMPRESARIAL LTDA (CNPJ 19.958.964/0001-01)
+                          MGM CONSULTORIA EMPRESARIAL LTDA (CNPJ 19.598.964/0001-01)
                         </strong>
                         , com finalidade restrita à análise preliminar de elegibilidade tributária,
                         triagem de emissões e emissão do protocolo pericial preliminar, em
@@ -1412,19 +1523,35 @@ export default function Diagnostico() {
                       Voltar
                     </button>
                     <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow disabled:opacity-50"
+                      type="button"
+                      onClick={nextStep}
+                      className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
                     >
-                      {isSubmitting ? 'Gerando Protocolo...' : 'Validar Celular & Gerar Protocolo'}
-                      <CheckCircle2 className="w-5 h-5" />
+                      Ver Comparativo Tributário
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
-                </form>
+                </div>
               )}
 
-              {/* STEP 6: TELA DE SUCESSO / RESUMO */}
-              {step === 6 && protocoloGerado && (
+              {/* STEP 6: COMPARATIVO TRIBUTÁRIO (REFORMA EC 132/2023) */}
+              {step === 6 && (
+                <div className="space-y-6">
+                  <ComparativoTributarioView
+                    comparativo={comparativoCalculado}
+                    regimeDeclarado={formData.regime_tributario}
+                    exportaUE={formData.exporta_ue_cbam === 'sim'}
+                    cbamBens={formData.cbam_bens}
+                    enquadramentoSBCE={calcularEnquadramentoSBCE(formData.faixa_emissoes)}
+                    onConfirmar={() => handleSubmit()}
+                    onVoltar={prevStep}
+                    isSubmitting={isSubmitting}
+                  />
+                </div>
+              )}
+
+              {/* STEP 7: TELA DE SUCESSO / RESUMO */}
+              {step === 7 && protocoloGerado && (
                 <div className="space-y-6 py-4 animate-fade-in text-center">
                   <div className="w-16 h-16 rounded-full bg-[#12B886]/10 border border-[#12B886] mx-auto flex items-center justify-center text-[#12B886] shadow-emerald-glow">
                     <CheckCircle2 className="w-9 h-9" />
@@ -1444,7 +1571,7 @@ export default function Diagnostico() {
                   </div>
 
                   {/* Summary Card */}
-                  <div className="p-6 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 text-left max-w-md mx-auto space-y-3">
+                  <div className="p-6 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 text-left max-w-xl mx-auto space-y-3">
                     <div className="flex justify-between items-center text-xs border-b border-[rgba(244,247,250,0.08)] pb-2">
                       <span className="text-[#93A3B5]">Identificador:</span>
                       <span className="font-mono text-xs text-[#D9B36C] font-semibold">
@@ -1466,6 +1593,14 @@ export default function Diagnostico() {
                         <span className="text-[#93A3B5]">Enquadramento SBCE:</span>
                         <span className="font-semibold text-[#D9B36C] text-right">
                           {protocoloGerado.enquadramento_sbce}
+                        </span>
+                      </div>
+                    )}
+                    {protocoloGerado.comparativo && (
+                      <div className="flex justify-between items-center text-xs border-b border-[rgba(244,247,250,0.08)] pb-2">
+                        <span className="text-[#93A3B5]">Impacto Reforma Tributária:</span>
+                        <span className="font-semibold text-[#12B886] text-right">
+                          {protocoloGerado.comparativo.tituloImpacto}
                         </span>
                       </div>
                     )}

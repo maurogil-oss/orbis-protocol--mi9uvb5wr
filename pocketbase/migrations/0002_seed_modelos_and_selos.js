@@ -69,7 +69,7 @@ migrate(
         status: 'concluido',
       },
       {
-        cnpj: '19.958.964/0001-01',
+        cnpj: '19.598.964/0001-01',
         razao_social: 'Comércio & Serviços Varejistas Prime Ltda (MGM)',
         email: 'diretoria@mgmconsultoria.com.br',
         whatsapp: '(41) 99876-0011',

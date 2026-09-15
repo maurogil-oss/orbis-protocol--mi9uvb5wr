@@ -27,7 +27,7 @@ export default function Privacidade() {
             </h1>
             <p className="text-xs sm:text-sm text-[#93A3B5] mt-2">
               Última atualização: Setembro de 2026 • Operadora: MGM CONSULTORIA EMPRESARIAL LTDA
-              (CNPJ 19.958.964/0001-01)
+              (CNPJ 19.598.964/0001-01)
             </p>
           </div>
 
@@ -39,7 +39,7 @@ export default function Privacidade() {
               A plataforma <strong className="text-[#F4F7FA]">ORBIS PROTOCOL</strong> é operada
               tecnicamente por{' '}
               <strong className="text-[#F4F7FA]">MGM CONSULTORIA EMPRESARIAL LTDA</strong>, inscrita
-              no CNPJ sob o nº <strong className="text-[#D9B36C]">19.958.964/0001-01</strong>,
+              no CNPJ sob o nº <strong className="text-[#D9B36C]">19.598.964/0001-01</strong>,
               atuando na qualidade de operadora e controladora dos dados cadastrais inseridos pelos
               representantes legais das empresas usuárias.
             </p>
@@ -147,7 +147,7 @@ export default function Privacidade() {
               </p>
               <p>
                 <strong className="text-[#F4F7FA]">Entidade Mantenedora:</strong> MGM CONSULTORIA
-                EMPRESARIAL LTDA (CNPJ 19.958.964/0001-01)
+                EMPRESARIAL LTDA (CNPJ 19.598.964/0001-01)
               </p>
             </div>
           </section>

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T23:34:03.730Z",
+  "generatedAt": "2026-09-15T23:55:43.165Z",
   "collections": [
     {
       "name": "users",
@@ -216,6 +216,19 @@
         {
           "name": "cbam_bens",
           "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "faixa_impacto_tributario",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["ganho_provavel", "neutro", "ponto_atencao"]
+        },
+        {
+          "name": "comparativo_tributario_json",
+          "type": "json",
           "required": false,
           "system": false
         }
