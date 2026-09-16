@@ -71,17 +71,17 @@ export default function PortalCorporativo() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Link
-                to="/diagnostico"
+                to="/corporativo"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
               >
-                <span>Cadastrar Empresa no Portal</span>
+                <span>Acessar Modo Demonstração Corporativo</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                to="/login"
+                to="/diagnostico"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] transition-all"
               >
-                <span>Acesso Gestor Corporativo</span>
+                <span>Iniciar Diagnóstico por CNPJ</span>
               </Link>
             </div>
           </div>

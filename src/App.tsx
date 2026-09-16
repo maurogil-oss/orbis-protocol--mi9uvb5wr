@@ -15,6 +15,7 @@ import TrilhaDetail from './pages/TrilhaDetail'
 import SolucoesIndex from './pages/SolucoesIndex'
 import BureauACP from './pages/BureauACP'
 import PortalCorporativo from './pages/PortalCorporativo'
+import ModoCorporativoDemoPage from './pages/ModoCorporativoDemoPage'
 import CaseCDVerde from './pages/CaseCDVerde'
 import CadeiasProdutivasPage from './pages/CadeiasProdutivasPage'
 import ProtocoloDetailPage from './pages/ProtocoloDetailPage'
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/solucoes" element={<SolucoesIndex />} />
             <Route path="/solucoes/bureau-acp" element={<BureauACP />} />
             <Route path="/bureau" element={<BureauACP />} />
+            <Route path="/corporativo" element={<ModoCorporativoDemoPage />} />
             <Route path="/solucoes/portal-corporativo" element={<PortalCorporativo />} />
             <Route path="/solucoes/case-cdverde" element={<CaseCDVerde />} />
             <Route path="/solucoes/cadeias-produtivas" element={<CadeiasProdutivasPage />} />

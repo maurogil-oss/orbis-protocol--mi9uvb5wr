@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T11:53:01.695Z",
+  "generatedAt": "2026-09-16T12:43:54.505Z",
   "collections": [
     {
       "name": "users",
@@ -2425,6 +2425,172 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_app_config_chave ON app_config_secrets (chave)"]
+    },
+    {
+      "name": "corporativo_demo",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "slug",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tipo",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["empresa_dossie", "nota_fiscal"]
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "modelo_fiscal",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "55_nfe",
+            "65_nfce",
+            "nfse",
+            "57_cte",
+            "58_mdfe",
+            "66_nf3e",
+            "62_nfcom",
+            "63_bpe",
+            "67_cte_os",
+            "fatura_agua"
+          ]
+        },
+        {
+          "name": "categoria_operacional",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "escopo_alvo",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["escopo_1", "escopo_2", "escopo_3"]
+        },
+        {
+          "name": "fossil_kg_co2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "biogenico_kg_co2",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "insetting_kg_co2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tier_incerteza",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "incerteza_pct",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_brl",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "quantidade_declarada",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cnae",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "razao_social_parceiro",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "numero_documento",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_emissao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_sefaz",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "detalhes_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_corp_demo_slug ON corporativo_demo (slug)",
+        "CREATE INDEX idx_corp_demo_tipo ON corporativo_demo (tipo)",
+        "CREATE INDEX idx_corp_demo_modelo ON corporativo_demo (modelo_fiscal)"
+      ]
     }
   ]
 }

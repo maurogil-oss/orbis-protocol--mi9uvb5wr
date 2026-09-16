@@ -127,6 +127,12 @@ export default function Layout() {
       icon: Recycle,
     },
     {
+      title: 'Modo Corporativo (Demo)',
+      desc: 'Demonstração de 12 notas fiscais nos 10 modelos fiscais com dMRV',
+      path: '/corporativo',
+      icon: Building2,
+    },
+    {
       title: 'Planos',
       desc: 'Assinaturas modulares e tabela de serviços técnicos',
       path: '/planos',
@@ -675,6 +681,15 @@ export default function Layout() {
                     className="text-[#D9B36C] hover:text-[#D9B36C]/80 font-semibold transition-colors"
                   >
                     Cockpit Bureau ACP (Passaporte)
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/corporativo"
+                    className="text-[#12B886] font-semibold hover:text-[#12B886]/80 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Modo Demonstração Corporativo</span>
+                    <span className="text-[10px] bg-[#12B886]/20 px-1 rounded font-mono">Demo</span>
                   </Link>
                 </li>
                 <li>
