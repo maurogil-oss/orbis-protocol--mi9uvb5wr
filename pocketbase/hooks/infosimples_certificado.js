@@ -46,22 +46,42 @@ routerAdd('POST', '/backend/v1/infosimples/salvar-certificado-a1', (e) => {
       certRec.set('usuario', authRecord.id)
     }
 
+    // Captura IP e data/hora server-side para Trilha de Consentimento do Termo de Custódia
+    const reqInfo = e.requestInfo()
+    const clientIp =
+      reqInfo.headers['x-forwarded-for'] ||
+      reqInfo.headers['x-real-ip'] ||
+      reqInfo.remoteIP ||
+      '127.0.0.1'
+    const termoVersao = body.termo_versao ? String(body.termo_versao).trim() : 'v2026-01'
+    const agoraIso = new Date().toISOString()
+
     certRec.set('cnpj_titular', cnpjTitular)
     if (razaoSocial) certRec.set('razao_social', razaoSocial)
     if (senhaCifrada) certRec.set('senha_cifrada', senhaCifrada)
     certRec.set('ativo', true)
+    certRec.set('status_custodia', 'ativo')
     certRec.set('termo_lgpd_aceito', true)
-    certRec.set('data_aceite_lgpd', new Date().toISOString())
+    certRec.set('data_aceite_lgpd', agoraIso)
+    certRec.set('termo_versao', termoVersao)
+    certRec.set('consentimento_ip', String(clientIp).split(',')[0].trim())
+    certRec.set('consentimento_data_hora', agoraIso)
+    certRec.set('data_revogacao', '')
+    certRec.set('motivo_revogacao', '')
 
     $app.save(certRec)
 
     return e.json(200, {
       sucesso: true,
       mensagem:
-        'Configurações do Certificado A1 salvas com segurança. Senha cifrada e restrita ao CNPJ titular.',
+        'Certificado A1 aceito e custodiado sob Termo de Responsabilidade e Sigilo Fiscal (Modo Read-Only). Senha cifrada AES-256 no cofre do servidor.',
       certificado_id: certRec.id,
       cnpj_titular: cnpjTitular,
       ativo: true,
+      status_custodia: 'ativo',
+      termo_versao: termoVersao,
+      consentimento_ip: certRec.getString('consentimento_ip'),
+      consentimento_data_hora: agoraIso,
     })
   } catch (err) {
     return e.json(500, {

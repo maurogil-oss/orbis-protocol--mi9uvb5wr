@@ -14,12 +14,23 @@ import {
 import {
   consultarNFeInfoSimples,
   salvarConfigCertificadoA1,
+  obterStatusCertificadoA1,
+  revogarCertificadoA1,
   ConsultaInfoSimplesResponse,
+  CertificadoA1Status,
 } from '@/services/infosimplesService'
+import {
+  TermoCustodiaA1Modal,
+  TERMO_CUSTODIA_VERSAO_ATUAL,
+} from '@/components/TermoCustodiaA1Modal'
 
 interface InfoSimplesImportTabProps {
   usuarioId: string
   onImportSuccess?: () => void
+  termoPreAceito?: boolean
+  termoVersaoAceita?: string
+  certificadoStatus?: CertificadoA1Status | null
+  onCertificadoAtualizado?: () => void
 }
 
 export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
@@ -37,9 +48,29 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
   const [razaoSocialA1, setRazaoSocialA1] = useState('')
   const [senhaA1, setSenhaA1] = useState('')
   const [termoLgpdAceito, setTermoLgpdAceito] = useState(false)
+  const [termoVersaoAceitaLocal, setTermoVersaoAceitaLocal] = useState<string | null>(null)
+  const [modalTermoAberto, setModalTermoAberto] = useState(false)
   const [salvandoA1, setSalvandoA1] = useState(false)
   const [statusA1Msg, setStatusA1Msg] = useState<string | null>(null)
   const [usarCertificadoConsulta, setUsarCertificadoConsulta] = useState(false)
+  const [revogando, setRevogando] = useState(false)
+  const [statusA1Local, setStatusA1Local] = useState<CertificadoA1Status | null>(null)
+
+  // Carrega status de certificado existente
+  React.useEffect(() => {
+    if (usuarioId) {
+      obterStatusCertificadoA1(usuarioId).then((st) => {
+        setStatusA1Local(st)
+        if (st && st.ativo) {
+          setCnpjTitularA1(st.cnpj_titular || '')
+          setRazaoSocialA1(st.razao_social || '')
+          setTermoLgpdAceito(true)
+          setTermoVersaoAceitaLocal(st.termo_versao || TERMO_CUSTODIA_VERSAO_ATUAL)
+          setUsarCertificadoConsulta(true)
+        }
+      })
+    }
+  }, [usuarioId])
 
   const handleConsultar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,7 +118,10 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
     }
 
     if (!termoLgpdAceito) {
-      setStatusA1Msg('É obrigatório concordar expressamente com o termo LGPD para custódia segura.')
+      setModalTermoAberto(true)
+      setStatusA1Msg(
+        'É obrigatório ler e aceitar formalmente o Termo de Custódia e Sigilo Fiscal antes do upload.',
+      )
       return
     }
 
@@ -97,10 +131,14 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
         cnpj_titular: cnpjTitularA1,
         razao_social: razaoSocialA1,
         senha: senhaA1,
-        termo_lgpd_aceito: termoLgpdAceito,
+        termo_lgpd_aceito: true,
+        termo_versao: termoVersaoAceitaLocal || TERMO_CUSTODIA_VERSAO_ATUAL,
       })
       setStatusA1Msg(res.mensagem || 'Certificado A1 configurado com sucesso!')
       setUsarCertificadoConsulta(true)
+      // Atualiza status local
+      const atualizado = await obterStatusCertificadoA1(usuarioId)
+      setStatusA1Local(atualizado)
     } catch (err: any) {
       setStatusA1Msg(err.message || 'Erro ao salvar certificado A1.')
     } finally {
@@ -129,7 +167,6 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
           </div>
         </div>
       </div>
-
       {/* Formulário de Consulta por Chave */}
       <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)]">
         <form onSubmit={handleConsultar} className="space-y-4">
@@ -263,16 +300,100 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
           </div>
         )}
       </div>
-
       {/* Painel Expansível de Certificado Digital A1 */}
       {mostrarConfigA1 && (
         <div className="p-6 rounded-2xl bg-[#111820] border border-[#D9B36C]/30 shadow-xl space-y-4">
-          <div className="flex items-center gap-2">
-            <Lock className="w-5 h-5 text-[#D9B36C]" />
-            <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
-              CUSTÓDIA SEGURA DE CERTIFICADO DIGITAL A1 (.PFX)
-            </h4>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-[#D9B36C]" />
+              <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
+                CUSTÓDIA SEGURA DE CERTIFICADO DIGITAL A1 (.PFX)
+              </h4>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-full bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Modo somente leitura (Read-Only)
+              </span>
+            </div>
           </div>
+
+          {/* Status Atual se já houver custódia */}
+          {statusA1Local && statusA1Local.ativo && (
+            <div className="p-4 rounded-xl bg-[#12B886]/10 border border-[#12B886]/30 text-xs space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-[#12B886] font-bold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Certificado A1 Ativo sob Custódia Criptografada AES-256</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#0A0E12] text-[#93A3B5] font-mono">
+                  Termo {statusA1Local.termo_versao || TERMO_CUSTODIA_VERSAO_ATUAL}
+                </span>
+              </div>
+              <div className="text-[11px] text-[#93A3B5] grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-[rgba(244,247,250,0.08)]">
+                <div>
+                  CNPJ Titular:{' '}
+                  <strong className="text-[#F4F7FA] font-mono">{statusA1Local.cnpj_titular}</strong>
+                </div>
+                <div>
+                  Razão:{' '}
+                  <strong className="text-[#F4F7FA]">
+                    {statusA1Local.razao_social || 'Cadastrada'}
+                  </strong>
+                </div>
+                <div>
+                  Aceite Registrado:{' '}
+                  <strong className="text-[#F4F7FA]">
+                    {statusA1Local.consentimento_data_hora
+                      ? statusA1Local.consentimento_data_hora.slice(0, 19).replace('T', ' ') +
+                        ' UTC'
+                      : 'Sim'}
+                  </strong>
+                </div>
+                <div>
+                  IP de Auditoria:{' '}
+                  <strong className="text-[#12B886] font-mono">
+                    {statusA1Local.consentimento_ip || '127.0.0.1'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Botão de Revogação Instantânea */}
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  disabled={revogando}
+                  onClick={async () => {
+                    if (
+                      !confirm(
+                        'Deseja realmente REVOGAR a custódia do Certificado A1? Isso acionará o zeramento imediato de chave e eliminação de arquivo dos servidores.',
+                      )
+                    )
+                      return
+                    setRevogando(true)
+                    try {
+                      const r = await revogarCertificadoA1(
+                        'Revogação voluntária pelo titular no painel',
+                      )
+                      setStatusA1Msg(r.mensagem)
+                      setStatusA1Local(null)
+                      setUsarCertificadoConsulta(false)
+                    } catch (err: any) {
+                      setStatusA1Msg(err.message || 'Erro ao revogar.')
+                    } finally {
+                      setRevogando(false)
+                    }
+                  }}
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#F03E54]/20 border border-[#F03E54]/40 text-[#F03E54] hover:bg-[#F03E54] hover:text-white transition-all flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>
+                    {revogando ? 'Zerando Chave...' : 'Revogar Custódia Instantaneamente'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] text-xs text-[#93A3B5] space-y-2">
             <p>
@@ -330,23 +451,52 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
               />
             </div>
 
-            {/* Aviso LGPD Explícito */}
-            <div className="p-3.5 rounded-xl bg-[#16202B] border border-[#12B886]/20">
+            {/* Termo de Custódia e Sigilo Obrigatório */}
+            <div className="p-4 rounded-xl bg-[#16202B] border border-[#12B886]/30 space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-xs font-bold text-[#F4F7FA]">
+                  Termo de Responsabilidade e Custódia do Certificado A1
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setModalTermoAberto(true)}
+                  className="text-xs text-[#12B886] underline font-semibold hover:text-[#0CA678] flex items-center gap-1"
+                >
+                  <FileCode className="w-3.5 h-3.5" />
+                  <span>
+                    {termoLgpdAceito
+                      ? 'Revisar Termo Formal Aceito'
+                      : 'Ler e Assinar Termo (Obrigatório)'}
+                  </span>
+                </button>
+              </div>
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={termoLgpdAceito}
-                  onChange={(e) => setTermoLgpdAceito(e.target.checked)}
+                  onChange={(e) => {
+                    if (!termoLgpdAceito) {
+                      setModalTermoAberto(true)
+                    } else {
+                      setTermoLgpdAceito(e.target.checked)
+                    }
+                  }}
                   className="mt-0.5 rounded border-[rgba(244,247,250,0.2)] text-[#12B886] focus:ring-[#12B886]"
                 />
                 <span className="text-[11px] text-[#93A3B5] leading-relaxed">
-                  <strong className="text-[#F4F7FA]">Consentimento Expresso LGPD:</strong> Autorizo
-                  o armazenamento cifrado desta credencial para o propósito exclusivo de consulta e
-                  validação fiscal junto aos servidores autorizadores da SEFAZ/Receita Federal. A
-                  senha nunca é gravada em texto plano no banco de dados e é protegida por chave
-                  criptográfica AES simétrica do ambiente de custódia.
+                  Declaro aceite expresso das cláusulas de{' '}
+                  <strong className="text-[#F4F7FA]">Objeto Exclusivo</strong>,{' '}
+                  <strong className="text-[#12B886]">Modo Read-Only</strong>, cofre criptografado
+                  AES-256 e prerrogativa de{' '}
+                  <strong className="text-[#F4F7FA]">Revogação Instantânea</strong> com zeramento de
+                  chave (MP 2.200-2/2001, LC 105/2001 e LGPD art. 6º, I).
                 </span>
               </label>
+              {termoVersaoAceitaLocal && (
+                <div className="text-[10px] text-[#12B886] font-mono">
+                  ✓ Versão homologada: {termoVersaoAceitaLocal}
+                </div>
+              )}
             </div>
 
             {statusA1Msg && (
@@ -368,6 +518,21 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
           </form>
         </div>
       )}
+      {/* Modal Formal do Termo de Custódia Versionado */}
+      <TermoCustodiaA1Modal
+        isOpen={modalTermoAberto}
+        onClose={() => setModalTermoAberto(false)}
+        cnpjEmpresa={cnpjTitularA1}
+        razaoSocial={razaoSocialA1}
+        onAceitar={(versao) => {
+          setTermoLgpdAceito(true)
+          setTermoVersaoAceitaLocal(versao)
+          setModalTermoAberto(false)
+          setStatusA1Msg(
+            `Termo de Custódia (${versao}) aceito com sucesso! Prossiga com o salvamento da credencial.`,
+          )
+        }}
+      />{' '}
     </div>
   )
 }

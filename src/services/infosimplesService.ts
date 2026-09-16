@@ -27,6 +27,22 @@ export interface CertificadoA1ConfigInput {
   razao_social?: string
   senha: string
   termo_lgpd_aceito: boolean
+  termo_versao?: string
+}
+
+export interface CertificadoA1Status {
+  id: string
+  cnpj_titular: string
+  razao_social?: string
+  ativo: boolean
+  status_custodia?: 'ativo' | 'revogado' | 'expirado'
+  termo_versao?: string
+  termo_lgpd_aceito?: boolean
+  data_aceite_lgpd?: string
+  consentimento_ip?: string
+  consentimento_data_hora?: string
+  data_revogacao?: string
+  motivo_revogacao?: string
 }
 
 /**
@@ -62,9 +78,15 @@ export async function consultarNFeInfoSimples(
 /**
  * Registra dados de certificado A1 do cliente com senha cifrada no backend e consentimento LGPD
  */
-export async function salvarConfigCertificadoA1(
-  input: CertificadoA1ConfigInput,
-): Promise<{ sucesso: boolean; mensagem: string; certificado_id?: string }> {
+export async function salvarConfigCertificadoA1(input: CertificadoA1ConfigInput): Promise<{
+  sucesso: boolean
+  mensagem: string
+  certificado_id?: string
+  consentimento_ip?: string
+  consentimento_data_hora?: string
+  termo_versao?: string
+  status_custodia?: string
+}> {
   const res = await fetch(`${pb.baseUrl}/backend/v1/infosimples/salvar-certificado-a1`, {
     method: 'POST',
     headers: {
@@ -79,6 +101,66 @@ export async function salvarConfigCertificadoA1(
     throw new Error(json.erro || json.message || 'Erro ao registrar certificado A1.')
   }
   return json
+}
+
+/**
+ * Revogação instantânea da custódia do Certificado A1 nos servidores.
+ * Executa zeramento de chave criptográfica e remoção de arquivo.
+ */
+export async function revogarCertificadoA1(motivo = 'Revogação voluntária pelo titular'): Promise<{
+  sucesso: boolean
+  mensagem: string
+  data_revogacao: string
+  status_custodia: string
+}> {
+  const res = await fetch(`${pb.baseUrl}/backend/v1/infosimples/revogar-certificado-a1`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
+    },
+    body: JSON.stringify({ motivo }),
+  })
+
+  const json = await res.json()
+  if (!res.ok) {
+    throw new Error(json.erro || json.message || 'Erro ao revogar certificado A1.')
+  }
+  return json
+}
+
+/**
+ * Obtém o status atual do certificado A1 do usuário autenticado
+ */
+export async function obterStatusCertificadoA1(
+  usuarioId?: string,
+): Promise<CertificadoA1Status | null> {
+  if (!usuarioId) return null
+  try {
+    const records = await pb.collection('cliente_certificados_a1').getList(1, 1, {
+      filter: `usuario = "${usuarioId}"`,
+      sort: '-created',
+    })
+    if (records.items.length === 0) return null
+    const rec = records.items[0]
+    return {
+      id: rec.id,
+      cnpj_titular: rec.getString('cnpj_titular'),
+      razao_social: rec.getString('razao_social'),
+      ativo: rec.getBool('ativo'),
+      status_custodia:
+        (rec.getString('status_custodia') as any) || (rec.getBool('ativo') ? 'ativo' : 'revogado'),
+      termo_versao: rec.getString('termo_versao') || 'v2026-01',
+      termo_lgpd_aceito: rec.getBool('termo_lgpd_aceito'),
+      data_aceite_lgpd: rec.getString('data_aceite_lgpd'),
+      consentimento_ip: rec.getString('consentimento_ip'),
+      consentimento_data_hora: rec.getString('consentimento_data_hora'),
+      data_revogacao: rec.getString('data_revogacao'),
+      motivo_revogacao: rec.getString('motivo_revogacao'),
+    }
+  } catch {
+    return null
+  }
 }
 
 /**

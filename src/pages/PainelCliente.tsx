@@ -38,8 +38,9 @@ import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/servi
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
 import { InfoSimplesImportTab } from '@/components/InfoSimplesImportTab'
 import { ConsoleApisCdvTab } from '@/components/ConsoleApisCdvTab'
+import { HubConexaoFiscal } from '@/components/HubConexaoFiscal'
 import { formatarFinalidade } from '@/services/greenCapitalEngine'
-import { Terminal, Car } from 'lucide-react'
+import { Terminal, Car, Network } from 'lucide-react'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -96,8 +97,8 @@ export default function PainelCliente() {
 
   // Abas de visualização do módulo fiscal, motor pericial e console CDV
   const [abaFiscalAtiva, setAbaFiscalAtiva] = useState<
-    'upload_manual' | 'infosimples' | 'motor_emissoes' | 'cdv_apis'
-  >('upload_manual')
+    'hub_fiscal' | 'upload_manual' | 'infosimples' | 'motor_emissoes' | 'cdv_apis'
+  >('hub_fiscal')
   const [possuiIREC, setPossuiIREC] = useState(false)
   const [isSalvandoInventario, setIsSalvandoInventario] = useState(false)
   const [inventarioSalvoMsg, setInventarioSalvoMsg] = useState<string | null>(null)
@@ -565,6 +566,19 @@ export default function PainelCliente() {
         <div className="flex border-b border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">
           <button
             type="button"
+            onClick={() => setAbaFiscalAtiva('hub_fiscal')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'hub_fiscal'
+                ? 'border-[#12B886] text-[#12B886]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <Network className="w-4 h-4" />
+            <span>Hub Conexão Fiscal ACP (3 Modelos)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setAbaFiscalAtiva('upload_manual')}
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'upload_manual'
@@ -625,6 +639,18 @@ export default function PainelCliente() {
         )}
 
         {/* CONTEÚDO DAS ABAS */}
+        {abaFiscalAtiva === 'hub_fiscal' && (
+          <div className="mb-10">
+            <HubConexaoFiscal
+              usuarioId={user?.id || ''}
+              cnpjEmpresa={currentLead?.cnpj}
+              razaoSocial={currentLead?.razao_social}
+              onNfeImportada={() => loadData()}
+              onNavegarParaAba={(aba) => setAbaFiscalAtiva(aba as any)}
+            />
+          </div>
+        )}
+
         {abaFiscalAtiva === 'cdv_apis' && (
           <div className="mb-10">
             <ConsoleApisCdvTab

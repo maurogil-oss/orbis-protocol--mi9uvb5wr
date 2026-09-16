@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T02:22:15.061Z",
+  "generatedAt": "2026-09-16T10:28:51.326Z",
   "collections": [
     {
       "name": "users",
@@ -700,6 +700,43 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "consentimento_ip",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "consentimento_data_hora",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "termo_versao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_custodia",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["ativo", "revogado", "expirado"]
+        },
+        {
+          "name": "data_revogacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "motivo_revogacao",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -1893,6 +1930,136 @@
         "CREATE UNIQUE INDEX idx_passaporte_token ON fornecedores_passaportes (token_consulta)",
         "CREATE INDEX idx_passaporte_usuario ON fornecedores_passaportes (usuario)",
         "CREATE INDEX idx_passaporte_cnpj ON fornecedores_passaportes (empresa_cnpj)"
+      ]
+    },
+    {
+      "name": "sped_importacoes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "razao_social",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tipo_sped",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["efd_icms_ipi", "efd_contribuicoes", "ecd", "ecf", "outro"]
+        },
+        {
+          "name": "periodo_apuracao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "data_inicio",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_fim",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_documentos",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_total_documentos",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_icms_destacado",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_ipi_destacado",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_pis_destacado",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_cofins_destacado",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nome_arquivo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_arquivo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resumo_detalhado_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_sped_usuario ON sped_importacoes (usuario)",
+        "CREATE INDEX idx_sped_cnpj ON sped_importacoes (cnpj)",
+        "CREATE INDEX idx_sped_periodo ON sped_importacoes (periodo_apuracao)"
       ]
     }
   ]
