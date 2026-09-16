@@ -135,18 +135,24 @@ export default function SolucoesIndex() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
             {CADEIAS_PRODUTIVAS.map((cadeia) => (
-              <button
+              <Link
                 key={cadeia.id}
-                onClick={() => setSelectedCadeia(cadeia)}
-                className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886] hover:bg-[#16202B] transition-all text-left group"
+                to={`/protocolos/${cadeia.id}`}
+                className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886] hover:bg-[#16202B] transition-all text-left group flex flex-col justify-between"
               >
-                <div className="text-xs font-semibold text-[#F4F7FA] group-hover:text-[#12B886] transition-colors leading-snug">
-                  {cadeia.nome}
+                <div>
+                  <div className="text-xs font-semibold text-[#F4F7FA] group-hover:text-[#12B886] transition-colors leading-snug">
+                    {cadeia.nome}
+                  </div>
+                  <div className="text-[10px] text-[#93A3B5] mt-1 line-clamp-1">
+                    {cadeia.fatorEmissao}
+                  </div>
                 </div>
-                <div className="text-[10px] text-[#93A3B5] mt-1 line-clamp-1">
-                  {cadeia.fatorEmissao}
+                <div className="mt-2 text-[10px] text-[#12B886] font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                  <span>Protocolo</span>
+                  <ArrowRight className="w-2.5 h-2.5" />
                 </div>
-              </button>
+              </Link>
             ))}
           </div>
         </div>
@@ -214,16 +220,23 @@ export default function SolucoesIndex() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-[rgba(244,247,250,0.1)] flex justify-end gap-3">
+              <div className="pt-4 border-t border-[rgba(244,247,250,0.1)] flex flex-wrap justify-end gap-2.5">
+                <Link
+                  to={`/protocolos/${selectedCadeia.id}`}
+                  className="px-4 py-2.5 rounded-lg text-xs font-bold border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors flex items-center gap-1.5"
+                >
+                  <span>Ver Protocolo Aprofundado</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
                 <Link
                   to="/diagnostico"
                   className="px-5 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678]"
                 >
-                  Auditar Meu CNPJ neste Setor
+                  Auditar Meu CNPJ
                 </Link>
                 <button
                   onClick={() => setSelectedCadeia(null)}
-                  className="px-4 py-2.5 rounded-lg text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#F4F7FA]"
+                  className="px-3.5 py-2.5 rounded-lg text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#F4F7FA]"
                 >
                   Fechar
                 </button>

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T10:28:51.326Z",
+  "generatedAt": "2026-09-16T10:43:58.936Z",
   "collections": [
     {
       "name": "users",
@@ -2060,6 +2060,324 @@
         "CREATE INDEX idx_sped_usuario ON sped_importacoes (usuario)",
         "CREATE INDEX idx_sped_cnpj ON sped_importacoes (cnpj)",
         "CREATE INDEX idx_sped_periodo ON sped_importacoes (periodo_apuracao)"
+      ]
+    },
+    {
+      "name": "perito_credenciamentos",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
+        "create": "",
+        "update": "@request.auth.role = 'admin'",
+        "delete": "@request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "nome_completo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cpf",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "conselho_tipo",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["CREA", "CRC", "CRQ", "CRBio", "OAB", "OUTRO"]
+        },
+        {
+          "name": "registro_profissional",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "registro_uf",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "email_corporativo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "telefone",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "areas_atuacao",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "numero_art_rrt",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "documento_art_pdf",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "termo_versao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "consentimento_data_hora",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "consentimento_ip",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["pendente", "aprovado", "rejeitado"]
+        },
+        {
+          "name": "observacao_auditor",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "aprovado_por",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_decisao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_cred_email ON perito_credenciamentos (email_corporativo)",
+        "CREATE INDEX idx_cred_cpf ON perito_credenciamentos (cpf)",
+        "CREATE INDEX idx_cred_status ON perito_credenciamentos (status)"
+      ]
+    },
+    {
+      "name": "webhooks_config",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "nome_aplicacao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "url_destino",
+          "type": "url",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "secret_hmac",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "eventos_ativos",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_wh_user ON webhooks_config (usuario)",
+        "CREATE INDEX idx_wh_ativo ON webhooks_config (ativo)"
+      ]
+    },
+    {
+      "name": "webhooks_entregas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "create": "@request.auth.role = 'admin'",
+        "update": "@request.auth.role = 'admin'",
+        "delete": "@request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "webhook_config",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "webhooks_config"
+        },
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "evento",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "url_destino",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "payload_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "signature_hmac",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "http_status",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_entrega",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["sucesso", "falha", "em_processamento"]
+        },
+        {
+          "name": "resposta_corpo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tempo_resposta_ms",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tentativa",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_wh_ent_user ON webhooks_entregas (usuario)",
+        "CREATE INDEX idx_wh_ent_evento ON webhooks_entregas (evento)",
+        "CREATE INDEX idx_wh_ent_status ON webhooks_entregas (status_entrega)"
       ]
     }
   ]

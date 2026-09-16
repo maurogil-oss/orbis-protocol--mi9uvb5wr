@@ -359,6 +359,62 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
             Nenhum dado de nota fiscal associado para gerar a memória pericial.
           </div>
         )}
+
+        {/* Parâmetros e Fatores Peculiares Homologados nos 15 Protocolos Setoriais */}
+        <div className="mt-6 pt-5 border-t border-[rgba(244,247,250,0.08)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-mono font-bold text-[#D9B36C] uppercase tracking-wider">
+              FATORES PECULIARES SETORIAIS DISPONÍVEIS NO MOTOR (15 PROTOCOLOS HOMOLOGADOS)
+            </span>
+            <span className="text-[10px] text-[#12B886] font-semibold">
+              Tier 1 & Tier 2 IPCC / GLEC
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+              <span className="text-[10px] uppercase font-mono text-[#12B886] block mb-1">
+                Automotiva & CDVs
+              </span>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">
+                Aço: -2,45 kg CO₂e/kg
+              </p>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">
+                Alumínio: -8,90 kg CO₂e/kg
+              </p>
+              <span className="text-[9px] text-[#93A3B5]">Insetting ISO 14067</span>
+            </div>
+            <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+              <span className="text-[10px] uppercase font-mono text-[#3B82F6] block mb-1">
+                Logística & Cargas
+              </span>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">75 g CO₂e / tkm</p>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">B14: 2,68 kg CO₂e/L</p>
+              <span className="text-[9px] text-[#93A3B5]">GLEC Framework v3.0</span>
+            </div>
+            <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+              <span className="text-[10px] uppercase font-mono text-[#D9B36C] block mb-1">
+                Siderurgia & Aço
+              </span>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">Coque: 3,10 tCO₂/t</p>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">
+                Fundentes: 0,44 tCO₂/t
+              </p>
+              <span className="text-[9px] text-[#93A3B5]">CBAM UE Communication</span>
+            </div>
+            <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+              <span className="text-[10px] uppercase font-mono text-[#12B886] block mb-1">
+                Agro & Grãos
+              </span>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">
+                N₂O: 0,01 kg N₂O-N/kg
+              </p>
+              <p className="font-mono text-[11px] text-[#F4F7FA] font-bold">
+                Calcário: 0,44 tCO₂/t
+              </p>
+              <span className="text-[9px] text-[#93A3B5]">IPCC 2019 Refinement</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

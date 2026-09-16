@@ -302,10 +302,19 @@ export default function Layout() {
               </span>
               <ul className="flex flex-col gap-2 text-sm text-[#93A3B5]">
                 <li>
-                  <Link to="/trilhas/mover" className="hover:text-[#12B886] transition-colors">
-                    Mobilidade Verde (MOVER)
+                  <Link to="/radar-regulatorio" className="hover:text-[#F4F7FA] transition-colors">
+                    Radar Regulatório
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/credenciamento"
+                    className="text-[#12B886] hover:underline transition-colors flex items-center gap-1"
+                  >
+                    <span>Credenciamento de Perito</span>
+                    <span className="text-[10px] bg-[#12B886]/10 px-1 rounded font-mono">ART</span>
+                  </Link>
+                </li>{' '}
                 <li>
                   <Link
                     to="/trilhas/sbce-financas-verdes"

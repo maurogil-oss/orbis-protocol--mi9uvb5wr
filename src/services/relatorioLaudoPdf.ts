@@ -34,6 +34,15 @@ export interface DadosRelatorioDossie {
     dataGeracao?: string
     geradoPorNome?: string
     geradoPorRole?: string
+    // Credenciamento do Perito Técnico (ART/RRT, CREA/CRC)
+    peritoCredenciado?: {
+      nome: string
+      conselho: string
+      registro: string
+      uf: string
+      numeroArtRrt?: string
+      termoVersao?: string
+    }
   }
   diagnostico: {
     enquadramentoSbceTexto?: string
@@ -814,6 +823,19 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
       <div style="font-size: 8.5pt; color: #374151; line-height: 1.5;">
         Conclui-se que a organização <strong>${dados.identificacao.razaoSocial}</strong> cumpriu as etapas de estruturação do inventário de emissões corporativas de acordo com as metodologias do Programa Brasileiro GHG Protocol. As evidências fiscais e documentais analisadas conferem preparo técnico perante as exigências socioambientais e climáticas vigentes no sistema bancário nacional (Res. BCB 4.945/2021) e para o cronograma preparatório do SBCE (Lei 15.042/2024).
       </div>
+      ${
+        dados.identificacao.peritoCredenciado
+          ? `
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #D1D5DB; font-size: 8pt; color: #065F46; background: #ECFDF5; padding: 8px; border-radius: 4px;">
+        <strong>CHANCELA DE RESPONSABILIDADE TÉCNICA (PERITO HOMOLOGADO):</strong><br/>
+        Responsável Técnico: <strong>${dados.identificacao.peritoCredenciado.nome}</strong> • 
+        Registro: <strong>${dados.identificacao.peritoCredenciado.conselho}-${dados.identificacao.peritoCredenciado.uf} ${dados.identificacao.peritoCredenciado.registro}</strong><br/>
+        ${dados.identificacao.peritoCredenciado.numeroArtRrt ? `Referência ART / RRT: <strong>${dados.identificacao.peritoCredenciado.numeroArtRrt}</strong> • ` : ''}
+        Termo de Credenciamento: <strong>${dados.identificacao.peritoCredenciado.termoVersao || 'v1.0-2025'}</strong>
+      </div>
+      `
+          : ''
+      }
     </div>
 
     <div class="hash-box">

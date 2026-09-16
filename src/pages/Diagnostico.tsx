@@ -9,6 +9,7 @@ import {
   ResultadoComparativoTributario,
 } from '@/services/tributosReforma'
 import { ComparativoTributarioView } from '@/components/ComparativoTributarioView'
+import { PROTOCOLOS_SETORIAIS } from '@/data/protocolosSetoriais'
 import {
   ShieldCheck,
   Search,
@@ -1635,6 +1636,49 @@ export default function Diagnostico() {
                         </span>
                       </div>
                     )}
+                    {/* Detalhe do Protocolo Setorial Enquadrado */}
+                    {(() => {
+                      const vinc = (protocoloGerado.vinculo_institucional || '').toLowerCase()
+                      const rz = (protocoloGerado.razao_social || '').toLowerCase()
+                      let protKey = 'varejo'
+                      if (
+                        vinc.includes('automotiva') ||
+                        rz.includes('cdv') ||
+                        rz.includes('desmanche')
+                      ) {
+                        protKey = 'automotiva'
+                      } else if (
+                        rz.includes('metal') ||
+                        rz.includes('aco') ||
+                        rz.includes('siderurg')
+                      ) {
+                        protKey = 'siderurgia'
+                      } else if (rz.includes('alimento') || rz.includes('bebida')) {
+                        protKey = 'alimentos'
+                      } else if (rz.includes('grao') || rz.includes('agro')) {
+                        protKey = 'agro'
+                      } else if (rz.includes('transporte') || rz.includes('logistica')) {
+                        protKey = 'logistica'
+                      }
+                      const prot = PROTOCOLOS_SETORIAIS[protKey]
+                      if (!prot) return null
+                      return (
+                        <div className="pt-2 border-b border-[rgba(244,247,250,0.08)] pb-2">
+                          <div className="flex justify-between items-center text-xs mb-1">
+                            <span className="text-[#93A3B5]">Protocolo Setorial Homologado:</span>
+                            <span className="font-bold text-[#12B886] text-right">{prot.nome}</span>
+                          </div>
+                          <p className="text-[11px] text-[#93A3B5] mb-2">{prot.tagline}</p>
+                          <Link
+                            to={`/protocolos/${prot.slug}`}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#12B886] hover:underline"
+                          >
+                            <span>Ver enquadramento legal e evidências exigidas ({prot.nome})</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      )
+                    })()}
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-[#93A3B5]">Status Inicial:</span>
                       <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-semibold uppercase text-[10px]">

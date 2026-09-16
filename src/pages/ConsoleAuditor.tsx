@@ -76,9 +76,12 @@ export default function ConsoleAuditor() {
   const [selectedLead, setSelectedLead] = useState<LeadDiagnostico | null>(null)
   const [isExportandoLeadPdf, setIsExportandoLeadPdf] = useState(false)
 
-  // Sub-aba do Console: leads vs lgpd
-  const [activeTab, setActiveTab] = useState<'leads' | 'lgpd'>('leads')
+  // Sub-aba do Console: leads vs lgpd vs credenciamentos
+  const [activeTab, setActiveTab] = useState<'leads' | 'lgpd' | 'credenciamentos'>('leads')
   const [solicitacoesLgpd, setSolicitacoesLgpd] = useState<any[]>([])
+  const [credenciamentos, setCredenciamentos] = useState<any[]>([])
+  const [filtroCredenciamento, setFiltroCredenciamento] = useState<string>('todos')
+  const [isProcessandoCred, setIsProcessandoCred] = useState<string | null>(null)
   const [politicasLgpd, setPoliticasLgpd] = useState<any[]>([])
   const [isDescartando, setIsDescartando] = useState(false)
   const [descarteResultado, setDescarteResultado] = useState<string | null>(null)
@@ -105,6 +108,15 @@ export default function ConsoleAuditor() {
       try {
         const pols = await pb.collection('lgpd_retencoes').getFullList({ sort: 'prazo_meses' })
         setPoliticasLgpd(pols)
+      } catch {
+        /* intentionally ignored */
+      }
+
+      try {
+        const creds = await pb
+          .collection('perito_credenciamentos')
+          .getFullList({ sort: '-created' })
+        setCredenciamentos(creds)
       } catch {
         /* intentionally ignored */
       }
@@ -489,9 +501,237 @@ export default function ConsoleAuditor() {
             <ShieldCheck className="w-4 h-4" />
             <span>Gestão LGPD & Canal do Titular ({solicitacoesLgpd.length})</span>
           </button>
+          <button
+            onClick={() => setActiveTab('credenciamentos')}
+            className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider flex items-center gap-2 ${
+              activeTab === 'credenciamentos'
+                ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
+                : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#111820]'
+            }`}
+          >
+            <Award className="w-4 h-4" />
+            <span>Credenciamentos ART/RRT ({credenciamentos.length})</span>
+          </button>
         </div>
 
-        {activeTab === 'lgpd' ? (
+        {activeTab === 'credenciamentos' ? (
+          /* ABA CREDENCIAMENTOS DE PERITO: FILA DE HOMOLOGAÇÃO ART/RRT */
+          <div className="space-y-6 animate-fade-in">
+            <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-[#12B886] block">
+                    Homologação Pericial • CREA / CRC / CRQ
+                  </span>
+                  <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                    FILA DE CREDENCIAMENTO DE PERITOS TÉCNICOS
+                  </h2>
+                  <p className="text-xs text-[#93A3B5] mt-1">
+                    Conferência documental de ART/RRT. Ao aprovar, o usuário recebe perfil pericial
+                    e instrução para login.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-[#93A3B5]">Filtro:</span>
+                  <select
+                    value={filtroCredenciamento}
+                    onChange={(e) => setFiltroCredenciamento(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
+                  >
+                    <option value="todos">Todos ({credenciamentos.length})</option>
+                    <option value="pendente">Pendentes Primeiro</option>
+                    <option value="aprovado">Aprovados</option>
+                    <option value="rejeitado">Rejeitados</option>
+                  </select>
+                </div>
+              </div>
+
+              {credenciamentos.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-[rgba(244,247,250,0.15)] rounded-xl bg-[#0A0E12]">
+                  <Award className="w-10 h-10 text-[#93A3B5] mx-auto mb-2 opacity-50" />
+                  <p className="text-xs text-[#93A3B5]">
+                    Nenhum credenciamento de perito registrado.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {credenciamentos
+                    .filter(
+                      (c) => filtroCredenciamento === 'todos' || c.status === filtroCredenciamento,
+                    )
+                    .sort((a, b) => {
+                      if (a.status === 'pendente' && b.status !== 'pendente') return -1
+                      if (b.status === 'pendente' && a.status !== 'pendente') return 1
+                      return new Date(b.created).getTime() - new Date(a.created).getTime()
+                    })
+                    .map((c) => (
+                      <div
+                        key={c.id}
+                        className="p-5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[rgba(244,247,250,0.25)] space-y-3 text-xs"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(244,247,250,0.06)] pb-3">
+                          <div className="flex items-center gap-3">
+                            <span className="font-heading font-bold text-sm text-[#F4F7FA]">
+                              {c.nome_completo}
+                            </span>
+                            <span className="px-2 py-0.5 rounded bg-[#16202B] text-[#D9B36C] font-mono text-[10px] font-bold">
+                              {c.conselho_tipo}-{c.registro_uf} {c.registro_profissional}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                c.status === 'aprovado'
+                                  ? 'bg-[#12B886]/20 text-[#12B886] border border-[#12B886]/40'
+                                  : c.status === 'rejeitado'
+                                    ? 'bg-[#F03E54]/20 text-[#F03E54] border border-[#F03E54]/40'
+                                    : 'bg-[#D9B36C]/20 text-[#D9B36C] border border-[#D9B36C]/40'
+                              }`}
+                            >
+                              {c.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-[11px]">
+                          <div>
+                            <span className="text-[#93A3B5] block">CPF:</span>
+                            <span className="font-mono text-[#F4F7FA]">{c.cpf}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#93A3B5] block">E-mail:</span>
+                            <a
+                              href={`mailto:${c.email_corporativo}`}
+                              className="text-[#12B886] underline"
+                            >
+                              {c.email_corporativo}
+                            </a>
+                          </div>
+                          <div>
+                            <span className="text-[#93A3B5] block">Telefone:</span>
+                            <span className="text-[#F4F7FA]">{c.telefone}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#93A3B5] block">ART / RRT:</span>
+                            <span className="font-mono text-[#D9B36C] font-semibold">
+                              {c.numero_art_rrt || 'Não informado'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Áreas de Atuação e Arquivo ART */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[rgba(244,247,250,0.06)] text-[11px]">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[#93A3B5]">Áreas Setoriais:</span>
+                            {Array.isArray(c.areas_atuacao) &&
+                              c.areas_atuacao.map((area: string, aIdx: number) => (
+                                <span
+                                  key={aIdx}
+                                  className="px-1.5 py-0.5 rounded bg-[#16202B] text-[#93A3B5] text-[10px]"
+                                >
+                                  {area}
+                                </span>
+                              ))}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {c.documento_art_pdf && (
+                              <a
+                                href={`${pb.baseUrl}/api/files/perito_credenciamentos/${c.id}/${c.documento_art_pdf}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-3 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#12B886] hover:underline flex items-center gap-1"
+                              >
+                                <FileCheck2 className="w-3.5 h-3.5" />
+                                <span>Ver Documento ART/RRT</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Ações do Auditor */}
+                        <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#111820] p-3 rounded-xl">
+                          <div className="text-[10px] text-[#93A3B5]">
+                            Termo: <strong>{c.termo_versao}</strong> • Aceite:{' '}
+                            {c.consentimento_data_hora?.slice(0, 16)}
+                            {c.observacao_auditor && (
+                              <div className="text-[#D9B36C] mt-0.5">
+                                Obs: {c.observacao_auditor}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {c.status !== 'aprovado' && (
+                              <button
+                                type="button"
+                                disabled={isProcessandoCred === c.id}
+                                onClick={async () => {
+                                  setIsProcessandoCred(c.id)
+                                  try {
+                                    await pb.collection('perito_credenciamentos').update(c.id, {
+                                      status: 'aprovado',
+                                      aprovado_por: user?.email || 'auditor_orbis',
+                                      data_decisao: new Date().toISOString(),
+                                      observacao_auditor:
+                                        'Credenciamento homologado com ART/RRT deferida.',
+                                    })
+                                    alert(
+                                      `Credenciamento aprovado! O perito pode agora acessar com ${c.email_corporativo}.`,
+                                    )
+                                    loadData()
+                                  } catch (err: any) {
+                                    alert(err.message || 'Erro ao aprovar')
+                                  } finally {
+                                    setIsProcessandoCred(null)
+                                  }
+                                }}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] disabled:opacity-50"
+                              >
+                                {isProcessandoCred === c.id ? 'Aprovando...' : 'Aprovar Perito'}
+                              </button>
+                            )}
+
+                            {c.status !== 'rejeitado' && (
+                              <button
+                                type="button"
+                                disabled={isProcessandoCred === c.id}
+                                onClick={async () => {
+                                  const mot = prompt(
+                                    'Motivo da rejeição:',
+                                    'Documentação divergente ou ART vencida.',
+                                  )
+                                  if (!mot) return
+                                  setIsProcessandoCred(c.id)
+                                  try {
+                                    await pb.collection('perito_credenciamentos').update(c.id, {
+                                      status: 'rejeitado',
+                                      observacao_auditor: mot,
+                                      aprovado_por: user?.email || 'auditor_orbis',
+                                      data_decisao: new Date().toISOString(),
+                                    })
+                                    loadData()
+                                  } catch (err: any) {
+                                    alert(err.message || 'Erro ao rejeitar')
+                                  } finally {
+                                    setIsProcessandoCred(null)
+                                  }
+                                }}
+                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#16202B] text-[#F03E54] hover:bg-[#202C3A] disabled:opacity-50"
+                              >
+                                Rejeitar
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'lgpd' ? (
           /* ABA LGPD: SOLICITAÇÕES DO ART. 18 E POLÍTICAS DE RETENÇÃO */
           <div className="space-y-8 animate-fade-in">
             {/* Banner de Feedback de Descarte */}

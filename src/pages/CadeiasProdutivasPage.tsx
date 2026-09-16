@@ -81,8 +81,15 @@ export default function CadeiasProdutivasPage() {
               </div>
 
               <div className="pt-4 mt-4 border-t border-[rgba(244,247,250,0.08)] flex items-center justify-between text-xs text-[#12B886] font-semibold">
-                <span>Ver parâmetros completos</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Ver ficha rápida</span>
+                <Link
+                  to={`/protocolos/${cadeia.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="px-2.5 py-1 rounded bg-[#12B886]/10 hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors flex items-center gap-1 font-bold"
+                >
+                  <span>Protocolo Completo</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
           ))}
@@ -151,16 +158,23 @@ export default function CadeiasProdutivasPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-[rgba(244,247,250,0.1)] flex justify-end gap-3">
+              <div className="pt-4 border-t border-[rgba(244,247,250,0.1)] flex flex-wrap justify-end gap-2.5">
+                <Link
+                  to={`/protocolos/${selectedCadeia.id}`}
+                  className="px-4 py-2.5 rounded-lg text-xs font-bold border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors flex items-center gap-1.5"
+                >
+                  <span>Ver Protocolo Aprofundado</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
                 <Link
                   to="/diagnostico"
                   className="px-5 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678]"
                 >
-                  Auditar Meu CNPJ neste Setor
+                  Auditar Meu CNPJ
                 </Link>
                 <button
                   onClick={() => setSelectedCadeia(null)}
-                  className="px-4 py-2.5 rounded-lg text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#F4F7FA]"
+                  className="px-3.5 py-2.5 rounded-lg text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#F4F7FA]"
                 >
                   Fechar
                 </button>

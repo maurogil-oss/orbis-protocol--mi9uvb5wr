@@ -38,9 +38,14 @@ import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/servi
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
 import { InfoSimplesImportTab } from '@/components/InfoSimplesImportTab'
 import { ConsoleApisCdvTab } from '@/components/ConsoleApisCdvTab'
+import { WebhooksB2BTab } from '@/components/WebhooksB2BTab'
+import {
+  buscarCredenciamentoAtivoPerito,
+  PeritoCredenciamentoRecord,
+} from '@/services/peritoService'
 import { HubConexaoFiscal } from '@/components/HubConexaoFiscal'
 import { formatarFinalidade } from '@/services/greenCapitalEngine'
-import { Terminal, Car, Network } from 'lucide-react'
+import { Terminal, Car, Network, Radio } from 'lucide-react'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -97,8 +102,11 @@ export default function PainelCliente() {
 
   // Abas de visualização do módulo fiscal, motor pericial e console CDV
   const [abaFiscalAtiva, setAbaFiscalAtiva] = useState<
-    'hub_fiscal' | 'upload_manual' | 'infosimples' | 'motor_emissoes' | 'cdv_apis'
+    'hub_fiscal' | 'upload_manual' | 'infosimples' | 'motor_emissoes' | 'cdv_apis' | 'webhooks_b2b'
   >('hub_fiscal')
+  const [peritoCredenciado, setPeritoCredenciado] = useState<PeritoCredenciamentoRecord | null>(
+    null,
+  )
   const [possuiIREC, setPossuiIREC] = useState(false)
   const [isSalvandoInventario, setIsSalvandoInventario] = useState(false)
   const [inventarioSalvoMsg, setInventarioSalvoMsg] = useState<string | null>(null)
@@ -149,6 +157,9 @@ export default function PainelCliente() {
 
   useEffect(() => {
     loadData()
+    if (user?.id) {
+      buscarCredenciamentoAtivoPerito(user.id).then((p) => setPeritoCredenciado(p))
+    }
   }, [user])
 
   // Realtime updates for leads
@@ -411,6 +422,16 @@ export default function PainelCliente() {
             vinculoInstitucional: currentLead?.vinculo_institucional,
             geradoPorNome: user?.name || user?.email || 'Perito Orbis',
             geradoPorRole: 'cliente',
+            peritoCredenciado: peritoCredenciado
+              ? {
+                  nome: peritoCredenciado.nome_completo,
+                  conselho: peritoCredenciado.conselho_tipo,
+                  registro: peritoCredenciado.registro_profissional,
+                  uf: peritoCredenciado.registro_uf,
+                  numeroArtRrt: peritoCredenciado.numero_art_rrt,
+                  termoVersao: peritoCredenciado.termo_versao,
+                }
+              : undefined,
           },
           diagnostico: {
             enquadramentoSbceTexto: currentLead?.enquadramento_sbce,
@@ -628,6 +649,19 @@ export default function PainelCliente() {
             <Terminal className="w-4 h-4" />
             <span>Console de APIs (Módulo CDV & DPP)</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setAbaFiscalAtiva('webhooks_b2b')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'webhooks_b2b'
+                ? 'border-[#12B886] text-[#12B886]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <Radio className="w-4 h-4 text-[#D9B36C]" />
+            <span>Webhooks B2B & Mensageria</span>
+          </button>
         </div>
 
         {/* FEEDBACK DE SALVAMENTO DO INVENTÁRIO */}
@@ -658,6 +692,12 @@ export default function PainelCliente() {
               cdvCnpj={currentLead?.cnpj || '76.123.456/0001-12'}
               cdvCodigo="DETRAN-PR-CDV-0089"
             />
+          </div>
+        )}
+
+        {abaFiscalAtiva === 'webhooks_b2b' && (
+          <div className="mb-10">
+            <WebhooksB2BTab />
           </div>
         )}
 

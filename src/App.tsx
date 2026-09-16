@@ -17,6 +17,8 @@ import BureauACP from './pages/BureauACP'
 import PortalCorporativo from './pages/PortalCorporativo'
 import CaseCDVerde from './pages/CaseCDVerde'
 import CadeiasProdutivasPage from './pages/CadeiasProdutivasPage'
+import ProtocoloDetailPage from './pages/ProtocoloDetailPage'
+import CredenciamentoPage from './pages/CredenciamentoPage'
 import Financeiro from './pages/Financeiro'
 import Verificador from './pages/Verificador'
 import Login from './pages/Login'
@@ -52,6 +54,8 @@ const App = () => (
             <Route path="/solucoes/portal-corporativo" element={<PortalCorporativo />} />
             <Route path="/solucoes/case-cdverde" element={<CaseCDVerde />} />
             <Route path="/solucoes/cadeias-produtivas" element={<CadeiasProdutivasPage />} />
+            <Route path="/protocolos/:slug" element={<ProtocoloDetailPage />} />
+            <Route path="/credenciamento" element={<CredenciamentoPage />} />
             <Route path="/verificador" element={<Verificador />} />
             <Route path="/passaporte/:selo" element={<PassaportePublicoPage />} />
             <Route

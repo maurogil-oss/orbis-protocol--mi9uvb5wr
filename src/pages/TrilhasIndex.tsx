@@ -46,7 +46,6 @@ export default function TrilhasIndex() {
             módulos de capacitação e modelos operacionais.
           </p>
         </div>
-
         {/* Trilhas Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {trilhasList.map((trilha) => {
@@ -92,19 +91,75 @@ export default function TrilhasIndex() {
                   </Link>
 
                   {trilha.linkAuditor && (
-                    <Link
-                      to="/console-do-auditor"
-                      className="w-full text-center py-2.5 rounded-xl text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#D9B36C] hover:border-[#D9B36C] hover:bg-[#16202B] transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Acessar Console do Auditor</span>
-                    </Link>
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        to="/credenciamento"
+                        className="w-full text-center py-2 rounded-xl text-xs font-semibold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <span>Credenciamento de Perito (ART/RRT)</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                      <Link
+                        to="/console-do-auditor"
+                        className="w-full text-center py-2 rounded-xl text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#D9B36C] hover:border-[#D9B36C] hover:bg-[#16202B] transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Acessar Console do Auditor</span>
+                      </Link>
+                    </div>
                   )}
                 </div>
               </div>
             )
           })}
         </div>
+        {/* Bloco de Acesso Rápido aos 15 Protocolos Setoriais */}
+        <div className="mt-16 p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <span className="text-[10px] uppercase font-mono font-bold text-[#D9B36C] block mb-1">
+                CONHECIMENTO TÉCNICO APLICADO
+              </span>
+              <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                Os 15 Protocolos Setoriais Homologados dMRV
+              </h3>
+            </div>
+            <Link
+              to="/solucoes/cadeias-produtivas"
+              className="text-xs font-semibold text-[#12B886] hover:underline flex items-center gap-1"
+            >
+              <span>Ver catálogo completo</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {[
+              { slug: 'agro', nome: 'Agro & Grãos' },
+              { slug: 'siderurgia', nome: 'Siderurgia & Aço' },
+              { slug: 'cimento', nome: 'Cimento & Concreto' },
+              { slug: 'energia', nome: 'Energia & Biogás' },
+              { slug: 'quimica', nome: 'Química & Petroquímica' },
+              { slug: 'logistica', nome: 'Logística & Transporte' },
+              { slug: 'textil', nome: 'Têxtil & Calçados' },
+              { slug: 'mineracao', nome: 'Mineração & Terras Raras' },
+              { slug: 'automotiva', nome: 'Automotiva & CDVs' },
+              { slug: 'alimentos', nome: 'Alimentos & Bebidas' },
+              { slug: 'papel', nome: 'Papel & Celulose' },
+              { slug: 'plasticos', nome: 'Plásticos & Reciclagem' },
+              { slug: 'farmaceutica', nome: 'Farmacêutica & Cosmética' },
+              { slug: 'construcao', nome: 'Construção Civil' },
+              { slug: 'varejo', nome: 'Comércio & Serviços' },
+            ].map((item) => (
+              <Link
+                key={item.slug}
+                to={`/protocolos/${item.slug}`}
+                className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] hover:border-[#12B886] text-xs font-medium text-[#F4F7FA] hover:text-[#12B886] transition-colors"
+              >
+                {item.nome}
+              </Link>
+            ))}
+          </div>
+        </div>{' '}
       </div>
     </div>
   )

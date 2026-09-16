@@ -7,6 +7,7 @@ import {
   ItemRadarRegulatorio,
   StatusNorma,
 } from '@/data/radarRegulatorioData'
+import { PROTOCOLOS_SETORIAIS, ProtocoloSetorial } from '@/data/protocolosSetoriais'
 import {
   ShieldCheck,
   Calendar,
@@ -124,7 +125,36 @@ export default function RadarRegulatorio() {
       (n) => (n.dados_adicionais_json?.itens_sujeitos_is_qtd || 0) > 0,
     )
 
-    return [
+    // Detecta cadeia a partir do vínculo ou razão social
+    let protocoloDetectado: ProtocoloSetorial | null = null
+    const vinc = (lead?.vinculo_institucional || '').toLowerCase()
+    const rz = (lead?.razao_social || '').toLowerCase()
+
+    if (
+      vinc.includes('automotiva') ||
+      vinc.includes('cdv') ||
+      rz.includes('cdv') ||
+      rz.includes('desmanche')
+    ) {
+      protocoloDetectado = PROTOCOLOS_SETORIAIS.automotiva
+    } else if (
+      vinc.includes('acp') ||
+      rz.includes('varej') ||
+      rz.includes('comercio') ||
+      rz.includes('distribuidora')
+    ) {
+      protocoloDetectado = PROTOCOLOS_SETORIAIS.varejo
+    } else if (rz.includes('metal') || rz.includes('aco') || rz.includes('siderurg')) {
+      protocoloDetectado = PROTOCOLOS_SETORIAIS.siderurgia
+    } else if (rz.includes('transporte') || rz.includes('logistica') || rz.includes('express')) {
+      protocoloDetectado = PROTOCOLOS_SETORIAIS.logistica
+    } else if (rz.includes('alimento') || rz.includes('bebida')) {
+      protocoloDetectado = PROTOCOLOS_SETORIAIS.alimentos
+    } else if (rz.includes('agro') || rz.includes('grao') || rz.includes('fazenda')) {
+      protocoloDetectado = PROTOCOLOS_SETORIAIS.agro
+    }
+
+    const items = [
       {
         id: 'chk_ibscbs_01082026',
         norma: 'LC 214/2025 (Art. 348)',
@@ -191,6 +221,25 @@ export default function RadarRegulatorio() {
         critico: temItensIS,
       },
     ]
+
+    // Adiciona itens do enquadramento legal específico da cadeia diagnosticada se houver
+    if (protocoloDetectado) {
+      protocoloDetectado.enquadramentoLegal.forEach((leg, idx) => {
+        items.push({
+          id: `chk_setorial_${protocoloDetectado?.slug}_${idx}`,
+          norma: leg.norma,
+          titulo: `Regulação da Cadeia (${protocoloDetectado?.nome}): ${leg.titulo}`,
+          pronto: leg.abrangencia === 'Voluntário',
+          statusTexto: `Abrangência: ${leg.abrangencia} • Data-Chave: ${leg.dataChave}. ${leg.detalhe}`,
+          acao: `Consultar o protocolo oficial completo de ${protocoloDetectado?.nome} para preparar as evidências exigidas.`,
+          link: `/protocolos/${protocoloDetectado?.slug}`,
+          linkTexto: `Ver Protocolo de ${protocoloDetectado?.nome}`,
+          critico: leg.abrangencia === 'Obrigatório' || leg.abrangencia === 'Comércio Exterior',
+        })
+      })
+    }
+
+    return items
   }, [lead, nfeList])
 
   const getStatusBadge = (status: StatusNorma) => {
