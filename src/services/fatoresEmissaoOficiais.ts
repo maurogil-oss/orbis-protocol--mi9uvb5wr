@@ -17,6 +17,9 @@ export interface FatorEmissaoCurado {
     | 'transporte'
     | 'efluente_agua'
     | 'residuos'
+    | 'Escopo 3'
+    | 'Insetting'
+  subcategoria?: string
   fonte: string
   anoReferencia: number
   versaoTabela: string

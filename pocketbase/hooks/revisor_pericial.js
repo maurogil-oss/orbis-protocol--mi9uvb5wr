@@ -296,9 +296,6 @@ Responda SOMENTE o bloco JSON estruturado, sem texto antes ou depois.`
       }
 
       // Checar desvios de preços de combustíveis vs. faixas ANP
-      const itensDetalhados = Array.isArray(inventarioData.itensDetalhados)
-        ? inventarioData.itensDetalhados
-        : []
       const combComAlerta = itensDetalhados.filter((it) => {
         const flags =
           it.flagsRevisao || (it.dados_adicionais_json && it.dados_adicionais_json.flags_revisao)
