@@ -35,16 +35,17 @@ routerAdd('POST', '/backend/v1/revisor-pericial/triagem', (e) => {
         },
         {
           id: 'ACH-DEMO-02',
-          titulo: 'Apuração spending-based em serviços terceirizados sem conversão para Tier 2',
+          titulo:
+            'Apuração spend-based em serviços terceirizados sem conversão para Tier 2 (fator ACV) ou Tier 3 (dado físico)',
           severidade: 'media',
           norma_referencia: 'Taxonomia de Tiers GHG Protocol & GLEC Framework v3.0',
           descricao:
-            'Três faturas municipais (NFS-e) de destinação de resíduos foram processadas pelo método spending-based (Tier 3 com incerteza estimada em ±22%). Recomenda-se obter pesagem balística do operador.',
+            'Faturas municipais (NFS-e e NFCom) foram processadas pelo método spend-based (Tier 1 com incerteza estimada em ±18%). Recomenda-se priorizar dados físicos diretos (Tier 3) ou fatores ACV de base física (Tier 2).',
           impacto_risco:
-            'Elevação da incerteza consolidada do inventário, limitando o rating em debêntures sustentáveis e Green Capital.',
+            'Elevação da incerteza consolidada do inventário em relação a métricas de dados físicos primários.',
           plano_recomendado: 'laudo_pericial',
           recomendacao_acao:
-            'Substituir o gasto financeiro por MTR (Manifesto de Transporte de Resíduos) do SINIR com massa real aferida.',
+            'Substituir o gasto financeiro por medições físicas diretas (Tier 3) ou fatores de ACV homologados (Tier 2).',
         },
         {
           id: 'ACH-DEMO-03',
@@ -76,7 +77,7 @@ routerAdd('POST', '/backend/v1/revisor-pericial/triagem', (e) => {
           severidade: 'baixa',
           norma_referencia: 'IPCC AR6 Working Group I (2021)',
           descricao:
-            'O inventário adota CH₄=27.2 e N₂O=273, superando laudos convencionais que ainda utilizam o obsoleto AR4/AR5.',
+            'O inventário adota CH₄ fóssil=29.8 e N₂O=273, superando laudos convencionais que ainda utilizam o obsoleto AR4/AR5 ou métricas sem feedbacks climáticos.',
           impacto_risco: 'Excelente maturidade técnica.',
           plano_recomendado: 'laudo_pericial',
           recomendacao_acao: 'Apresentar aos peritos para validação formal no laudo.',
@@ -186,7 +187,7 @@ ${historicoPrevioTexto}
 AUDITE rigorosamente:
 1. Conformidade com GHG Protocol e duplo reporte de Escopo 2.
 2. Segregação estrita de emissões biogênicas (etanol/biodiesel fora dos escopos fósseis).
-3. Taxonomia de Tiers: qualquer apuração por gasto monetário (spending-based via SEFAZ) deve ser classificada estritamente como Tier 3 com incerteza estimada em ±20% a ±22%.
+3. Taxonomia de Tiers: dado físico direto = Tier 3; fator ACV (base física) = Tier 2; spend-based = Tier 1 (±18%). Priorizar dados físicos (Tier 3) e ACV (Tier 2) sobre spend-based (Tier 1).
 4. Insetting Circular com base na ISO 14067 e conformidade com critérios probatórios da Lei 14.902/2024 (MOVER).
 5. Limiares da Lei 15.042/2024 (10k tCO₂e reporte / 25k tCO₂e compensação).
 6. Classifique 3 a 5 achados técnicos ordenados por severidade decrescente (alta primeiro).
@@ -253,15 +254,43 @@ Responda SOMENTE o bloco JSON estruturado, sem texto antes ou depois.`
         scoreCalculado -= 6
         achadosGerados.push({
           id: 'ACH-TIER-02',
-          titulo: 'Predominância de método spending-based SEFAZ classificado como Tier 3',
+          titulo: 'Predominância de método spend-based classificado como Tier 1 (±18%)',
           severidade: 'media',
           norma_referencia: 'GHG Protocol Corporate Standard & IPCC 2006/2019',
           descricao:
-            'Amostras fiscais processadas por valor financeiro geram incerteza na faixa de ±20% a ±22% (Tier 3). É mandatório migrar insumos críticos para volume físico (Tier 2).',
-          impacto_risco: 'Margem de erro ampla que pode impactar metas de descarbonização do SBCE.',
+            'Amostras fiscais processadas por gasto monetário (spend-based) correspondem ao Tier 1 com incerteza de ±18%. Recomenda-se migrar para dado físico (Tier 3) ou fator ACV de base física (Tier 2).',
+          impacto_risco:
+            'Margem de incerteza do Tier 1 pode impactar a robustez em auditorias do SBCE.',
           plano_recomendado: 'laudo_pericial',
           recomendacao_acao:
-            'Substituir faturas de valor monetário por quantidades métricas físicas (kWh, L, kg).',
+            'Priorizar dado físico direto (Tier 3) ou fator ACV (Tier 2) em substituição ao gasto financeiro.',
+        })
+      }
+
+      // Checar desvios de preços de combustíveis vs. faixas ANP
+      const itensDetalhados = Array.isArray(inventarioData.itensDetalhados)
+        ? inventarioData.itensDetalhados
+        : []
+      const combComAlerta = itensDetalhados.filter((it) => {
+        const flags =
+          it.flagsRevisao || (it.dados_adicionais_json && it.dados_adicionais_json.flags_revisao)
+        return Array.isArray(flags) && flags.length > 0
+      })
+      if (combComAlerta.length > 0) {
+        achadosGerados.push({
+          id: 'ACH-ANP-06',
+          titulo: 'Alerta informativo de consistência: desvio de preço vs. referência ANP',
+          severidade: 'baixa',
+          norma_referencia:
+            'Controle de Qualidade de Dados dMRV / Critério Paramétrico Interno ANP',
+          descricao:
+            combComAlerta.length +
+            ' documento(s) fiscal(is) de combustível apresentaram preço unitário implícito fora da faixa estatística de referência interna (±3σ). Gravação e cálculos mantidos sem bloqueio.',
+          impacto_risco:
+            'Incerteza pontual quanto ao volume faturado em litros vs. valor total declarado na NF-e.',
+          plano_recomendado: 'laudo_pericial',
+          recomendacao_acao:
+            'Realizar conferência documental do volume de combustível informado nas notas fiscais sinalizadas.',
         })
       }
 

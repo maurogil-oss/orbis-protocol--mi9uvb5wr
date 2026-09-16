@@ -761,15 +761,17 @@ export default function ModoCorporativoDemoPage() {
               <div className="flex items-center justify-between text-xs text-[#93A3B5] mb-1">
                 <span className="font-bold text-[#F4F7FA]">Tiers de Incerteza</span>
                 <span className="text-[10px] text-[#D9B36C] font-mono">
-                  {notas.filter((n) => n.tierIncerteza === 'Tier 3').length} Docs Tier 3 •{' '}
-                  {notas.filter((n) => n.tierIncerteza === 'Tier 2').length} Tier 2
+                  {notas.filter((n) => n.tierIncerteza === 'Tier 3').length} Tier 3 •{' '}
+                  {notas.filter((n) => n.tierIncerteza === 'Tier 2').length} Tier 2 •{' '}
+                  {notas.filter((n) => n.tierIncerteza === 'Tier 1').length} Tier 1
                 </span>
               </div>
               <div className="text-sm font-semibold text-[#12B886]">
-                Metodologia Híbrida GHG Protocol
+                Hierarquia dMRV GHG Protocol
               </div>
               <p className="text-[11px] text-[#93A3B5] mt-1">
-                Tier 2 para insumo direto e Tier 3 para NF-e/SEFAZ e spending-based (±20–22%).
+                Tier 3 = dado físico direto; Tier 2 = fator ACV (base física); Tier 1 = spend-based
+                (±18%).
               </p>
             </div>
 
@@ -779,7 +781,7 @@ export default function ModoCorporativoDemoPage() {
                 <span className="text-[10px] text-[#3B82F6] font-mono">GWP-100</span>
               </div>
               <div className="text-sm font-semibold text-[#F4F7FA]">
-                AR6 (2021) CH₄: 27.2 | N₂O: 273
+                AR6 (2021) CH₄: 29.8 | N₂O: 273
               </div>
               <p className="text-[11px] text-[#93A3B5] mt-1">
                 Equivalência atualizada de gases de efeito estufa para as certificadoras
@@ -1121,7 +1123,7 @@ export default function ModoCorporativoDemoPage() {
             })}
           </div>
 
-          {/* Rodapé da Apuração com Hash de Integridade e Resumo Técnico */}
+          {/* Rodapé da Apuração com Hash de Integridade e Hash de Fechamento por Competência */}
           <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#93A3B5]">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#12B886]" />
@@ -1130,9 +1132,20 @@ export default function ModoCorporativoDemoPage() {
                 IFRS S2 / CBPS 02.
               </span>
             </div>
-            <div className="font-mono text-[11px] text-[#D9B36C] truncate max-w-sm">
-              Hash Integridade: {dossie.hashIntegridade.slice(0, 16)}...
-              {dossie.hashIntegridade.slice(-4)}
+            <div className="flex flex-col sm:items-end gap-1">
+              <div className="font-mono text-[11px] text-[#12B886] flex items-center gap-1 font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#12B886]" />
+                <span>
+                  Hash de fechamento da competência:{' '}
+                  {(dossie.hashFechamentoCompetencia || dossie.hashIntegridade).slice(0, 14)}...
+                  {(dossie.hashFechamentoCompetencia || dossie.hashIntegridade).slice(-6)}{' '}
+                  verificado ✓
+                </span>
+              </div>
+              <div className="font-mono text-[10px] text-[#93A3B5]">
+                Hash Integridade: {dossie.hashIntegridade.slice(0, 16)}...
+                {dossie.hashIntegridade.slice(-4)}
+              </div>
             </div>
           </div>
         </div>
@@ -1441,7 +1454,7 @@ export default function ModoCorporativoDemoPage() {
                   </div>
                   <ul className="list-disc list-inside space-y-1">
                     <li>Dióxido de Carbono (CO₂): GWP = 1.0</li>
-                    <li>Metano fóssil (CH₄): GWP = 27.2 (atualizado do AR5 que utilizava 28.0)</li>
+                    <li>Metano fóssil (CH₄): GWP = 29.8 (IPCC AR6 WGI com feedbacks climáticos)</li>
                     <li>Óxido Nitroso (N₂O): GWP = 273 (atualizado do AR5 que utilizava 265)</li>
                   </ul>
                 </div>
@@ -1475,9 +1488,8 @@ export default function ModoCorporativoDemoPage() {
                   <p>
                     Os laudos periciais são emitidos com trilha de auditoria para fins de
                     asseguração limitada ou razoável conforme a norma contábil{' '}
-                    <strong className="text-[#F4F7FA]">NBC TO 3000 / ISAE 3000</strong>, habilitando
-                    a empresa para reporte voluntário à CVM (Resolução 193) e preparação para o
-                    SBCE.
+                    <strong className="text-[#F4F7FA]">NBC TO 3000 / ISAE 3000</strong> e preparação
+                    para o SBCE (Lei Federal 15.042/2024).
                   </p>
                 </div>
               </div>

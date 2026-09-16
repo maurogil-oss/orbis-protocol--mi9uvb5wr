@@ -20,6 +20,7 @@ export interface EmpresaDossieCorporativo {
   amostra12NotasBiogenicoTco2e: number
   amostra12NotasInsettingTco2e: number
   hashIntegridade: string
+  hashFechamentoCompetencia?: string
   padraoAsseguracao: string
   versaoMetodologia: string
   gwpAr6: { ch4: number; n2o: number }
@@ -112,9 +113,10 @@ export const DOSSIE_DEFAULT_FALLBACK: EmpresaDossieCorporativo = {
   amostra12NotasBiogenicoTco2e: 2.44,
   amostra12NotasInsettingTco2e: 1.13,
   hashIntegridade: '0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c',
+  hashFechamentoCompetencia: '0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c98d7ef2049ba12',
   padraoAsseguracao: 'ISAE 3000 / NBC TO 3000 (Asseguração Limitada a Razoável)',
   versaoMetodologia: 'GHG Protocol Brasil v2025.1 / IPCC AR6 (GWP100)',
-  gwpAr6: { ch4: 27.2, n2o: 273 },
+  gwpAr6: { ch4: 29.8, n2o: 273 },
   duploReporte: {
     localizacaoSinFator: 0.0289,
     mercadoIrecFator: 0.0,
@@ -151,7 +153,6 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
       unidade_fator: 'kg CO₂e/kWh',
       duplo_reporte: { localizacao_kg: 185.5, mercado_irec_kg: 0.0 },
       subcategoria: 'Eletricidade de Rede (Geração Externa)',
-      ncm: '2716.00.00',
     },
   },
   {
@@ -331,8 +332,8 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
     categoriaOperacional: 'servicos',
     cnae: '7112-0/00',
     statusSefaz: 'OK (Autorizada PMC Curitiba)',
-    tierIncerteza: 'Tier 3',
-    incertezaPct: 22.0,
+    tierIncerteza: 'Tier 1',
+    incertezaPct: 18.0,
     razaoSocialParceiro: 'TECHSERVICES ENGENHARIA & MANUTENCAO LTDA',
     cnpj: '18.990.112/0001-65',
     dataEmissao: '18/07/2026',
@@ -348,7 +349,7 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
       fator_numerico: 0.015,
       unidade_fator: 'kg CO₂e/R$',
       subcategoria: 'Serviços Terceirizados & Manutenção Predial',
-      metodologia_tier: 'Tier 3 (Spending-based / Gasto financeiro R$ - DEFRA/Ecoinvent 3.10)',
+      metodologia_tier: 'Tier 1 (spend-based, ±18% - DEFRA/Ecoinvent 3.10)',
     },
   },
   {
@@ -481,8 +482,8 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
     categoriaOperacional: 'instalacoes',
     cnae: '6110-8/03',
     statusSefaz: 'OK (Autorizada SEFAZ-SP)',
-    tierIncerteza: 'Tier 3',
-    incertezaPct: 20.0,
+    tierIncerteza: 'Tier 1',
+    incertezaPct: 18.0,
     razaoSocialParceiro: 'CLARO BRASIL S.A. TELECOMUNICAÇÕES',
     cnpj: '40.432.544/0001-47',
     dataEmissao: '10/07/2026',
@@ -499,7 +500,7 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
       fator_numerico: 0.012,
       unidade_fator: 'kg CO₂e/R$',
       subcategoria: 'Serviços de Telecomunicação Corporativa e Nuvem',
-      metodologia_tier: 'Tier 3 (Spending-based / Gasto financeiro R$ - EPA/DEFRA Telecom)',
+      metodologia_tier: 'Tier 1 (spend-based, ±18% - EPA/DEFRA Telecom)',
     },
   },
 ]

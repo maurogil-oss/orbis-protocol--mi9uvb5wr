@@ -34,6 +34,12 @@ import {
   processarDocumentoFiscal,
   DocumentoFiscalProcessado,
 } from '@/services/modelosFiscaisParser'
+import {
+  registrarFechamentoCompetencia,
+  obterFechamentoCompetencia,
+  HashCompetenciaRecord,
+} from '@/services/fechamentoCompetenciaService'
+import { FLAG_DESVIO_ANP_MSG } from '@/services/faixaPrecoANP'
 import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/services/motorEmissoes'
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
 import {
@@ -239,6 +245,7 @@ export default function PainelCliente() {
           combustivel_litros: parsedDoc.combustivelLitros,
           energia_kwh: parsedDoc.energiaKwh,
           transporte_tkm: parsedDoc.transporteTkm,
+          flags_revisao: parsedDoc.flagsRevisao || [],
           dados_adicionais_json: {
             agua_m3: parsedDoc.aguaM3,
             telecom_gb: parsedDoc.telecomGb,
@@ -380,6 +387,9 @@ export default function PainelCliente() {
 
   // Consulta se há total evitado em lotes CDV vinculados por CNPJ
   const [cdvCo2eEvitadoTotal, setCdvCo2eEvitadoTotal] = useState(0)
+  const [hashFechamentoAtual, setHashFechamentoAtual] = useState<HashCompetenciaRecord | null>(null)
+  const [isFechandoCompetencia, setIsFechandoCompetencia] = useState(false)
+  const [fechamentoMsg, setFechamentoMsg] = useState<string | null>(null)
 
   useEffect(() => {
     const buscarCdvTotal = async () => {
@@ -521,6 +531,42 @@ export default function PainelCliente() {
   }
 
   // Salvar Inventário no Banco de Dados
+  // Carrega fechamento de competência existente quando há CNPJ
+  useEffect(() => {
+    const cnpjAtual = currentLead?.cnpj || 'CNPJ em Análise'
+    obterFechamentoCompetencia(cnpjAtual)
+      .then((rec) => {
+        if (rec) setHashFechamentoAtual(rec)
+      })
+      .catch(() => {})
+  }, [currentLead?.cnpj])
+
+  // Disparo manual do Fechamento de Competência encadeado
+  const handleExecutarFechamentoCompetencia = async () => {
+    setIsFechandoCompetencia(true)
+    setFechamentoMsg(null)
+    try {
+      const cnpjAtual = currentLead?.cnpj || 'CNPJ em Análise'
+      const agora = new Date()
+      const compAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`
+      const chaves = nfeList.map((n) => n.chave_acesso || n.id).filter(Boolean)
+
+      const rec = await registrarFechamentoCompetencia({
+        cnpj: cnpjAtual,
+        competencia: compAtual,
+        chavesOuHashesNotas: chaves,
+      })
+      setHashFechamentoAtual(rec)
+      setFechamentoMsg(
+        `Hash de fechamento da competência: ${rec.hash_fechamento.slice(0, 16)}... verificado ✓`,
+      )
+    } catch (err: any) {
+      setFechamentoMsg(`Falha ao fechar competência: ${err.message || 'Erro inesperado'}`)
+    } finally {
+      setIsFechandoCompetencia(false)
+    }
+  }
+
   const handleSalvarInventario = async () => {
     if (!user?.id) return
     setIsSalvandoInventario(true)
@@ -802,8 +848,8 @@ export default function PainelCliente() {
                 </p>
               </div>
 
-              {/* Input de arquivo */}
-              <div>
+              {/* Botões de Ação: Upload e Fechamento de Competência */}
+              <div className="flex flex-wrap items-center gap-2.5">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -817,15 +863,46 @@ export default function PainelCliente() {
                   type="button"
                   disabled={isUploading}
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
                 >
                   <UploadCloud className="w-4 h-4" />
-                  <span>
-                    {isUploading ? 'Processando Documentos...' : 'Importar Documentos Fiscais'}
-                  </span>
+                  <span>{isUploading ? 'Processando...' : 'Importar Documentos Fiscais'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isFechandoCompetencia || nfeList.length === 0}
+                  onClick={handleExecutarFechamentoCompetencia}
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/40 hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 disabled:opacity-40"
+                  title="Calcula e registra o hash encadeado SHA-256 de todas as notas fiscais da competência"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
+                  <span>{isFechandoCompetencia ? 'Fechando...' : 'Fechar Competência'}</span>
                 </button>
               </div>
             </div>
+
+            {/* Banner Informativo do Hash de Fechamento por Competência */}
+            {(hashFechamentoAtual || fechamentoMsg) && (
+              <div className="mb-5 p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 text-[#12B886] font-semibold">
+                  <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0" />
+                  <span>
+                    Hash de fechamento da competência:{' '}
+                    <strong className="font-mono text-[#F4F7FA]">
+                      {hashFechamentoAtual
+                        ? `${hashFechamentoAtual.hash_fechamento.slice(0, 18)}...${hashFechamentoAtual.hash_fechamento.slice(-6)}`
+                        : ''}
+                    </strong>{' '}
+                    verificado ✓
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#93A3B5] font-mono">
+                  Competência: {hashFechamentoAtual?.competencia || 'Vigente'} •{' '}
+                  {hashFechamentoAtual?.total_notas || nfeList.length} notas inclusas
+                </div>
+              </div>
+            )}
 
             {/* Feedback de erro/sucesso */}
             {uploadError && (
@@ -934,6 +1011,7 @@ export default function PainelCliente() {
                       <th className="py-2.5 px-3 text-right">IBS / CBS</th>
                       <th className="py-2.5 px-3 text-right">Créd. PIS/Cofins</th>
                       <th className="py-2.5 px-3 text-right">ICMS</th>
+                      <th className="py-2.5 px-3 text-center">Validação</th>
                       <th className="py-2.5 px-3 text-center">Ação</th>
                     </tr>
                   </thead>
@@ -1023,6 +1101,20 @@ export default function PainelCliente() {
                         </td>
                         <td className="py-2.5 px-3 text-right font-mono text-[#D9B36C]">
                           {formatCurrencyBRL(item.valor_icms || 0)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {Array.isArray((item as any).flags_revisao) &&
+                          (item as any).flags_revisao.length > 0 ? (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#D9B36C]/20 border border-[#D9B36C]/40 text-[#D9B36C] text-[10px] font-semibold cursor-help"
+                              title={(item as any).flags_revisao.join(' | ')}
+                            >
+                              <AlertCircle className="w-3 h-3 text-[#D9B36C]" />
+                              Desvio ANP
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-[#12B886] font-mono">Conforme</span>
+                          )}
                         </td>
                         <td className="py-2.5 px-3 text-center">
                           <button

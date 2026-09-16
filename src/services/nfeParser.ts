@@ -6,6 +6,9 @@
  */
 
 import { classificarNCM, ClassificacaoISResultado } from './impostoSeletivo'
+import { validarChaveAcesso44 } from './validadorFiscalChave'
+
+export { validarChaveAcesso44 }
 
 export interface ItemNFeResumo {
   numeroItem: number
@@ -129,6 +132,16 @@ export function parseNFeXML(xmlString: string, nomeArquivo?: string): NFeDadosEx
   // Extrai chave de acesso do atributo Id (ex: "NFe35240112345678000190550010000001231000001234")
   const idAttr = infNFe.getAttribute('Id') || ''
   const chaveAcesso = idAttr.replace(/^NFe/, '').trim()
+
+  // Validação do DV módulo 11 da chave de 44 dígitos
+  if (chaveAcesso.length === 44) {
+    const validacaoDV = validarChaveAcesso44(chaveAcesso)
+    if (!validacaoDV.valida) {
+      throw new Error(
+        `Chave de acesso inválida — DV módulo 11 não confere (informado: ${validacaoDV.dvInformado}, esperado: ${validacaoDV.dvEsperado}).`,
+      )
+    }
+  }
 
   // Tag <ide>
   const ide = infNFe.querySelector('ide')

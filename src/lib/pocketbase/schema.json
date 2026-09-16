@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T13:19:24.456Z",
+  "generatedAt": "2026-09-16T18:12:40.338Z",
   "collections": [
     {
       "name": "users",
@@ -530,6 +530,18 @@
         },
         {
           "name": "dados_adicionais_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_chave",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "flags_revisao",
           "type": "json",
           "required": false,
           "system": false
@@ -2709,6 +2721,80 @@
         "CREATE INDEX idx_rev_pericial_user ON pericial_revisoes (usuario)",
         "CREATE INDEX idx_rev_pericial_cnpj ON pericial_revisoes (cnpj)",
         "CREATE INDEX idx_rev_pericial_inv ON pericial_revisoes (inventario)"
+      ]
+    },
+    {
+      "name": "hashes_competencia",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "competencia",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "hash_fechamento",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "total_notas",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "chaves_inclusas",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_fechamento",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_hashcomp_user ON hashes_competencia (usuario)",
+        "CREATE INDEX idx_hashcomp_cnpj_comp ON hashes_competencia (cnpj, competencia)"
       ]
     }
   ]

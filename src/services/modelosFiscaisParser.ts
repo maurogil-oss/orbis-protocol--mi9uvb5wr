@@ -27,6 +27,10 @@ export type ModeloFiscalTipo =
   | 'fatura_agua'
 
 import { classificarNCM, ClassificacaoISResultado } from './impostoSeletivo'
+import { validarChaveAcesso44 } from './validadorFiscalChave'
+import { validarFaixaPrecoANP } from './faixaPrecoANP'
+
+export { validarChaveAcesso44 }
 
 export interface ItemFiscalDocumento {
   numeroItem: number
@@ -92,6 +96,7 @@ export interface DocumentoFiscalProcessado {
   origem: 'manual' | 'infosimples' | 'sped' | 'integracao'
   itens: ItemFiscalDocumento[]
   nomeArquivo?: string
+  flagsRevisao?: string[]
 }
 
 function parseNumber(text: string | null | undefined): number {
@@ -248,6 +253,15 @@ export function processarDocumentoFiscal(
 function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFiscalProcessado {
   const idAttr = infNFe.getAttribute('Id') || ''
   const chaveAcesso = idAttr.replace(/^NFe/, '').trim()
+
+  if (chaveAcesso.length === 44) {
+    const validacaoDV = validarChaveAcesso44(chaveAcesso)
+    if (!validacaoDV.valida) {
+      throw new Error(
+        `Chave de acesso inválida — DV módulo 11 não confere (informado: ${validacaoDV.dvInformado}, esperado: ${validacaoDV.dvEsperado}).`,
+      )
+    }
+  }
 
   const ide = infNFe.querySelector('ide')
   const mod = ide ? getNodeText(ide, 'mod') : '55'
@@ -414,6 +428,15 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
   const valorCbsTotalFinal = vCBSTot > 0 ? vCBSTot : somaItensCbs
   const temDestaqueIbsCbs = valorIbsTotalFinal > 0 || valorCbsTotalFinal > 0
 
+  // Validação da faixa de preço ANP (critério interno para combustíveis)
+  const flagsRevisao: string[] = []
+  if (combustivelTipo && combustivelLitros > 0 && valorTotal > 0) {
+    const resAnp = validarFaixaPrecoANP(combustivelTipo, valorTotal, combustivelLitros)
+    if (!resAnp.dentroFaixa) {
+      flagsRevisao.push(...resAnp.flagsRevisao)
+    }
+  }
+
   return {
     chaveAcesso,
     modeloFiscal,
@@ -443,6 +466,7 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
     origem: 'manual',
     itens,
     nomeArquivo,
+    flagsRevisao: flagsRevisao.length > 0 ? flagsRevisao : undefined,
   }
 }
 
@@ -544,6 +568,15 @@ function parseCTeXML(xmlDoc: Document, nomeArquivo?: string): DocumentoFiscalPro
   const infCte = xmlDoc.querySelector('infCte')
   const idAttr = infCte?.getAttribute('Id') || ''
   const chaveAcesso = idAttr.replace(/^CTe/, '').trim() || 'CTE' + Date.now()
+
+  if (chaveAcesso.length === 44 && /^\d{44}$/.test(chaveAcesso)) {
+    const validacaoDV = validarChaveAcesso44(chaveAcesso)
+    if (!validacaoDV.valida) {
+      throw new Error(
+        `Chave de acesso inválida — DV módulo 11 não confere (informado: ${validacaoDV.dvInformado}, esperado: ${validacaoDV.dvEsperado}).`,
+      )
+    }
+  }
 
   const ide = xmlDoc.querySelector('ide')
   const numeroDocumento = ide ? getNodeText(ide, 'nCT') : '1'
@@ -973,5 +1006,13 @@ function processarDocumentoJSON(json: any, nomeArquivo?: string): DocumentoFisca
     origem: 'infosimples',
     itens,
     nomeArquivo,
+    flagsRevisao: (() => {
+      const fl: string[] = []
+      if (combustivelTipo && combustivelLitros > 0 && valorTotal > 0) {
+        const valAnp = validarFaixaPrecoANP(combustivelTipo, valorTotal, combustivelLitros)
+        if (!valAnp.dentroFaixa) fl.push(...valAnp.flagsRevisao)
+      }
+      return fl.length > 0 ? fl : undefined
+    })(),
   }
 }

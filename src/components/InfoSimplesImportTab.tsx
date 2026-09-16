@@ -19,6 +19,7 @@ import {
   ConsultaInfoSimplesResponse,
   CertificadoA1Status,
 } from '@/services/infosimplesService'
+import { validarChaveAcesso44 } from '@/services/validadorFiscalChave'
 import {
   TermoCustodiaA1Modal,
   TERMO_CUSTODIA_VERSAO_ATUAL,
@@ -88,6 +89,17 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
         'Nenhuma chave de acesso válida de 44 dígitos encontrada. Verifique se colou os 44 números da NF-e.',
       )
       return
+    }
+
+    // Validação prévia de DV módulo 11 para cada chave antes de chamar InfoSimples
+    for (const ch of chavesEncontradas) {
+      const validacaoDV = validarChaveAcesso44(ch)
+      if (!validacaoDV.valida) {
+        setErrorMsg(
+          `Chave de acesso inválida — DV módulo 11 não confere (chave: ${ch.slice(0, 4)}...${ch.slice(-4)}, informado: ${validacaoDV.dvInformado}, esperado: ${validacaoDV.dvEsperado}).`,
+        )
+        return
+      }
     }
 
     setIsLoading(true)

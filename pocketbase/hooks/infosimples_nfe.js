@@ -18,6 +18,67 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
       )
     }
 
+    // Validação do DV módulo 11 (pesos 2 a 9 da direita para a esquerda)
+    const base43 = chaveAcessoRaw.slice(0, 43)
+    const dvInformado = parseInt(chaveAcessoRaw.charAt(43), 10)
+    let somaDV = 0
+    let pesoDV = 2
+    for (let i = base43.length - 1; i >= 0; i--) {
+      somaDV += parseInt(base43.charAt(i), 10) * pesoDV
+      pesoDV++
+      if (pesoDV > 9) pesoDV = 2
+    }
+    const restoDV = somaDV % 11
+    let dvEsperado = 11 - restoDV
+    if (restoDV === 0 || restoDV === 1 || dvEsperado >= 10) {
+      dvEsperado = 0
+    }
+
+    if (dvEsperado !== dvInformado) {
+      return e.badRequestError(
+        'Chave de acesso inválida — DV módulo 11 não confere (informado: ' +
+          dvInformado +
+          ', esperado: ' +
+          dvEsperado +
+          ').',
+      )
+    }
+
+    // Deduplicação: verificação por hash SHA-256 da chave de acesso por usuário
+    const hashChave = $security.sha256(chaveAcessoRaw)
+    try {
+      const notaExistente = $app.findFirstRecordByData('nfe_upload', 'hash_chave', hashChave)
+      if (notaExistente) {
+        return e.json(409, {
+          sucesso: false,
+          degradacao: false,
+          codigo: 409,
+          erro: 'Documento fiscal já importado anteriormente (duplicidade detectada).',
+          chave_acesso: chaveAcessoRaw,
+          hash_chave: hashChave,
+        })
+      }
+    } catch (_) {
+      // Se não encontrou por hash_chave, verifica também por chave_acesso textual
+      try {
+        const notaPorChave = $app.findFirstRecordByData(
+          'nfe_upload',
+          'chave_acesso',
+          chaveAcessoRaw,
+        )
+        if (notaPorChave) {
+          return e.json(409, {
+            sucesso: false,
+            degradacao: false,
+            codigo: 409,
+            erro: 'Documento fiscal já importado anteriormente (duplicidade detectada).',
+            chave_acesso: chaveAcessoRaw,
+            hash_chave: hashChave,
+          })
+        }
+      } catch (_) {}
+    }
+
     // Obtém token preferencialmente das variáveis de ambiente ($os.getenv) ou da coleção segura interna
     let token = $os.getenv('INFOSIMPLES_TOKEN') || ''
     if (!token || token.trim().length === 0) {
@@ -200,6 +261,7 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
         const nfeRec = new Record(nfeCol)
         nfeRec.set('usuario', authRecord.id)
         nfeRec.set('chave_acesso', chaveAcessoRaw)
+        nfeRec.set('hash_chave', hashChave)
         nfeRec.set('numero_nota', String(nfeInfo.numero || ''))
         nfeRec.set('serie', String(nfeInfo.serie || '1'))
         nfeRec.set('modelo', String(nfeInfo.modelo || '55'))

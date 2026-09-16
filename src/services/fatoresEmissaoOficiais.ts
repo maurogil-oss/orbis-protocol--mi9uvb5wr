@@ -25,7 +25,7 @@ export interface FatorEmissaoCurado {
   kgCO2: number
   kgCH4: number
   kgN2O: number
-  // GWP AR6 (IPCC 2021): CO2 = 1, CH4 fóssil = 29.8 (ou 27.2 sem feedback), N2O = 273
+  // GWP AR6 (IPCC 2021): CO2 = 1, CH4 fóssil = 29.8, N2O = 273
   // tCO2e fóssil calculado
   fatorFossilTCO2e: number
   // Emissões biogênicas separadas (kg CO2 bio por unidade)
@@ -37,6 +37,7 @@ export interface FatorEmissaoCurado {
 
 /**
  * Potenciais de Aquecimento Global (GWP 100 anos) - IPCC AR6 (Sixth Assessment Report)
+ * CH₄ fóssil = 29,8 (com feedbacks climáticos / AR6 WGI Tabela 7.15); N₂O = 273
  */
 export const GWP_AR6 = {
   CO2: 1,
