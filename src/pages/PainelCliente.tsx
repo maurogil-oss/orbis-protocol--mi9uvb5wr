@@ -36,6 +36,10 @@ import {
 } from '@/services/modelosFiscaisParser'
 import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/services/motorEmissoes'
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
+import {
+  dispararTriagemPericial,
+  ResultadoTriagemPericial,
+} from '@/services/revisorPericialService'
 import { InfoSimplesImportTab } from '@/components/InfoSimplesImportTab'
 import { ConsoleApisCdvTab } from '@/components/ConsoleApisCdvTab'
 import { WebhooksB2BTab } from '@/components/WebhooksB2BTab'
@@ -400,6 +404,51 @@ export default function PainelCliente() {
     insettingCdvCo2eKg: cdvCo2eEvitadoTotal,
   })
 
+  // Estado da Triagem Pericial Automática (Revisor Pericial Skip Cloud)
+  const [resultadoTriagem, setResultadoTriagem] = useState<ResultadoTriagemPericial | null>(null)
+  const [isLoadingTriagem, setIsLoadingTriagem] = useState(false)
+
+  // Disparo automático da triagem pericial quando o inventário é calculado/concluído
+  const handleExecutarTriagem = async () => {
+    setIsLoadingTriagem(true)
+    try {
+      const res = await dispararTriagemPericial({
+        empresa_nome: inventarioEmissoes.empresaNome,
+        cnpj: inventarioEmissoes.cnpj,
+        inventario: inventarioEmissoes,
+        is_demo: false,
+      })
+      setResultadoTriagem(res)
+    } catch (err) {
+      console.error('Falha na triagem pericial:', err)
+    } finally {
+      setIsLoadingTriagem(false)
+    }
+  }
+
+  // Executa a triagem na primeira carga após termos leads ou notas
+  useEffect(() => {
+    let ativo = true
+    if (
+      inventarioEmissoes &&
+      (!resultadoTriagem || resultadoTriagem.empresa_nome !== inventarioEmissoes.empresaNome)
+    ) {
+      dispararTriagemPericial({
+        empresa_nome: inventarioEmissoes.empresaNome,
+        cnpj: inventarioEmissoes.cnpj,
+        inventario: inventarioEmissoes,
+        is_demo: false,
+      })
+        .then((res) => {
+          if (ativo) setResultadoTriagem(res)
+        })
+        .catch((e) => console.log('Triagem inicial em background:', e))
+    }
+    return () => {
+      ativo = false
+    }
+  }, [currentLead?.cnpj, nfeList.length, possuiIREC])
+
   // Exportação do Dossiê Pericial em PDF
   const handleExportarDossieCompleto = async () => {
     setIsExportandoPdf(true)
@@ -728,6 +777,9 @@ export default function PainelCliente() {
               onToggleIREC={(val) => setPossuiIREC(val)}
               onSalvarInventario={handleSalvarInventario}
               isSalvando={isSalvandoInventario}
+              resultadoTriagem={resultadoTriagem}
+              isLoadingTriagem={isLoadingTriagem}
+              onReexecutarTriagem={handleExecutarTriagem}
             />
           </div>
         )}

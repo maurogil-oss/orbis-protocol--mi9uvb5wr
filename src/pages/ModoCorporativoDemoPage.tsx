@@ -33,6 +33,11 @@ import {
   NotaFiscalDemonstrativa,
 } from '@/services/corporativoService'
 import { formatCurrencyBRL } from '@/services/nfeParser'
+import {
+  dispararTriagemPericial,
+  ResultadoTriagemPericial,
+} from '@/services/revisorPericialService'
+import { RevisorPericialWidget } from '@/components/RevisorPericialWidget'
 
 export default function ModoCorporativoDemoPage() {
   const [demoData, setDemoData] = useState<CorporativoDemoData>({
@@ -56,6 +61,24 @@ export default function ModoCorporativoDemoPage() {
   const [modalMetodologiaAberta, setModalMetodologiaAberta] = useState(false)
   const [notaSelecionadaDetalhes, setNotaSelecionadaDetalhes] =
     useState<NotaFiscalDemonstrativa | null>(null)
+
+  // Estado da Triagem Pericial Automática da Demo
+  const [resultadoTriagemDemo, setResultadoTriagemDemo] = useState<ResultadoTriagemPericial | null>(
+    null,
+  )
+  const [isLoadingTriagemDemo, setIsLoadingTriagemDemo] = useState(false)
+
+  const handleExecutarTriagemDemo = async () => {
+    setIsLoadingTriagemDemo(true)
+    try {
+      const res = await dispararTriagemPericial({ is_demo: true })
+      setResultadoTriagemDemo(res)
+    } catch (err) {
+      console.error('Erro na triagem pericial demo:', err)
+    } finally {
+      setIsLoadingTriagemDemo(false)
+    }
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -325,6 +348,55 @@ export default function ModoCorporativoDemoPage() {
             </Link>
           </div>
         </div>
+
+        {/* 2.1 BOTÃO & SESSÃO DO REVISOR PERICIAL NATIVO (DEMO CORPORATIVA SCORE 840/1000 - 84/100) */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#16202B] via-[#111820] to-[#16202B] border border-[#12B886]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="p-3 rounded-xl bg-[#12B886]/10 text-[#12B886] shrink-0 border border-[#12B886]/20">
+              <Scale className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#12B886] bg-[#12B886]/10 px-2 py-0.5 rounded border border-[#12B886]/30">
+                  Agente Nativo Skip Cloud
+                </span>
+                <span className="text-[10px] text-[#D9B36C] font-semibold">
+                  Auditoria de 12 Notas Fiscais
+                </span>
+              </div>
+              <h3 className="font-heading font-extrabold text-base sm:text-lg text-[#F4F7FA]">
+                Revisão Pericial Automática • Pré-Laudo com Memória Persistente
+              </h3>
+              <p className="text-xs text-[#93A3B5] mt-0.5 max-w-2xl">
+                Execute a triagem pericial com o agente IA nativo sobre os 10 modelos fiscais das
+                Indústrias & Logística Integrada Brasil S.A. e confira os achados com score
+                auditado.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleExecutarTriagemDemo}
+            disabled={isLoadingTriagemDemo}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow shrink-0 disabled:opacity-50"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>
+              {isLoadingTriagemDemo ? 'Auditando...' : 'Executar Revisão Pericial (Demo)'}
+            </span>
+          </button>
+        </div>
+
+        {/* WIDGET DO REVISOR PERICIAL QUANDO ACIONADO OU CARREGADO */}
+        {resultadoTriagemDemo && (
+          <RevisorPericialWidget
+            resultado={resultadoTriagemDemo}
+            isLoading={isLoadingTriagemDemo}
+            onReexecutar={handleExecutarTriagemDemo}
+            isDemo={true}
+          />
+        )}
 
         {/* 3. DOSSIÊ DA ORGANIZAÇÃO ATIVA (Indústrias & Logística Integrada Brasil S.A.) */}
         <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl relative">

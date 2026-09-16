@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T13:13:53.768Z",
+  "generatedAt": "2026-09-16T13:19:24.456Z",
   "collections": [
     {
       "name": "users",
@@ -2590,6 +2590,125 @@
         "CREATE UNIQUE INDEX idx_corp_demo_slug ON corporativo_demo (slug)",
         "CREATE INDEX idx_corp_demo_tipo ON corporativo_demo (tipo)",
         "CREATE INDEX idx_corp_demo_modelo ON corporativo_demo (modelo_fiscal)"
+      ]
+    },
+    {
+      "name": "pericial_revisoes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "inventario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "emissoes_inventario"
+        },
+        {
+          "name": "empresa_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "score_pericial",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "grau_conformidade",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "achados_total",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "achados_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "achados_publicos_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "plano_recomendado",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["diagnostico", "laudo_pericial", "assinatura_bureau"]
+        },
+        {
+          "name": "resumo_parecer",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ano_base",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "metodologias_auditadas",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "is_demo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_rev_pericial_user ON pericial_revisoes (usuario)",
+        "CREATE INDEX idx_rev_pericial_cnpj ON pericial_revisoes (cnpj)",
+        "CREATE INDEX idx_rev_pericial_inv ON pericial_revisoes (inventario)"
       ]
     }
   ]

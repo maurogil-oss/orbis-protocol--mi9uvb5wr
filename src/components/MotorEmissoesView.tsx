@@ -12,12 +12,18 @@ import {
 } from 'lucide-react'
 import { InventarioEmissoesResultado } from '@/services/motorEmissoes'
 
+import { ResultadoTriagemPericial } from '@/services/revisorPericialService'
+import { RevisorPericialWidget } from '@/components/RevisorPericialWidget'
+
 interface MotorEmissoesViewProps {
   inventario: InventarioEmissoesResultado
   onToggleIREC?: (possui: boolean) => void
   possuiIREC?: boolean
   onSalvarInventario?: () => void
   isSalvando?: boolean
+  resultadoTriagem?: ResultadoTriagemPericial | null
+  isLoadingTriagem?: boolean
+  onReexecutarTriagem?: () => void
 }
 
 export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
@@ -26,6 +32,9 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
   possuiIREC = false,
   onSalvarInventario,
   isSalvando = false,
+  resultadoTriagem = null,
+  isLoadingTriagem = false,
+  onReexecutarTriagem,
 }) => {
   const { enquadramentoSBCE } = inventario
 
@@ -62,6 +71,13 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 1.1 WIDGET DO REVISOR PERICIAL (TRIAGEM PERICIAL AUTOMÁTICA - PRÉ-LAUDO) */}
+      <RevisorPericialWidget
+        resultado={resultadoTriagem}
+        isLoading={isLoadingTriagem}
+        onReexecutar={onReexecutarTriagem}
+      />
 
       {/* 2. Grid de Escopos: Escopo 1, Escopo 2 (Duplo Reporte), Escopo 3 e Insetting */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
