@@ -15,7 +15,13 @@
 export interface NormaSetorial {
   norma: string
   titulo: string
-  abrangencia: 'Obrigatório' | 'Voluntário' | 'Cadeia de Valor (Escopo 3)' | 'Comércio Exterior' | 'Previsto' | 'Setorial'
+  abrangencia:
+    | 'Obrigatório'
+    | 'Voluntário'
+    | 'Cadeia de Valor (Escopo 3)'
+    | 'Comércio Exterior'
+    | 'Previsto'
+    | 'Setorial'
   dataChave: string
   detalhe: string
 }
@@ -1339,7 +1345,8 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         titulo: 'Sistema de Avaliação da Conformidade de Empresas de Serviços e Obras',
         abrangencia: 'Obrigatório',
         dataChave: 'Vigente',
-        detalhe: 'Exigência de controle de perdas e gestão de fornecedores qualificados no âmbito do Minha Casa Minha Vida.',
+        detalhe:
+          'Exigência de controle de perdas e gestão de fornecedores qualificados no âmbito do Minha Casa Minha Vida.',
       },
     ],
     evidenciasCaptura: [

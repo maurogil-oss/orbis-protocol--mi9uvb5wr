@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { useAuth } from '@/contexts/AuthContext'
@@ -244,6 +244,7 @@ export default function Diagnostico() {
     cnpj: string
     razao_social: string
     status: string
+    vinculo_institucional?: string
     enquadramento_sbce?: string
     comparativo?: ResultadoComparativoTributario
   } | null>(null)
@@ -533,6 +534,7 @@ export default function Diagnostico() {
         cnpj: leadRecord.cnpj,
         razao_social: leadRecord.razao_social,
         status: leadRecord.status || 'novo',
+        vinculo_institucional: leadRecord.vinculo_institucional || formData.vinculo_institucional,
         enquadramento_sbce: enquadramentoPreliminar,
         comparativo: comparativoCalculado,
       })
