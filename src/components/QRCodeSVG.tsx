@@ -1,6 +1,7 @@
-import React, { useId } from 'react'
+import React, { useId, useMemo } from 'react'
+import QRCode from 'qrcode'
 
-interface QRCodeSVGProps {
+export interface QRCodeSVGProps {
   value: string
   size?: number
   bgColor?: string
@@ -10,8 +11,9 @@ interface QRCodeSVGProps {
 }
 
 /**
- * Gerador de QR Code vetorial nativo (SVG) sem dependências externas adicionais.
- * Implementa a matriz visual de alinhamento e codificação rápida com padrões de localização padrão ISO/IEC 18004.
+ * Gerador de QR Code vetorial nativo (SVG) em conformidade com o padrão ISO/IEC 18004.
+ * Utiliza correção de erro de nível M (Medium - até 15% de recuperação) e gera
+ * a matriz real de dados codificados para leitura imediata por câmeras e leitores ópticos.
  */
 export function QRCodeSVG({
   value,
@@ -23,85 +25,90 @@ export function QRCodeSVG({
 }: QRCodeSVGProps) {
   const clipId = useId()
 
-  // Algoritmo determinístico de matriz QR simplificado para renderização local
-  // Gera grid 25x25 (versão 2) com módulos de posicionamento dos 3 cantos (7x7) e timing patterns
-  const N = 25
-  const matrix: boolean[][] = Array.from({ length: N }, () => Array(N).fill(false))
+  const qrData = useMemo(() => {
+    if (!value || typeof value !== 'string') {
+      return null
+    }
 
-  // 1. Finder patterns nos 3 cantos (top-left, top-right, bottom-left)
-  const addFinder = (r0: number, c0: number) => {
-    for (let r = 0; r < 7; r++) {
-      for (let c = 0; c < 7; c++) {
-        if (r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4)) {
-          matrix[r0 + r][c0 + c] = true
+    try {
+      const qr = QRCode.create(value, {
+        errorCorrectionLevel: 'M',
+      })
+
+      const moduleCount = qr.modules.size
+      const data = qr.modules.data
+      const margin = 2
+      const totalSize = moduleCount + margin * 2
+
+      // Constrói o path SVG vetorial dos módulos escuros (otimizado com linhas horizontais contínuas)
+      let path = ''
+      for (let r = 0; r < moduleCount; r++) {
+        let runStart = -1
+        for (let c = 0; c < moduleCount; c++) {
+          const isDark = Boolean(data[r * moduleCount + c])
+          if (isDark) {
+            if (runStart === -1) {
+              runStart = c
+            }
+          } else {
+            if (runStart !== -1) {
+              const runLength = c - runStart
+              path += `M${margin + runStart} ${margin + r}h${runLength}v1h-${runLength}Z `
+              runStart = -1
+            }
+          }
+        }
+        if (runStart !== -1) {
+          const runLength = moduleCount - runStart
+          path += `M${margin + runStart} ${margin + r}h${runLength}v1h-${runLength}Z `
         }
       }
-    }
-  }
-  addFinder(0, 0)
-  addFinder(0, N - 7)
-  addFinder(N - 7, 0)
 
-  // 2. Timing patterns
-  for (let i = 8; i < N - 8; i++) {
-    matrix[6][i] = i % 2 === 0
-    matrix[i][6] = i % 2 === 0
-  }
-
-  // 3. Preenchimento pseudo-aleatório determinístico baseado no hash do valor informado
-  let hash = 2166136261
-  for (let i = 0; i < value.length; i++) {
-    hash ^= value.charCodeAt(i)
-    hash = Math.imul(hash, 16777619)
-  }
-
-  const isReserved = (r: number, c: number) => {
-    if (r < 8 && c < 8) return true // top-left
-    if (r < 8 && c >= N - 8) return true // top-right
-    if (r >= N - 8 && c < 8) return true // bottom-left
-    if (r === 6 || c === 6) return true // timing
-    return false
-  }
-
-  let lcg = Math.abs(hash) || 123456789
-  for (let r = 0; r < N; r++) {
-    for (let c = 0; c < N; c++) {
-      if (!isReserved(r, c)) {
-        lcg = (Math.imul(1103515245, lcg) + 12345) & 0x7fffffff
-        matrix[r][c] = lcg % 100 > 42
+      return {
+        totalSize,
+        path,
       }
+    } catch (err) {
+      console.error('[QRCodeSVG] Erro ao codificar valor:', err)
+      return null
     }
-  }
+  }, [value])
 
-  const moduleSize = size / (N + 4)
-  const offset = moduleSize * 2
+  if (!qrData) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className={`rounded-lg ${className}`}
+        role="img"
+        aria-label={title}
+      >
+        <title>{title}</title>
+        <rect width={size} height={size} fill={bgColor} rx="6" />
+      </svg>
+    )
+  }
 
   return (
     <svg
       width={size}
       height={size}
-      viewBox={`0 0 ${size} ${size}`}
+      viewBox={`0 0 ${qrData.totalSize} ${qrData.totalSize}`}
       className={`rounded-lg ${className}`}
       role="img"
       aria-label={title}
+      shapeRendering="crispEdges"
     >
       <title>{title}</title>
-      <rect width={size} height={size} fill={bgColor} rx="6" />
+      <defs>
+        <clipPath id={clipId}>
+          <rect width={qrData.totalSize} height={qrData.totalSize} rx="1.5" />
+        </clipPath>
+      </defs>
+      <rect width={qrData.totalSize} height={qrData.totalSize} fill={bgColor} />
       <g clipPath={`url(#${clipId})`}>
-        {matrix.map((row, r) =>
-          row.map((active, c) =>
-            active ? (
-              <rect
-                key={`${r}-${c}`}
-                x={offset + c * moduleSize}
-                y={offset + r * moduleSize}
-                width={moduleSize + 0.3}
-                height={moduleSize + 0.3}
-                fill={fgColor}
-              />
-            ) : null,
-          ),
-        )}
+        <path d={qrData.path} fill={fgColor} />
       </g>
     </svg>
   )
