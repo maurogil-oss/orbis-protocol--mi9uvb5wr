@@ -15,8 +15,8 @@ import {
 export default function PortalCorporativo() {
   const recursos = [
     {
-      titulo: 'Preparação para Ingestão de SPED / XML NF-e (Roadmap)',
-      desc: 'Diagnóstico documental e estrutura de dados preparada para ingestão contínua de documentos fiscais de entrada e saída com mapeamento de CFOP e NCM aos fatores de emissão oficiais.',
+      titulo: 'Ingestão Multi-Modelo Fiscal & Proxy InfoSimples Ativos',
+      desc: 'Motor pericial conectado a 10 modelos fiscais (NF-e, NFC-e, NFS-e, CT-e, MDF-e, NF3e, NFCom, BP-e, CT-e OS, faturas) com proxy server-side para a API InfoSimples e modo degradação elegante.',
     },
     {
       titulo: 'Integração Nativa com ERPs Enterprise',
@@ -27,8 +27,8 @@ export default function PortalCorporativo() {
       desc: 'Exportação padronizada de demonstrativos climáticos com preparação para asseguração conforme as diretrizes voluntárias da Resolução CVM 193.',
     },
     {
-      titulo: 'Rastreabilidade de Escopos 1, 2 e 3 em Tempo Real',
-      desc: 'Painel executivo com dashboards consolidados por planta industrial, centro de custo, linha de produção ou unidade de negócio.',
+      titulo: 'Motor Pericial dMRV de Escopos 1, 2 e 3 (MCTI, GHG Protocol & AR6)',
+      desc: 'Apuração automatizada com duplo reporte de Escopo 2 (Localização MCTI vs Mercado I-REC), insetting circular ISO 14067 para CDVs e enquadramento nos limiares de 10k e 25k tCO2e da Lei 15.042/2024 (SBCE).',
     },
   ]
 

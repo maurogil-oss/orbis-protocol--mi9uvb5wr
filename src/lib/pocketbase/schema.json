@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T00:05:16.365Z",
+  "generatedAt": "2026-09-16T00:35:58.225Z",
   "collections": [
     {
       "name": "users",
@@ -460,11 +460,362 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "origem",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["manual", "infosimples", "sped", "integracao"]
+        },
+        {
+          "name": "modelo_fiscal",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "55_nfe",
+            "65_nfce",
+            "nfse",
+            "57_cte",
+            "58_mdfe",
+            "66_nf3e",
+            "62_nfcom",
+            "63_bpe",
+            "67_cte_os",
+            "fatura_agua"
+          ]
+        },
+        {
+          "name": "combustivel_tipo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "combustivel_litros",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "energia_kwh",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "transporte_tkm",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "dados_adicionais_json",
+          "type": "json",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
         "CREATE INDEX idx_nfe_usuario ON nfe_upload (usuario)",
         "CREATE INDEX idx_nfe_chave ON nfe_upload (chave_acesso)"
+      ]
+    },
+    {
+      "name": "infosimples_consultas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "chave_acesso",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["sucesso", "erro_api", "token_ausente", "nao_encontrado", "simulacao"]
+        },
+        {
+          "name": "codigo_retorno",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "mensagem_retorno",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "custo_creditos",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "usou_certificado_a1",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resposta_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_infosimples_usuario ON infosimples_consultas (usuario)",
+        "CREATE INDEX idx_infosimples_chave ON infosimples_consultas (chave_acesso)"
+      ]
+    },
+    {
+      "name": "cliente_certificados_a1",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cnpj_titular",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "razao_social",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "arquivo_pfx",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "senha_cifrada",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "validade_certificado",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "termo_lgpd_aceito",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_aceite_lgpd",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_cert_usuario ON cliente_certificados_a1 (usuario)",
+        "CREATE INDEX idx_cert_cnpj ON cliente_certificados_a1 (cnpj_titular)"
+      ]
+    },
+    {
+      "name": "emissoes_inventario",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "empresa_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "ano_base",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "periodo_referencia",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "escopo1_total_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "escopo2_localizacao_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "escopo2_mercado_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "escopo3_total_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "emissoes_biogenicas_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "emissoes_totais_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "insetting_iso14067_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "incerteza_consolidada_pct",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_sbce",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["isento_monitoramento", "dever_reporte_10k", "dever_compensacao_25k"]
+        },
+        {
+          "name": "laudo_detalhes_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "versao_metodologia",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_emissoes_usuario ON emissoes_inventario (usuario)",
+        "CREATE INDEX idx_emissoes_cnpj ON emissoes_inventario (cnpj)"
       ]
     }
   ]

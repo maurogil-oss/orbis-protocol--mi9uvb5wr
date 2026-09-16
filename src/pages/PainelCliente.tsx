@@ -26,6 +26,13 @@ import {
 } from '@/services/tributosReforma'
 import { ComparativoTributarioView } from '@/components/ComparativoTributarioView'
 import { parseNFeXML, formatCurrencyBRL } from '@/services/nfeParser'
+import {
+  processarDocumentoFiscal,
+  DocumentoFiscalProcessado,
+} from '@/services/modelosFiscaisParser'
+import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/services/motorEmissoes'
+import { MotorEmissoesView } from '@/components/MotorEmissoesView'
+import { InfoSimplesImportTab } from '@/components/InfoSimplesImportTab'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -79,6 +86,14 @@ export default function PainelCliente() {
   const [selos, setSelos] = useState<SeloRecord[]>([])
   const [nfeList, setNfeList] = useState<NFeUploadRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  // Abas de visualização do módulo de ingestão fiscal
+  const [abaFiscalAtiva, setAbaFiscalAtiva] = useState<
+    'upload_manual' | 'infosimples' | 'motor_emissoes'
+  >('upload_manual')
+  const [possuiIREC, setPossuiIREC] = useState(false)
+  const [isSalvandoInventario, setIsSalvandoInventario] = useState(false)
+  const [inventarioSalvoMsg, setInventarioSalvoMsg] = useState<string | null>(null)
 
   // Upload state
   const [isUploading, setIsUploading] = useState(false)
@@ -164,45 +179,52 @@ export default function PainelCliente() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
 
-      // Limitar a arquivos XML de até 2MB
-      if (!file.name.toLowerCase().endsWith('.xml')) {
-        errors.push(`${file.name}: não é um arquivo .xml`)
-        continue
-      }
-      if (file.size > 2 * 1024 * 1024) {
-        errors.push(`${file.name}: excede o limite máximo de 2 MB`)
+      // Limitar a arquivos de até 5MB (.xml, .json, .txt)
+      if (file.size > 5 * 1024 * 1024) {
+        errors.push(`${file.name}: excede o limite máximo de 5 MB`)
         continue
       }
 
       try {
-        const xmlText = await file.text()
-        const parsed = parseNFeXML(xmlText, file.name)
+        const text = await file.text()
+        const parsedDoc = processarDocumentoFiscal(text, file.name)
 
-        // Grava no PocketBase
+        // Grava no PocketBase com suporte aos novos modelos fiscais
         await pb.collection('nfe_upload').create({
           usuario: user.id,
-          chave_acesso: parsed.chaveAcesso,
-          numero_nota: parsed.numeroNota,
-          serie: parsed.serie,
-          modelo: parsed.modelo,
-          data_emissao: parsed.dataEmissao,
-          cnpj_emitente: parsed.cnpjEmitente,
-          nome_emitente: parsed.nomeEmitente,
-          cnpj_destinatario: parsed.cnpjDestinatario,
-          nome_destinatario: parsed.nomeDestinatario,
-          valor_total_nf: parsed.valorTotalNF,
-          valor_icms: parsed.valorIcms,
-          valor_ipi: parsed.valorIpi,
-          valor_pis: parsed.valorPis,
-          valor_cofins: parsed.valorCofins,
-          qtd_itens: parsed.qtdItens,
-          resumo_itens_json: parsed.itens.slice(0, 15), // Primeiros 15 itens
+          chave_acesso: parsedDoc.chaveAcesso,
+          numero_nota: parsedDoc.numeroDocumento,
+          serie: parsedDoc.serie,
+          modelo: parsedDoc.modeloFiscal.split('_')[0],
+          modelo_fiscal: parsedDoc.modeloFiscal,
+          data_emissao: parsedDoc.dataEmissao,
+          cnpj_emitente: parsedDoc.cnpjEmitente,
+          nome_emitente: parsedDoc.nomeEmitente,
+          cnpj_destinatario: parsedDoc.cnpjDestinatario,
+          nome_destinatario: parsedDoc.nomeDestinatario,
+          valor_total_nf: parsedDoc.valorTotal,
+          valor_icms: parsedDoc.valorIcms,
+          valor_ipi: parsedDoc.valorIpi,
+          valor_pis: parsedDoc.valorPis,
+          valor_cofins: parsedDoc.valorCofins,
+          qtd_itens: parsedDoc.itens.length,
+          resumo_itens_json: parsedDoc.itens.slice(0, 15),
           nome_arquivo: file.name,
+          origem: 'manual',
+          combustivel_tipo: parsedDoc.combustivelTipo,
+          combustivel_litros: parsedDoc.combustivelLitros,
+          energia_kwh: parsedDoc.energiaKwh,
+          transporte_tkm: parsedDoc.transporteTkm,
+          dados_adicionais_json: {
+            agua_m3: parsedDoc.aguaM3,
+            telecom_gb: parsedDoc.telecomGb,
+            pecas_cdv_qtd: parsedDoc.pecasReutilizadasQtd,
+          },
         })
 
         successCount++
       } catch (err: any) {
-        errors.push(`${file.name}: ${err.message || 'Erro ao processar XML'}`)
+        errors.push(`${file.name}: ${err.message || 'Erro ao processar documento fiscal'}`)
       }
     }
 
@@ -247,6 +269,89 @@ export default function PainelCliente() {
     },
     { totalNotas: 0, somaValorTotal: 0, somaPisCofins: 0, somaIcms: 0, somaIpi: 0 },
   )
+
+  // Documentos fiscais adaptados para o Motor Pericial de Emissões
+  const docsParaEmissoes: DocumentoFiscalProcessado[] = nfeList.map((item) => {
+    // Normaliza tipo de combustível
+    const rawTipo = (item as any).combustivel_tipo
+    const cTipo: 'diesel' | 'gasolina' | 'etanol' | 'glp' | 'gnv' | undefined =
+      rawTipo === 'diesel' ||
+      rawTipo === 'gasolina' ||
+      rawTipo === 'etanol' ||
+      rawTipo === 'glp' ||
+      rawTipo === 'gnv'
+        ? rawTipo
+        : undefined
+
+    return {
+      chaveAcesso: item.chave_acesso || item.id,
+      modeloFiscal:
+        ((item as any).modelo_fiscal as any) || (item.modelo === '65' ? '65_nfce' : '55_nfe'),
+      numeroDocumento: item.numero_nota || '1',
+      serie: item.serie || '1',
+      dataEmissao: item.data_emissao || item.created,
+      cnpjEmitente: item.cnpj_emitente || '',
+      nomeEmitente: item.nome_emitente || '',
+      cnpjDestinatario: item.cnpj_destinatario || '',
+      nomeDestinatario: item.nome_destinatario || '',
+      valorTotal: item.valor_total_nf || 0,
+      valorIcms: item.valor_icms || 0,
+      valorIpi: item.valor_ipi || 0,
+      valorPis: item.valor_pis || 0,
+      valorCofins: item.valor_cofins || 0,
+      combustivelTipo: cTipo,
+      combustivelLitros: (item as any).combustivel_litros,
+      energiaKwh: (item as any).energia_kwh,
+      transporteTkm: (item as any).transporte_tkm,
+      aguaM3: (item as any).dados_adicionais_json?.agua_m3,
+      telecomGb: (item as any).dados_adicionais_json?.telecom_gb,
+      pecasReutilizadasQtd: (item as any).dados_adicionais_json?.pecas_cdv_qtd,
+      origem: ((item as any).origem as any) || 'manual',
+      itens: Array.isArray((item as any).resumo_itens_json) ? (item as any).resumo_itens_json : [],
+      nomeArquivo: item.nome_arquivo,
+    }
+  })
+
+  // Cálculo do Inventário Pericial de Emissões
+  const inventarioEmissoes = calcularInventarioEmissoes(docsParaEmissoes, {
+    empresaNome: currentLead?.razao_social || 'Empresa Cadastrada',
+    cnpj: currentLead?.cnpj || 'CNPJ em Análise',
+    possuiIREC: possuiIREC,
+  })
+
+  // Salvar Inventário no Banco de Dados
+  const handleSalvarInventario = async () => {
+    if (!user?.id) return
+    setIsSalvandoInventario(true)
+    setInventarioSalvoMsg(null)
+    try {
+      await pb.collection('emissoes_inventario').create({
+        usuario: user.id,
+        empresa_nome: inventarioEmissoes.empresaNome,
+        cnpj: inventarioEmissoes.cnpj,
+        ano_base: inventarioEmissoes.anoBase,
+        periodo_referencia: inventarioEmissoes.periodoReferencia,
+        escopo1_total_tco2e: inventarioEmissoes.escopo1TotalTCO2e,
+        escopo2_localizacao_tco2e: inventarioEmissoes.escopo2LocalizacaoTCO2e,
+        escopo2_mercado_tco2e: inventarioEmissoes.escopo2MercadoTCO2e,
+        escopo3_total_tco2e: inventarioEmissoes.escopo3TotalTCO2e,
+        emissoes_biogenicas_tco2e: inventarioEmissoes.emissoesBiogenicasTotalTCO2e,
+        emissoes_totais_tco2e: inventarioEmissoes.emissoesTotaisFosseisTCO2e,
+        insetting_iso14067_tco2e: inventarioEmissoes.insettingTotalTCO2e,
+        incerteza_consolidada_pct: inventarioEmissoes.incertezaConsolidadaPct,
+        status_sbce: inventarioEmissoes.enquadramentoSBCE.status,
+        versao_metodologia: inventarioEmissoes.versaoMetodologia,
+        laudo_detalhes_json: inventarioEmissoes,
+      })
+      setInventarioSalvoMsg(
+        'Laudo pericial de emissões registrado com sucesso na base de auditoria!',
+      )
+    } catch (err: any) {
+      setInventarioSalvoMsg(`Erro ao salvar: ${err.message || 'Falha na persistência.'}`)
+    } finally {
+      setIsSalvandoInventario(false)
+    }
+  }
 
   // Se houver notas reais, injetamos no cálculo comparativo
   const comparativoCalculado = currentLead
@@ -311,175 +416,261 @@ export default function PainelCliente() {
           </div>
         </div>
 
-        {/* 1. MÓDULO DE INGESTÃO REAL DE XML NF-e */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[#12B886]/30 mb-10 shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="flex items-center gap-2">
-                <UploadCloud className="w-5 h-5 text-[#12B886]" />
-                <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                  INGESTÃO DE NOTAS FISCAIS ELETRÔNICAS (XML NF-E MOD. 55 / NFC-E MOD. 65)
-                </h2>
-              </div>
-              <p className="text-xs text-[#93A3B5] mt-1">
-                Envie seus arquivos XML para substituir as estimativas preliminares por créditos
-                fiscais reais apurados no comparativo tributário (PIS/Cofins, ICMS e IPI).
-              </p>
-            </div>
+        {/* SELETOR DE ABAS DO MÓDULO FISCAL & MOTOR PERICIAL */}
+        <div className="flex border-b border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setAbaFiscalAtiva('upload_manual')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'upload_manual'
+                ? 'border-[#12B886] text-[#12B886]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span>Upload de Arquivos Fiscais (10 Modelos)</span>
+          </button>
 
-            {/* Input de arquivo */}
-            <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFilesSelected}
-                accept=".xml,text/xml"
-                multiple
-                className="hidden"
-                id="nfe-file-input"
-              />
-              <button
-                type="button"
-                disabled={isUploading}
-                onClick={() => fileInputRef.current?.click()}
-                className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
-              >
-                <UploadCloud className="w-4 h-4" />
-                <span>{isUploading ? 'Processando XMLs...' : 'Importar XML NF-e'}</span>
-              </button>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setAbaFiscalAtiva('infosimples')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'infosimples'
+                ? 'border-[#12B886] text-[#12B886]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <Receipt className="w-4 h-4" />
+            <span>Importar via InfoSimples (Chave 44 Dígitos)</span>
+          </button>
 
-          {/* Feedback de erro/sucesso */}
-          {uploadError && (
-            <div className="mb-4 p-3 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{uploadError}</span>
-            </div>
-          )}
-          {uploadSuccess && (
-            <div className="mb-4 p-3 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 text-xs text-[#12B886] flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span>{uploadSuccess}</span>
-            </div>
-          )}
-
-          {/* Resumo dos Créditos Apurados */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-0.5">
-                Notas Ingeridas
-              </span>
-              <span className="text-xl font-heading font-black text-[#F4F7FA]">
-                {totaisNfe.totalNotas}
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-[#12B886] block mb-0.5">
-                PIS/Cofins Real
-              </span>
-              <span className="text-xl font-heading font-black text-[#12B886]">
-                {formatCurrencyBRL(totaisNfe.somaPisCofins)}
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-[#D9B36C] block mb-0.5">
-                ICMS Destacado
-              </span>
-              <span className="text-xl font-heading font-black text-[#D9B36C]">
-                {formatCurrencyBRL(totaisNfe.somaIcms)}
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-0.5">
-                IPI Apurado
-              </span>
-              <span className="text-xl font-heading font-black text-[#F4F7FA]">
-                {formatCurrencyBRL(totaisNfe.somaIpi)}
-              </span>
-            </div>
-          </div>
-
-          {/* Lista de Notas Processadas */}
-          {nfeList.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
-                  <tr>
-                    <th className="py-2.5 px-3">Nota / Emissão</th>
-                    <th className="py-2.5 px-3">Emitente</th>
-                    <th className="py-2.5 px-3">Destinatário</th>
-                    <th className="py-2.5 px-3 text-right">Valor Total</th>
-                    <th className="py-2.5 px-3 text-right">Créd. PIS/Cofins</th>
-                    <th className="py-2.5 px-3 text-right">ICMS</th>
-                    <th className="py-2.5 px-3 text-center">Ação</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
-                  {nfeList.map((item) => (
-                    <tr key={item.id} className="hover:bg-[#16202B]/40 transition-colors">
-                      <td className="py-2.5 px-3">
-                        <div className="font-mono font-semibold text-[#12B886]">
-                          NF-e nº {item.numero_nota || 'S/N'} (Série {item.serie || '1'})
-                        </div>
-                        <div className="text-[10px] text-[#93A3B5]">
-                          {item.data_emissao
-                            ? item.data_emissao.slice(0, 10)
-                            : 'Data não informada'}{' '}
-                          • Mod. {item.modelo}
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <div
-                          className="font-semibold truncate max-w-[150px]"
-                          title={item.nome_emitente}
-                        >
-                          {item.nome_emitente || 'Não informado'}
-                        </div>
-                        <div className="text-[10px] font-mono text-[#93A3B5]">
-                          {item.cnpj_emitente}
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <div className="truncate max-w-[150px]" title={item.nome_destinatario}>
-                          {item.nome_destinatario || 'Consumidor'}
-                        </div>
-                        <div className="text-[10px] font-mono text-[#93A3B5]">
-                          {item.cnpj_destinatario}
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono font-semibold">
-                        {formatCurrencyBRL(item.valor_total_nf || 0)}
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
-                        {formatCurrencyBRL((item.valor_pis || 0) + (item.valor_cofins || 0))}
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-[#D9B36C]">
-                        {formatCurrencyBRL(item.valor_icms || 0)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteNfe(item.id)}
-                          className="p-1 rounded text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
-                          title="Remover nota fiscal"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-6 border border-dashed border-[rgba(244,247,250,0.12)] rounded-xl text-xs text-[#93A3B5] bg-[#0A0E12]">
-              <FileCode className="w-8 h-8 text-[#93A3B5]/40 mx-auto mb-2" />
-              Nenhum XML de NF-e importado ainda. Clique em &quot;Importar XML NF-e&quot; para
-              carregar suas notas e apurar créditos reais.
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => setAbaFiscalAtiva('motor_emissoes')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'motor_emissoes'
+                ? 'border-[#12B886] text-[#12B886]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <FileCheck className="w-4 h-4" />
+            <span>Motor Pericial de Emissões (Escopos 1/2/3)</span>
+          </button>
         </div>
+
+        {/* FEEDBACK DE SALVAMENTO DO INVENTÁRIO */}
+        {inventarioSalvoMsg && (
+          <div className="mb-6 p-4 rounded-xl bg-[#12B886]/10 border border-[#12B886]/30 text-xs text-[#12B886] flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{inventarioSalvoMsg}</span>
+          </div>
+        )}
+
+        {/* CONTEÚDO DAS ABAS */}
+        {abaFiscalAtiva === 'infosimples' && (
+          <div className="mb-10">
+            <InfoSimplesImportTab usuarioId={user?.id || ''} onImportSuccess={() => loadData()} />
+          </div>
+        )}
+
+        {abaFiscalAtiva === 'motor_emissoes' && (
+          <div className="mb-10">
+            <MotorEmissoesView
+              inventario={inventarioEmissoes}
+              possuiIREC={possuiIREC}
+              onToggleIREC={(val) => setPossuiIREC(val)}
+              onSalvarInventario={handleSalvarInventario}
+              isSalvando={isSalvandoInventario}
+            />
+          </div>
+        )}
+
+        {abaFiscalAtiva === 'upload_manual' && (
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[#12B886]/30 mb-10 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <UploadCloud className="w-5 h-5 text-[#12B886]" />
+                  <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                    INGESTÃO MULTI-MODELO FISCAL (NF-E, NFC-E, NFS-E, CT-E, MDF-E, NF3E, NFCOM,
+                    BP-E, CT-E OS, FATURAS)
+                  </h2>
+                </div>
+                <p className="text-xs text-[#93A3B5] mt-1">
+                  Envie seus arquivos fiscais para substituir estimativas preliminares por créditos
+                  fiscais reais apurados e alimentar o motor pericial de emissões de Escopo 1, 2 e
+                  3.
+                </p>
+              </div>
+
+              {/* Input de arquivo */}
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFilesSelected}
+                  accept=".xml,text/xml,.json,.txt"
+                  multiple
+                  className="hidden"
+                  id="nfe-file-input"
+                />
+                <button
+                  type="button"
+                  disabled={isUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>
+                    {isUploading ? 'Processando Documentos...' : 'Importar Documentos Fiscais'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Feedback de erro/sucesso */}
+            {uploadError && (
+              <div className="mb-4 p-3 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{uploadError}</span>
+              </div>
+            )}
+            {uploadSuccess && (
+              <div className="mb-4 p-3 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 text-xs text-[#12B886] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{uploadSuccess}</span>
+              </div>
+            )}
+
+            {/* Resumo dos Créditos Apurados */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-0.5">
+                  Docs Ingeridos
+                </span>
+                <span className="text-xl font-heading font-black text-[#F4F7FA]">
+                  {totaisNfe.totalNotas}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#12B886] block mb-0.5">
+                  PIS/Cofins Real
+                </span>
+                <span className="text-xl font-heading font-black text-[#12B886]">
+                  {formatCurrencyBRL(totaisNfe.somaPisCofins)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#D9B36C] block mb-0.5">
+                  ICMS Destacado
+                </span>
+                <span className="text-xl font-heading font-black text-[#D9B36C]">
+                  {formatCurrencyBRL(totaisNfe.somaIcms)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-0.5">
+                  IPI Apurado
+                </span>
+                <span className="text-xl font-heading font-black text-[#F4F7FA]">
+                  {formatCurrencyBRL(totaisNfe.somaIpi)}
+                </span>
+              </div>
+            </div>
+
+            {/* Lista de Notas Processadas */}
+            {nfeList.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
+                    <tr>
+                      <th className="py-2.5 px-3">Documento / Emissão</th>
+                      <th className="py-2.5 px-3">Origem</th>
+                      <th className="py-2.5 px-3">Emitente</th>
+                      <th className="py-2.5 px-3">Destinatário</th>
+                      <th className="py-2.5 px-3 text-right">Valor Total</th>
+                      <th className="py-2.5 px-3 text-right">Créd. PIS/Cofins</th>
+                      <th className="py-2.5 px-3 text-right">ICMS</th>
+                      <th className="py-2.5 px-3 text-center">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
+                    {nfeList.map((item) => (
+                      <tr key={item.id} className="hover:bg-[#16202B]/40 transition-colors">
+                        <td className="py-2.5 px-3">
+                          <div className="font-mono font-semibold text-[#12B886]">
+                            Doc nº {item.numero_nota || 'S/N'} (Série {item.serie || '1'})
+                          </div>
+                          <div className="text-[10px] text-[#93A3B5]">
+                            {item.data_emissao
+                              ? item.data_emissao.slice(0, 10)
+                              : 'Data não informada'}{' '}
+                            • Mod. {(item as any).modelo_fiscal || item.modelo}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold ${
+                              (item as any).origem === 'infosimples'
+                                ? 'bg-[#3B82F6]/20 text-[#3B82F6]'
+                                : 'bg-[#12B886]/20 text-[#12B886]'
+                            }`}
+                          >
+                            {(item as any).origem || 'manual'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div
+                            className="font-semibold truncate max-w-[150px]"
+                            title={item.nome_emitente}
+                          >
+                            {item.nome_emitente || 'Não informado'}
+                          </div>
+                          <div className="text-[10px] font-mono text-[#93A3B5]">
+                            {item.cnpj_emitente}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="truncate max-w-[150px]" title={item.nome_destinatario}>
+                            {item.nome_destinatario || 'Consumidor'}
+                          </div>
+                          <div className="text-[10px] font-mono text-[#93A3B5]">
+                            {item.cnpj_destinatario}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                          {formatCurrencyBRL(item.valor_total_nf || 0)}
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
+                          {formatCurrencyBRL((item.valor_pis || 0) + (item.valor_cofins || 0))}
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono text-[#D9B36C]">
+                          {formatCurrencyBRL(item.valor_icms || 0)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteNfe(item.id)}
+                            className="p-1 rounded text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
+                            title="Remover nota fiscal"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6 border border-dashed border-[rgba(244,247,250,0.12)] rounded-xl text-xs text-[#93A3B5] bg-[#0A0E12]">
+                <FileCode className="w-8 h-8 text-[#93A3B5]/40 mx-auto mb-2" />
+                Nenhum documento fiscal importado ainda. Selecione arquivos XML/JSON ou use a aba de
+                importação via InfoSimples.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 2. COMPARATIVO DA REFORMA TRIBUTÁRIA ATUALIZADO COM CRÉDITOS REAIS */}
         {currentLead && comparativoCalculado && (
