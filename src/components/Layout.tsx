@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { OrbisGlobe } from './OrbisGlobe'
+import { OrbisLogo } from './OrbisLogo'
 import { useAuth } from '@/contexts/AuthContext'
 import { AssistenteOrbisWidget } from './AssistenteOrbisWidget'
 import {
@@ -92,8 +93,8 @@ export default function Layout() {
         >
           <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
             {/* Brand Logo & Name */}
-            <Link to="/" className="flex items-center gap-3.5 group">
-              <OrbisGlobe size={40} />
+            <Link to="/" className="flex items-center gap-3.5 group" title="Orbis Protocol">
+              <OrbisGlobe size={42} />
               <div className="flex flex-col">
                 <span className="font-heading font-black text-xl tracking-[0.08em] text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
                   ORBIS<span className="text-[#12B886]">.</span>PROTOCOL
@@ -183,7 +184,7 @@ export default function Layout() {
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-[rgba(244,247,250,0.1)]">
                 <div className="flex items-center gap-3">
-                  <OrbisGlobe size={32} />
+                  <OrbisGlobe size={34} />
                   <span className="font-heading font-black text-lg tracking-wider text-[#F4F7FA]">
                     ORBIS PROTOCOL
                   </span>
@@ -279,10 +280,15 @@ export default function Layout() {
             {/* Col 1 & 2: Brand Info */}
             <div className="lg:col-span-2 flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <OrbisGlobe size={36} />
-                <span className="font-heading font-black text-xl tracking-wider text-[#F4F7FA]">
-                  ORBIS PROTOCOL
-                </span>
+                <OrbisGlobe size={40} />
+                <div className="flex flex-col">
+                  <span className="font-heading font-black text-xl tracking-wider text-[#F4F7FA]">
+                    ORBIS PROTOCOL
+                  </span>
+                  <span className="text-[10px] tracking-[0.15em] uppercase text-[#93A3B5] font-semibold -mt-0.5">
+                    Infraestrutura dMRV & Rastreabilidade
+                  </span>
+                </div>
               </div>
               <p className="text-sm text-[#93A3B5] leading-relaxed max-w-md">
                 Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para

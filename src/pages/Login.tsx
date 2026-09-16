@@ -34,7 +34,10 @@ export default function Login() {
     <div className="min-h-screen py-16 flex items-center justify-center bg-[#0A0E12] px-4">
       <div className="w-full max-w-md p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-2xl relative">
         <div className="flex flex-col items-center text-center mb-8">
-          <OrbisGlobe size={48} className="mb-4" />
+          <div className="relative mb-3">
+            <div className="absolute inset-0 rounded-full bg-[#12B886]/25 blur-lg scale-125" />
+            <OrbisGlobe size={56} className="relative z-10" />
+          </div>
           <h1 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">ORBIS PROTOCOL</h1>
           <p className="text-xs text-[#93A3B5] mt-1">
             Autenticação Segura • Acesso a Laudos e Selos dMRV

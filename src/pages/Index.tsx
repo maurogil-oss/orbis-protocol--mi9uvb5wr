@@ -165,8 +165,9 @@ export default function Index() {
 
             {/* Rotating Emblem in Hero */}
             <div className="mt-16 flex flex-col items-center gap-3">
-              <div className="p-3 rounded-full bg-[#111820]/80 border border-[rgba(244,247,250,0.12)] shadow-xl">
-                <OrbisGlobe size={64} />
+              <div className="p-3.5 rounded-full bg-[#111820]/90 border border-[#12B886]/40 shadow-2xl relative group">
+                <div className="absolute inset-0 rounded-full bg-[#12B886]/20 blur-md group-hover:scale-125 transition-transform" />
+                <OrbisGlobe size={72} />
               </div>
               <span className="text-xs uppercase tracking-[0.2em] text-[#93A3B5] font-semibold">
                 Auditoria & Rastreabilidade Confiável

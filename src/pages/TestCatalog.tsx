@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
+import { OrbisLogo } from '@/components/OrbisLogo'
 import {
   ShieldCheck,
   CheckCircle2,
@@ -26,32 +27,48 @@ export default function TestCatalog() {
             SISTEMA DE DESIGN ORBIS PROTOCOL
           </h1>
           <p className="text-sm text-[#93A3B5] mt-1">
-            Visualização de paleta de cores (#0A0E12, #12B886, #D9B36C), tipografia, botões, cards e
-            emblema animado.
+            Visualização de logotipo oficial transparente, paleta de cores (#0A0E12, #12B886,
+            #D9B36C), tipografia, botões e cards.
           </p>
         </div>
 
-        {/* 1. EMBLEMA & GLOBOS */}
+        {/* 1. LOGO OFICIAL & EMBLEMA */}
         <section className="mb-12 p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)]">
           <h2 className="font-heading font-bold text-lg text-[#F4F7FA] mb-6">
-            1. EMBLEMA DO GLOBO (ROTAÇÃO CONTÍNUA BIPOLAR)
+            1. LOGO OFICIAL & EMBLEMA TRANSPARENTE
           </h2>
-          <div className="flex flex-wrap items-center gap-8">
-            <div className="flex flex-col items-center gap-2">
-              <OrbisGlobe size={32} />
-              <span className="text-[11px] text-[#93A3B5]">32px (Header Mobile)</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-6 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+              <span className="text-xs uppercase text-[#93A3B5] font-semibold block mb-4">
+                Logo Completa Oficial (Transparente / Alta Definição)
+              </span>
+              <div className="py-4 flex items-center justify-center">
+                <OrbisLogo variant="full" height={56} />
+              </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <OrbisGlobe size={48} />
-              <span className="text-[11px] text-[#93A3B5]">48px (Header Desktop / Auth)</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <OrbisGlobe size={64} />
-              <span className="text-[11px] text-[#93A3B5]">64px (Hero)</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <OrbisGlobe size={96} />
-              <span className="text-[11px] text-[#93A3B5]">96px (Destaque Institucional)</span>
+
+            <div className="p-6 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+              <span className="text-xs uppercase text-[#93A3B5] font-semibold block mb-4">
+                Emblema Circular (Globo, Folha e Aro Metálico)
+              </span>
+              <div className="flex flex-wrap items-center justify-around gap-4 py-2">
+                <div className="flex flex-col items-center gap-2">
+                  <OrbisGlobe size={32} />
+                  <span className="text-[10px] text-[#93A3B5]">32px</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <OrbisGlobe size={48} />
+                  <span className="text-[10px] text-[#93A3B5]">48px</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <OrbisGlobe size={64} />
+                  <span className="text-[10px] text-[#93A3B5]">64px</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <OrbisGlobe size={80} />
+                  <span className="text-[10px] text-[#93A3B5]">80px</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
