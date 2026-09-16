@@ -14,6 +14,7 @@
  * - Tiers de incerteza (±% ponderado) e segregação estrita de emissões fósseis e biogênicas.
  */
 
+import { classificarItemCompradoNCM } from './classificacaoFisicaNCM'
 import { DocumentoFiscalProcessado } from './modelosFiscaisParser'
 import { FATORES_EMISSAO_CURADOS, GWP_AR6, FatorEmissaoCurado } from './fatoresEmissaoOficiais'
 
@@ -88,6 +89,13 @@ export interface OpcoesCalculoInventario {
   possuiIREC?: boolean // Se possui energia renovável contratada para Escopo 2 Mercado
   fatorCustomizadoSIN?: number
   insettingCdvCo2eKg?: number // Adicional: CO2e evitado acumulado dos lotes de CDV vinculado
+  itensBensCompradosNCM?: Array<{
+    descricao: string
+    ncm?: string
+    unidadeDeclarada?: string
+    quantidadeFisica?: number
+    valorBrl: number
+  }>
 }
 
 /**
@@ -291,6 +299,69 @@ export function calcularInventarioEmissoes(
         incertezaPct: fator.incertezaPadraoPct,
         fonteFator: `${fator.fonte} (${fator.versaoTabela})`,
       })
+    }
+
+    // 5.1 ESCOPO 3: Bens e Serviços Comprados (Categoria 1) dos Itens da NF-e com NCM
+    if (doc.itens && Array.isArray(doc.itens) && doc.itens.length > 0) {
+      for (const item of doc.itens) {
+        // Ignora itens de combustível/energia/telecom já apurados nos blocos anteriores
+        const ncmRaw = item.ncm || ''
+        if (ncmRaw.startsWith('2710') || ncmRaw.startsWith('2711') || ncmRaw.startsWith('2716')) {
+          continue
+        }
+        // Se já houver apuração de combustível pelo doc, evita dupla contagem
+        if (doc.combustivelLitros && doc.combustivelLitros > 0) {
+          continue
+        }
+
+        const classif = classificarItemCompradoNCM({
+          descricao: item.descricao || 'Item de Mercadoria / Insumo',
+          ncm: item.ncm,
+          unidadeDeclarada: item.unidade,
+          quantidadeFisica: item.quantidade,
+          valorBrl: item.valorTotal || 0,
+        })
+
+        escopo3Fossil += classif.emissaoFossilTco2e
+        somaIncertezaPonderada += classif.emissaoFossilTco2e * classif.incertezaPct
+        pesoTotalEmissoes += classif.emissaoFossilTco2e
+
+        itensApurados.push({
+          id: `e3_cat1_${doc.chaveAcesso.slice(-6)}_${item.numeroItem || itensApurados.length}`,
+          origemDocChave: doc.chaveAcesso,
+          modeloFiscal: doc.modeloFiscal,
+          descricaoItem: `${item.descricao || 'Insumo/Mercadoria'} [${classif.familia.nome}] - ${classif.declaracaoMetodologica}`,
+          categoria: 'Escopo 3',
+          subcategoria: 'Bens e Serviços Comprados (Cat. 1)',
+          quantidade: classif.quantidadeFisica,
+          unidade: classif.unidadeFisica,
+          fatorUtilizado: {
+            id: `ncm_${classif.familia.id}`,
+            descricao: `Fator ${classif.familia.nome} (${classif.fonteFator})`,
+            categoria: 'Escopo 3',
+            subcategoria: 'Bens e Serviços Comprados',
+            unidade: classif.unidadeFator,
+            kgCO2: classif.fatorUtilizado,
+            kgCH4: 0,
+            kgN2O: 0,
+            kgCO2Biogenico: 0,
+            fatorFossilTCO2e: classif.fatorUtilizado / 1000,
+            fonte: classif.fonteFator,
+            anoReferencia: 2024,
+            versaoTabela: 'ACV / Spend Ecoinvent',
+            tierIncertezaPadrao: classif.tierIncerteza,
+            incertezaPadraoPct: classif.incertezaPct,
+          },
+          kgCO2: classif.emissaoFossilKgCo2e,
+          kgCH4: 0,
+          kgN2O: 0,
+          fossilTCO2e: classif.emissaoFossilTco2e,
+          biogenicoTCO2e: 0,
+          tierIncerteza: classif.tierIncerteza,
+          incertezaPct: classif.incertezaPct,
+          fonteFator: `${classif.fonteFator} (${classif.declaracaoMetodologica})`,
+        })
+      }
     }
 
     // 6. INSETTING CIRCULAR ISO 14067: Peças Automotivas Reutilizadas de CDV

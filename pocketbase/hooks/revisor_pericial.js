@@ -267,6 +267,34 @@ Responda SOMENTE o bloco JSON estruturado, sem texto antes ou depois.`
         })
       }
 
+      // Checar predominância de spend-based em Bens e Serviços Comprados (Escopo 3 Categoria 1)
+      const itensCat1 = itensDetalhados.filter(
+        (it) =>
+          it.subcategoria &&
+          (it.subcategoria.includes('Bens e Serviços Comprados') ||
+            it.subcategoria.includes('Cat. 1')),
+      )
+      if (itensCat1.length > 0) {
+        const itensTier1Cat1 = itensCat1.filter(
+          (it) => it.tierIncerteza === 'Tier 1' || (it.incertezaPct && it.incertezaPct >= 15),
+        )
+        const proporcaoTier1 = itensTier1Cat1.length / itensCat1.length
+        if (proporcaoTier1 > 0.5) {
+          achadosGerados.push({
+            id: 'ACH-CAT1-SPEND-01',
+            titulo: 'Achado Consultivo: Predominância de itens spend-based no Escopo 3 Categoria 1',
+            severidade: 'baixa',
+            norma_referencia: 'GHG Protocol Corporate Scope 3 (Categoria 1) & ISO 14064-1',
+            descricao: `${itensTier1Cat1.length} de ${itensCat1.length} itens do Escopo 3 Categoria 1 (${Math.round(proporcaoTier1 * 100)}%) permanecem apurados pelo método spend-based (Tier 1, ±18%) devido à ausência de quantidade física (qCom) ou classificação por família na nota fiscal.`,
+            impacto_risco:
+              'Incerteza expandida na pegada de suprimentos corporativos, limitando a elegibilidade para linhas verdes de juros reduzidos.',
+            plano_recomendado: 'laudo_pericial',
+            recomendacao_acao:
+              'Priorizar aquisição com quantidade física na nota para elevar qualidade do dado (conversão de Tier 1 spend-based para Tier 2 físico via proxy interno por NCM, validação do Revisor).',
+          })
+        }
+      }
+
       // Checar desvios de preços de combustíveis vs. faixas ANP
       const itensDetalhados = Array.isArray(inventarioData.itensDetalhados)
         ? inventarioData.itensDetalhados

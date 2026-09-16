@@ -24,6 +24,9 @@ import {
   HelpCircle,
   Database,
   Compass,
+  Boxes,
+  TrendingDown,
+  ArrowUpRight,
 } from 'lucide-react'
 import {
   carregarDadosCorporativoDemo,
@@ -32,6 +35,12 @@ import {
   NOTAS_DEFAULT_FALLBACK,
   NotaFiscalDemonstrativa,
 } from '@/services/corporativoService'
+import {
+  DECLARACAO_PROXY_NCM,
+  FAMILIAS_NCM_CONFIG,
+  resumirClassificacaoItensComprados,
+  ItemCompradoInput,
+} from '@/services/classificacaoFisicaNCM'
 import { formatCurrencyBRL } from '@/services/nfeParser'
 import {
   dispararTriagemPericial,

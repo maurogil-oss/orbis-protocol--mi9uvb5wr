@@ -86,6 +86,31 @@ export interface NotaFiscalDemonstrativa {
     }
     subcategoria?: string
     ncm?: string
+    itens_classificacao_ncm?: Array<{
+      descricao: string
+      ncm: string
+      familia: string
+      quantidadeFisica?: number
+      unidade: string
+      valorBrl: number
+      tier: 'Tier 1' | 'Tier 2'
+      incertezaPct: number
+      fatorAplicado: number
+      unidadeFator: string
+      emissaoFossilKg: number
+      motivoElevacao: string
+      declaracaoMetodologica: string
+    }>
+    classificacao_ncm_resumo?: {
+      totalItens: number
+      itensElevadosTier2: number
+      itensPermanecidosTier1: number
+      percentualElevados: number
+      incertezaOriginalPct: number
+      incertezaResultantePct: number
+      reducaoIncertezaPp: number
+      declaracaoNormativa: string
+    }
   }
 }
 
@@ -259,6 +284,150 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
         total_evitado_tco2e: 1.13,
         norma_referencia: 'ISO 14067:2018 / GHG Protocol Corporate Standard (Scope 3 Upstream)',
       },
+      itens_classificacao_ncm: [
+        {
+          descricao: 'Caixas Papelão Duplo 60x40 (4.500 kg)',
+          ncm: '4819.10.00',
+          familia: 'Papel e Celulósicos (Cap. 48)',
+          quantidadeFisica: 4500,
+          unidade: 'kg',
+          valorBrl: 18500,
+          tier: 'Tier 2',
+          incertezaPct: 8.5,
+          fatorAplicado: 0.25,
+          unidadeFator: 'kg CO₂e/kg',
+          emissaoFossilKg: 1125.0,
+          motivoElevacao:
+            'Elevado de Tier 1 (spend-based, ±18%) para Tier 2 (fator ACV, ±8.5%) por quantidade física de 4.500 kg presente no XML da NF-e.',
+          declaracaoMetodologica: 'proxy interno por NCM, validação do Revisor',
+        },
+      ],
+      classificacao_ncm_resumo: {
+        totalItens: 1,
+        itensElevadosTier2: 1,
+        itensPermanecidosTier1: 0,
+        percentualElevados: 100,
+        incertezaOriginalPct: 18.0,
+        incertezaResultantePct: 8.5,
+        reducaoIncertezaPp: 9.5,
+        declaracaoNormativa: 'proxy interno por NCM, validação do Revisor',
+      },
+    },
+  },
+  {
+    id: 'demo-04b',
+    slug: 'nota-04b-embalagens-filme-pe-nfe',
+    titulo: 'Bobinas Filme Stretch PEBD (Insumo Logístico)',
+    numeroDocumento: '001.442.100',
+    modeloFiscal: '55_nfe',
+    modeloFormatado: 'NF-e (Mod 55)',
+    categoriaOperacional: 'insumos',
+    cnae: '2222-6/00',
+    statusSefaz: 'OK (Autorizada SEFAZ-SP)',
+    tierIncerteza: 'Tier 2',
+    incertezaPct: 9.0,
+    razaoSocialParceiro: 'PLASTIPACK INDÚSTRIA DE EMBALAGENS LTDA',
+    cnpj: '61.293.440/0001-81',
+    dataEmissao: '24/07/2026',
+    valorBrl: 14200.0,
+    quantidadeDeclarada: '1.200 kg (60 bobinas)',
+    escopoAlvo: 'escopo_3',
+    fossilKgCo2e: 2580.0,
+    biogenicoKgCo2: 0.0,
+    insettingKgCo2e: 0.0,
+    detalhesJson: {
+      discriminacao: 'Filme Stretch Polietileno PEBD para Paletização e Unitização de Carga',
+      fonte_fator: 'PlasticsEurope LCA Dataset / Ecoinvent 3.10 (2,150 kgCO₂e/kg polímero)',
+      fator_numerico: 2.15,
+      unidade_fator: 'kg CO₂e/kg',
+      subcategoria: 'Bens e Serviços Comprados (Cat. 1)',
+      ncm: '3920.10.99',
+      itens_classificacao_ncm: [
+        {
+          descricao: 'Bobina Filme Stretch PEBD 500mm x 25µm',
+          ncm: '3920.10.99',
+          familia: 'Polímeros e Plásticos (Cap. 39)',
+          quantidadeFisica: 1200,
+          unidade: 'kg',
+          valorBrl: 14200,
+          tier: 'Tier 2',
+          incertezaPct: 9.0,
+          fatorAplicado: 2.15,
+          unidadeFator: 'kg CO₂e/kg',
+          emissaoFossilKg: 2580.0,
+          motivoElevacao:
+            'Elevado de Tier 1 (spend-based, ±18%) para Tier 2 (fator ACV PlasticsEurope, ±9.0%) via massa faturada de 1.200 kg declarada em qCom.',
+          declaracaoMetodologica: 'proxy interno por NCM, validação do Revisor',
+        },
+      ],
+      classificacao_ncm_resumo: {
+        totalItens: 1,
+        itensElevadosTier2: 1,
+        itensPermanecidosTier1: 0,
+        percentualElevados: 100,
+        incertezaOriginalPct: 18.0,
+        incertezaResultantePct: 9.0,
+        reducaoIncertezaPp: 9.0,
+        declaracaoNormativa: 'proxy interno por NCM, validação do Revisor',
+      },
+    },
+  },
+  {
+    id: 'demo-04c',
+    slug: 'nota-04c-estruturas-aco-armazenagem-nfe',
+    titulo: 'Estruturas Metálicas Porta-Paletes (Armazém)',
+    numeroDocumento: '000.318.905',
+    modeloFiscal: '55_nfe',
+    modeloFormatado: 'NF-e (Mod 55)',
+    categoriaOperacional: 'insumos',
+    cnae: '2511-0/00',
+    statusSefaz: 'OK (Autorizada SEFAZ-MG)',
+    tierIncerteza: 'Tier 2',
+    incertezaPct: 7.5,
+    razaoSocialParceiro: 'SIDERÚRGICA & ESTRUTURAS METÁLICAS MINAS S.A.',
+    cnpj: '17.332.901/0001-14',
+    dataEmissao: '26/07/2026',
+    valorBrl: 26500.0,
+    quantidadeDeclarada: '3.800 kg (Longarinas & Montantes)',
+    escopoAlvo: 'escopo_3',
+    fossilKgCo2e: 9310.0,
+    biogenicoKgCo2: 0.0,
+    insettingKgCo2e: 0.0,
+    detalhesJson: {
+      discriminacao: 'Montantes e Vigas Longarinas em Aço Galvanizado Estrutural',
+      fonte_fator: 'WorldSteel Association LCA / Ecoinvent 3.10 (2,450 kgCO₂e/kg aço)',
+      fator_numerico: 2.45,
+      unidade_fator: 'kg CO₂e/kg',
+      subcategoria: 'Bens e Serviços Comprados (Cat. 1)',
+      ncm: '7308.90.10',
+      itens_classificacao_ncm: [
+        {
+          descricao: 'Estruturas Metálicas Porta-Paletes em Aço',
+          ncm: '7308.90.10',
+          familia: 'Metais (Cap. 73 - WorldSteel)',
+          quantidadeFisica: 3800,
+          unidade: 'kg',
+          valorBrl: 26500,
+          tier: 'Tier 2',
+          incertezaPct: 7.5,
+          fatorAplicado: 2.45,
+          unidadeFator: 'kg CO₂e/kg',
+          emissaoFossilKg: 9310.0,
+          motivoElevacao:
+            'Elevado de Tier 1 (spend-based, ±18%) para Tier 2 (fator ACV WorldSteel, ±7.5%) por quantidade de 3.800 kg auditada em qCom.',
+          declaracaoMetodologica: 'proxy interno por NCM, validação do Revisor',
+        },
+      ],
+      classificacao_ncm_resumo: {
+        totalItens: 1,
+        itensElevadosTier2: 1,
+        itensPermanecidosTier1: 0,
+        percentualElevados: 100,
+        incertezaOriginalPct: 18.0,
+        incertezaResultantePct: 7.5,
+        reducaoIncertezaPp: 10.5,
+        declaracaoNormativa: 'proxy interno por NCM, validação do Revisor',
+      },
     },
   },
   {
@@ -350,6 +519,34 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
       unidade_fator: 'kg CO₂e/R$',
       subcategoria: 'Serviços Terceirizados & Manutenção Predial',
       metodologia_tier: 'Tier 1 (spend-based, ±18% - DEFRA/Ecoinvent 3.10)',
+      itens_classificacao_ncm: [
+        {
+          descricao: 'Serviços Técnicos e Peças de Reposição Diversas',
+          ncm: '8483.40.90',
+          familia: 'Elétricos e Máquinas (Cap. 84)',
+          quantidadeFisica: undefined,
+          unidade: 'BRL',
+          valorBrl: 8400,
+          tier: 'Tier 1',
+          incertezaPct: 18.0,
+          fatorAplicado: 0.015,
+          unidadeFator: 'kg CO₂e/R$',
+          emissaoFossilKg: 126.0,
+          motivoElevacao:
+            'Mantido em Tier 1 (spend-based, ±18%): documento fiscal de serviço sem quantidade física (massa/unidade) discriminada nos itens.',
+          declaracaoMetodologica: 'proxy interno por NCM, validação do Revisor',
+        },
+      ],
+      classificacao_ncm_resumo: {
+        totalItens: 1,
+        itensElevadosTier2: 0,
+        itensPermanecidosTier1: 1,
+        percentualElevados: 0,
+        incertezaOriginalPct: 18.0,
+        incertezaResultantePct: 18.0,
+        reducaoIncertezaPp: 0.0,
+        declaracaoNormativa: 'proxy interno por NCM, validação do Revisor',
+      },
     },
   },
   {
@@ -501,6 +698,34 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
       unidade_fator: 'kg CO₂e/R$',
       subcategoria: 'Serviços de Telecomunicação Corporativa e Nuvem',
       metodologia_tier: 'Tier 1 (spend-based, ±18% - EPA/DEFRA Telecom)',
+      itens_classificacao_ncm: [
+        {
+          descricao: 'Assinatura Link Dedicado e Tráfego de Dados',
+          ncm: '',
+          familia: 'Outros Bens e Serviços Comprados',
+          quantidadeFisica: undefined,
+          unidade: 'BRL',
+          valorBrl: 2400,
+          tier: 'Tier 1',
+          incertezaPct: 18.0,
+          fatorAplicado: 0.012,
+          unidadeFator: 'kg CO₂e/R$',
+          emissaoFossilKg: 28.8,
+          motivoElevacao:
+            'Mantido em Tier 1 (spend-based, ±18%): fatura de telecomunicação sem métrica de massa física ou NCM fabril específico.',
+          declaracaoMetodologica: 'proxy interno por NCM, validação do Revisor',
+        },
+      ],
+      classificacao_ncm_resumo: {
+        totalItens: 1,
+        itensElevadosTier2: 0,
+        itensPermanecidosTier1: 1,
+        percentualElevados: 0,
+        incertezaOriginalPct: 18.0,
+        incertezaResultantePct: 18.0,
+        reducaoIncertezaPp: 0.0,
+        declaracaoNormativa: 'proxy interno por NCM, validação do Revisor',
+      },
     },
   },
 ]
