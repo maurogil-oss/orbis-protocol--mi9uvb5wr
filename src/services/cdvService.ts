@@ -108,6 +108,27 @@ export interface CdvApiKeyRecord extends RecordModel {
   ultimo_uso?: string
 }
 
+export interface DppConsultaRecord extends RecordModel {
+  alvo_tipo: 'lote' | 'selo'
+  alvo_identificador: string
+  lote_id?: string
+  canal: 'qr' | 'web' | 'embed'
+  hash_conferido: boolean
+  hash_calculado?: string
+  ip_mascarado?: string
+  user_agent?: string
+  created: string
+}
+
+export interface RegistrarConsultaDppInput {
+  alvo_tipo: 'lote' | 'selo'
+  alvo_identificador: string
+  lote_id?: string
+  canal: 'qr' | 'web' | 'embed'
+  hash_conferido: boolean
+  hash_calculado?: string
+}
+
 export interface IngestaoLoteInput {
   cdv: {
     nome: string
@@ -455,4 +476,122 @@ export async function regenerarApiKeyCdv(
   })
 
   return { novaChave: rawKey, record: rec }
+}
+
+// Controle de debounce em memória para evitar registros duplicados em recarregamento imediato
+const consultasEmVooDebounce = new Map<string, number>()
+
+/**
+ * Registra o acesso a um DPP (Lote ou Peça Individual) via endpoint de auditoria do PocketBase.
+ * Captura IP real no backend e mascara estritamente segundo a LGPD (mantém apenas 2 octetos).
+ * Idempotente com janela de 10 segundos para não inflar métricas com F5 ou recargas consecutivas.
+ */
+export async function registrarConsultaDpp(
+  input: RegistrarConsultaDppInput,
+): Promise<{ sucesso: boolean; record?: Partial<DppConsultaRecord> }> {
+  const chaveDebounce = `${input.alvo_tipo}:${input.alvo_identificador}:${input.canal}`
+  const agora = Date.now()
+  const ultimoRegistro = consultasEmVooDebounce.get(chaveDebounce)
+
+  if (ultimoRegistro && agora - ultimoRegistro < 10000) {
+    return { sucesso: true }
+  }
+  consultasEmVooDebounce.set(chaveDebounce, agora)
+
+  try {
+    const res = await fetch(`${pb.baseUrl}/backend/v1/cdv/consultas`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    })
+
+    if (!res.ok) {
+      // Fallback: se o endpoint customizado falhar por algum motivo, tentar gravação direta na coleção pública
+      try {
+        const direto = await pb.collection('dpp_consultas').create({
+          alvo_tipo: input.alvo_tipo,
+          alvo_identificador: input.alvo_identificador,
+          lote_id: input.lote_id || '',
+          canal: input.canal,
+          hash_conferido: input.hash_conferido,
+          hash_calculado: input.hash_calculado || '',
+          ip_mascarado: 'xxx.xxx.xxx.xxx',
+        })
+        return { sucesso: true, record: direto as any }
+      } catch {
+        return { sucesso: false }
+      }
+    }
+
+    const data = await res.json()
+    return { sucesso: true, record: data }
+  } catch {
+    // Tentar fallback direto via SDK PocketBase (RLS createRule vazia "")
+    try {
+      const direto = await pb.collection('dpp_consultas').create({
+        alvo_tipo: input.alvo_tipo,
+        alvo_identificador: input.alvo_identificador,
+        lote_id: input.lote_id || '',
+        canal: input.canal,
+        hash_conferido: input.hash_conferido,
+        hash_calculado: input.hash_calculado || '',
+        ip_mascarado: 'xxx.xxx.xxx.xxx',
+      })
+      return { sucesso: true, record: direto as any }
+    } catch {
+      return { sucesso: false }
+    }
+  }
+}
+
+/**
+ * Consulta o histórico de verificações recentes de um lote ou selo específico.
+ * Se autenticado, lê de dpp_consultas.
+ */
+export async function obterHistoricoConsultasDpp(
+  alvoIdentificador: string,
+  loteId?: string,
+  limit: number = 5,
+): Promise<{ total: number; ultimas: DppConsultaRecord[] }> {
+  try {
+    const norm = alvoIdentificador.trim().toUpperCase()
+    let filter = `alvo_identificador = "${norm}"`
+    if (loteId && loteId.trim()) {
+      filter = `alvo_identificador = "${norm}" || lote_id = "${loteId.trim()}"`
+    }
+
+    const result = await pb.collection('dpp_consultas').getList<DppConsultaRecord>(1, limit, {
+      filter,
+      sort: '-created',
+      requestKey: null,
+    })
+
+    return {
+      total: result.totalItems,
+      ultimas: result.items,
+    }
+  } catch {
+    // Fallback gracioso caso usuário não esteja logado e a listRule requeira autenticação
+    return {
+      total: 0,
+      ultimas: [],
+    }
+  }
+}
+
+/**
+ * Consulta todas as verificações DPP para o console do CDV (exige autenticação)
+ */
+export async function listarTodasConsultasDpp(limit: number = 500): Promise<DppConsultaRecord[]> {
+  try {
+    return await pb.collection('dpp_consultas').getFullList<DppConsultaRecord>({
+      sort: '-created',
+      batch: limit,
+      requestKey: null,
+    })
+  } catch {
+    return []
+  }
 }

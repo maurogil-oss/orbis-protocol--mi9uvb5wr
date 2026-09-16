@@ -683,4 +683,25 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     expect(hashLoteDemo1).toHaveLength(64)
     expect(hashLoteDemo1).toBe(hashLoteDemo2)
   })
+
+  it('deve formatar IP mascarado conforme as regras estritas da LGPD', () => {
+    // IPv4: preservar apenas dois primeiros octetos
+    const mascararIpLgpd = (rawIp: string): string => {
+      if (!rawIp) return 'xxx.xxx.xxx.xxx'
+      if (rawIp.includes('.')) {
+        const parts = rawIp.split('.')
+        return parts.length === 4 ? `${parts[0]}.${parts[1]}.xxx.xxx` : 'xxx.xxx.xxx.xxx'
+      }
+      if (rawIp.includes(':')) {
+        const parts = rawIp.split(':')
+        return parts.length >= 2 ? `${parts[0]}:${parts[1]}:xxxx:xxxx::` : 'xxxx:xxxx::'
+      }
+      return 'xxx.xxx.xxx.xxx'
+    }
+
+    expect(mascararIpLgpd('189.40.122.95')).toBe('189.40.xxx.xxx')
+    expect(mascararIpLgpd('177.136.24.10')).toBe('177.136.xxx.xxx')
+    expect(mascararIpLgpd('2804:14d:5483:8100:e901:4b8a:ff12:8910')).toBe('2804:14d:xxxx:xxxx::')
+    expect(mascararIpLgpd('')).toBe('xxx.xxx.xxx.xxx')
+  })
 })

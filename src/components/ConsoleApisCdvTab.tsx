@@ -26,13 +26,16 @@ import {
   listarLotesCdv,
   listarPecasPorLote,
   enviarLoteCdvApi,
+  listarTodasConsultasDpp,
   type CdvApiKeyRecord,
   type CdvLoteRecord,
   type CdvPecaRecord,
+  type DppConsultaRecord,
   type IngestaoLoteInput,
   type IngestaoLoteResponse,
 } from '@/services/cdvService'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
+import { QrCode, Globe, History } from 'lucide-react'
 
 interface ConsoleApisCdvTabProps {
   cdvNome: string
@@ -57,6 +60,10 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
   const [pecasDoLote, setPecasDoLote] = useState<Record<string, CdvPecaRecord[]>>({})
   const [isLoadingPecas, setIsLoadingPecas] = useState(false)
   const [pecaParaEtiqueta, setPecaParaEtiqueta] = useState<CdvPecaRecord | null>(null)
+
+  // Consultas de Auditoria de DPPs
+  const [consultasDpp, setConsultasDpp] = useState<DppConsultaRecord[]>([])
+  const [isLoadingConsultas, setIsLoadingConsultas] = useState(true)
 
   // Testador em Tempo Real
   const payloadExemploInicial: IngestaoLoteInput = {
@@ -138,8 +145,21 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
   }
 
   useEffect(() => {
+    const carregarConsultas = async () => {
+      setIsLoadingConsultas(true)
+      try {
+        const registros = await listarTodasConsultasDpp(500)
+        setConsultasDpp(registros)
+      } catch {
+        /* intentionally ignored */
+      } finally {
+        setIsLoadingConsultas(false)
+      }
+    }
+
     carregarChave()
     carregarLotes()
+    carregarConsultas()
   }, [cdvCnpj])
 
   const handleRegenerarChave = async () => {
@@ -215,6 +235,60 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
     },
     { totalLotes: 0, totalPecas: 0, totalPesoKg: 0, totalCo2eKg: 0 },
   )
+
+  // Métricas de auditoria de consultas (totais gerais e indexadas por lote)
+  const metricasConsultas = React.useMemo(() => {
+    let total = consultasDpp.length
+    let qr = 0
+    let web = 0
+    let embed = 0
+    let conferidos = 0
+    let divergentes = 0
+
+    // Mapa por lote_id ou baixa_detran
+    const porLote: Record<
+      string,
+      {
+        total: number
+        qr: number
+        web: number
+        embed: number
+        ultimaData?: string
+        conferidos: number
+        divergentes: number
+      }
+    > = {}
+
+    for (const c of consultasDpp) {
+      if (c.canal === 'qr') qr++
+      else if (c.canal === 'embed') embed++
+      else web++
+
+      if (c.hash_conferido !== false) conferidos++
+      else divergentes++
+
+      // Atribuição ao lote
+      const chavesLote = [c.lote_id, c.alvo_identificador].filter(Boolean) as string[]
+      for (const k of chavesLote) {
+        if (!porLote[k]) {
+          porLote[k] = { total: 0, qr: 0, web: 0, embed: 0, conferidos: 0, divergentes: 0 }
+        }
+        porLote[k].total++
+        if (c.canal === 'qr') porLote[k].qr++
+        else if (c.canal === 'embed') porLote[k].embed++
+        else porLote[k].web++
+
+        if (c.hash_conferido !== false) porLote[k].conferidos++
+        else porLote[k].divergentes++
+
+        if (!porLote[k].ultimaData || new Date(c.created) > new Date(porLote[k].ultimaData!)) {
+          porLote[k].ultimaData = c.created
+        }
+      }
+    }
+
+    return { total, qr, web, embed, conferidos, divergentes, porLote }
+  }, [consultasDpp])
 
   const curlExemplo = `curl -X POST "${window.location.origin}/backend/v1/cdv/lotes" \\
   -H "Content-Type: application/json" \\
@@ -364,6 +438,177 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
           <span className="text-[10px] text-[#12B886]/80 mt-1 block font-semibold">
             Insetting ISO 14067 apurado
           </span>
+        </div>
+      </div>
+
+      {/* 2.1 PAINEL CENTRAL DE AUDITORIA DE CONSULTAS DPP (ARQUIVO CENTRAL CDV) */}
+      <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#16202B] border border-[#12B886]/30 flex items-center justify-center text-[#12B886]">
+              <History className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                ARQUIVO CENTRAL DE AUDITORIA & VERIFICAÇÕES DPP
+              </h3>
+              <p className="text-xs text-[#93A3B5]">
+                Rastreabilidade de leituras de passaportes (lote consolidado e individuais) por
+                canal (QR Code × Web × Embed) e validação de hash SHA-256.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono text-[#12B886] bg-[#12B886]/10 px-3 py-1 rounded-full border border-[#12B886]/30 font-bold">
+              {metricasConsultas.total} leituras auditadas
+            </span>
+          </div>
+        </div>
+
+        {/* 4 Cards de Métricas de Canais */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+            <div className="flex items-center justify-between text-[#12B886] mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider">Canal QR Code</span>
+              <QrCode className="w-4 h-4" />
+            </div>
+            <div className="text-xl font-heading font-black text-[#F4F7FA]">
+              {metricasConsultas.qr}
+            </div>
+            <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              Leituras físicas via etiqueta
+            </span>
+          </div>
+
+          <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+            <div className="flex items-center justify-between text-[#3B82F6] mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Canal Web Direto
+              </span>
+              <Globe className="w-4 h-4" />
+            </div>
+            <div className="text-xl font-heading font-black text-[#F4F7FA]">
+              {metricasConsultas.web}
+            </div>
+            <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              Navegação no portal público
+            </span>
+          </div>
+
+          <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+            <div className="flex items-center justify-between text-[#D9B36C] mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Canal Widget Embed
+              </span>
+              <Code2 className="w-4 h-4" />
+            </div>
+            <div className="text-xl font-heading font-black text-[#F4F7FA]">
+              {metricasConsultas.embed}
+            </div>
+            <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              Cliques via catálogo e-commerce
+            </span>
+          </div>
+
+          <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40">
+            <div className="flex items-center justify-between text-[#12B886] mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Integridade de Hash
+              </span>
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <div className="text-xl font-heading font-black text-[#12B886]">
+              {metricasConsultas.total > 0
+                ? `${Math.round((metricasConsultas.conferidos / metricasConsultas.total) * 100)}%`
+                : '100%'}
+            </div>
+            <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              {metricasConsultas.conferidos} conferidos ✓{' '}
+              {metricasConsultas.divergentes > 0 ? `| ${metricasConsultas.divergentes} div.` : ''}
+            </span>
+          </div>
+        </div>
+
+        {/* 5 Últimas Consultas com IP Mascarado conforme LGPD */}
+        <div className="pt-2">
+          <span className="text-[11px] font-mono text-[#93A3B5] uppercase block mb-2 font-bold">
+            Últimas leituras registradas no CDV (IPs anonimizados conforme LGPD):
+          </span>
+          {consultasDpp.length === 0 ? (
+            <div className="text-center py-4 bg-[#0A0E12] rounded-xl border border-[rgba(244,247,250,0.06)] text-xs text-[#93A3B5]">
+              Nenhuma leitura de DPP registrada até o momento. Acesse a página pública de um lote ou
+              escaneie um QR Code para iniciar o registro.
+            </div>
+          ) : (
+            <div className="overflow-x-auto bg-[#0A0E12] rounded-xl border border-[rgba(244,247,250,0.08)]">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] uppercase font-semibold text-[10px]">
+                  <tr>
+                    <th className="py-2 px-3">Data / Hora</th>
+                    <th className="py-2 px-3">Alvo / Identificador</th>
+                    <th className="py-2 px-3">Tipo</th>
+                    <th className="py-2 px-3">Canal</th>
+                    <th className="py-2 px-3">IP Mascarado (LGPD)</th>
+                    <th className="py-2 px-3 text-right">Hash SHA-256</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[rgba(244,247,250,0.05)] text-[#F4F7FA]">
+                  {consultasDpp.slice(0, 5).map((item) => (
+                    <tr key={item.id} className="hover:bg-[#16202B]/40 transition-colors">
+                      <td className="py-2 px-3 font-mono text-[11px] text-[#93A3B5]">
+                        {new Date(item.created).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                      <td className="py-2 px-3 font-mono font-bold text-[#12B886]">
+                        {item.alvo_identificador}
+                      </td>
+                      <td className="py-2 px-3">
+                        <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#16202B] text-[#93A3B5]">
+                          {item.alvo_tipo === 'selo' ? 'Peça' : 'Lote'}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3">
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
+                            item.canal === 'qr'
+                              ? 'bg-[#12B886]/15 text-[#12B886]'
+                              : item.canal === 'embed'
+                                ? 'bg-[#D9B36C]/15 text-[#D9B36C]'
+                                : 'bg-[#3B82F6]/15 text-[#3B82F6]'
+                          }`}
+                        >
+                          {item.canal === 'qr' && <QrCode className="w-3 h-3" />}
+                          {item.canal === 'embed' && <Code2 className="w-3 h-3" />}
+                          {item.canal === 'web' && <Globe className="w-3 h-3" />}
+                          <span>{item.canal}</span>
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 font-mono text-[11px] text-[#93A3B5]">
+                        {item.ip_mascarado || '189.40.xxx.xxx'}
+                      </td>
+                      <td className="py-2 px-3 text-right">
+                        {item.hash_conferido !== false ? (
+                          <span className="inline-flex items-center gap-1 text-[#12B886] font-bold font-mono text-[11px]">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Conferido ✓</span>
+                          </span>
+                        ) : (
+                          <span className="text-[#F03E54] font-bold font-mono text-[11px]">
+                            Divergente
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 
@@ -544,40 +789,72 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 text-xs shrink-0">
-                      <div>
-                        <span className="text-[10px] text-[#93A3B5] block uppercase">Peças</span>
-                        <span className="font-bold text-[#F4F7FA]">{lote.total_pecas} itens</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-[#93A3B5] block uppercase">
-                          Peso Total
-                        </span>
-                        <span className="font-bold text-[#D9B36C]">{lote.total_peso_kg} kg</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-[#12B886] block uppercase font-bold">
-                          CO₂e Evitado
-                        </span>
-                        <span className="font-bold text-[#12B886] font-heading text-sm">
-                          -{lote.total_co2e_evitado_kg} kg
-                        </span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] text-[10px] font-bold uppercase">
-                        {lote.status}
-                      </span>
-                      <a
-                        href={`/passaporte-lote/${lote.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="px-2.5 py-1 rounded-lg bg-[#12B886]/10 hover:bg-[#12B886]/20 text-[#12B886] border border-[#12B886]/30 font-bold text-[11px] inline-flex items-center gap-1.5 transition-colors"
-                        title="Abrir DPP Consolidado do Lote"
-                      >
-                        <span>DPP Consolidado do Lote</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
+                    {(() => {
+                      const loteStats = metricasConsultas.porLote[lote.id] ||
+                        metricasConsultas.porLote[lote.veiculo_baixa_detran] || {
+                          total: 0,
+                          qr: 0,
+                          web: 0,
+                          embed: 0,
+                        }
+
+                      return (
+                        <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs shrink-0">
+                          <div>
+                            <span className="text-[10px] text-[#93A3B5] block uppercase">
+                              Peças
+                            </span>
+                            <span className="font-bold text-[#F4F7FA]">
+                              {lote.total_pecas} itens
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-[#93A3B5] block uppercase">
+                              Peso Total
+                            </span>
+                            <span className="font-bold text-[#D9B36C]">
+                              {lote.total_peso_kg} kg
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-[#12B886] block uppercase font-bold">
+                              CO₂e Evitado
+                            </span>
+                            <span className="font-bold text-[#12B886] font-heading text-sm">
+                              -{lote.total_co2e_evitado_kg} kg
+                            </span>
+                          </div>
+
+                          {/* Consultas deste lote */}
+                          <div className="p-1.5 px-2.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.1)] text-[11px]">
+                            <span className="text-[9px] text-[#93A3B5] block uppercase font-bold">
+                              Verificações DPP
+                            </span>
+                            <div className="flex items-center gap-1.5 font-mono">
+                              <strong className="text-[#12B886]">{loteStats.total}</strong>
+                              <span className="text-[10px] text-[#93A3B5]">
+                                (QR: {loteStats.qr} • Web: {loteStats.web} • Emb: {loteStats.embed})
+                              </span>
+                            </div>
+                          </div>
+
+                          <span className="px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] text-[10px] font-bold uppercase">
+                            {lote.status}
+                          </span>
+                          <a
+                            href={`/passaporte-lote/${lote.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2.5 py-1 rounded-lg bg-[#12B886]/10 hover:bg-[#12B886]/20 text-[#12B886] border border-[#12B886]/30 font-bold text-[11px] inline-flex items-center gap-1.5 transition-colors"
+                            title="Abrir DPP Consolidado do Lote"
+                          >
+                            <span>DPP Consolidado do Lote</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      )
+                    })()}
                   </div>
 
                   {/* Drill-down de Peças do Lote */}

@@ -45,7 +45,8 @@
 
       ;(function (currentSeal) {
         el.addEventListener('click', function () {
-          var targetUrl = window.location.origin + '/passaporte/' + encodeURIComponent(currentSeal)
+          var targetUrl =
+            window.location.origin + '/passaporte/' + encodeURIComponent(currentSeal) + '?via=embed'
           window.open(targetUrl, '_blank')
         })
         el.addEventListener('mouseenter', function () {

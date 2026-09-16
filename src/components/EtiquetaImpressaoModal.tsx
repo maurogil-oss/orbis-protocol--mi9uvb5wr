@@ -10,7 +10,7 @@ interface EtiquetaImpressaoModalProps {
 
 export function EtiquetaImpressaoModal({ peca, onClose }: EtiquetaImpressaoModalProps) {
   const printAreaRef = useRef<HTMLDivElement | null>(null)
-  const passaporteUrl = `${window.location.origin}/passaporte/${peca.selo_dpp}`
+  const passaporteUrl = `${window.location.origin}/passaporte/${peca.selo_dpp}?via=qr`
 
   const handlePrint = () => {
     window.print()

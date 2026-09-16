@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import {
   ShieldCheck,
   CheckCircle2,
@@ -15,10 +15,13 @@ import {
   Building2,
   ArrowLeft,
   Sparkles,
+  QrCode,
+  Globe,
 } from 'lucide-react'
 import {
   consultarPassaportePorSelo,
   calcularHashCanonicalPeca,
+  registrarConsultaDpp,
   FATORES_CDV_MATERIAIS,
   type CdvPecaRecord,
 } from '@/services/cdvService'
@@ -27,6 +30,11 @@ import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
 
 export default function PassaportePublicoPage() {
   const { selo } = useParams<{ selo: string }>()
+  const [searchParams] = useSearchParams()
+  const canalParam = searchParams.get('via') // 'qr' | 'embed' | 'web'
+  const canalDetectado: 'qr' | 'web' | 'embed' =
+    canalParam === 'qr' ? 'qr' : canalParam === 'embed' ? 'embed' : 'web'
+
   const [peca, setPeca] = useState<CdvPecaRecord | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isIntegridadeValida, setIsIntegridadeValida] = useState<boolean | null>(null)
@@ -34,9 +42,11 @@ export default function PassaportePublicoPage() {
   const [copiedHash, setCopiedHash] = useState(false)
   const [copiedEmbed, setCopiedEmbed] = useState(false)
   const [showModalEtiqueta, setShowModalEtiqueta] = useState(false)
+  const hasRegisteredRef = useRef(false)
 
   const seloParam = (selo || '').trim().toUpperCase()
   const passaporteUrl = `${window.location.origin}/passaporte/${seloParam}`
+  const passaporteQrUrl = `${passaporteUrl}?via=qr`
 
   useEffect(() => {
     let isMounted = true
@@ -62,8 +72,21 @@ export default function PassaportePublicoPage() {
             cdv_cnpj: record.cdv_cnpj,
           })
           setHashRecalculado(sha)
-          // Integridade verificada com sucesso (mesmo hash ou chancela assinada)
-          setIsIntegridadeValida(Boolean(record.hash_sha256))
+          const conferido = Boolean(record.hash_sha256)
+          setIsIntegridadeValida(conferido)
+
+          // Registrar consulta do DPP da peça de forma idempotente
+          if (!hasRegisteredRef.current) {
+            hasRegisteredRef.current = true
+            await registrarConsultaDpp({
+              alvo_tipo: 'selo',
+              alvo_identificador: record.selo_dpp,
+              lote_id: record.lote || undefined,
+              canal: canalDetectado,
+              hash_conferido: conferido,
+              hash_calculado: sha,
+            })
+          }
         }
       } catch {
         if (isMounted) setPeca(null)
@@ -75,7 +98,7 @@ export default function PassaportePublicoPage() {
     return () => {
       isMounted = false
     }
-  }, [seloParam])
+  }, [seloParam, canalDetectado])
 
   const copyHash = () => {
     if (!peca?.hash_sha256) return
@@ -298,7 +321,7 @@ export default function PassaportePublicoPage() {
                   <div className="text-center">
                     <div className="inline-block p-3 bg-white rounded-2xl shadow-xl mb-3">
                       <QRCodeSVG
-                        value={passaporteUrl}
+                        value={passaporteQrUrl}
                         size={170}
                         bgColor="#FFFFFF"
                         fgColor="#0A0E12"
@@ -324,6 +347,21 @@ export default function PassaportePublicoPage() {
                       <span className="text-[#93A3B5]">Data de Emissão:</span>
                       <span className="font-mono text-[#F4F7FA]">
                         {new Date(peca.created).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-[rgba(244,247,250,0.06)]">
+                      <span className="text-[#93A3B5]">Canal de Acesso:</span>
+                      <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#12B886] font-bold uppercase">
+                        {canalDetectado === 'qr' && <QrCode className="w-3 h-3" />}
+                        {canalDetectado === 'embed' && <Code2 className="w-3 h-3" />}
+                        {canalDetectado === 'web' && <Globe className="w-3 h-3" />}
+                        <span>
+                          {canalDetectado === 'qr'
+                            ? 'QR Code'
+                            : canalDetectado === 'embed'
+                              ? 'Widget Embed'
+                              : 'Web'}
+                        </span>
                       </span>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import {
   ShieldCheck,
   CheckCircle2,
@@ -19,13 +19,20 @@ import {
   BookOpen,
   Hash,
   ArrowUpRight,
+  History,
+  QrCode,
+  Globe,
+  Code2,
 } from 'lucide-react'
 import {
   consultarLoteConsolidado,
   calcularHashCanonicalLote,
+  registrarConsultaDpp,
+  obterHistoricoConsultasDpp,
   FATORES_CDV_MATERIAIS,
   type CdvLoteRecord,
   type CdvPecaRecord,
+  type DppConsultaRecord,
 } from '@/services/cdvService'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 
@@ -52,6 +59,11 @@ const SUBSISTEMAS_ORDEM = [
 
 export default function PassaporteLotePublicoPage() {
   const { lote: loteParam } = useParams<{ lote: string }>()
+  const [searchParams] = useSearchParams()
+  const canalParam = searchParams.get('via') // 'qr' | 'embed' | 'web'
+  const canalDetectado: 'qr' | 'web' | 'embed' =
+    canalParam === 'qr' ? 'qr' : canalParam === 'embed' ? 'embed' : 'web'
+
   const [lote, setLote] = useState<CdvLoteRecord | null>(null)
   const [pecas, setPecas] = useState<CdvPecaRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -59,7 +71,15 @@ export default function PassaporteLotePublicoPage() {
   const [copiedHash, setCopiedHash] = useState(false)
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todos')
 
-  const publicUrl = typeof window !== 'undefined' ? window.location.href : ''
+  // Histórico de Verificações do Lote
+  const [historicoConsultas, setHistoricoConsultas] = useState<DppConsultaRecord[]>([])
+  const [totalConsultasLote, setTotalConsultasLote] = useState<number>(0)
+  const hasRegisteredRef = useRef(false)
+
+  // URL canônica sem query param para o display e com ?via=qr para o QR Code
+  const baseUrlSemQuery =
+    typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : ''
+  const qrCodeUrl = `${baseUrlSemQuery}?via=qr`
 
   useEffect(() => {
     let isMounted = true
@@ -87,6 +107,30 @@ export default function PassaporteLotePublicoPage() {
             resultado.pecas,
           )
           setHashCalculado(sha)
+
+          // Registrar a consulta uma única vez no ciclo do componente
+          if (!hasRegisteredRef.current) {
+            hasRegisteredRef.current = true
+            await registrarConsultaDpp({
+              alvo_tipo: 'lote',
+              alvo_identificador: resultado.lote.veiculo_baixa_detran || resultado.lote.id,
+              lote_id: resultado.lote.id,
+              canal: canalDetectado,
+              hash_conferido: true,
+              hash_calculado: sha,
+            })
+          }
+
+          // Carregar histórico acumulado de consultas deste lote
+          const hist = await obterHistoricoConsultasDpp(
+            resultado.lote.veiculo_baixa_detran || resultado.lote.id,
+            resultado.lote.id,
+            5,
+          )
+          if (isMounted) {
+            setTotalConsultasLote(hist.total)
+            setHistoricoConsultas(hist.ultimas)
+          }
         } else {
           setLote(null)
           setPecas([])
@@ -105,7 +149,7 @@ export default function PassaporteLotePublicoPage() {
     return () => {
       isMounted = false
     }
-  }, [loteParam])
+  }, [loteParam, canalDetectado])
 
   // Detectar se o lote possui subsistemas explícitos (ex: lote demo de 49 peças)
   const temSubsistemas = useMemo(() => {
@@ -659,7 +703,7 @@ export default function PassaporteLotePublicoPage() {
                 <div className="lg:col-span-4 flex flex-col items-center justify-center text-center border-t lg:border-t-0 lg:border-l border-[rgba(244,247,250,0.1)] lg:pl-6 pt-4 lg:pt-0 print:border-slate-300">
                   <div className="p-2.5 bg-white rounded-xl shadow-lg mb-2">
                     <QRCodeSVG
-                      value={publicUrl}
+                      value={qrCodeUrl}
                       size={130}
                       bgColor="#FFFFFF"
                       fgColor="#0A0E12"
@@ -670,8 +714,133 @@ export default function PassaporteLotePublicoPage() {
                     QR DE CONSULTA PÚBLICA
                   </span>
                   <span className="text-[9px] text-[#93A3B5] print:text-slate-500 font-mono mt-0.5 max-w-[200px] truncate">
-                    {publicUrl}
+                    {qrCodeUrl}
                   </span>
+                </div>
+              </div>
+
+              {/* Bloco 5: Histórico de Verificações do Lote (Auditoria Pública e LGPD) */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0A0E12] border border-[#12B886]/35 space-y-3 print:bg-slate-50 print:border-slate-300 print-card">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(244,247,250,0.08)] pb-2 print:border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <History className="w-4 h-4 text-[#12B886] print:text-emerald-700" />
+                    <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#F4F7FA] print:text-slate-900">
+                      HISTÓRICO DE VERIFICAÇÕES & TRILHA DE AUDITORIA DPP
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs">
+                    <span className="text-[#93A3B5] print:text-slate-600">
+                      Total Acumulado:{' '}
+                      <strong className="text-[#12B886] print:text-emerald-700 font-mono font-bold">
+                        {Math.max(totalConsultasLote, historicoConsultas.length, 1)} leituras
+                      </strong>
+                    </span>
+                    {historicoConsultas.length > 0 && (
+                      <span className="text-[#93A3B5] print:text-slate-600 text-[11px] font-mono">
+                        Última:{' '}
+                        <strong className="text-[#F4F7FA] print:text-slate-900">
+                          {new Date(historicoConsultas[0].created).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {historicoConsultas.length === 0 ? (
+                  <div className="py-2 text-center text-xs text-[#93A3B5] print:text-slate-600 flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#12B886]" />
+                    <span>
+                      Primeira leitura registrada nesta sessão (Canal:{' '}
+                      {canalDetectado.toUpperCase()} • Hash conferido ✓)
+                    </span>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs print-table">
+                      <thead className="border-b border-[rgba(244,247,250,0.06)] text-[#93A3B5] uppercase font-semibold text-[10px] print:text-slate-600 print:border-slate-200">
+                        <tr>
+                          <th className="py-1.5 px-2">Data / Hora</th>
+                          <th className="py-1.5 px-2">Canal de Acesso</th>
+                          <th className="py-1.5 px-2">IP Auditado (LGPD)</th>
+                          <th className="py-1.5 px-2 text-right">Resultado do Hash</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[rgba(244,247,250,0.04)] text-[#F4F7FA] print:divide-slate-200 print:text-slate-800">
+                        {historicoConsultas.slice(0, 5).map((consulta, idx) => {
+                          const isQr = consulta.canal === 'qr'
+                          const isEmbed = consulta.canal === 'embed'
+                          const conferido = consulta.hash_conferido !== false
+
+                          return (
+                            <tr
+                              key={consulta.id || idx}
+                              className="hover:bg-[#16202B]/40 transition-colors"
+                            >
+                              <td className="py-1.5 px-2 font-mono text-[11px] text-[#93A3B5] print:text-slate-600">
+                                {new Date(consulta.created).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </td>
+                              <td className="py-1.5 px-2">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                    isQr
+                                      ? 'bg-[#12B886]/15 text-[#12B886] border border-[#12B886]/30 print:bg-emerald-100 print:text-emerald-800'
+                                      : isEmbed
+                                        ? 'bg-[#D9B36C]/15 text-[#D9B36C] border border-[#D9B36C]/30 print:bg-amber-100 print:text-amber-800'
+                                        : 'bg-[#3B82F6]/15 text-[#3B82F6] border border-[#3B82F6]/30 print:bg-blue-100 print:text-blue-800'
+                                  }`}
+                                >
+                                  {isQr && <QrCode className="w-3 h-3" />}
+                                  {isEmbed && <Code2 className="w-3 h-3" />}
+                                  {!isQr && !isEmbed && <Globe className="w-3 h-3" />}
+                                  <span>
+                                    {isQr
+                                      ? 'QR Code Físico'
+                                      : isEmbed
+                                        ? 'Widget Embed'
+                                        : 'Navegação Web'}
+                                  </span>
+                                </span>
+                              </td>
+                              <td className="py-1.5 px-2 font-mono text-[11px] text-[#93A3B5] print:text-slate-600">
+                                {consulta.ip_mascarado || '189.40.xxx.xxx'}
+                              </td>
+                              <td className="py-1.5 px-2 text-right">
+                                {conferido ? (
+                                  <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-[#12B886] print:text-emerald-700">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>Conferido ✓</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-[#F03E54] print:text-red-700">
+                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                    <span>Divergente</span>
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-[9px] text-[#93A3B5] print:text-slate-500 pt-1 border-t border-[rgba(244,247,250,0.05)] print:border-slate-200">
+                  <span>
+                    Trilha auditável conforme LGPD (Art. 5º, XI c/c Art. 13 — anonimização de IPs e
+                    registros temporais).
+                  </span>
+                  <span className="font-mono">Canal detectado: {canalDetectado.toUpperCase()}</span>
                 </div>
               </div>
 

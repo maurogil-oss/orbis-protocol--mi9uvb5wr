@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T19:06:09.867Z",
+  "generatedAt": "2026-09-16T19:33:14.885Z",
   "collections": [
     {
       "name": "users",
@@ -2825,6 +2825,89 @@
       "indexes": [
         "CREATE INDEX idx_hashcomp_user ON hashes_competencia (usuario)",
         "CREATE INDEX idx_hashcomp_cnpj_comp ON hashes_competencia (cnpj, competencia)"
+      ]
+    },
+    {
+      "name": "dpp_consultas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "alvo_tipo",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["lote", "selo"]
+        },
+        {
+          "name": "alvo_identificador",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "lote_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "canal",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["qr", "web", "embed"]
+        },
+        {
+          "name": "hash_conferido",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_calculado",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ip_mascarado",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "user_agent",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_dpp_consultas_alvo ON dpp_consultas (alvo_identificador)",
+        "CREATE INDEX idx_dpp_consultas_lote ON dpp_consultas (lote_id)",
+        "CREATE INDEX idx_dpp_consultas_canal ON dpp_consultas (canal)",
+        "CREATE INDEX idx_dpp_consultas_created ON dpp_consultas (created DESC)"
       ]
     }
   ]
