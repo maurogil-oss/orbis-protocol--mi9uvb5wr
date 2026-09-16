@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { OrbisGlobe } from './OrbisGlobe'
 import { OrbisLogo } from './OrbisLogo'
@@ -9,16 +9,28 @@ import {
   X,
   ShieldCheck,
   ChevronRight,
+  ChevronDown,
   LogOut,
   User,
   LayoutDashboard,
   FileCheck2,
   Lock,
+  Layers,
+  Scale,
+  Sparkles,
+  Building2,
+  Coins,
+  Receipt,
+  Recycle,
+  BookOpen,
 } from 'lucide-react'
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [solutionsDropdownOpen, setSolutionsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const location = useLocation()
   const { isAuthenticated, user, logout, isAdminOrPerito } = useAuth()
 
@@ -30,27 +42,123 @@ export default function Layout() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Close mobile drawer on route change
+  // Close mobile drawer and dropdown on route change
   useEffect(() => {
     setMobileMenuOpen(false)
-  }, [location.pathname])
+    setSolutionsDropdownOpen(false)
+  }, [location.pathname, location.hash])
 
-  const navLinks = [
-    { label: 'Início', path: '/' },
-    { label: 'Radar Regulatório', path: '/radar-regulatorio' },
-    { label: 'O Protocolo', path: '/#o-que-e' },
-    { label: 'Trilhas', path: '/trilhas' },
-    { label: 'Soluções', path: '/solucoes' },
-    { label: 'Planos', path: '/planos' },
-    { label: 'Bureau ACP', path: '/bureau' },
-    { label: 'Verificador de Selos', path: '/verificador' },
+  // Handle outside click & Esc key for solutions dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setSolutionsDropdownOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSolutionsDropdownOpen(false)
+      }
+    }
+
+    if (solutionsDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [solutionsDropdownOpen])
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeoutRef.current) {
+        clearTimeout(dropdownTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleDropdownMouseEnter = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current)
+      dropdownTimeoutRef.current = null
+    }
+    setSolutionsDropdownOpen(true)
+  }
+
+  const handleDropdownMouseLeave = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current)
+    }
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setSolutionsDropdownOpen(false)
+    }, 150)
+  }
+
+  // Soluções dropdown items with short 1-line descriptions
+  // Green Capital and Financeiro are only included if user is authenticated
+  const solutionItems = [
+    {
+      title: 'Radar Regulatório',
+      desc: 'Monitoramento contínuo de normas, SBCE e reforma tributária',
+      path: '/radar-regulatorio',
+      icon: Scale,
+    },
+    {
+      title: 'Planos',
+      desc: 'Assinaturas modulares e tabela de serviços técnicos',
+      path: '/planos',
+      icon: Sparkles,
+    },
+    {
+      title: 'Bureau ACP',
+      desc: 'Cockpit e governança de passaporte sustentável de fornecedores',
+      path: '/bureau',
+      icon: Building2,
+    },
     ...(isAuthenticated
       ? [
-          { label: 'Green Capital', path: '/capital' },
-          { label: 'Financeiro (PIX)', path: '/financeiro' },
+          {
+            title: 'Green Capital',
+            desc: 'Simulação de crédito verde com taxas bonificadas ESG',
+            path: '/capital',
+            icon: Coins,
+          },
+          {
+            title: 'Financeiro',
+            desc: 'Gestão de pagamentos PIX instantâneos e NFS-e automática',
+            path: '/financeiro',
+            icon: Receipt,
+          },
         ]
       : []),
+    {
+      title: 'Case CDVerde',
+      desc: 'Rastreabilidade e circularidade automotiva (Lei Mover)',
+      path: '/solucoes/case-cdverde',
+      icon: Recycle,
+    },
+    {
+      title: 'O Protocolo',
+      desc: 'Metodologia e infraestrutura probatória dMRV para conformidade',
+      path: '/#o-que-e',
+      icon: BookOpen,
+    },
   ]
+
+  // Check if current route matches any solutions item or solutions index
+  const isSolutionsActive =
+    location.pathname === '/solucoes' ||
+    solutionItems.some((item) => {
+      if (item.path.startsWith('/#')) {
+        return location.pathname === '/' && location.hash === item.path.replace('/', '')
+      }
+      return location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
+    })
 
   const regulations = [
     '01/08/2026: FASE-TESTE IBS 0,1% / CBS 0,9% NA NF-E (ART. 348 LC 214/2025)',
@@ -105,21 +213,143 @@ export default function Layout() {
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-7">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
-                    location.pathname === item.path
-                      ? 'text-[#12B886] font-semibold'
-                      : 'text-[#93A3B5]'
+            {/* Desktop Navigation - Enxuta: Início · Trilhas · Soluções ▾ · Verificador de Selos */}
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-7">
+              <Link
+                to="/"
+                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
+                  location.pathname === '/' && !location.hash
+                    ? 'text-[#12B886] font-semibold'
+                    : 'text-[#93A3B5]'
+                }`}
+              >
+                Início
+              </Link>
+
+              <Link
+                to="/trilhas"
+                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
+                  location.pathname.startsWith('/trilhas')
+                    ? 'text-[#12B886] font-semibold'
+                    : 'text-[#93A3B5]'
+                }`}
+              >
+                Trilhas
+              </Link>
+
+              {/* Dropdown Soluções */}
+              <div
+                ref={dropdownRef}
+                className="relative"
+                onMouseEnter={handleDropdownMouseEnter}
+                onMouseLeave={handleDropdownMouseLeave}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSolutionsDropdownOpen((prev) => !prev)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSolutionsDropdownOpen(true)
+                    }
+                  }}
+                  aria-expanded={solutionsDropdownOpen}
+                  aria-haspopup="true"
+                  className={`inline-flex items-center gap-1.5 text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] py-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#12B886] rounded ${
+                    isSolutionsActive ? 'text-[#12B886] font-semibold' : 'text-[#93A3B5]'
                   }`}
                 >
-                  {item.label}
-                </Link>
-              ))}
+                  <span>Soluções</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      solutionsDropdownOpen ? 'rotate-180 text-[#12B886]' : 'opacity-70'
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown / Mega Menu Flutuante */}
+                {solutionsDropdownOpen && (
+                  <div
+                    role="menu"
+                    aria-label="Submenu Soluções"
+                    className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
+                  >
+                    <div className="w-[520px] max-w-[90vw] p-3 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.12)] shadow-2xl backdrop-blur-xl">
+                      <div className="px-3 py-2 border-b border-[rgba(244,247,250,0.06)] flex items-center justify-between mb-1">
+                        <span className="text-[11px] font-semibold tracking-wider uppercase text-[#12B886]">
+                          Portfólio de Soluções & Módulos
+                        </span>
+                        <Link
+                          to="/solucoes"
+                          onClick={() => setSolutionsDropdownOpen(false)}
+                          className="text-[11px] text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                        >
+                          Ver Visão Geral →
+                        </Link>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-1">
+                        {solutionItems.map((item) => {
+                          const Icon = item.icon
+                          const isActive = item.path.startsWith('/#')
+                            ? location.pathname === '/' &&
+                              location.hash === item.path.replace('/', '')
+                            : location.pathname === item.path
+
+                          return (
+                            <Link
+                              key={item.title}
+                              to={item.path}
+                              role="menuitem"
+                              onClick={() => setSolutionsDropdownOpen(false)}
+                              className={`group flex items-start gap-3 p-2.5 rounded-lg transition-all ${
+                                isActive
+                                  ? 'bg-[#12B886]/10 border border-[#12B886]/30'
+                                  : 'hover:bg-[#16202B] border border-transparent'
+                              }`}
+                            >
+                              <div
+                                className={`mt-0.5 p-2 rounded-lg flex-shrink-0 transition-colors ${
+                                  isActive
+                                    ? 'bg-[#12B886]/20 text-[#12B886]'
+                                    : 'bg-[#111820] text-[#93A3B5] group-hover:text-[#12B886] group-hover:bg-[#12B886]/10'
+                                }`}
+                              >
+                                <Icon className="w-4 h-4" />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span
+                                  className={`text-sm font-semibold tracking-wide transition-colors ${
+                                    isActive
+                                      ? 'text-[#12B886]'
+                                      : 'text-[#F4F7FA] group-hover:text-[#12B886]'
+                                  }`}
+                                >
+                                  {item.title}
+                                </span>
+                                <span className="text-xs text-[#93A3B5] leading-snug line-clamp-1">
+                                  {item.desc}
+                                </span>
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                to="/verificador"
+                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
+                  location.pathname === '/verificador'
+                    ? 'text-[#12B886] font-semibold'
+                    : 'text-[#93A3B5]'
+                }`}
+              >
+                Verificador de Selos
+              </Link>
             </nav>
 
             {/* Header Action Buttons */}
@@ -198,34 +428,106 @@ export default function Layout() {
                 </button>
               </div>
 
-              <div className="mt-6 flex flex-col gap-3">
-                {navLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.path}
-                    className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-base font-medium transition-colors ${
-                      location.pathname === item.path
-                        ? 'bg-[#12B886]/10 text-[#12B886]'
-                        : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <ChevronRight className="w-4 h-4 opacity-50" />
-                  </Link>
-                ))}
+              <div className="mt-6 flex flex-col gap-1 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
+                {/* Itens Principais */}
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === '/' && !location.hash
+                      ? 'bg-[#12B886]/10 text-[#12B886]'
+                      : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
+                  }`}
+                >
+                  <span>Início</span>
+                  <ChevronRight className="w-4 h-4 opacity-50" />
+                </Link>
+
+                <Link
+                  to="/trilhas"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname.startsWith('/trilhas')
+                      ? 'bg-[#12B886]/10 text-[#12B886]'
+                      : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
+                  }`}
+                >
+                  <span>Trilhas</span>
+                  <ChevronRight className="w-4 h-4 opacity-50" />
+                </Link>
+
+                <Link
+                  to="/verificador"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === '/verificador'
+                      ? 'bg-[#12B886]/10 text-[#12B886]'
+                      : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
+                  }`}
+                >
+                  <span>Verificador de Selos</span>
+                  <ChevronRight className="w-4 h-4 opacity-50" />
+                </Link>
+
+                {/* Grupo Soluções */}
+                <div className="pt-3 mt-2 border-t border-[rgba(244,247,250,0.08)]">
+                  <div className="px-3 pb-2 flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#12B886] flex items-center gap-1.5">
+                      <Layers className="w-3 h-3 text-[#12B886]" />
+                      Soluções & Módulos
+                    </span>
+                    <Link
+                      to="/solucoes"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[10px] text-[#93A3B5] hover:text-[#12B886]"
+                    >
+                      Ver Tudo
+                    </Link>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    {solutionItems.map((item) => {
+                      const Icon = item.icon
+                      const isActive = item.path.startsWith('/#')
+                        ? location.pathname === '/' && location.hash === item.path.replace('/', '')
+                        : location.pathname === item.path
+
+                      return (
+                        <Link
+                          key={item.title}
+                          to={item.path}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`flex items-center justify-between py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
+                            isActive
+                              ? 'bg-[#12B886]/10 text-[#12B886]'
+                              : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 truncate">
+                            <Icon className="w-3.5 h-3.5 opacity-70 flex-shrink-0" />
+                            <span className="truncate">{item.title}</span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 opacity-40 flex-shrink-0" />
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
 
                 {isAdminOrPerito && (
-                  <Link
-                    to="/console-do-auditor"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-lg text-base font-medium text-[#D9B36C] hover:bg-[#16202B] transition-colors"
-                  >
-                    <span className="flex items-center gap-2">
-                      <FileCheck2 className="w-4 h-4" />
-                      Console do Auditor
-                    </span>
-                    <Lock className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="pt-2 mt-2 border-t border-[rgba(244,247,250,0.08)]">
+                    <Link
+                      to="/console-do-auditor"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-between py-2.5 px-3 rounded-lg text-xs font-medium text-[#D9B36C] hover:bg-[#16202B] transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <FileCheck2 className="w-4 h-4" />
+                        Console do Auditor
+                      </span>
+                      <Lock className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
