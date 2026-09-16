@@ -64,111 +64,114 @@ export default function Layout() {
   ]
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30 selection:text-white">
-      {/* 1. Regulatory Marquee Top Bar */}
-      <div className="w-full bg-[#070A0D] border-b border-[rgba(244,247,250,0.08)] py-2 text-xs overflow-hidden z-50">
-        <div className="animate-marquee items-center gap-6 whitespace-nowrap text-[#93A3B5] font-medium tracking-wider">
-          {[...regulations, ...regulations].map((reg, idx) => (
-            <span key={idx} className="inline-flex items-center gap-4">
-              <span className="text-[#12B886] font-semibold flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#12B886]" />
-                {reg}
+    <div className="flex flex-col min-h-screen w-full overflow-x-clip bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30 selection:text-white">
+      {/* Cabeçalho Unificado Sticky com z-index alto e largura contida */}
+      <div className="sticky top-0 z-40 w-full">
+        {/* 1. Regulatory Marquee Top Bar */}
+        <div className="w-full bg-[#070A0D] border-b border-[rgba(244,247,250,0.08)] py-2 text-xs overflow-hidden">
+          <div className="animate-marquee items-center gap-6 whitespace-nowrap text-[#93A3B5] font-medium tracking-wider">
+            {[...regulations, ...regulations].map((reg, idx) => (
+              <span key={idx} className="inline-flex items-center gap-4">
+                <span className="text-[#12B886] font-semibold flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#12B886]" />
+                  {reg}
+                </span>
+                <span className="text-[rgba(244,247,250,0.2)]">•</span>
               </span>
-              <span className="text-[rgba(244,247,250,0.2)]">•</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* 2. Sticky Header */}
-      <header
-        className={`sticky top-0 left-0 right-0 w-full z-40 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-[#0A0E12]/90 backdrop-blur-md border-b border-[rgba(244,247,250,0.12)] shadow-xl'
-            : 'bg-[#0A0E12]/60 backdrop-blur-sm border-b border-transparent'
-        }`}
-      >
-        <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
-          {/* Brand Logo & Name */}
-          <Link to="/" className="flex items-center gap-3.5 group">
-            <OrbisGlobe size={40} />
-            <div className="flex flex-col">
-              <span className="font-heading font-black text-xl tracking-[0.08em] text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
-                ORBIS<span className="text-[#12B886]">.</span>PROTOCOL
-              </span>
-              <span className="text-[10px] tracking-[0.2em] uppercase text-[#93A3B5] font-semibold -mt-1">
-                Auditoria & Rastreabilidade
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-7">
-            {navLinks.map((item) => (
-              <Link
-                key={item.label}
-                to={item.path}
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
-                  location.pathname === item.path
-                    ? 'text-[#12B886] font-semibold'
-                    : 'text-[#93A3B5]'
-                }`}
-              >
-                {item.label}
-              </Link>
             ))}
-          </nav>
+          </div>
+        </div>
 
-          {/* Header Action Buttons */}
-          <div className="hidden md:flex items-center gap-3.5">
-            <Link
-              to="/diagnostico"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
-            >
-              Iniciar Diagnóstico
+        {/* 2. Sticky Header */}
+        <header
+          className={`w-full transition-all duration-300 ${
+            isScrolled
+              ? 'bg-[#0A0E12]/95 backdrop-blur-md border-b border-[rgba(244,247,250,0.12)] shadow-xl'
+              : 'bg-[#0A0E12]/90 backdrop-blur-sm border-b border-[rgba(244,247,250,0.05)]'
+          }`}
+        >
+          <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
+            {/* Brand Logo & Name */}
+            <Link to="/" className="flex items-center gap-3.5 group">
+              <OrbisGlobe size={40} />
+              <div className="flex flex-col">
+                <span className="font-heading font-black text-xl tracking-[0.08em] text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
+                  ORBIS<span className="text-[#12B886]">.</span>PROTOCOL
+                </span>
+                <span className="text-[10px] tracking-[0.2em] uppercase text-[#93A3B5] font-semibold -mt-1">
+                  Auditoria & Rastreabilidade
+                </span>
+              </div>
             </Link>
 
-            {isAuthenticated ? (
-              <div className="flex items-center gap-2">
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-7">
+              {navLinks.map((item) => (
                 <Link
-                  to="/painel"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820]"
+                  key={item.label}
+                  to={item.path}
+                  className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
+                    location.pathname === item.path
+                      ? 'text-[#12B886] font-semibold'
+                      : 'text-[#93A3B5]'
+                  }`}
                 >
-                  <LayoutDashboard className="w-4 h-4 text-[#12B886]" />
-                  Painel
+                  {item.label}
                 </Link>
-                <button
-                  onClick={logout}
-                  title="Sair"
-                  className="p-2.5 rounded-lg text-[#93A3B5] hover:text-[#F03E54] border border-[rgba(244,247,250,0.12)] hover:border-[#F03E54]/40 transition-all bg-[#111820]"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all"
-              >
-                Entrar
-              </Link>
-            )}
-          </div>
+              ))}
+            </nav>
 
-          {/* Mobile Hamburger Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 text-[#F4F7FA] hover:text-[#12B886] transition-colors"
-            aria-label="Abrir menu"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-        </div>
-      </header>
+            {/* Header Action Buttons */}
+            <div className="hidden md:flex items-center gap-3.5">
+              <Link
+                to="/diagnostico"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
+              >
+                Iniciar Diagnóstico
+              </Link>
+
+              {isAuthenticated ? (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/painel"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820]"
+                  >
+                    <LayoutDashboard className="w-4 h-4 text-[#12B886]" />
+                    Painel
+                  </Link>
+                  <button
+                    onClick={logout}
+                    title="Sair"
+                    className="p-2.5 rounded-lg text-[#93A3B5] hover:text-[#F03E54] border border-[rgba(244,247,250,0.12)] hover:border-[#F03E54]/40 transition-all bg-[#111820]"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all"
+                >
+                  Entrar
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 text-[#F4F7FA] hover:text-[#12B886] transition-colors"
+              aria-label="Abrir menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+        </header>
+      </div>
 
       {/* 3. Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="fixed inset-0 z-50 flex justify-end overflow-hidden">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
@@ -176,7 +179,7 @@ export default function Layout() {
           />
 
           {/* Drawer Content */}
-          <div className="relative w-full max-w-xs bg-[#111820] border-l border-[rgba(244,247,250,0.12)] h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-slide-left">
+          <div className="relative w-full max-w-xs bg-[#111820] border-l border-[rgba(244,247,250,0.12)] h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-right duration-300">
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-[rgba(244,247,250,0.1)]">
                 <div className="flex items-center gap-3">
@@ -262,7 +265,7 @@ export default function Layout() {
       )}
 
       {/* 4. Main Page Content */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col w-full min-w-0">
         <Outlet />
       </main>
 

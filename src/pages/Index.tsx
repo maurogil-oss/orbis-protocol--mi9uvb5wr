@@ -104,12 +104,12 @@ export default function Index() {
   ]
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full overflow-x-hidden">
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32 bg-[#0A0E12] border-b border-[rgba(244,247,250,0.08)]">
+      <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 bg-[#0A0E12] border-b border-[rgba(244,247,250,0.08)]">
         {/* Subtle Ambient Radial Glows */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[360px] bg-gradient-to-b from-[#D9B36C]/10 via-[#12B886]/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-10 w-[500px] h-[300px] bg-[#12B886]/10 blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] max-w-full h-[360px] bg-gradient-to-b from-[#D9B36C]/10 via-[#12B886]/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[500px] max-w-full h-[300px] bg-[#12B886]/10 blur-[120px] pointer-events-none" />
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
@@ -178,7 +178,7 @@ export default function Index() {
       </section>
 
       {/* 2. SECTION: O QUE É O ORBIS PROTOCOL */}
-      <section id="o-que-e" className="py-20 md:py-28 bg-[#0A0E12] relative">
+      <section id="o-que-e" className="py-20 md:py-28 bg-[#0A0E12] relative scroll-mt-32">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D9B36C] block mb-2">
