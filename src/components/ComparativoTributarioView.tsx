@@ -10,6 +10,9 @@ import {
   ShieldCheck,
   Building2,
   Globe2,
+  Calendar,
+  AlertCircle,
+  Zap,
 } from 'lucide-react'
 
 interface Props {
@@ -201,12 +204,166 @@ export function ComparativoTributarioView({
         </div>
       </div>
 
+      {/* Bloco Destaque: IBS/CBS na Fase-Teste (Art. 348 LC 214/2025 e Decreto 12.955/2026) */}
+      {comparativo.faseTesteIbsCbs && (
+        <div
+          className={`p-5 rounded-2xl border transition-all text-xs space-y-3 ${
+            comparativo.faseTesteIbsCbs.possuiDestaqueReal
+              ? 'bg-[#12B886]/10 border-[#12B886]/40'
+              : 'bg-[#16202B] border-[#D9B36C]/30'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`p-2 rounded-xl shrink-0 ${
+                  comparativo.faseTesteIbsCbs.possuiDestaqueReal
+                    ? 'bg-[#12B886]/20 text-[#12B886]'
+                    : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono tracking-wider uppercase text-[#93A3B5] block">
+                  Regulamentação Oficial • LC 227/2026 e Decreto 12.955/2026
+                </span>
+                <h3 className="font-heading font-extrabold text-sm text-[#F4F7FA]">
+                  IBS/CBS NA FASE-TESTE (A PARTIR DE 1º/08/2026)
+                </h3>
+              </div>
+            </div>
+
+            <span
+              className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                comparativo.faseTesteIbsCbs.possuiDestaqueReal
+                  ? 'bg-[#12B886]/20 text-[#12B886] border-[#12B886]/40'
+                  : 'bg-[#D9B36C]/20 text-[#D9B36C] border-[#D9B36C]/40'
+              }`}
+            >
+              {comparativo.faseTesteIbsCbs.possuiDestaqueReal
+                ? 'DADOS REAIS EXTRAÍDOS'
+                : 'ALERTA DE OBRIGATORIEDADE'}
+            </span>
+          </div>
+
+          {comparativo.faseTesteIbsCbs.possuiDestaqueReal ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                <span className="text-[10px] text-[#93A3B5] uppercase block mb-0.5">
+                  IBS Real Destacado
+                </span>
+                <span className="text-base font-heading font-bold text-[#12B886]">
+                  R${' '}
+                  {comparativo.faseTesteIbsCbs.valorIbsReal.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                <span className="text-[10px] text-[#93A3B5] uppercase block mb-0.5">
+                  CBS Real Destacada
+                </span>
+                <span className="text-base font-heading font-bold text-[#12B886]">
+                  R${' '}
+                  {comparativo.faseTesteIbsCbs.valorCbsReal.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                <span className="text-[10px] text-[#93A3B5] uppercase block mb-0.5">
+                  Total IBS + CBS
+                </span>
+                <span className="text-base font-heading font-bold text-[#F4F7FA]">
+                  R${' '}
+                  {comparativo.faseTesteIbsCbs.valorTotalIbsCbs.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/30 flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-[#D9B36C] shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs text-[#F4F7FA] font-medium leading-relaxed">
+                  {comparativo.faseTesteIbsCbs.mensagem}
+                </p>
+                <div className="text-[11px] text-[#93A3B5]">
+                  <span>Regra de dispensa: </span>
+                  <strong className="text-[#D9B36C]">
+                    Recolhimento dispensado se as obrigações acessórias forem cumpridas (art. 348 da
+                    LC 214/2025).
+                  </strong>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="text-[11px] text-[#93A3B5] flex items-center justify-between border-t border-[rgba(244,247,250,0.08)] pt-2.5">
+            <span>Base Legal: {comparativo.faseTesteIbsCbs.baseLegal}</span>
+            <span className="font-semibold text-[#12B886]">Prazo: 1º/08/2026</span>
+          </div>
+        </div>
+      )}
+
+      {/* Bloco Destaque: Imposto Seletivo por NCM (LC 214/2025) */}
+      {comparativo.impostoSeletivoAnalise &&
+        comparativo.impostoSeletivoAnalise.possuiItensIdentificados && (
+          <div className="p-5 rounded-2xl bg-[#F03E54]/10 border border-[#F03E54]/40 text-xs space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-[#F03E54]/20 text-[#F03E54] shrink-0">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono tracking-wider uppercase text-[#F03E54] block font-bold">
+                    Classificação Específica LC 214/2025
+                  </span>
+                  <h3 className="font-heading font-extrabold text-sm text-[#F4F7FA]">
+                    ITENS SUJEITOS AO IMPOSTO SELETIVO (IS) DETECTADOS
+                  </h3>
+                </div>
+              </div>
+
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#F03E54]/20 text-[#F03E54] border border-[#F03E54]/40">
+                {comparativo.impostoSeletivoAnalise.totalItensIdentificados} ITEM(NS) AFETADO(S)
+              </span>
+            </div>
+
+            <p className="text-xs text-[#F4F7FA] leading-relaxed">
+              {comparativo.impostoSeletivoAnalise.mensagem}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              {comparativo.impostoSeletivoAnalise.categoriasEncontradas.map((cat, idx) => (
+                <div
+                  key={idx}
+                  className="p-2.5 rounded-lg bg-[#0A0E12] border border-[#F03E54]/30 flex flex-col justify-between"
+                >
+                  <div className="font-bold text-[#F4F7FA] text-xs">{cat.categoria}</div>
+                  <div className="text-[11px] text-[#93A3B5] mt-1">
+                    <span>Itens classificados: </span>
+                    <strong className="text-[#F03E54]">{cat.count}</strong> • {cat.aliquota}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-[11px] text-[#93A3B5] border-t border-[rgba(244,247,250,0.08)] pt-2 flex justify-between items-center">
+              <span>Fonte: {comparativo.impostoSeletivoAnalise.fonte}</span>
+              <span className="text-[#D9B36C] font-mono">Estimativa pericial de impacto</span>
+            </div>
+          </div>
+        )}
+
       {/* Informação sobre a fase de testes e transição */}
       <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] space-y-1 text-xs">
         <div className="flex items-center gap-2 text-[#D9B36C]">
           <HelpCircle className="w-4 h-4 shrink-0" />
           <strong className="uppercase tracking-wider text-[11px]">
-            Cronograma & Transição Federativa
+            Cronograma Oficial de Transição
           </strong>
         </div>
         <p className="text-[#93A3B5] leading-relaxed pl-6">{comparativo.transicaoInfo}</p>

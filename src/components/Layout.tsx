@@ -36,6 +36,7 @@ export default function Layout() {
 
   const navLinks = [
     { label: 'Início', path: '/' },
+    { label: 'Radar Regulatório', path: '/radar-regulatorio' },
     { label: 'O Protocolo', path: '/#o-que-e' },
     { label: 'Trilhas', path: '/trilhas' },
     { label: 'Soluções', path: '/solucoes' },
@@ -50,13 +51,15 @@ export default function Layout() {
   ]
 
   const regulations = [
-    'LEI 15.042/2024 (DIRETRIZES SBCE)',
-    'PROGRAMA MOVER LEI 14.902/2024 (AUTOMOTIVO & CDV)',
+    '01/08/2026: FASE-TESTE IBS 0,1% / CBS 0,9% NA NF-E (ART. 348 LC 214/2025)',
+    'LC 227/2026 & DECRETO 12.955/2026 (NOVO IVA DUAL)',
+    'LEI 15.042/2024 (DIRETRIZES SBCE - MERCADO REGULADO DE CARBONO)',
+    'PROGRAMA MOVER LEI 14.902/2024 (AUTOMOTIVO & CIRCULARIDADE CDV)',
     'REPORTE VOLUNTÁRIO IFRS S1/S2 (RES. CVM 193)',
     'PREPARAÇÃO ESG CREDORES (RES. BCB 4.945/2021)',
-    'NBR ISO 14064',
-    'NBC TO 3000 & ART TÉCNICA',
-    'REFORMA TRIBUTÁRIA NOVO IVA',
+    'MECANISMO CBAM / UNIÃO EUROPEIA (TRANSIÇÃO ATÉ 2026)',
+    'NBR ISO 14064 & METODOLOGIA GHG PROTOCOL',
+    'NBC TO 3000 & ART TÉCNICA dMRV',
   ]
 
   return (
@@ -370,6 +373,15 @@ export default function Layout() {
                 FERRAMENTAS
               </span>
               <ul className="flex flex-col gap-2 text-sm text-[#93A3B5]">
+                <li>
+                  <Link
+                    to="/radar-regulatorio"
+                    className="hover:text-[#12B886] transition-colors text-[#12B886] font-semibold flex items-center gap-1.5"
+                  >
+                    Radar Regulatório 2026
+                    <span className="px-1.5 py-0.2 rounded bg-[#12B886]/20 text-[10px]">Novo</span>
+                  </Link>
+                </li>
                 <li>
                   <Link to="/diagnostico" className="hover:text-[#12B886] transition-colors">
                     Diagnóstico por CNPJ

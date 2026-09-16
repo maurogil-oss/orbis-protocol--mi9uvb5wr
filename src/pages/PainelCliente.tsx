@@ -225,9 +225,14 @@ export default function PainelCliente() {
             agua_m3: parsedDoc.aguaM3,
             telecom_gb: parsedDoc.telecomGb,
             pecas_cdv_qtd: parsedDoc.pecasReutilizadasQtd,
+            valor_ibs_total: parsedDoc.valorIbsTotal || 0,
+            valor_cbs_total: parsedDoc.valorCbsTotal || 0,
+            tem_destaque_ibs_cbs: parsedDoc.temDestaqueIbsCbs || false,
+            aviso_fase_teste: parsedDoc.avisoFaseTesteIbsCbs,
+            itens_sujeitos_is_qtd: parsedDoc.totalItensSujeitosIS || 0,
+            itens_sujeitos_is: parsedDoc.itensSujeitosIS || [],
           },
         })
-
         successCount++
       } catch (err: any) {
         errors.push(`${file.name}: ${err.message || 'Erro ao processar documento fiscal'}`)
@@ -263,7 +268,7 @@ export default function PainelCliente() {
   const currentLead = leads[0]
   const currentSelo = selos[0]
 
-  // Totais agregados das notas fiscais enviadas
+  // Totais agregados das notas fiscais enviadas (incluindo IBS/CBS e itens sujeitos a IS)
   const totaisNfe = nfeList.reduce(
     (acc, curr) => {
       acc.totalNotas += 1
@@ -271,9 +276,46 @@ export default function PainelCliente() {
       acc.somaPisCofins += (curr.valor_pis || 0) + (curr.valor_cofins || 0)
       acc.somaIcms += curr.valor_icms || 0
       acc.somaIpi += curr.valor_ipi || 0
+
+      const dadosAdic = (curr as any).dados_adicionais_json || {}
+      const vIbs = dadosAdic.valor_ibs_total || 0
+      const vCbs = dadosAdic.valor_cbs_total || 0
+      const temDestaque = dadosAdic.tem_destaque_ibs_cbs || false
+      const isQtd = dadosAdic.itens_sujeitos_is_qtd || 0
+
+      acc.somaIbs += vIbs
+      acc.somaCbs += vCbs
+      if (temDestaque || vIbs > 0 || vCbs > 0) {
+        acc.notasComIbsCbs += 1
+      } else {
+        acc.notasSemIbsCbs += 1
+      }
+      acc.totalItensIS += isQtd
+
+      // Coleta itens com NCM
+      if (Array.isArray(curr.resumo_itens_json)) {
+        curr.resumo_itens_json.forEach((it: any) => {
+          if (it.ncm) {
+            acc.itensParaComparativo.push({ ncm: it.ncm, descricao: it.descricao })
+          }
+        })
+      }
+
       return acc
     },
-    { totalNotas: 0, somaValorTotal: 0, somaPisCofins: 0, somaIcms: 0, somaIpi: 0 },
+    {
+      totalNotas: 0,
+      somaValorTotal: 0,
+      somaPisCofins: 0,
+      somaIcms: 0,
+      somaIpi: 0,
+      somaIbs: 0,
+      somaCbs: 0,
+      notasComIbsCbs: 0,
+      notasSemIbsCbs: 0,
+      totalItensIS: 0,
+      itensParaComparativo: [] as Array<{ ncm?: string; descricao?: string }>,
+    },
   )
 
   // Documentos fiscais adaptados para o Motor Pericial de Emissões
@@ -439,6 +481,11 @@ export default function PainelCliente() {
                 somaPisCofins: totaisNfe.somaPisCofins,
                 somaIcms: totaisNfe.somaIcms,
                 somaIpi: totaisNfe.somaIpi,
+                somaIbs: totaisNfe.somaIbs,
+                somaCbs: totaisNfe.somaCbs,
+                notasComIbsCbs: totaisNfe.notasComIbsCbs,
+                notasSemIbsCbs: totaisNfe.notasSemIbsCbs,
+                itensOuNCMs: totaisNfe.itensParaComparativo,
               }
             : undefined,
       })
@@ -668,6 +715,49 @@ export default function PainelCliente() {
               </div>
             </div>
 
+            {/* Alerta Educativo de Transição IBS/CBS e Imposto Seletivo */}
+            <div className="mb-6 p-4 rounded-xl bg-[#16202B] border border-[#12B886]/30 space-y-2 text-xs">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 text-[#12B886] font-bold">
+                  <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+                  <span>TRANSIÇÃO REFORMA TRIBUTÁRIA (FASE-TESTE 2026)</span>
+                </div>
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#12B886]/10 text-[#12B886] font-semibold border border-[#12B886]/30">
+                  Prazo Oficial: 1º/08/2026
+                </span>
+              </div>
+
+              {totaisNfe.notasComIbsCbs > 0 ? (
+                <div className="text-[#F4F7FA] text-xs">
+                  Foram identificados grupos <strong className="text-[#12B886]">IBS/CBS</strong> em{' '}
+                  <span className="font-mono text-[#12B886] font-bold">
+                    {totaisNfe.notasComIbsCbs} nota(s)
+                  </span>
+                  . Total apurado: IBS {formatCurrencyBRL(totaisNfe.somaIbs)} | CBS{' '}
+                  {formatCurrencyBRL(totaisNfe.somaCbs)}.
+                </div>
+              ) : (
+                <div className="text-[#93A3B5] text-xs leading-relaxed">
+                  <span className="text-[#D9B36C] font-semibold">Aviso educativo: </span>
+                  Notas sem destaque IBS/CBS — a partir de{' '}
+                  <strong className="text-[#F4F7FA]">1º/08/2026</strong> o destaque (IBS 0,1% / CBS
+                  0,9% na fase-teste) é obrigatório; verifique a atualização do emissor. O
+                  recolhimento é dispensado se as obrigações acessórias forem cumpridas (art. 348 da
+                  LC 214/2025).
+                </div>
+              )}
+
+              {totaisNfe.totalItensIS > 0 && (
+                <div className="pt-2 border-t border-[rgba(244,247,250,0.08)] flex items-center gap-2 text-xs text-[#F03E54]">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>
+                    Identificado(s) <strong>{totaisNfe.totalItensIS} item(ns)</strong> com NCM
+                    sujeito ao <strong>Imposto Seletivo</strong> (LC 214/2025).
+                  </span>
+                </div>
+              )}
+            </div>
+
             {/* Lista de Notas Processadas */}
             {nfeList.length > 0 ? (
               <div className="overflow-x-auto">
@@ -679,6 +769,7 @@ export default function PainelCliente() {
                       <th className="py-2.5 px-3">Emitente</th>
                       <th className="py-2.5 px-3">Destinatário</th>
                       <th className="py-2.5 px-3 text-right">Valor Total</th>
+                      <th className="py-2.5 px-3 text-right">IBS / CBS</th>
                       <th className="py-2.5 px-3 text-right">Créd. PIS/Cofins</th>
                       <th className="py-2.5 px-3 text-right">ICMS</th>
                       <th className="py-2.5 px-3 text-center">Ação</th>
@@ -730,6 +821,40 @@ export default function PainelCliente() {
                         </td>
                         <td className="py-2.5 px-3 text-right font-mono font-semibold">
                           {formatCurrencyBRL(item.valor_total_nf || 0)}
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono">
+                          {((item as any).dados_adicionais_json?.valor_ibs_total || 0) > 0 ||
+                          ((item as any).dados_adicionais_json?.valor_cbs_total || 0) > 0 ? (
+                            <div className="text-[#12B886] font-bold">
+                              {formatCurrencyBRL(
+                                ((item as any).dados_adicionais_json?.valor_ibs_total || 0) +
+                                  ((item as any).dados_adicionais_json?.valor_cbs_total || 0),
+                              )}
+                              <span className="block text-[9px] text-[#93A3B5]">
+                                IBS:{' '}
+                                {formatCurrencyBRL(
+                                  (item as any).dados_adicionais_json?.valor_ibs_total || 0,
+                                )}{' '}
+                                | CBS:{' '}
+                                {formatCurrencyBRL(
+                                  (item as any).dados_adicionais_json?.valor_cbs_total || 0,
+                                )}
+                              </span>
+                            </div>
+                          ) : (
+                            <span
+                              className="text-[10px] text-[#D9B36C] cursor-help block"
+                              title="Nota sem destaque IBS/CBS — a partir de 1º/08/2026 o destaque (IBS 0,1% / CBS 0,9%) é obrigatório"
+                            >
+                              Sem IBS/CBS
+                            </span>
+                          )}
+                          {((item as any).dados_adicionais_json?.itens_sujeitos_is_qtd || 0) >
+                            0 && (
+                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-[#F03E54]/20 text-[#F03E54] text-[9px] font-bold">
+                              IS ({(item as any).dados_adicionais_json.itens_sujeitos_is_qtd})
+                            </span>
+                          )}
                         </td>
                         <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
                           {formatCurrencyBRL((item.valor_pis || 0) + (item.valor_cofins || 0))}

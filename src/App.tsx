@@ -26,6 +26,7 @@ import TestCatalog from './pages/TestCatalog'
 import Privacidade from './pages/Privacidade'
 import Planos from './pages/Planos'
 import Capital from './pages/Capital'
+import RadarRegulatorio from './pages/RadarRegulatorio'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -38,6 +39,7 @@ const App = () => (
           <Route element={<Layout />}>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
+            <Route path="/radar-regulatorio" element={<RadarRegulatorio />} />
             <Route path="/diagnostico" element={<Diagnostico />} />
             <Route path="/trilhas" element={<TrilhasIndex />} />
             <Route path="/trilhas/:slug" element={<TrilhaDetail />} />

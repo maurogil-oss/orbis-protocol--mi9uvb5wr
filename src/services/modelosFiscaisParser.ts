@@ -26,6 +26,8 @@ export type ModeloFiscalTipo =
   | '67_cte_os'
   | 'fatura_agua'
 
+import { classificarNCM, ClassificacaoISResultado } from './impostoSeletivo'
+
 export interface ItemFiscalDocumento {
   numeroItem: number
   codigo: string
@@ -36,6 +38,14 @@ export interface ItemFiscalDocumento {
   quantidade: number
   valorUnitario: number
   valorTotal: number
+  vBCIBS?: number
+  vIBS?: number
+  pIBS?: number
+  vBCCBS?: number
+  vCBS?: number
+  pCBS?: number
+  cClassTrib?: string
+  impostoSeletivo?: ClassificacaoISResultado
   tipoInsumo?:
     | 'diesel'
     | 'gasolina'
@@ -64,6 +74,13 @@ export interface DocumentoFiscalProcessado {
   valorIpi: number
   valorPis: number
   valorCofins: number
+  // Campos novos Reforma Tributária IBS/CBS
+  valorIbsTotal?: number
+  valorCbsTotal?: number
+  temDestaqueIbsCbs?: boolean
+  avisoFaseTesteIbsCbs?: string
+  totalItensSujeitosIS?: number
+  itensSujeitosIS?: { numeroItem: number; ncm: string; descricao: string; categoria: string }[]
   // Variáveis físicas para o motor de emissões:
   combustivelTipo?: 'diesel' | 'gasolina' | 'etanol' | 'glp' | 'gnv'
   combustivelLitros?: number
@@ -255,14 +272,37 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
   const valorPis = icmsTot ? parseNumber(getNodeText(icmsTot, 'vPIS')) : 0
   const valorCofins = icmsTot ? parseNumber(getNodeText(icmsTot, 'vCOFINS')) : 0
 
+  // Totalizadores IBS / CBS se presentes
+  let vIBSTot = 0
+  let vCBSTot = 0
+  if (total) {
+    vIBSTot =
+      parseNumber(getNodeText(total, 'vIBSTot')) ||
+      parseNumber(getNodeText(total, 'vIBS')) ||
+      parseNumber(getNodeText(total, 'IBSCBSTot vIBSTot'))
+    vCBSTot =
+      parseNumber(getNodeText(total, 'vCBSTot')) ||
+      parseNumber(getNodeText(total, 'vCBS')) ||
+      parseNumber(getNodeText(total, 'IBSCBSTot vCBSTot'))
+  }
+
   const itens: ItemFiscalDocumento[] = []
+  const itensSujeitosIS: {
+    numeroItem: number
+    ncm: string
+    descricao: string
+    categoria: string
+  }[] = []
   let combustivelTipo: 'diesel' | 'gasolina' | 'etanol' | 'glp' | 'gnv' | undefined
   let combustivelLitros = 0
   let pecasReutilizadasQtd = 0
+  let somaItensIbs = 0
+  let somaItensCbs = 0
 
   const detList = infNFe.querySelectorAll('det')
   detList.forEach((det, idx) => {
     const prod = det.querySelector('prod')
+    const imposto = det.querySelector('imposto')
     const codigo = prod ? getNodeText(prod, 'cProd') : ''
     const descricao = prod ? getNodeText(prod, 'xProd') : ''
     const ncm = prod ? getNodeText(prod, 'NCM') : ''
@@ -290,6 +330,64 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
       pecasReutilizadasQtd += quantidade || 1
     }
 
+    // Extração IBS/CBS do item
+    let vBCIBS: number | undefined
+    let vIBS: number | undefined
+    let pIBS: number | undefined
+    let vBCCBS: number | undefined
+    let vCBS: number | undefined
+    let pCBS: number | undefined
+    let cClassTrib: string | undefined
+
+    if (imposto) {
+      const ibsNode =
+        imposto.querySelector('IBSCBS') ||
+        imposto.querySelector('gIBS') ||
+        imposto.querySelector('IBS')
+      const cbsNode =
+        imposto.querySelector('IBSCBS') ||
+        imposto.querySelector('gCBS') ||
+        imposto.querySelector('CBS')
+      const rawClassTrib =
+        getNodeText(imposto, 'cClassTrib') ||
+        (ibsNode ? getNodeText(ibsNode, 'cClassTrib') : '') ||
+        (cbsNode ? getNodeText(cbsNode, 'cClassTrib') : '')
+      if (rawClassTrib) cClassTrib = rawClassTrib
+
+      const rawVIBS = getNodeText(imposto, 'vIBS') || (ibsNode ? getNodeText(ibsNode, 'vIBS') : '')
+      const rawVBCIBS =
+        getNodeText(imposto, 'vBCIBS') || (ibsNode ? getNodeText(ibsNode, 'vBCIBS') : '')
+      const rawPIBS = getNodeText(imposto, 'pIBS') || (ibsNode ? getNodeText(ibsNode, 'pIBS') : '')
+      if (rawVIBS || rawVBCIBS || rawPIBS) {
+        vBCIBS = parseNumber(rawVBCIBS)
+        vIBS = parseNumber(rawVIBS)
+        pIBS = parseNumber(rawPIBS)
+        somaItensIbs += vIBS
+      }
+
+      const rawVCBS = getNodeText(imposto, 'vCBS') || (cbsNode ? getNodeText(cbsNode, 'vCBS') : '')
+      const rawVBCCBS =
+        getNodeText(imposto, 'vBCCBS') || (cbsNode ? getNodeText(cbsNode, 'vBCCBS') : '')
+      const rawPCBS = getNodeText(imposto, 'pCBS') || (cbsNode ? getNodeText(cbsNode, 'pCBS') : '')
+      if (rawVCBS || rawVBCCBS || rawPCBS) {
+        vBCCBS = parseNumber(rawVBCCBS)
+        vCBS = parseNumber(rawVCBS)
+        pCBS = parseNumber(rawPCBS)
+        somaItensCbs += vCBS
+      }
+    }
+
+    // Classificação de Imposto Seletivo
+    const classIS = classificarNCM(ncm)
+    if (classIS.sujeito && classIS.categoria) {
+      itensSujeitosIS.push({
+        numeroItem: idx + 1,
+        ncm,
+        descricao,
+        categoria: classIS.categoria,
+      })
+    }
+
     itens.push({
       numeroItem: idx + 1,
       codigo,
@@ -300,9 +398,21 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
       quantidade,
       valorUnitario,
       valorTotal: valorItemTotal,
+      vBCIBS,
+      vIBS,
+      pIBS,
+      vBCCBS,
+      vCBS,
+      pCBS,
+      cClassTrib,
+      impostoSeletivo: classIS.sujeito ? classIS : undefined,
       tipoInsumo: comb.tipo !== 'outro' ? comb.tipo : undefined,
     })
   })
+
+  const valorIbsTotalFinal = vIBSTot > 0 ? vIBSTot : somaItensIbs
+  const valorCbsTotalFinal = vCBSTot > 0 ? vCBSTot : somaItensCbs
+  const temDestaqueIbsCbs = valorIbsTotalFinal > 0 || valorCbsTotalFinal > 0
 
   return {
     chaveAcesso,
@@ -319,6 +429,14 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
     valorIpi,
     valorPis,
     valorCofins,
+    valorIbsTotal: valorIbsTotalFinal,
+    valorCbsTotal: valorCbsTotalFinal,
+    temDestaqueIbsCbs,
+    totalItensSujeitosIS: itensSujeitosIS.length,
+    itensSujeitosIS,
+    avisoFaseTesteIbsCbs: temDestaqueIbsCbs
+      ? undefined
+      : 'Nota sem destaque IBS/CBS — a partir de 1º/08/2026 o destaque (IBS 0,1% / CBS 0,9% na fase-teste) é obrigatório; verifique a atualização do emissor.',
     combustivelTipo,
     combustivelLitros: combustivelLitros > 0 ? combustivelLitros : undefined,
     pecasReutilizadasQtd: pecasReutilizadasQtd > 0 ? pecasReutilizadasQtd : undefined,
