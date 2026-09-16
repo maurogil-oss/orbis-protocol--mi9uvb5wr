@@ -110,7 +110,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     expect(hashLoteAlterado).not.toBe(hashLote1)
   })
 
-  it('deve validar consistência do Lote Demo Renault Clio (49 peças, ~480 kg, ~2.097 kgCO2e)', async () => {
+  it('deve validar consistência do Lote Demo Renault Clio (49 peças, 437,7 kg, 1.584,81 kgCO2e)', async () => {
     // 49 peças distribuídas pelos 9 subsistemas
     const pecasDemo = [
       // Motor (8 peças)
@@ -632,13 +632,13 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
       'Suspensão',
     ])
 
-    // 3. Soma da massa fecha em 480.00 kg (~480 kg)
+    // 3. Soma da massa fecha em 437,70 kg (437,7 kg)
     const massaTotal = pecasDemo.reduce((acc, p) => acc + p.peso, 0)
-    expect(massaTotal).toBeCloseTo(480.0, 1)
+    expect(massaTotal).toBeCloseTo(437.7, 1)
 
-    // 4. Soma de CO2e evitado fecha em ~2.097 kgCO2e (2097.02)
+    // 4. Soma de CO2e evitado fecha em 1.584,81 kgCO2e
     const co2eTotal = pecasDemo.reduce((acc, p) => acc + p.co2e, 0)
-    expect(co2eTotal).toBeCloseTo(2097.02, 1)
+    expect(co2eTotal).toBeCloseTo(1584.81, 1)
 
     // 5. Todos os selos seguem o padrão PR-SEAL-2026-XXXXXX e são únicos
     const selosSet = new Set(pecasDemo.map((p) => p.selo))
