@@ -103,22 +103,34 @@ export default function Layout() {
   // Green Capital and Financeiro are only included if user is authenticated
   const solutionItems = [
     {
+      title: 'O Protocolo',
+      desc: 'Metodologia e infraestrutura probatória dMRV para conformidade',
+      path: '/#o-que-e',
+      icon: BookOpen,
+    },
+    {
       title: 'Radar Regulatório',
       desc: 'Monitoramento contínuo de normas, SBCE e reforma tributária',
       path: '/radar-regulatorio',
       icon: Scale,
     },
     {
-      title: 'Planos',
-      desc: 'Assinaturas modulares e tabela de serviços técnicos',
-      path: '/planos',
-      icon: Sparkles,
-    },
-    {
       title: 'Bureau ACP',
       desc: 'Cockpit e governança de passaporte sustentável de fornecedores',
       path: '/bureau',
       icon: Building2,
+    },
+    {
+      title: 'Case CDVerde',
+      desc: 'Rastreabilidade e circularidade automotiva (Lei Mover)',
+      path: '/solucoes/case-cdverde',
+      icon: Recycle,
+    },
+    {
+      title: 'Planos',
+      desc: 'Assinaturas modulares e tabela de serviços técnicos',
+      path: '/planos',
+      icon: Sparkles,
     },
     ...(isAuthenticated
       ? [
@@ -136,18 +148,6 @@ export default function Layout() {
           },
         ]
       : []),
-    {
-      title: 'Case CDVerde',
-      desc: 'Rastreabilidade e circularidade automotiva (Lei Mover)',
-      path: '/solucoes/case-cdverde',
-      icon: Recycle,
-    },
-    {
-      title: 'O Protocolo',
-      desc: 'Metodologia e infraestrutura probatória dMRV para conformidade',
-      path: '/#o-que-e',
-      icon: BookOpen,
-    },
   ]
 
   // Check if current route matches any solutions item or solutions index
