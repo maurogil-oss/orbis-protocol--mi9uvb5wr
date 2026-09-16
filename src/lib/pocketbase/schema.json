@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T11:10:28.414Z",
+  "generatedAt": "2026-09-16T11:21:21.445Z",
   "collections": [
     {
       "name": "users",
@@ -2379,6 +2379,52 @@
         "CREATE INDEX idx_wh_ent_evento ON webhooks_entregas (evento)",
         "CREATE INDEX idx_wh_ent_status ON webhooks_entregas (status_entrega)"
       ]
+    },
+    {
+      "name": "app_config_secrets",
+      "type": "base",
+      "apiRules": {
+        "list": null,
+        "view": null,
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "chave",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "valor",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_app_config_chave ON app_config_secrets (chave)"]
     }
   ]
 }

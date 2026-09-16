@@ -18,7 +18,20 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
       )
     }
 
-    const token = $os.getenv('INFOSIMPLES_TOKEN') || ''
+    // Obtém token preferencialmente das variáveis de ambiente ($os.getenv) ou da coleção segura interna
+    let token = $os.getenv('INFOSIMPLES_TOKEN') || ''
+    if (!token || token.trim().length === 0) {
+      try {
+        const secRec = $app.findFirstRecordByData(
+          'app_config_secrets',
+          'chave',
+          'INFOSIMPLES_TOKEN',
+        )
+        if (secRec && secRec.getString('valor')) {
+          token = secRec.getString('valor').trim()
+        }
+      } catch (_) {}
+    }
     const tokenConfigurado = Boolean(token && token.trim().length > 0)
 
     // Se o token não estiver configurado no cofre do Skip Cloud, ativa o Modo Degradação Elegante
@@ -84,20 +97,63 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
     }
 
     // Dispara requisição HTTP à InfoSimples
-    const httpRes = $http.send({
-      url: endpoint,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      timeout: 30,
-    })
+    let httpRes
+    try {
+      console.log(
+        '[InfoSimples] Iniciando consulta de NF-e para chave: ' +
+          chaveAcessoRaw.slice(0, 4) +
+          '...' +
+          chaveAcessoRaw.slice(-4),
+      )
+      httpRes = $http.send({
+        url: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        timeout: 30,
+      })
+    } catch (httpErr) {
+      console.error(
+        '[InfoSimples] Falha de conexão/timeout com a API externa: ' +
+          (httpErr.message || 'erro desconhecido'),
+      )
+      return e.json(200, {
+        sucesso: false,
+        degradacao: true,
+        token_configurado: true,
+        codigo: 504,
+        mensagem:
+          'Serviço da InfoSimples temporariamente indisponível ou timeout na conexão. O upload manual de XML permanece disponível.',
+        chave_acesso: chaveAcessoRaw,
+      })
+    }
 
-    const resJson = httpRes.json || {}
-    const statusCode = httpRes.statusCode
+    const resJson = (httpRes && httpRes.json) || {}
+    const statusCode = httpRes ? httpRes.statusCode : 500
     const code = resJson.code !== undefined ? resJson.code : statusCode
     const codeMessage = resJson.code_message || resJson.message || 'Consulta finalizada'
+
+    console.log(
+      '[InfoSimples] Resposta recebida da API - HTTP status: ' +
+        statusCode +
+        ', code: ' +
+        code +
+        ', message: ' +
+        String(codeMessage).slice(0, 100),
+    )
+    // Sanitiza resposta para garantir que o token nunca seja gravado em logs ou auditoria
+    const respostaSanitizada = JSON.parse(JSON.stringify(resJson))
+    if (respostaSanitizada && typeof respostaSanitizada === 'object') {
+      delete respostaSanitizada.token
+      if (respostaSanitizada.arguments && respostaSanitizada.arguments.token) {
+        respostaSanitizada.arguments.token = '***PROTEGIDO***'
+      }
+      if (respostaSanitizada.receipt && respostaSanitizada.receipt.token) {
+        respostaSanitizada.receipt.token = '***PROTEGIDO***'
+      }
+    }
 
     // Custos da consulta (InfoSimples tabela 0.06 créditos padrão para NF-e)
     const custoCreditos = resJson.total_price !== undefined ? Number(resJson.total_price) : 0.06
@@ -113,19 +169,19 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
     // Se a consulta foi bem sucedida (InfoSimples code 200 normal)
     const isSuccess = statusCode === 200 && (code === 200 || code === 201)
 
-    // Grava registro na coleção de auditoria e custos infosimples_consultas
+    // Grava registro na coleção de auditoria e custos infosimples_consultas (usando resposta sanitizada sem tokens)
     let consultaRecId = ''
     try {
       const consultasCol = $app.findCollectionByNameOrId('infosimples_consultas')
       const recAudit = new Record(consultasCol)
       recAudit.set('usuario', authRecord.id)
       recAudit.set('chave_acesso', chaveAcessoRaw)
-      recAudit.set('status', isSuccess ? 'sucesso' : 'erro_api')
+      recAudit.set('status', isSuccess ? 'sucesso' : code === 612 ? 'nao_encontrado' : 'erro_api')
       recAudit.set('codigo_retorno', Number(code) || statusCode)
       recAudit.set('mensagem_retorno', String(codeMessage).slice(0, 500))
       recAudit.set('custo_creditos', custoCreditos)
       recAudit.set('usou_certificado_a1', usouCertificado)
-      recAudit.set('resposta_json', resJson)
+      recAudit.set('resposta_json', respostaSanitizada)
       $app.save(recAudit)
       consultaRecId = recAudit.id
     } catch (_) {}
@@ -180,22 +236,34 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
       } catch (_) {}
     }
 
+    // Se a API retornou erro específico de autenticação/token (ex.: 601 unauthorized),
+    // aciona fallback elegante sem quebrar a experiência do usuário
+    const isAuthError = code === 601 || statusCode === 401
+    const isDegradedResponse = !isSuccess && isAuthError
+
     return e.json(200, {
       sucesso: isSuccess,
-      degradacao: false,
+      degradacao: isDegradedResponse,
       token_configurado: true,
       chave_acesso: chaveAcessoRaw,
       codigo: code,
-      mensagem: codeMessage,
+      mensagem: isDegradedResponse
+        ? 'A chave InfoSimples configurada foi recusada pela API externa (código 601/401). Modo degradação ativado; use o upload de XML.'
+        : codeMessage,
       custo_creditos: custoCreditos,
       consulta_id: consultaRecId,
       nfe_upload_id: nfeUploadId,
       dados: notaData,
     })
   } catch (err) {
-    return e.json(500, {
+    console.error('[InfoSimples] Erro interno no hook proxy: ' + (err.message || ''))
+    return e.json(200, {
       sucesso: false,
-      degradacao: false,
+      degradacao: true,
+      token_configurado: true,
+      codigo: 500,
+      mensagem:
+        'Ocorreu uma instabilidade no processamento da consulta. O modo fallback para upload de XML está ativo.',
       erro: err.message || 'Erro interno no proxy InfoSimples.',
     })
   }

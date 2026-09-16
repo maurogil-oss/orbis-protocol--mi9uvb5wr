@@ -1,4 +1,4 @@
-import { pb } from '@/lib/pocketbase/client'
+import pb from '@/lib/pocketbase/client'
 
 export const TERMO_CREDENCIAMENTO_VERSAO = 'v1.0-2025'
 
