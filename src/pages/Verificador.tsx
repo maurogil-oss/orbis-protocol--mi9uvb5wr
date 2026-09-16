@@ -164,6 +164,12 @@ export default function Verificador() {
       return
     }
 
+    // Se o código começar com PR-BX ou for um lote veicular conhecido
+    if (rawInput.toUpperCase().startsWith('PR-BX-')) {
+      window.location.href = `/passaporte-lote/${encodeURIComponent(rawInput.toUpperCase())}`
+      return
+    }
+
     try {
       const digitsOnly = cleanCNPJ(rawInput)
       let record: SeloRecord | null = null
@@ -326,7 +332,15 @@ export default function Verificador() {
                 to="/passaporte/PR-SEAL-2026-991823"
                 className="px-3 py-1 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 text-xs text-[#12B886] hover:bg-[#12B886]/20 transition-colors font-mono font-bold flex items-center gap-1"
               >
-                <span>PR-SEAL-2026-991823 (DPP CDVerde)</span>
+                <span>PR-SEAL-2026-991823 (DPP Peça)</span>
+                <span className="text-[10px]">↗</span>
+              </Link>
+              {/* Atalho para o DPP Consolidado do Lote CDVerde */}
+              <Link
+                to="/passaporte-lote/h1dpr8wniludemh"
+                className="px-3 py-1 rounded-lg bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-xs text-[#D9B36C] hover:bg-[#D9B36C]/20 transition-colors font-mono font-bold flex items-center gap-1"
+              >
+                <span>DPP Consolidado do Lote (CDVerde)</span>
                 <span className="text-[10px]">↗</span>
               </Link>
             </div>

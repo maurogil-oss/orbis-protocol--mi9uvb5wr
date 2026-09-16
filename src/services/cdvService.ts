@@ -190,6 +190,97 @@ export async function calcularHashCanonicalPeca(peca: {
 /**
  * Consulta pública de uma peça pelo selo DPP (sem login)
  */
+/**
+ * Calcula o hash SHA-256 verificável de integridade de um Lote Consolidado de Peças.
+ * Padrão adotado na plataforma: SHA-256 sobre a concatenação ordenada lexicograficamente dos hashes individuais
+ * de cada peça (ou canônico selo|sku|peso|co2e quando não houver hash individual pré-gravado).
+ */
+export async function calcularHashCanonicalLote(
+  lote: {
+    id?: string
+    cdv_cnpj?: string
+    veiculo_baixa_detran?: string
+  },
+  pecas: Array<{
+    selo_dpp: string
+    hash_sha256?: string
+    sku_interno?: string
+    peso_kg?: number
+    co2e_evitado_kg?: number
+  }>,
+): Promise<string> {
+  if (!pecas || pecas.length === 0) {
+    const rawVazio = `LOTE_VAZIO|${lote.id || ''}|${lote.cdv_cnpj || ''}|${lote.veiculo_baixa_detran || ''}`
+    const encoder = new TextEncoder()
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(rawVazio))
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+  }
+
+  // Ordenação lexicográfica estrita dos hashes ou selos das peças
+  const hashesOrdenados = pecas
+    .map((p) => {
+      if (p.hash_sha256 && p.hash_sha256.trim()) {
+        return p.hash_sha256.trim().toLowerCase()
+      }
+      return `${p.selo_dpp}|${p.sku_interno || ''}|${Number(p.peso_kg || 0).toFixed(2)}|${Number(p.co2e_evitado_kg || 0).toFixed(2)}`
+    })
+    .sort()
+
+  const concatenacao = `${lote.id || ''}|${(lote.cdv_cnpj || '').trim()}|${(lote.veiculo_baixa_detran || '').trim()}|${hashesOrdenados.join('|')}`
+  const encoder = new TextEncoder()
+  const data = encoder.encode(concatenacao)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+/**
+ * Consulta pública de um lote consolidado por ID ou por código de baixa do DETRAN (sem login)
+ */
+export async function consultarLoteConsolidado(
+  loteIdOuBaixa: string,
+): Promise<{ lote: CdvLoteRecord; pecas: CdvPecaRecord[] } | null> {
+  const param = loteIdOuBaixa.trim()
+  if (!param) return null
+
+  try {
+    // 1. Tentar buscar direto pelo ID do lote
+    let lote: CdvLoteRecord | null = null
+    try {
+      lote = await pb.collection('cdv_lotes').getOne<CdvLoteRecord>(param)
+    } catch {
+      // 2. Se falhar, buscar por baixa DETRAN ou código do lote
+      const cleanParam = param.replace(/"/g, '\\"')
+      try {
+        lote = await pb
+          .collection('cdv_lotes')
+          .getFirstListItem<CdvLoteRecord>(
+            `veiculo_baixa_detran = "${cleanParam}" || id = "${cleanParam}"`,
+          )
+      } catch {
+        lote = null
+      }
+    }
+
+    if (!lote) {
+      return null
+    }
+
+    // 3. Buscar todas as peças vinculadas ao lote
+    const pecas = await pb.collection('cdv_pecas').getFullList<CdvPecaRecord>({
+      filter: `lote = "${lote.id}"`,
+      sort: 'categoria_material,descricao_peca',
+    })
+
+    return { lote, pecas }
+  } catch {
+    return null
+  }
+}
+
 export async function consultarPassaportePorSelo(selo: string): Promise<CdvPecaRecord | null> {
   const seloNorm = selo.trim().toUpperCase()
   try {

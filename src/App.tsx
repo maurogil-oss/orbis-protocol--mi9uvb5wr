@@ -31,6 +31,7 @@ import Planos from './pages/Planos'
 import Capital from './pages/Capital'
 import RadarRegulatorio from './pages/RadarRegulatorio'
 import PassaportePublicoPage from './pages/PassaportePublicoPage'
+import PassaporteLotePublicoPage from './pages/PassaporteLotePublicoPage'
 import PassaporteFornecedorPublicoPage from './pages/PassaporteFornecedorPublicoPage'
 import CanalTitularPage from './pages/CanalTitularPage'
 import CheckoutPage from './pages/CheckoutPage'
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/credenciamento" element={<CredenciamentoPage />} />
             <Route path="/verificador" element={<Verificador />} />
             <Route path="/passaporte/:selo" element={<PassaportePublicoPage />} />
+            <Route path="/passaporte-lote/:lote" element={<PassaporteLotePublicoPage />} />
             <Route
               path="/passaporte-fornecedor/:token"
               element={<PassaporteFornecedorPublicoPage />}

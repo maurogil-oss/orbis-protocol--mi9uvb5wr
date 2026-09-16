@@ -236,11 +236,19 @@ export default function PassaportePublicoPage() {
                       <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
                         {peca.veiculo_marca_modelo || 'Veículo em Lote CDV'}
                       </div>
-                      <div className="font-mono text-[11px] text-[#93A3B5]">
+                      <div className="font-mono text-[11px] text-[#93A3B5] mb-2">
                         Chassi: {peca.veiculo_chassi_mascarado || '9BWAA***204'}
                       </div>
+                      {peca.lote && (
+                        <Link
+                          to={`/passaporte-lote/${peca.lote}`}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#D9B36C] hover:underline"
+                        >
+                          <span>Ver DPP Consolidado do Lote</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      )}
                     </div>
-
                     <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                       <div className="flex items-center gap-2 text-[#12B886] font-bold uppercase mb-2">
                         <FileCheck2 className="w-4 h-4" />

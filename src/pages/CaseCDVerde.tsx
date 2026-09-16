@@ -82,7 +82,14 @@ export default function CaseCDVerde() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886]/10 transition-all"
               >
                 <QrCode className="w-4 h-4" />
-                <span>Ver Exemplo de Passaporte Público (DPP)</span>
+                <span>Passaporte DPP Peça</span>
+              </Link>
+              <Link
+                to="/passaporte-lote/h1dpr8wniludemh"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#D9B36C]/40 text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-all"
+              >
+                <FileCheck className="w-4 h-4" />
+                <span>DPP Consolidado do Lote (PDF 2 Págs)</span>
               </Link>
               <Link
                 to="/painel"

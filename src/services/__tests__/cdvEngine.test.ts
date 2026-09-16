@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { FATORES_CDV_MATERIAIS, calcularHashCanonicalPeca } from '../cdvService'
+import {
+  FATORES_CDV_MATERIAIS,
+  calcularHashCanonicalPeca,
+  calcularHashCanonicalLote,
+} from '../cdvService'
 
 describe('Módulo CDV Operacional & DPP Engine', () => {
   it('deve possuir fatores curados de CO2e evitado corretos por material', () => {
@@ -57,5 +61,52 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
       peso_kg: 14.6,
     })
     expect(hashAlterado).not.toBe(hash1)
+  })
+
+  it('deve gerar hash SHA-256 verificável determinístico para o Lote Consolidado', async () => {
+    const lote = {
+      id: 'h1dpr8wniludemh',
+      cdv_cnpj: '76.123.456/0001-12',
+      veiculo_baixa_detran: 'PR-BX-2026-991204',
+    }
+
+    const pecas = [
+      {
+        selo_dpp: 'PR-SEAL-2026-991823',
+        hash_sha256: '5f16fe468a99f78c6ff17f97ab52b5759e290ecc1dca75923858090a9e053b61',
+        peso_kg: 14.5,
+        co2e_evitado_kg: 41.33,
+      },
+      {
+        selo_dpp: 'PR-SEAL-2026-991824',
+        hash_sha256: '61e47159d4b0e558920428ed0341283b3b03d34a44d5322fce289d5cd2590c02',
+        peso_kg: 5.2,
+        co2e_evitado_kg: 28.08,
+      },
+      {
+        selo_dpp: 'PR-SEAL-2026-991825',
+        hash_sha256: '7127fd88b01ad3c338d9f777725c47ebbb7360bfe5ae51a753de7f2f1df426ea',
+        peso_kg: 3.8,
+        co2e_evitado_kg: 7.22,
+      },
+    ]
+
+    const hashLote1 = await calcularHashCanonicalLote(lote, pecas)
+    const hashLote2 = await calcularHashCanonicalLote(lote, [...pecas].reverse()) // Ordem reversa deve dar o mesmo hash pois ordena lexicograficamente
+
+    expect(hashLote1).toBeDefined()
+    expect(hashLote1.length).toBe(64)
+    expect(hashLote1).toBe(hashLote2)
+
+    // Alteração em qualquer peça deve alterar o hash do lote
+    const hashLoteAlterado = await calcularHashCanonicalLote(lote, [
+      pecas[0],
+      pecas[1],
+      {
+        ...pecas[2],
+        hash_sha256: '0000000000000000000000000000000000000000000000000000000000000000',
+      },
+    ])
+    expect(hashLoteAlterado).not.toBe(hashLote1)
   })
 })
