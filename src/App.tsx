@@ -28,6 +28,9 @@ import Planos from './pages/Planos'
 import Capital from './pages/Capital'
 import RadarRegulatorio from './pages/RadarRegulatorio'
 import PassaportePublicoPage from './pages/PassaportePublicoPage'
+import PassaporteFornecedorPublicoPage from './pages/PassaporteFornecedorPublicoPage'
+import CanalTitularPage from './pages/CanalTitularPage'
+import CheckoutPage from './pages/CheckoutPage'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -51,6 +54,13 @@ const App = () => (
             <Route path="/solucoes/cadeias-produtivas" element={<CadeiasProdutivasPage />} />
             <Route path="/verificador" element={<Verificador />} />
             <Route path="/passaporte/:selo" element={<PassaportePublicoPage />} />
+            <Route
+              path="/passaporte-fornecedor/:token"
+              element={<PassaporteFornecedorPublicoPage />}
+            />
+            <Route path="/titular-dados" element={<CanalTitularPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/checkout/:cobrancaId" element={<CheckoutPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/teste" element={<TestCatalog />} />
             <Route path="/privacidade" element={<Privacidade />} />

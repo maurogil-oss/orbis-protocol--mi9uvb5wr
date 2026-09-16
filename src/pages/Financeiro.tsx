@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   CreditCard,
@@ -13,7 +13,14 @@ import {
   ArrowRight,
   Receipt,
   Lock,
+  Download,
 } from 'lucide-react'
+import {
+  listarMinhasCobrancas,
+  SERVICOS_COBRANCA,
+  ServicoCobrancaId,
+  CobrancaRecord,
+} from '@/services/cobrancaService'
 
 interface Plano {
   id: string
@@ -78,13 +85,41 @@ const PLANOS: Plano[] = [
 
 export default function Financeiro() {
   const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
   const [planoSelecionado, setPlanoSelecionado] = useState<Plano>(PLANOS[1])
   const [metodoPagamento, setMetodoPagamento] = useState<'pix' | 'boleto' | 'cartao'>('pix')
   const [pedidoConcluido, setPedidoConcluido] = useState(false)
 
+  // Histórico de cobranças reais
+  const [cobrancas, setCobrancas] = useState<CobrancaRecord[]>([])
+  const [carregandoCobrancas, setCarregandoCobrancas] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      carregarHistorico()
+    }
+  }, [isAuthenticated])
+
+  const carregarHistorico = async () => {
+    setCarregandoCobrancas(true)
+    try {
+      const lista = await listarMinhasCobrancas()
+      setCobrancas(lista)
+    } catch {
+      /* intentionally ignored */
+    } finally {
+      setCarregandoCobrancas(false)
+    }
+  }
+
+  const handleAbrirCheckoutReal = (servicoKey: ServicoCobrancaId = 'diagnostico') => {
+    navigate('/checkout')
+  }
+
   const handleSimularAssinatura = (e: React.FormEvent) => {
     e.preventDefault()
-    setPedidoConcluido(true)
+    // Redireciona diretamente para o fluxo de checkout real PIX + NFS-e
+    navigate('/checkout')
   }
 
   return (
@@ -263,14 +298,16 @@ export default function Financeiro() {
                     <span className="text-[#93A3B5]">Total da Assinatura:</span>
                     <div className="text-lg font-heading font-black text-[#12B886]">
                       {planoSelecionado.precoMensal}{' '}
-                      <span className="text-xs text-[#93A3B5] font-normal">/ cobrança mensal</span>
+                      <span className="text-xs text-[#93A3B5] font-normal">/ cobrança</span>
                     </div>
                   </div>
                   <button
-                    type="submit"
-                    className="px-8 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
+                    type="button"
+                    onClick={() => navigate('/checkout')}
+                    className="px-8 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2"
                   >
-                    Confirmar Pedido Simulado
+                    <span>Abrir Checkout PIX Real</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </form>
@@ -296,13 +333,74 @@ export default function Financeiro() {
           </div>
 
           {isAuthenticated ? (
-            <div className="text-center py-10 border border-dashed border-[rgba(244,247,250,0.15)] rounded-xl bg-[#0A0E12]">
-              <Receipt className="w-8 h-8 text-[#93A3B5] mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-[#93A3B5]">
-                Nenhuma fatura emitida ainda para a conta de{' '}
-                <strong className="text-[#F4F7FA]">{user?.email}</strong> nesta versão inicial.
-              </p>
-            </div>
+            cobrancas.length > 0 ? (
+              <div className="space-y-3">
+                {cobrancas.map((cob) => (
+                  <div
+                    key={cob.id}
+                    className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[#D9B36C] font-bold">
+                          {cob.servico_nome}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            cob.status === 'pago'
+                              ? 'bg-[#12B886]/20 text-[#12B886]'
+                              : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                          }`}
+                        >
+                          {cob.status}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-[#93A3B5]">
+                        TXID: <span className="font-mono text-[#F4F7FA]">{cob.txid}</span> • Criado
+                        em {new Date(cob.created).toLocaleDateString('pt-BR')}
+                      </div>
+                      {cob.nfse_numero && (
+                        <div className="text-[11px] text-[#12B886]">
+                          NFS-e Nº: <strong className="font-mono">{cob.nfse_numero}</strong> (Série{' '}
+                          {cob.nfse_serie || 'E'}) • Cód: {cob.nfse_verificacao}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="font-heading font-black text-base text-[#12B886] block">
+                          R$ {cob.valor?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <Link
+                        to={`/checkout/${cob.id}`}
+                        className="px-4 py-2 rounded-lg bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors font-semibold"
+                      >
+                        Ver Detalhes
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 border border-dashed border-[rgba(244,247,250,0.15)] rounded-xl bg-[#0A0E12] space-y-3">
+                <Receipt className="w-8 h-8 text-[#93A3B5] mx-auto opacity-50" />
+                <p className="text-xs text-[#93A3B5]">
+                  Nenhuma cobrança registrada ainda para a conta de{' '}
+                  <strong className="text-[#F4F7FA]">{user?.email}</strong>.
+                </p>
+                <div>
+                  <Link
+                    to="/checkout"
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shadow-emerald-glow"
+                  >
+                    <span>Contratar via PIX Agora</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            )
           ) : (
             <div className="p-6 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-xs text-[#93A3B5]">

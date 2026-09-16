@@ -41,11 +41,12 @@ export default function Layout() {
     { label: 'Trilhas', path: '/trilhas' },
     { label: 'Soluções', path: '/solucoes' },
     { label: 'Planos', path: '/planos' },
+    { label: 'Bureau ACP', path: '/bureau' },
     { label: 'Verificador de Selos', path: '/verificador' },
     ...(isAuthenticated
       ? [
           { label: 'Green Capital', path: '/capital' },
-          { label: 'Financeiro', path: '/financeiro' },
+          { label: 'Financeiro (PIX)', path: '/financeiro' },
         ]
       : []),
   ]
@@ -338,7 +339,23 @@ export default function Layout() {
                     className="text-[#93A3B5] hover:text-[#F4F7FA] transition-colors"
                   >
                     Planos & Preços
-                  </Link>{' '}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/checkout"
+                    className="text-[#12B886] hover:text-[#12B886]/80 font-semibold transition-colors flex items-center gap-1"
+                  >
+                    Checkout PIX & NFS-e
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/bureau"
+                    className="text-[#D9B36C] hover:text-[#D9B36C]/80 font-semibold transition-colors"
+                  >
+                    Cockpit Bureau ACP (Passaporte)
+                  </Link>
                 </li>
                 <li>
                   <Link
@@ -433,13 +450,19 @@ export default function Layout() {
             </p>
             <div className="flex items-center gap-6">
               <Link
+                to="/titular-dados"
+                className="text-[11px] text-[#12B886] hover:underline font-semibold"
+              >
+                Canal do Titular LGPD (Art. 18)
+              </Link>
+              <Link
                 to="/privacidade"
                 className="text-[11px] text-[#93A3B5]/80 hover:text-[#12B886] underline"
               >
-                Política de Privacidade LGPD
+                Política de Privacidade
               </Link>
               <span className="text-[#12B886] font-semibold">Selo Oficial Registrado</span>
-            </div>
+            </div>{' '}
           </div>
         </div>
       </footer>

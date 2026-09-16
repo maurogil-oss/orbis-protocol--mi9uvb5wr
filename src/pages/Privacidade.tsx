@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ShieldCheck, ArrowLeft, Lock, FileText, CheckCircle2 } from 'lucide-react'
+import { ShieldCheck, ArrowLeft, ArrowRight, Lock, FileText, CheckCircle2 } from 'lucide-react'
 
 export default function Privacidade() {
   return (
@@ -131,23 +131,110 @@ export default function Privacidade() {
             </ul>
           </section>
 
-          <section className="space-y-3 border-t border-[rgba(244,247,250,0.1)] pt-6">
+          {/* Seção 6: Política de Retenção e Descarte */}
+          <section className="space-y-4 border-t border-[rgba(244,247,250,0.1)] pt-6">
             <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">6.</span> Contato do Encarregado pelo Tratamento
-              (DPO)
+              <span className="text-[#12B886]">6.</span> Política de Retenção e Descarte Probatório
             </h2>
-            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 text-xs sm:text-sm space-y-1 text-[#93A3B5]">
-              <p>
-                <strong className="text-[#F4F7FA]">Encarregado (DPO):</strong> Comitê de Compliance
-                e Governança de Dados
-              </p>
-              <p>
-                <strong className="text-[#F4F7FA]">E-mail de Contato:</strong>{' '}
-                dpo@mgmconsultoria.com.br
-              </p>
-              <p>
-                <strong className="text-[#F4F7FA]">Entidade Mantenedora:</strong> MGM CONSULTORIA
-                EMPRESARIAL LTDA (CNPJ 19.598.964/0001-01)
+            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
+              Em estrita conformidade com os princípios da finalidade, necessidade e segurança da
+              LGPD (Art. 6º), a plataforma Orbis Protocol adota prazos periciais formalmente
+              catalogados na base de governança:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
+                <span className="font-bold text-[#12B886] block">
+                  Diagnósticos e Leads (leads_diagnostico): 24 Meses
+                </span>
+                <p className="text-[#93A3B5]">
+                  Retenção por até 2 anos para viabilizar relatórios comparativos fiscais e
+                  periciais preliminares. Após o prazo ou mediante pedido, dados pessoais passam por
+                  rotina de anonimização server-side.
+                </p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
+                <span className="font-bold text-[#D9B36C] block">
+                  Documentos Fiscais & Emissões: 60 Meses (5 Anos)
+                </span>
+                <p className="text-[#93A3B5]">
+                  Cumprimento de obrigação pericial, fiscal e tributária (Art. 173 do CTN; NBC TO
+                  3000 do CFC e Art. 7º, II da LGPD).
+                </p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
+                <span className="font-bold text-[#12B886] block">
+                  Selos de Sustentabilidade & DPP: 60 Meses
+                </span>
+                <p className="text-[#93A3B5]">
+                  Rastreabilidade pública para comprovação perante cadeias de valor, compradores e
+                  Programa MOVER (Lei 14.902/2024).
+                </p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
+                <span className="font-bold text-[#D9B36C] block">
+                  Protocolos do Titular (Art. 18): 60 Meses
+                </span>
+                <p className="text-[#93A3B5]">
+                  Evidência de atendimento tempestivo perante a Autoridade Nacional de Proteção de
+                  Dados (ANPD).
+                </p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] md:col-span-2 space-y-1">
+                <span className="font-bold text-[#93A3B5] block">
+                  Logs Técnicos e Rastreabilidade de Consultas: 12 Meses
+                </span>
+                <p className="text-[#93A3B5]">
+                  Guarda obrigatória nos termos do Art. 15 da Lei 12.965/2014 (Marco Civil da
+                  Internet) com descarte cíclico automatizado.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Seção 7: Designação Formal do Encarregado (DPO) e Canal do Titular */}
+          <section className="space-y-4 border-t border-[rgba(244,247,250,0.1)] pt-6">
+            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
+              <span className="text-[#12B886]">7.</span> Designação Formal do Encarregado (DPO) e
+              Canal do Titular
+            </h2>
+            <div className="p-5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 text-xs sm:text-sm space-y-3 text-[#93A3B5]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[rgba(244,247,250,0.08)] pb-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-[#D9B36C] block">
+                    Encarregado pelo Tratamento de Dados (DPO)
+                  </span>
+                  <strong className="text-[#F4F7FA] text-base">
+                    MGM CONSULTORIA EMPRESARIAL LTDA
+                  </strong>
+                </div>
+                <div className="text-xs font-mono text-[#D9B36C]">CNPJ: 19.598.964/0001-01</div>
+              </div>
+
+              <div className="space-y-2">
+                <p>
+                  <strong className="text-[#F4F7FA]">Canal Direto do Titular (Art. 18):</strong>{' '}
+                  Utilize nosso formulário oficial com prazo legal de resposta de 15 dias:
+                </p>
+                <div className="pt-1">
+                  <Link
+                    to="/titular-dados"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
+                  >
+                    <span>Acessar Canal do Titular (Art. 18 da LGPD)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-[#93A3B5]/90 pt-2 border-t border-[rgba(244,247,250,0.05)]">
+                Canal suplementar por e-mail:{' '}
+                <a
+                  href="mailto:dpo@mgmconsultoria.com.br"
+                  className="text-[#12B886] underline font-semibold"
+                >
+                  dpo@mgmconsultoria.com.br
+                </a>{' '}
+                • Sede operacional: Curitiba / PR • Atendimento em dias úteis das 09h às 18h.
               </p>
             </div>
           </section>

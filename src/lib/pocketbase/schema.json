@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T01:52:01.881Z",
+  "generatedAt": "2026-09-16T02:05:58.104Z",
   "collections": [
     {
       "name": "users",
@@ -242,6 +242,24 @@
         {
           "name": "visto_auditor",
           "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "consentimento_data_hora",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "consentimento_ip",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "termo_versao",
+          "type": "text",
           "required": false,
           "system": false
         }
@@ -1377,6 +1395,504 @@
       "indexes": [
         "CREATE INDEX idx_cdv_keys_cnpj ON cdv_api_keys (cdv_cnpj)",
         "CREATE INDEX idx_cdv_keys_hash ON cdv_api_keys (chave_hash)"
+      ]
+    },
+    {
+      "name": "lgpd_solicitacoes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "protocolo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tipo_pedido",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "confirmacao_existencia",
+            "acesso_dados",
+            "correcao",
+            "anonimizacao_bloqueio_eliminacao",
+            "portabilidade",
+            "revogacao_consentimento"
+          ]
+        },
+        {
+          "name": "nome_titular",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "email_titular",
+          "type": "email",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cpf_cnpj_titular",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["recebido", "em_analise", "atendido", "recusado"]
+        },
+        {
+          "name": "prazo_legal_dias",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_limite_resposta",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_protocolo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resposta_encarregado",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "atendido_por",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_lgpd_solic_protocolo ON lgpd_solicitacoes (protocolo)",
+        "CREATE INDEX idx_lgpd_solic_status ON lgpd_solicitacoes (status)",
+        "CREATE INDEX idx_lgpd_solic_cpf_cnpj ON lgpd_solicitacoes (cpf_cnpj_titular)"
+      ]
+    },
+    {
+      "name": "lgpd_retencoes",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "tipo_dado",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "descricao_dado",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "prazo_meses",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "base_legal",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "rotina_descarte",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "artigo_legal",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ultimo_expurgo",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_lgpd_retenc_tipo ON lgpd_retencoes (tipo_dado)"]
+    },
+    {
+      "name": "cobrancas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "servico_id",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["diagnostico", "laudo_pericial", "assinatura_bureau"]
+        },
+        {
+          "name": "servico_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "valor",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["pendente", "pendente_simulacao", "pago", "expirado", "cancelado"]
+        },
+        {
+          "name": "tomador_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tomador_cpf_cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tomador_email",
+          "type": "email",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tomador_endereco",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "provider_payment_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "txid",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "qr_code_payload",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "qr_code_base64",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "url_comprovante",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_expiracao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_integridade",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_pagamento",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nfse_numero",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nfse_serie",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nfse_verificacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nfse_url",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nfse_status",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_cobrancas_usuario ON cobrancas (usuario)",
+        "CREATE INDEX idx_cobrancas_status ON cobrancas (status)",
+        "CREATE INDEX idx_cobrancas_txid ON cobrancas (txid)",
+        "CREATE INDEX idx_cobrancas_payment_id ON cobrancas (provider_payment_id)"
+      ]
+    },
+    {
+      "name": "fornecedores_passaportes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "token_consulta != '' || (@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito'))",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "empresa_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "empresa_cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "token_consulta",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "setor_atuacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "kg_co2e_por_kg_produzido",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "peso_produzido_kg_ano",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "emissoes_totais_tco2e",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "score_esg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "matriz_gri_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "certidoes_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "curva_mac_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "dossie_elegibilidade_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "config_revelacao_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_integridade",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_inventario_origem",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_passaporte_token ON fornecedores_passaportes (token_consulta)",
+        "CREATE INDEX idx_passaporte_usuario ON fornecedores_passaportes (usuario)",
+        "CREATE INDEX idx_passaporte_cnpj ON fornecedores_passaportes (empresa_cnpj)"
       ]
     }
   ]

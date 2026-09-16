@@ -153,17 +153,19 @@ export default function Planos() {
                 </div>
               </div>
 
-              <div>
+              <div className="space-y-2">
+                <Link
+                  to="/checkout"
+                  className="w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
+                >
+                  <span>Contratar via PIX (R$ 490 / R$ 2.850 / R$ 7.800)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
                 <Link
                   to="/diagnostico"
-                  className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-                    p.popular
-                      ? 'bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shadow-emerald-glow'
-                      : 'bg-[#16202B] text-[#F4F7FA] hover:bg-[#12B886] hover:text-[#0A0E12] border border-[rgba(244,247,250,0.12)]'
-                  }`}
+                  className="w-full py-2.5 rounded-xl font-semibold text-xs text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 flex items-center justify-center gap-1.5 transition-all"
                 >
                   <span>{p.ctaText}</span>
-                  <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>

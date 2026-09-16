@@ -24,6 +24,7 @@ import {
   UserCheck,
   Download,
   Coins,
+  Trash2,
 } from 'lucide-react'
 import { simularGreenCapitalEngine } from '@/services/greenCapitalEngine'
 import { exportarRelatorioDossiePdf } from '@/services/relatorioLaudoPdf'
@@ -49,6 +50,9 @@ interface LeadDiagnostico extends RecordModel {
   faixa_impacto_tributario?: 'ganho_provavel' | 'neutro' | 'ponto_atencao'
   origem?: 'funil' | 'agente_ia' | 'portal'
   visto_auditor?: boolean
+  consentimento_data_hora?: string
+  consentimento_ip?: string
+  termo_versao?: string
 }
 
 export default function ConsoleAuditor() {
@@ -72,6 +76,14 @@ export default function ConsoleAuditor() {
   const [selectedLead, setSelectedLead] = useState<LeadDiagnostico | null>(null)
   const [isExportandoLeadPdf, setIsExportandoLeadPdf] = useState(false)
 
+  // Sub-aba do Console: leads vs lgpd
+  const [activeTab, setActiveTab] = useState<'leads' | 'lgpd'>('leads')
+  const [solicitacoesLgpd, setSolicitacoesLgpd] = useState<any[]>([])
+  const [politicasLgpd, setPoliticasLgpd] = useState<any[]>([])
+  const [isDescartando, setIsDescartando] = useState(false)
+  const [descarteResultado, setDescarteResultado] = useState<string | null>(null)
+  const [filtroStatusLgpd, setFiltroStatusLgpd] = useState<string>('todos')
+
   const loadData = async () => {
     setIsLoading(true)
     try {
@@ -82,6 +94,20 @@ export default function ConsoleAuditor() {
 
       const totalSelos = await pb.collection('selos').getList(1, 1)
       setSelosCount(totalSelos.totalItems)
+
+      try {
+        const sols = await pb.collection('lgpd_solicitacoes').getFullList({ sort: '-created' })
+        setSolicitacoesLgpd(sols)
+      } catch {
+        /* intentionally ignored */
+      }
+
+      try {
+        const pols = await pb.collection('lgpd_retencoes').getFullList({ sort: 'prazo_meses' })
+        setPoliticasLgpd(pols)
+      } catch {
+        /* intentionally ignored */
+      }
     } catch {
       /* intentionally ignored */
     } finally {
@@ -191,6 +217,57 @@ export default function ConsoleAuditor() {
       alert(err.message || 'Erro ao gerar laudo em PDF.')
     } finally {
       setIsExportandoLeadPdf(false)
+    }
+  }
+
+  // Ações da aba LGPD: Atualizar status de solicitação do titular
+  const handleAtualizarStatusLgpd = async (solId: string, novoStatus: string) => {
+    try {
+      const resp = prompt(
+        'Resposta do Encarregado / Justificativa:',
+        'Atendido conforme registro pericial.',
+      )
+      const updated = await pb.collection('lgpd_solicitacoes').update(solId, {
+        status: novoStatus,
+        resposta_encarregado: resp || '',
+        atendido_por: user?.name || user?.email || 'Encarregado DPO',
+      })
+      setSolicitacoesLgpd((prev) => prev.map((s) => (s.id === solId ? updated : s)))
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar solicitação LGPD.')
+    }
+  }
+
+  // Disparar rotina de descarte server-side
+  const handleDispararDescarte = async () => {
+    if (
+      !confirm(
+        'Deseja realmente disparar a rotina server-side de expurgo e anonimização de cadastros vencidos (> 24 meses)?',
+      )
+    ) {
+      return
+    }
+    setIsDescartando(true)
+    setDescarteResultado(null)
+    try {
+      const res = await fetch(`${pb.baseUrl}/backend/v1/lgpd/descarte-vencidos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: pb.authStore.token,
+        },
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setDescarteResultado(data.mensagem + ` (Total anonimizados: ${data.total_processados})`)
+        loadData()
+      } else {
+        alert(data.error || 'Erro ao disparar rotina.')
+      }
+    } catch (err: any) {
+      alert(err.message || 'Erro de conexão.')
+    } finally {
+      setIsDescartando(false)
     }
   }
 
@@ -374,6 +451,12 @@ export default function ConsoleAuditor() {
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
             <Link
+              to="/bureau"
+              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+            >
+              Cockpit Bureau ACP
+            </Link>
+            <Link
               to="/trilhas/peritos-tecnicos"
               className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#D9B36C] hover:border-[#D9B36C]"
             >
@@ -382,520 +465,808 @@ export default function ConsoleAuditor() {
           </div>
         </div>
 
-        {/* 1. CARDS DE PRIORIDADE / TRIAGEM PERICIAL */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[#F03E54]/30">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#F03E54]">
-                Ponto de Atenção
-              </span>
-              <AlertTriangle className="w-4 h-4 text-[#F03E54]" />
-            </div>
-            <div className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA]">
-              {countPontoAtencao}
-            </div>
-            <span className="text-[10px] text-[#93A3B5] mt-1 block">
-              Prioridade máxima na reforma tributária
-            </span>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[#12B886]/30">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#12B886]">
-                Exportadores CBAM (UE)
-              </span>
-              <Globe2 className="w-4 h-4 text-[#12B886]" />
-            </div>
-            <div className="font-heading font-black text-2xl sm:text-3xl text-[#12B886]">
-              {countExportadores}
-            </div>
-            <span className="text-[10px] text-[#93A3B5] mt-1 block">
-              Comércio exterior e fronteira de carbono
-            </span>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[#D9B36C]/30">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#D9B36C]">
-                Origem Agente IA
-              </span>
-              <Bot className="w-4 h-4 text-[#D9B36C]" />
-            </div>
-            <div className="font-heading font-black text-2xl sm:text-3xl text-[#D9B36C]">
-              {countAgenteIA}
-            </div>
-            <span className="text-[10px] text-[#93A3B5] mt-1 block">
-              Pré-qualificados via chat inteligente
-            </span>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#93A3B5]">
-                Leads Não Vistos
-              </span>
-              <Eye className="w-4 h-4 text-[#F7B84B]" />
-            </div>
-            <div className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA]">
-              {countNaoVistos}
-            </div>
-            <span className="text-[10px] text-[#93A3B5] mt-1 block">
-              Aguardando primeira leitura
-            </span>
-          </div>
+        {/* NAVEGAÇÃO DE ABAS: LEADS vs LGPD */}
+        <div className="flex items-center gap-2 mb-8 border-b border-[rgba(244,247,250,0.1)] pb-4">
+          <button
+            onClick={() => setActiveTab('leads')}
+            className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider flex items-center gap-2 ${
+              activeTab === 'leads'
+                ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
+                : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#111820]'
+            }`}
+          >
+            <FileCheck2 className="w-4 h-4" />
+            <span>Fila de Leads & Diagnósticos ({leads.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('lgpd')}
+            className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider flex items-center gap-2 ${
+              activeTab === 'lgpd'
+                ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
+                : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#111820]'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Gestão LGPD & Canal do Titular ({solicitacoesLgpd.length})</span>
+          </button>
         </div>
 
-        {/* 2. TABELA PRINCIPAL DE LEADS PRIORIZADOS */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl mb-10">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#D9B36C]" />
-                <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                  FILA PRIORIZADA DE LEADS & DIAGNÓSTICOS
-                </h2>
-              </div>
-              <p className="text-xs text-[#93A3B5] mt-0.5">
-                Ordenado automaticamente com{' '}
-                <strong className="text-[#F03E54]">Ponto de atenção</strong> e{' '}
-                <strong className="text-[#12B886]">Exportadores UE (CBAM)</strong> no topo.
-              </p>
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative w-full lg:w-72">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar empresa, CNPJ, responsável..."
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.12)] text-xs text-[#F4F7FA] placeholder-[#93A3B5]/60 focus:outline-none focus:ring-1 focus:ring-[#12B886]"
-              />
-            </div>
-          </div>
-
-          {/* Filtros em Linha */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 mb-6 p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] text-xs">
-            {/* Filtro Status */}
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
-                Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
-              >
-                <option value="todos">Todos os status</option>
-                <option value="novo">Novo</option>
-                <option value="em_analise">Em Análise</option>
-                <option value="concluido">Concluído</option>
-              </select>
-            </div>
-
-            {/* Filtro Impacto */}
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
-                Faixa Reforma
-              </label>
-              <select
-                value={faixaImpactoFilter}
-                onChange={(e) => setFaixaImpactoFilter(e.target.value)}
-                className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
-              >
-                <option value="todos">Todas as faixas</option>
-                <option value="ponto_atencao">Ponto de Atenção</option>
-                <option value="ganho_provavel">Ganho Provável</option>
-                <option value="neutro">Neutro / Adaptação</option>
-              </select>
-            </div>
-
-            {/* Filtro Exportador CBAM */}
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
-                Exportador UE (CBAM)
-              </label>
-              <select
-                value={exportadorFilter}
-                onChange={(e) => setExportadorFilter(e.target.value)}
-                className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
-              >
-                <option value="todos">Todos</option>
-                <option value="sim">Sim (Exporta UE)</option>
-                <option value="nao">Não</option>
-              </select>
-            </div>
-
-            {/* Filtro SBCE */}
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
-                Limiar SBCE
-              </label>
-              <select
-                value={sbceFilter}
-                onChange={(e) => setSbceFilter(e.target.value)}
-                className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
-              >
-                <option value="todos">Todos os limiares</option>
-                <option value="acima_25k">&gt; 25.000 tCO₂e (Compensação)</option>
-                <option value="10k_25k">10k a 25k tCO₂e (Reporte)</option>
-                <option value="abaixo_10k">&lt; 10.000 tCO₂e</option>
-              </select>
-            </div>
-
-            {/* Filtro Origem */}
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
-                Origem
-              </label>
-              <select
-                value={origemFilter}
-                onChange={(e) => setOrigemFilter(e.target.value)}
-                className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
-              >
-                <option value="todos">Todas origens</option>
-                <option value="agente_ia">Agente IA</option>
-                <option value="funil">Funil Web</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Tabela de Leads */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
-                <tr>
-                  <th className="py-3 px-3">Empresa / Contato</th>
-                  <th className="py-3 px-3">CNPJ / Regime</th>
-                  <th className="py-3 px-3">Impacto Reforma</th>
-                  <th className="py-3 px-3">Limiar SBCE & CBAM</th>
-                  <th className="py-3 px-3">Origem & Status</th>
-                  <th className="py-3 px-3 text-right">Ações Periciais</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
-                {sortedAndFilteredLeads.map((item) => {
-                  const isTopPriority =
-                    item.faixa_impacto_tributario === 'ponto_atencao' ||
-                    item.exporta_ue_cbam === 'sim'
-
-                  return (
-                    <tr
-                      key={item.id}
-                      className={`hover:bg-[#16202B]/60 transition-colors ${
-                        isTopPriority ? 'bg-[#16202B]/30' : ''
-                      } ${!item.visto_auditor && item.status === 'novo' ? 'font-semibold' : ''}`}
-                    >
-                      {/* Empresa e Contato */}
-                      <td className="py-3.5 px-3">
-                        <div className="flex items-center gap-2">
-                          {!item.visto_auditor && (
-                            <span
-                              className="w-2 h-2 rounded-full bg-[#12B886] shrink-0"
-                              title="Lead novo / não visto pelo auditor"
-                            />
-                          )}
-                          <div>
-                            <div
-                              className="font-bold text-[#F4F7FA] hover:text-[#12B886] cursor-pointer flex items-center gap-1.5"
-                              onClick={() => setSelectedLead(item)}
-                            >
-                              <span>{item.razao_social}</span>
-                              {isTopPriority && (
-                                <span className="px-1.5 py-0.2 rounded bg-[#F03E54]/20 text-[#F03E54] text-[9px] font-bold uppercase">
-                                  Prioritário
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[11px] text-[#93A3B5] flex items-center gap-3 mt-0.5">
-                              {item.responsavel && (
-                                <span className="flex items-center gap-1">
-                                  <UserCheck className="w-3 h-3 text-[#D9B36C]" />
-                                  {item.responsavel}
-                                </span>
-                              )}
-                              {item.email && (
-                                <span className="flex items-center gap-1 text-[#93A3B5]">
-                                  <Mail className="w-3 h-3" />
-                                  {item.email}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* CNPJ e Regime Declarado */}
-                      <td className="py-3.5 px-3">
-                        <div className="font-mono text-[#D9B36C] font-semibold">{item.cnpj}</div>
-                        <div className="text-[10px] text-[#93A3B5]">
-                          Regime:{' '}
-                          <strong className="text-[#F4F7FA]">
-                            {item.regime_tributario || 'A confirmar'}
-                          </strong>
-                        </div>
-                        {item.categoria_profissional && (
-                          <div
-                            className="text-[10px] text-[#93A3B5]/80 truncate max-w-[160px]"
-                            title={item.categoria_profissional}
-                          >
-                            {item.categoria_profissional}
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Faixa de Impacto Tributário */}
-                      <td className="py-3.5 px-3">
-                        {getImpactoBadge(item.faixa_impacto_tributario)}
-                        <span className="block text-[10px] text-[#93A3B5] mt-1 truncate max-w-[160px]">
-                          {item.vinculo_institucional}
-                        </span>
-                      </td>
-
-                      {/* SBCE e CBAM */}
-                      <td className="py-3.5 px-3">
-                        <div className="text-[11px]">
-                          {item.faixa_emissoes === 'acima_25k' && (
-                            <span className="text-[#F03E54] font-semibold flex items-center gap-1">
-                              <Flame className="w-3 h-3" />
-                              &gt; 25k tCO₂e (Metas SBCE)
-                            </span>
-                          )}
-                          {item.faixa_emissoes === 'entre_10k_25k' && (
-                            <span className="text-[#D9B36C] font-semibold">
-                              10k–25k tCO₂e (Reporte)
-                            </span>
-                          )}
-                          {item.faixa_emissoes === 'abaixo_10k' && (
-                            <span className="text-[#12B886]">&lt; 10k tCO₂e</span>
-                          )}
-                          {!item.faixa_emissoes && (
-                            <span className="text-[#93A3B5]">Triagem pendente</span>
-                          )}
-                        </div>
-
-                        {item.exporta_ue_cbam === 'sim' ? (
-                          <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] text-[10px] font-bold">
-                            <Globe2 className="w-3 h-3" />
-                            CBAM UE {item.cbam_bens ? `(${item.cbam_bens})` : ''}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-[#93A3B5]">Mercado Interno</span>
-                        )}
-                      </td>
-
-                      {/* Origem e Status */}
-                      <td className="py-3.5 px-3">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          {item.origem === 'agente_ia' ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#D9B36C]/20 text-[#D9B36C] font-bold text-[9px] uppercase border border-[#D9B36C]/40">
-                              <Bot className="w-2.5 h-2.5" />
-                              Agente IA
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#16202B] text-[#93A3B5] text-[9px] uppercase">
-                              Funil Web
-                            </span>
-                          )}
-                        </div>
-                        <div>{getStatusBadge(item.status)}</div>
-                      </td>
-
-                      {/* Ações */}
-                      <td className="py-3.5 px-3 text-right">
-                        <div className="inline-flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleExportarLaudoCliente(item)}
-                            disabled={isExportandoLeadPdf}
-                            className="px-2.5 py-1 rounded bg-[#12B886]/10 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] border border-[#12B886]/30 font-semibold flex items-center gap-1"
-                            title="Gerar laudo pericial em PDF para entrega ao cliente"
-                          >
-                            <Download className="w-3 h-3" />
-                            <span>PDF</span>
-                          </button>
-
-                          <button
-                            onClick={() => setSelectedLead(item)}
-                            className="px-2.5 py-1 rounded bg-[#16202B] text-[#F4F7FA] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] border border-[rgba(244,247,250,0.15)] font-semibold"
-                            title="Ver detalhes completos do diagnóstico"
-                          >
-                            Detalhes
-                          </button>
-
-                          {item.status !== 'concluido' ? (
-                            <button
-                              disabled={updatingId === item.id}
-                              onClick={() => handleUpdateStatus(item.id, 'concluido')}
-                              className="px-2.5 py-1 rounded bg-[#12B886]/10 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] font-semibold border border-[#12B886]/30 disabled:opacity-50"
-                            >
-                              Homologar
-                            </button>
-                          ) : (
-                            <button
-                              disabled={updatingId === item.id}
-                              onClick={() => handleUpdateStatus(item.id, 'em_analise')}
-                              className="px-2.5 py-1 rounded bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] transition-colors text-[11px] border border-[rgba(244,247,250,0.1)] disabled:opacity-50"
-                            >
-                              Reabrir
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-
-                {sortedAndFilteredLeads.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="py-10 text-center text-[#93A3B5]">
-                      Nenhum diagnóstico encontrado com os filtros selecionados.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* 3. MODAL DE DETALHES COMPLETOS DO LEAD SELECIONADO */}
-        {selectedLead && (
-          <div className="fixed inset-0 z-50 bg-[#0A0E12]/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-[#111820] border border-[rgba(244,247,250,0.15)] rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.1)] pb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono text-xs text-[#D9B36C] font-semibold">
-                      CNPJ: {selectedLead.cnpj}
-                    </span>
-                    {selectedLead.origem === 'agente_ia' && (
-                      <span className="px-2 py-0.5 rounded bg-[#D9B36C]/20 text-[#D9B36C] text-[10px] font-bold uppercase">
-                        Capturado via Agente IA
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
-                    {selectedLead.razao_social}
-                  </h3>
+        {activeTab === 'lgpd' ? (
+          /* ABA LGPD: SOLICITAÇÕES DO ART. 18 E POLÍTICAS DE RETENÇÃO */
+          <div className="space-y-8 animate-fade-in">
+            {/* Banner de Feedback de Descarte */}
+            {descarteResultado && (
+              <div className="p-4 rounded-xl bg-[#12B886]/10 border border-[#12B886]/40 text-xs text-[#12B886] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>{descarteResultado}</span>
                 </div>
                 <button
-                  onClick={() => setSelectedLead(null)}
-                  className="px-3 py-1 rounded-lg bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] text-xs"
+                  onClick={() => setDescarteResultado(null)}
+                  className="text-xs underline text-[#93A3B5] hover:text-[#F4F7FA]"
                 >
                   Fechar
                 </button>
               </div>
+            )}
 
-              {/* Informações de Contato e Responsável */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase text-[#93A3B5] block">
-                    Dados do Solicitante
+            {/* Painel de Políticas de Retenção e Gatilho de Descarte */}
+            <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-[#D9B36C] block">
+                    Garantia de Governança & Retenção Probatória
                   </span>
-                  <div className="text-[#F4F7FA] font-semibold">
-                    {selectedLead.responsavel || 'Não informado'}
-                  </div>
-                  <div className="text-[#93A3B5]">{selectedLead.categoria_profissional}</div>
-                  {selectedLead.conselho && (
-                    <div className="text-[#D9B36C] font-mono">{selectedLead.conselho}</div>
-                  )}
+                  <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                    POLÍTICAS DE RETENÇÃO CATALOGADAS (LGPD_RETENCOES)
+                  </h2>
                 </div>
-
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase text-[#93A3B5] block">
-                    Canais de Contato
-                  </span>
-                  <div className="flex items-center gap-2 text-[#F4F7FA]">
-                    <Mail className="w-3.5 h-3.5 text-[#12B886]" />
-                    <a href={`mailto:${selectedLead.email}`} className="hover:underline">
-                      {selectedLead.email || 'Não informado'}
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#F4F7FA]">
-                    <Phone className="w-3.5 h-3.5 text-[#12B886]" />
-                    <a href={`tel:${selectedLead.whatsapp}`} className="hover:underline">
-                      {selectedLead.whatsapp || 'Não informado'}
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Enquadramentos Regulatórios */}
-              <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-3 text-xs">
-                <span className="text-[10px] font-bold uppercase text-[#D9B36C] block">
-                  Enquadramento Fiscal & Climático
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[#93A3B5] block">Regime Tributário:</span>
-                    <strong className="text-[#F4F7FA]">{selectedLead.regime_tributario}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[#93A3B5] block">Vínculo Institucional:</span>
-                    <strong className="text-[#F4F7FA]">{selectedLead.vinculo_institucional}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[#93A3B5] block">Limiar de Emissões (SBCE):</span>
-                    <strong className="text-[#D9B36C]">
-                      {selectedLead.enquadramento_sbce || selectedLead.faixa_emissoes || 'Pendente'}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-[#93A3B5] block">Exportação para a UE (CBAM):</span>
-                    <strong className="text-[#12B886]">
-                      {selectedLead.exporta_ue_cbam === 'sim'
-                        ? `Sim (${selectedLead.cbam_bens || 'bens industriais'})`
-                        : 'Não exporta'}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* Botões do Modal */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[rgba(244,247,250,0.1)]">
                 <button
                   type="button"
-                  onClick={() => handleToggleVisto(selectedLead.id, !!selectedLead.visto_auditor)}
-                  className="w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-semibold bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)] flex items-center justify-center gap-1.5"
+                  onClick={handleDispararDescarte}
+                  disabled={isDescartando}
+                  className="px-5 py-2.5 rounded-xl font-bold bg-[#F03E54]/20 border border-[#F03E54]/50 text-[#F03E54] hover:bg-[#F03E54] hover:text-white transition-all text-xs flex items-center gap-2 shrink-0 disabled:opacity-50"
                 >
-                  <Eye className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                   <span>
-                    {selectedLead.visto_auditor ? 'Marcar como não lido' : 'Marcar como visto'}
+                    {isDescartando
+                      ? 'Processando expurgo...'
+                      : 'Disparar Rotina de Descarte (> 24m)'}
                   </span>
                 </button>
+              </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => handleExportarLaudoCliente(selectedLead)}
-                    disabled={isExportandoLeadPdf}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-colors flex items-center justify-center gap-1.5"
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {politicasLgpd.map((p) => (
+                  <div
+                    key={p.id}
+                    className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] text-xs space-y-1"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Exportar Laudo PDF</span>
-                  </button>
-
-                  {selectedLead.status !== 'concluido' ? (
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateStatus(selectedLead.id, 'concluido')}
-                      className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-bold bg-[#16202B] border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
-                    >
-                      Homologar
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateStatus(selectedLead.id, 'em_analise')}
-                      className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)]"
-                    >
-                      Reabrir
-                    </button>
-                  )}
-                </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#F4F7FA]">{p.tipo_dado}</span>
+                      <span className="px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] font-mono font-bold text-[10px]">
+                        {p.prazo_meses} meses
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#93A3B5]">{p.descricao_dado}</p>
+                    <div className="pt-2 text-[10px] text-[#D9B36C]">
+                      Base: {p.artigo_legal || p.base_legal}
+                    </div>
+                    {p.ultimo_expurgo && (
+                      <div className="text-[9px] text-[#93A3B5]">
+                        Último expurgo: {p.ultimo_expurgo}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
+
+            {/* Fila de Solicitações do Titular (Art. 18) */}
+            <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-[#12B886] block">
+                    Canal do Titular • Art. 18 da LGPD
+                  </span>
+                  <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                    FILA DE SOLICITAÇÕES DO TITULAR (PRAZO LEGAL 15 DIAS)
+                  </h2>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#93A3B5]">Status:</span>
+                  <select
+                    value={filtroStatusLgpd}
+                    onChange={(e) => setFiltroStatusLgpd(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
+                  >
+                    <option value="todos">Todos ({solicitacoesLgpd.length})</option>
+                    <option value="recebido">Recebidos</option>
+                    <option value="em_analise">Em Análise</option>
+                    <option value="atendido">Atendidos</option>
+                    <option value="recusado">Recusados</option>
+                  </select>
+                </div>
+              </div>
+
+              {solicitacoesLgpd.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-[rgba(244,247,250,0.15)] rounded-xl bg-[#0A0E12]">
+                  <ShieldCheck className="w-10 h-10 text-[#93A3B5] mx-auto mb-2 opacity-50" />
+                  <p className="text-xs text-[#93A3B5]">
+                    Nenhuma solicitação de titular registrada no momento.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {solicitacoesLgpd
+                    .filter((s) => filtroStatusLgpd === 'todos' || s.status === filtroStatusLgpd)
+                    .map((s) => (
+                      <div
+                        key={s.id}
+                        className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[rgba(244,247,250,0.25)] space-y-3 text-xs"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(244,247,250,0.06)] pb-2">
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono font-bold text-[#D9B36C]">
+                              {s.protocolo}
+                            </span>
+                            <span className="px-2 py-0.5 rounded bg-[#16202B] text-[#F4F7FA] uppercase text-[10px] font-semibold">
+                              {s.tipo_pedido?.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] text-[#93A3B5]">
+                              Limite legal:{' '}
+                              <strong className="text-[#12B886]">{s.data_limite_resposta}</strong>{' '}
+                              (15 dias)
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                s.status === 'atendido'
+                                  ? 'bg-[#12B886]/20 text-[#12B886]'
+                                  : s.status === 'recusado'
+                                    ? 'bg-[#F03E54]/20 text-[#F03E54]'
+                                    : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                              }`}
+                            >
+                              {s.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                          <div>
+                            <span className="text-[#93A3B5] block">Titular:</span>
+                            <strong className="text-[#F4F7FA]">{s.nome_titular}</strong>
+                          </div>
+                          <div>
+                            <span className="text-[#93A3B5] block">E-mail:</span>
+                            <a
+                              href={`mailto:${s.email_titular}`}
+                              className="text-[#12B886] underline"
+                            >
+                              {s.email_titular}
+                            </a>
+                          </div>
+                          <div>
+                            <span className="text-[#93A3B5] block">CPF/CNPJ:</span>
+                            <span className="font-mono text-[#D9B36C]">{s.cpf_cnpj_titular}</span>
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 rounded bg-[#111820] text-[#93A3B5] text-[11px] leading-relaxed">
+                          <strong className="text-[#F4F7FA] block mb-0.5">
+                            Descrição do Requerimento:
+                          </strong>
+                          {s.descricao}
+                        </div>
+
+                        {s.resposta_encarregado && (
+                          <div className="p-2.5 rounded bg-[#12B886]/10 border border-[#12B886]/20 text-[#12B886] text-[11px]">
+                            <strong>Resposta do DPO ({s.atendido_por || 'Encarregado'}):</strong>{' '}
+                            {s.resposta_encarregado}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          {s.status !== 'atendido' && (
+                            <button
+                              type="button"
+                              onClick={() => handleAtualizarStatusLgpd(s.id, 'atendido')}
+                              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678]"
+                            >
+                              Marcar Atendido
+                            </button>
+                          )}
+                          {s.status !== 'em_analise' && s.status !== 'atendido' && (
+                            <button
+                              type="button"
+                              onClick={() => handleAtualizarStatusLgpd(s.id, 'em_analise')}
+                              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#16202B] text-[#D9B36C] hover:bg-[#202C3A]"
+                            >
+                              Em Análise
+                            </button>
+                          )}
+                          {s.status !== 'recusado' && (
+                            <button
+                              type="button"
+                              onClick={() => handleAtualizarStatusLgpd(s.id, 'recusado')}
+                              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#16202B] text-[#F03E54] hover:bg-[#202C3A]"
+                            >
+                              Recusar Pedido
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
           </div>
+        ) : (
+          /* ABA LEADS: FILTRO, CARDS E TABELA EXISTENTES */
+          <>
+            {/* 1. CARDS DE PRIORIDADE / TRIAGEM PERICIAL */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              <div className="p-5 rounded-2xl bg-[#111820] border border-[#F03E54]/30">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#F03E54]">
+                    Ponto de Atenção
+                  </span>
+                  <AlertTriangle className="w-4 h-4 text-[#F03E54]" />
+                </div>
+                <div className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA]">
+                  {countPontoAtencao}
+                </div>
+                <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                  Prioridade máxima na reforma tributária
+                </span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#111820] border border-[#12B886]/30">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#12B886]">
+                    Exportadores CBAM (UE)
+                  </span>
+                  <Globe2 className="w-4 h-4 text-[#12B886]" />
+                </div>
+                <div className="font-heading font-black text-2xl sm:text-3xl text-[#12B886]">
+                  {countExportadores}
+                </div>
+                <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                  Comércio exterior e fronteira de carbono
+                </span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#111820] border border-[#D9B36C]/30">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#D9B36C]">
+                    Origem Agente IA
+                  </span>
+                  <Bot className="w-4 h-4 text-[#D9B36C]" />
+                </div>
+                <div className="font-heading font-black text-2xl sm:text-3xl text-[#D9B36C]">
+                  {countAgenteIA}
+                </div>
+                <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                  Pré-qualificados via chat inteligente
+                </span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#93A3B5]">
+                    Leads Não Vistos
+                  </span>
+                  <Eye className="w-4 h-4 text-[#F7B84B]" />
+                </div>
+                <div className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA]">
+                  {countNaoVistos}
+                </div>
+                <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                  Aguardando primeira leitura
+                </span>
+              </div>
+            </div>
+
+            {/* 2. TABELA PRINCIPAL DE LEADS PRIORIZADOS */}
+            <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl mb-10">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#D9B36C]" />
+                    <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                      FILA PRIORIZADA DE LEADS & DIAGNÓSTICOS
+                    </h2>
+                  </div>
+                  <p className="text-xs text-[#93A3B5] mt-0.5">
+                    Ordenado automaticamente com{' '}
+                    <strong className="text-[#F03E54]">Ponto de atenção</strong> e{' '}
+                    <strong className="text-[#12B886]">Exportadores UE (CBAM)</strong> no topo.
+                  </p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative w-full lg:w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar empresa, CNPJ, responsável..."
+                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.12)] text-xs text-[#F4F7FA] placeholder-[#93A3B5]/60 focus:outline-none focus:ring-1 focus:ring-[#12B886]"
+                  />
+                </div>
+              </div>
+
+              {/* Filtros em Linha */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 mb-6 p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] text-xs">
+                {/* Filtro Status */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
+                  >
+                    <option value="todos">Todos os status</option>
+                    <option value="novo">Novo</option>
+                    <option value="em_analise">Em Análise</option>
+                    <option value="concluido">Concluído</option>
+                  </select>
+                </div>
+
+                {/* Filtro Impacto */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                    Faixa Reforma
+                  </label>
+                  <select
+                    value={faixaImpactoFilter}
+                    onChange={(e) => setFaixaImpactoFilter(e.target.value)}
+                    className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
+                  >
+                    <option value="todos">Todas as faixas</option>
+                    <option value="ponto_atencao">Ponto de Atenção</option>
+                    <option value="ganho_provavel">Ganho Provável</option>
+                    <option value="neutro">Neutro / Adaptação</option>
+                  </select>
+                </div>
+
+                {/* Filtro Exportador CBAM */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                    Exportador UE (CBAM)
+                  </label>
+                  <select
+                    value={exportadorFilter}
+                    onChange={(e) => setExportadorFilter(e.target.value)}
+                    className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
+                  >
+                    <option value="todos">Todos</option>
+                    <option value="sim">Sim (Exporta UE)</option>
+                    <option value="nao">Não</option>
+                  </select>
+                </div>
+
+                {/* Filtro SBCE */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                    Limiar SBCE
+                  </label>
+                  <select
+                    value={sbceFilter}
+                    onChange={(e) => setSbceFilter(e.target.value)}
+                    className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
+                  >
+                    <option value="todos">Todos os limiares</option>
+                    <option value="acima_25k">&gt; 25.000 tCO₂e (Compensação)</option>
+                    <option value="10k_25k">10k a 25k tCO₂e (Reporte)</option>
+                    <option value="abaixo_10k">&lt; 10.000 tCO₂e</option>
+                  </select>
+                </div>
+
+                {/* Filtro Origem */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                    Origem
+                  </label>
+                  <select
+                    value={origemFilter}
+                    onChange={(e) => setOrigemFilter(e.target.value)}
+                    className="w-full px-2 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#F4F7FA] text-xs"
+                  >
+                    <option value="todos">Todas origens</option>
+                    <option value="agente_ia">Agente IA</option>
+                    <option value="funil">Funil Web</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Tabela de Leads */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
+                    <tr>
+                      <th className="py-3 px-3">Empresa / Contato</th>
+                      <th className="py-3 px-3">CNPJ / Regime</th>
+                      <th className="py-3 px-3">Impacto Reforma</th>
+                      <th className="py-3 px-3">Limiar SBCE & CBAM</th>
+                      <th className="py-3 px-3">Origem & Status</th>
+                      <th className="py-3 px-3 text-right">Ações Periciais</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
+                    {sortedAndFilteredLeads.map((item) => {
+                      const isTopPriority =
+                        item.faixa_impacto_tributario === 'ponto_atencao' ||
+                        item.exporta_ue_cbam === 'sim'
+
+                      return (
+                        <tr
+                          key={item.id}
+                          className={`hover:bg-[#16202B]/60 transition-colors ${
+                            isTopPriority ? 'bg-[#16202B]/30' : ''
+                          } ${!item.visto_auditor && item.status === 'novo' ? 'font-semibold' : ''}`}
+                        >
+                          {/* Empresa e Contato */}
+                          <td className="py-3.5 px-3">
+                            <div className="flex items-center gap-2">
+                              {!item.visto_auditor && (
+                                <span
+                                  className="w-2 h-2 rounded-full bg-[#12B886] shrink-0"
+                                  title="Lead novo / não visto pelo auditor"
+                                />
+                              )}
+                              <div>
+                                <div
+                                  className="font-bold text-[#F4F7FA] hover:text-[#12B886] cursor-pointer flex items-center gap-1.5"
+                                  onClick={() => setSelectedLead(item)}
+                                >
+                                  <span>{item.razao_social}</span>
+                                  {isTopPriority && (
+                                    <span className="px-1.5 py-0.2 rounded bg-[#F03E54]/20 text-[#F03E54] text-[9px] font-bold uppercase">
+                                      Prioritário
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[11px] text-[#93A3B5] flex items-center gap-3 mt-0.5">
+                                  {item.responsavel && (
+                                    <span className="flex items-center gap-1">
+                                      <UserCheck className="w-3 h-3 text-[#D9B36C]" />
+                                      {item.responsavel}
+                                    </span>
+                                  )}
+                                  {item.email && (
+                                    <span className="flex items-center gap-1 text-[#93A3B5]">
+                                      <Mail className="w-3 h-3" />
+                                      {item.email}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* CNPJ e Regime Declarado */}
+                          <td className="py-3.5 px-3">
+                            <div className="font-mono text-[#D9B36C] font-semibold">
+                              {item.cnpj}
+                            </div>
+                            <div className="text-[10px] text-[#93A3B5]">
+                              Regime:{' '}
+                              <strong className="text-[#F4F7FA]">
+                                {item.regime_tributario || 'A confirmar'}
+                              </strong>
+                            </div>
+                            {item.categoria_profissional && (
+                              <div
+                                className="text-[10px] text-[#93A3B5]/80 truncate max-w-[160px]"
+                                title={item.categoria_profissional}
+                              >
+                                {item.categoria_profissional}
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Faixa de Impacto Tributário */}
+                          <td className="py-3.5 px-3">
+                            {getImpactoBadge(item.faixa_impacto_tributario)}
+                            <span className="block text-[10px] text-[#93A3B5] mt-1 truncate max-w-[160px]">
+                              {item.vinculo_institucional}
+                            </span>
+                          </td>
+
+                          {/* SBCE e CBAM */}
+                          <td className="py-3.5 px-3">
+                            <div className="text-[11px]">
+                              {item.faixa_emissoes === 'acima_25k' && (
+                                <span className="text-[#F03E54] font-semibold flex items-center gap-1">
+                                  <Flame className="w-3 h-3" />
+                                  &gt; 25k tCO₂e (Metas SBCE)
+                                </span>
+                              )}
+                              {item.faixa_emissoes === 'entre_10k_25k' && (
+                                <span className="text-[#D9B36C] font-semibold">
+                                  10k–25k tCO₂e (Reporte)
+                                </span>
+                              )}
+                              {item.faixa_emissoes === 'abaixo_10k' && (
+                                <span className="text-[#12B886]">&lt; 10k tCO₂e</span>
+                              )}
+                              {!item.faixa_emissoes && (
+                                <span className="text-[#93A3B5]">Triagem pendente</span>
+                              )}
+                            </div>
+
+                            {item.exporta_ue_cbam === 'sim' ? (
+                              <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] text-[10px] font-bold">
+                                <Globe2 className="w-3 h-3" />
+                                CBAM UE {item.cbam_bens ? `(${item.cbam_bens})` : ''}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-[#93A3B5]">Mercado Interno</span>
+                            )}
+                          </td>
+
+                          {/* Origem e Status */}
+                          <td className="py-3.5 px-3">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              {item.origem === 'agente_ia' ? (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#D9B36C]/20 text-[#D9B36C] font-bold text-[9px] uppercase border border-[#D9B36C]/40">
+                                  <Bot className="w-2.5 h-2.5" />
+                                  Agente IA
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#16202B] text-[#93A3B5] text-[9px] uppercase">
+                                  Funil Web
+                                </span>
+                              )}
+                            </div>
+                            <div>{getStatusBadge(item.status)}</div>
+                          </td>
+
+                          {/* Ações */}
+                          <td className="py-3.5 px-3 text-right">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleExportarLaudoCliente(item)}
+                                disabled={isExportandoLeadPdf}
+                                className="px-2.5 py-1 rounded bg-[#12B886]/10 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] border border-[#12B886]/30 font-semibold flex items-center gap-1"
+                                title="Gerar laudo pericial em PDF para entrega ao cliente"
+                              >
+                                <Download className="w-3 h-3" />
+                                <span>PDF</span>
+                              </button>
+
+                              <button
+                                onClick={() => setSelectedLead(item)}
+                                className="px-2.5 py-1 rounded bg-[#16202B] text-[#F4F7FA] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] border border-[rgba(244,247,250,0.15)] font-semibold"
+                                title="Ver detalhes completos do diagnóstico"
+                              >
+                                Detalhes
+                              </button>
+
+                              {item.status !== 'concluido' ? (
+                                <button
+                                  disabled={updatingId === item.id}
+                                  onClick={() => handleUpdateStatus(item.id, 'concluido')}
+                                  className="px-2.5 py-1 rounded bg-[#12B886]/10 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] font-semibold border border-[#12B886]/30 disabled:opacity-50"
+                                >
+                                  Homologar
+                                </button>
+                              ) : (
+                                <button
+                                  disabled={updatingId === item.id}
+                                  onClick={() => handleUpdateStatus(item.id, 'em_analise')}
+                                  className="px-2.5 py-1 rounded bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] transition-colors text-[11px] border border-[rgba(244,247,250,0.1)] disabled:opacity-50"
+                                >
+                                  Reabrir
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+
+                    {sortedAndFilteredLeads.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="py-10 text-center text-[#93A3B5]">
+                          Nenhum diagnóstico encontrado com os filtros selecionados.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 3. MODAL DE DETALHES COMPLETOS DO LEAD SELECIONADO */}
+            {selectedLead && (
+              <div className="fixed inset-0 z-50 bg-[#0A0E12]/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-[#111820] border border-[rgba(244,247,250,0.15)] rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+                  <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.1)] pb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-xs text-[#D9B36C] font-semibold">
+                          CNPJ: {selectedLead.cnpj}
+                        </span>
+                        {selectedLead.origem === 'agente_ia' && (
+                          <span className="px-2 py-0.5 rounded bg-[#D9B36C]/20 text-[#D9B36C] text-[10px] font-bold uppercase">
+                            Capturado via Agente IA
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                        {selectedLead.razao_social}
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => setSelectedLead(null)}
+                      className="px-3 py-1 rounded-lg bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] text-xs"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+
+                  {/* Informações de Contato e Responsável */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase text-[#93A3B5] block">
+                        Dados do Solicitante
+                      </span>
+                      <div className="text-[#F4F7FA] font-semibold">
+                        {selectedLead.responsavel || 'Não informado'}
+                      </div>
+                      <div className="text-[#93A3B5]">{selectedLead.categoria_profissional}</div>
+                      {selectedLead.conselho && (
+                        <div className="text-[#D9B36C] font-mono">{selectedLead.conselho}</div>
+                      )}
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase text-[#93A3B5] block">
+                        Canais de Contato
+                      </span>
+                      <div className="flex items-center gap-2 text-[#F4F7FA]">
+                        <Mail className="w-3.5 h-3.5 text-[#12B886]" />
+                        <a href={`mailto:${selectedLead.email}`} className="hover:underline">
+                          {selectedLead.email || 'Não informado'}
+                        </a>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#F4F7FA]">
+                        <Phone className="w-3.5 h-3.5 text-[#12B886]" />
+                        <a href={`tel:${selectedLead.whatsapp}`} className="hover:underline">
+                          {selectedLead.whatsapp || 'Não informado'}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Enquadramentos Regulatórios */}
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-3 text-xs">
+                    <span className="text-[10px] font-bold uppercase text-[#D9B36C] block">
+                      Enquadramento Fiscal & Climático
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-[#93A3B5] block">Regime Tributário:</span>
+                        <strong className="text-[#F4F7FA]">{selectedLead.regime_tributario}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[#93A3B5] block">Vínculo Institucional:</span>
+                        <strong className="text-[#F4F7FA]">
+                          {selectedLead.vinculo_institucional}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-[#93A3B5] block">Limiar de Emissões (SBCE):</span>
+                        <strong className="text-[#D9B36C]">
+                          {selectedLead.enquadramento_sbce ||
+                            selectedLead.faixa_emissoes ||
+                            'Pendente'}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-[#93A3B5] block">Exportação para a UE (CBAM):</span>
+                        <strong className="text-[#12B886]">
+                          {selectedLead.exporta_ue_cbam === 'sim'
+                            ? `Sim (${selectedLead.cbam_bens || 'bens industriais'})`
+                            : 'Não exporta'}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Trilha de Consentimento LGPD Completa */}
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-2 text-xs">
+                    <div className="flex items-center gap-1.5 text-[#12B886] font-semibold text-[11px] uppercase tracking-wider">
+                      <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+                      <span>Trilha de Consentimento LGPD (Auditoria Probatória)</span>
+                    </div>
+                    <div className="bg-[#111820] p-3 rounded-lg border border-[rgba(244,247,250,0.08)] text-[#93A3B5] space-y-1 text-xs">
+                      <div>
+                        <strong className="text-[#F4F7FA]">Consentimento:</strong> aceito em{' '}
+                        <span className="text-[#12B886]">
+                          {selectedLead.consentimento_data_hora
+                            ? new Date(selectedLead.consentimento_data_hora).toLocaleString(
+                                'pt-BR',
+                                { timeZone: 'UTC' },
+                              ) + ' UTC'
+                            : selectedLead.created
+                              ? new Date(selectedLead.created).toLocaleString('pt-BR')
+                              : 'Data de criação do lead'}
+                        </span>{' '}
+                        • IP{' '}
+                        <span className="font-mono text-[#D9B36C]">
+                          {selectedLead.consentimento_ip || '127.0.0.1 (Origem Auditada)'}
+                        </span>{' '}
+                        • termo{' '}
+                        <span className="font-mono text-[#F4F7FA]">
+                          {selectedLead.termo_versao || 'v2026-01'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-[#93A3B5]/80 pt-1 border-t border-[rgba(244,247,250,0.05)]">
+                        Finalidade: análise preliminar de elegibilidade tributária, triagem de
+                        emissões e emissão do protocolo pericial (Art. 7º, I e V da Lei
+                        13.709/2018).
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Botões do Modal */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[rgba(244,247,250,0.1)]">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleToggleVisto(selectedLead.id, !!selectedLead.visto_auditor)
+                      }
+                      className="w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-semibold bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)] flex items-center justify-center gap-1.5"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>
+                        {selectedLead.visto_auditor ? 'Marcar como não lido' : 'Marcar como visto'}
+                      </span>
+                    </button>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => handleExportarLaudoCliente(selectedLead)}
+                        disabled={isExportandoLeadPdf}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Exportar Laudo PDF</span>
+                      </button>
+
+                      {selectedLead.status !== 'concluido' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStatus(selectedLead.id, 'concluido')}
+                          className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-bold bg-[#16202B] border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+                        >
+                          Homologar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStatus(selectedLead.id, 'em_analise')}
+                          className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)]"
+                        >
+                          Reabrir
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

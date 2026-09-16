@@ -486,14 +486,45 @@ export default function Diagnostico() {
         ...(createdUserId ? { usuario: createdUserId } : {}),
       }
 
+      // Submissão via endpoint seguro server-side para captura de IP, timestamp UTC e termo LGPD
       try {
-        const existingLead = await pb
-          .collection('leads_diagnostico')
-          .getFirstListItem(`cnpj='${formData.cnpj}'`)
-        leadRecord = await pb.collection('leads_diagnostico').update(existingLead.id, leadPayload)
+        const resLead = await fetch(`${pb.baseUrl}/backend/v1/lead-diagnostico-submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...leadPayload,
+            termo_versao: 'v2026-01',
+            origem: 'funil',
+          }),
+        })
+        if (resLead.ok) {
+          leadRecord = await resLead.json()
+        } else {
+          // Fallback para criação direta via SDK PocketBase
+          try {
+            const existingLead = await pb
+              .collection('leads_diagnostico')
+              .getFirstListItem(`cnpj='${formData.cnpj}'`)
+            leadRecord = await pb.collection('leads_diagnostico').update(existingLead.id, {
+              ...leadPayload,
+              consentimento_data_hora: new Date().toISOString(),
+              termo_versao: 'v2026-01',
+            })
+          } catch (_) {
+            leadRecord = await pb.collection('leads_diagnostico').create({
+              ...leadPayload,
+              consentimento_data_hora: new Date().toISOString(),
+              termo_versao: 'v2026-01',
+            })
+          }
+        }
       } catch (_) {
-        // Create new lead
-        leadRecord = await pb.collection('leads_diagnostico').create(leadPayload)
+        // Fallback SDK se a requisição falhar
+        leadRecord = await pb.collection('leads_diagnostico').create({
+          ...leadPayload,
+          consentimento_data_hora: new Date().toISOString(),
+          termo_versao: 'v2026-01',
+        })
       }
 
       setProtocoloGerado({
