@@ -38,6 +38,18 @@ const CATEGORIAS_CONFIG: Record<string, { label: string; cor: string }> = {
   outros: { label: 'Outros Subsistemas / Mistos', cor: '#A78BFA' },
 }
 
+const SUBSISTEMAS_ORDEM = [
+  'Motor',
+  'Câmbio',
+  'Elétrica',
+  'Direção',
+  'Suspensão',
+  'Freios',
+  'Arrefecimento',
+  'Escape',
+  'Carroceria',
+]
+
 export default function PassaporteLotePublicoPage() {
   const { lote: loteParam } = useParams<{ lote: string }>()
   const [lote, setLote] = useState<CdvLoteRecord | null>(null)
@@ -95,12 +107,56 @@ export default function PassaporteLotePublicoPage() {
     }
   }, [loteParam])
 
-  // Agrupamento por Categoria de Material / Subsistema (Visão por grupos)
-  const gruposPorCategoria = useMemo(() => {
+  // Detectar se o lote possui subsistemas explícitos (ex: lote demo de 49 peças)
+  const temSubsistemas = useMemo(() => {
+    return pecas.some((p) => Boolean(p.subsistema))
+  }, [pecas])
+
+  // Agrupamento por Subsistema (quando disponível) ou por Categoria de Material
+  const gruposExibicao = useMemo(() => {
+    if (temSubsistemas) {
+      const grupos: Record<
+        string,
+        {
+          id: string
+          label: string
+          pecas: CdvPecaRecord[]
+          pesoTotal: number
+          co2eTotal: number
+        }
+      > = {}
+
+      for (const p of pecas) {
+        const sub = p.subsistema || 'Outros Subsistemas'
+        if (!grupos[sub]) {
+          grupos[sub] = {
+            id: sub,
+            label: `Subsistema: ${sub}`,
+            pecas: [],
+            pesoTotal: 0,
+            co2eTotal: 0,
+          }
+        }
+        grupos[sub].pecas.push(p)
+        grupos[sub].pesoTotal += Number(p.peso_kg) || 0
+        grupos[sub].co2eTotal += Number(p.co2e_evitado_kg) || 0
+      }
+
+      // Ordenar conforme ordem de engenharia padrão
+      return Object.values(grupos).sort((a, b) => {
+        const idxA = SUBSISTEMAS_ORDEM.indexOf(a.id)
+        const idxB = SUBSISTEMAS_ORDEM.indexOf(b.id)
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB
+        if (idxA !== -1) return -1
+        if (idxB !== -1) return 1
+        return a.label.localeCompare(b.label)
+      })
+    }
+
     const grupos: Record<
       string,
       {
-        categoria: string
+        id: string
         label: string
         pecas: CdvPecaRecord[]
         pesoTotal: number
@@ -112,7 +168,7 @@ export default function PassaporteLotePublicoPage() {
       const cat = p.categoria_material || 'outros'
       if (!grupos[cat]) {
         grupos[cat] = {
-          categoria: cat,
+          id: cat,
           label: CATEGORIAS_CONFIG[cat]?.label || cat.toUpperCase(),
           pecas: [],
           pesoTotal: 0,
@@ -125,7 +181,7 @@ export default function PassaporteLotePublicoPage() {
     }
 
     return Object.values(grupos)
-  }, [pecas])
+  }, [pecas, temSubsistemas])
 
   // Métricas Consolidadas Reais
   const metricas = useMemo(() => {
@@ -294,9 +350,18 @@ export default function PassaporteLotePublicoPage() {
               {/* Cabeçalho Institucional de Emissão */}
               <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.12)] pb-6 print:border-slate-300 print:pb-4">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-[11px] font-bold uppercase tracking-wider mb-2 print:border-emerald-600 print:bg-emerald-50 print:text-emerald-800">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    PASSAPORTE DIGITAL DE PRODUTO CONSOLIDADO (DPP-LOTE)
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-[11px] font-bold uppercase tracking-wider print:border-emerald-600 print:bg-emerald-50 print:text-emerald-800">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      PASSAPORTE DIGITAL DE PRODUTO CONSOLIDADO (DPP-LOTE)
+                    </div>
+
+                    {lote.is_demo && (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F59E0B]/20 border border-[#F59E0B] text-[#F59E0B] text-[11px] font-extrabold uppercase tracking-wider shadow-sm print:bg-amber-100 print:border-amber-500 print:text-amber-900">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>LOTE DE DEMONSTRAÇÃO • REFERÊNCIA TÉCNICA</span>
+                      </div>
+                    )}
                   </div>
                   <h1 className="font-heading font-black text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide print:text-slate-900">
                     LOTE VEICULAR • {lote.veiculo_marca_modelo}
@@ -354,6 +419,26 @@ export default function PassaporteLotePublicoPage() {
                         {lote.veiculo_baixa_detran}
                       </span>
                     </div>
+                    {lote.cartela_desmontagem && (
+                      <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                        <span className="text-[#93A3B5] print:text-slate-600">
+                          Cartela Desmontagem:
+                        </span>
+                        <span className="font-mono font-bold text-[#D9B36C] print:text-amber-800">
+                          {lote.cartela_desmontagem}
+                        </span>
+                      </div>
+                    )}
+                    {lote.selo_detran_lote && (
+                      <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                        <span className="text-[#93A3B5] print:text-slate-600">
+                          Selo DETRAN Lote:
+                        </span>
+                        <span className="font-mono text-[#12B886] print:text-emerald-700 font-semibold">
+                          {lote.selo_detran_lote}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-[#93A3B5] print:text-slate-600">
                         Seguradora / Origem:
@@ -388,6 +473,14 @@ export default function PassaporteLotePublicoPage() {
                       <span className="text-[#93A3B5] print:text-slate-600">Credenciamento:</span>
                       <span className="font-mono text-[#12B886] print:text-emerald-700 font-semibold">
                         {lote.cdv_codigo || 'DETRAN-PR-CDV-0089'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                      <span className="text-[#93A3B5] print:text-slate-600">
+                        Licença CTF-IBAMA:
+                      </span>
+                      <span className="font-mono text-[#12B886] print:text-emerald-700 font-medium">
+                        {lote.ctf_ibama || 'CTF-IBAMA 6812490/2024'}
                       </span>
                     </div>
                     <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
@@ -617,9 +710,9 @@ export default function PassaporteLotePublicoPage() {
                     onChange={(e) => setFiltroCategoria(e.target.value)}
                     className="bg-[#111820] border border-[rgba(244,247,250,0.15)] rounded-lg px-3 py-1.5 text-xs text-[#F4F7FA] focus:outline-none focus:ring-1 focus:ring-[#12B886]"
                   >
-                    <option value="todos">Todos os Grupos ({gruposPorCategoria.length})</option>
-                    {gruposPorCategoria.map((g) => (
-                      <option key={g.categoria} value={g.categoria}>
+                    <option value="todos">Todos os Grupos ({gruposExibicao.length})</option>
+                    {gruposExibicao.map((g) => (
+                      <option key={g.id} value={g.id}>
                         {g.label} ({g.pecas.length})
                       </option>
                     ))}
@@ -629,22 +722,17 @@ export default function PassaporteLotePublicoPage() {
 
               {/* Tabela Agrupada por Categoria / Subsistema */}
               <div className="space-y-6">
-                {gruposPorCategoria
-                  .filter((g) => filtroCategoria === 'todos' || g.categoria === filtroCategoria)
+                {gruposExibicao
+                  .filter((g) => filtroCategoria === 'todos' || g.id === filtroCategoria)
                   .map((grupo) => (
                     <div
-                      key={grupo.categoria}
+                      key={grupo.id}
                       className="rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-hidden print:bg-transparent print:border print:border-slate-300 print-card"
                     >
                       {/* Cabeçalho do Grupo */}
                       <div className="p-4 bg-[#16202B]/90 border-b border-[rgba(244,247,250,0.08)] flex flex-wrap items-center justify-between gap-3 print:bg-slate-100 print:border-slate-300">
                         <div className="flex items-center gap-2">
-                          <span
-                            className="w-3 h-3 rounded-full"
-                            style={{
-                              backgroundColor: CATEGORIAS_CONFIG[grupo.categoria]?.cor || '#12B886',
-                            }}
-                          />
+                          <span className="w-3 h-3 rounded-full bg-[#12B886]" />
                           <span className="font-heading font-bold text-sm text-[#F4F7FA] print:text-slate-900">
                             {grupo.label}
                           </span>
@@ -676,6 +764,7 @@ export default function PassaporteLotePublicoPage() {
                             <tr>
                               <th className="py-2.5 px-3">Selo DPP Oficial</th>
                               <th className="py-2.5 px-3">Descrição da Peça</th>
+                              {temSubsistemas && <th className="py-2.5 px-3">Subsistema</th>}
                               <th className="py-2.5 px-3">Material Declarado</th>
                               <th className="py-2.5 px-3 text-right">Peso (kg)</th>
                               <th className="py-2.5 px-3 text-right">Fator (kgCO₂e/kg)</th>
@@ -711,6 +800,13 @@ export default function PassaporteLotePublicoPage() {
                                       NCM: {peca.ncm || '8708.29.99'}
                                     </div>
                                   </td>
+                                  {temSubsistemas && (
+                                    <td className="py-2.5 px-3">
+                                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#16202B] text-[#D9B36C] border border-[rgba(244,247,250,0.06)] print:border-slate-200 print:text-amber-800 print:bg-white font-semibold">
+                                        {peca.subsistema || 'Geral'}
+                                      </span>
+                                    </td>
+                                  )}
                                   <td className="py-2.5 px-3">
                                     <span className="text-[11px] text-[#93A3B5] print:text-slate-700">
                                       {peca.material_declarado || grupo.label}

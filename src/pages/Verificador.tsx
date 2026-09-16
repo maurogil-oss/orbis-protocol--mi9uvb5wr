@@ -164,9 +164,13 @@ export default function Verificador() {
       return
     }
 
-    // Se o código começar com PR-BX ou for um lote veicular conhecido
-    if (rawInput.toUpperCase().startsWith('PR-BX-')) {
-      window.location.href = `/passaporte-lote/${encodeURIComponent(rawInput.toUpperCase())}`
+    // Se o código começar com PR-BX ou for cartela de desmontagem ou selo DETRAN de lote
+    if (
+      rawInput.toUpperCase().startsWith('PR-BX-') ||
+      rawInput === '12401050711' ||
+      rawInput.toUpperCase().startsWith('DETRAN-PR-DESM-')
+    ) {
+      window.location.href = `/passaporte-lote/${encodeURIComponent(rawInput)}`
       return
     }
 
@@ -341,6 +345,14 @@ export default function Verificador() {
                 className="px-3 py-1 rounded-lg bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-xs text-[#D9B36C] hover:bg-[#D9B36C]/20 transition-colors font-mono font-bold flex items-center gap-1"
               >
                 <span>DPP Consolidado do Lote (CDVerde)</span>
+                <span className="text-[10px]">↗</span>
+              </Link>
+              {/* Atalho para o DPP Lote Demo Renault Clio (Cartela 12401050711) */}
+              <Link
+                to="/passaporte-lote/12401050711"
+                className="px-3 py-1 rounded-lg bg-[#60A5FA]/10 border border-[#60A5FA]/30 text-xs text-[#60A5FA] hover:bg-[#60A5FA]/20 transition-colors font-mono font-bold flex items-center gap-1"
+              >
+                <span>DPP Demo Renault Clio (Cartela 12401050711)</span>
                 <span className="text-[10px]">↗</span>
               </Link>
             </div>

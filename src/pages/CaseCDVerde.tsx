@@ -89,7 +89,14 @@ export default function CaseCDVerde() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#D9B36C]/40 text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-all"
               >
                 <FileCheck className="w-4 h-4" />
-                <span>DPP Consolidado do Lote (PDF 2 Págs)</span>
+                <span>DPP Consolidado Real (Gol)</span>
+              </Link>
+              <Link
+                to="/passaporte-lote/12401050711"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#60A5FA]/40 text-[#60A5FA] hover:bg-[#60A5FA]/10 transition-all"
+              >
+                <FileCheck className="w-4 h-4" />
+                <span>DPP Lote Demo (Renault Clio • 49 peças)</span>
               </Link>
               <Link
                 to="/painel"

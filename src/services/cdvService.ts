@@ -68,6 +68,10 @@ export interface CdvLoteRecord extends RecordModel {
   total_peso_kg: number
   total_co2e_evitado_kg: number
   payload_bruto_json?: any
+  is_demo?: boolean
+  cartela_desmontagem?: string
+  ctf_ibama?: string
+  selo_detran_lote?: string
 }
 
 export interface CdvPecaRecord extends RecordModel {
@@ -90,6 +94,7 @@ export interface CdvPecaRecord extends RecordModel {
   veiculo_chassi_mascarado?: string
   veiculo_baixa_detran?: string
   veiculo_seguradora?: string
+  subsistema?: string
 }
 
 export interface CdvApiKeyRecord extends RecordModel {
@@ -258,21 +263,23 @@ export async function consultarLoteConsolidado(
       }
     }
 
-    // 2. Se não encontrou por ID ou não é um ID alfanumérico de 15 chars, buscar por baixa DETRAN ou código
+    // 2. Se não encontrou por ID ou não é um ID alfanumérico de 15 chars, buscar por baixa DETRAN, cartela de desmontagem, ou código
     if (!lote) {
       const cleanParam = param.replace(/"/g, '\\"')
       try {
         lote = await pb
           .collection('cdv_lotes')
           .getFirstListItem<CdvLoteRecord>(
-            `veiculo_baixa_detran = "${cleanParam}" || id = "${cleanParam}" || cdv_codigo = "${cleanParam}"`,
+            `veiculo_baixa_detran = "${cleanParam}" || id = "${cleanParam}" || cdv_codigo = "${cleanParam}" || cartela_desmontagem = "${cleanParam}" || selo_detran_lote = "${cleanParam}"`,
           )
       } catch {
         // Tentar busca sem case ou com trim caso tenha variação de espaçamento
         try {
           lote = await pb
             .collection('cdv_lotes')
-            .getFirstListItem<CdvLoteRecord>(`veiculo_baixa_detran ~ "${cleanParam}"`)
+            .getFirstListItem<CdvLoteRecord>(
+              `veiculo_baixa_detran ~ "${cleanParam}" || cartela_desmontagem ~ "${cleanParam}"`,
+            )
         } catch {
           lote = null
         }
