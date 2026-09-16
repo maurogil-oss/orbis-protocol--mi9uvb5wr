@@ -407,7 +407,9 @@ export default function ModoCorporativoDemoPage() {
                 {dossie.escopo2Tco2e.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}{' '}
                 <span className="text-xs font-normal text-[#93A3B5]">tCO₂e</span>
               </div>
-              <p className="text-[11px] text-[#93A3B5] mt-1">Fator oficial MCTI SIN Julho/2026.</p>
+              <p className="text-[11px] text-[#93A3B5] mt-1">
+                Fator médio SIN – MCTI 2025: 0,0289 kgCO₂e/kWh.
+              </p>
             </div>
 
             <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
@@ -531,13 +533,17 @@ export default function ModoCorporativoDemoPage() {
                 </div>
                 <div className="mt-2 text-[11px] space-y-1">
                   <div className="flex justify-between text-[#93A3B5]">
-                    <span>Localização (MCTI/SIN):</span>
-                    <span className="font-mono text-[#F4F7FA]">0.385 tCO₂e</span>
+                    <span>Localização (MCTI/SIN 2025):</span>
+                    <span className="font-mono text-[#F4F7FA]">
+                      {totaisCalculados.escopo2T.toFixed(3)} tCO₂e
+                    </span>
                   </div>
                   <div className="flex justify-between text-[#93A3B5]">
                     <span>Mercado (c/ I-REC):</span>
                     <span className="font-mono text-[#12B886]">
-                      {aplicarIREC ? '0.000 tCO₂e' : '0.385 tCO₂e'}
+                      {aplicarIREC
+                        ? '0.000 tCO₂e'
+                        : `${totaisCalculados.escopo2T.toFixed(3)} tCO₂e`}
                     </span>
                   </div>
                 </div>
@@ -682,13 +688,16 @@ export default function ModoCorporativoDemoPage() {
             <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
               <div className="flex items-center justify-between text-xs text-[#93A3B5] mb-1">
                 <span className="font-bold text-[#F4F7FA]">Tiers de Incerteza</span>
-                <span className="text-[10px] text-[#D9B36C] font-mono">9 Docs Tier 3</span>
+                <span className="text-[10px] text-[#D9B36C] font-mono">
+                  {notas.filter((n) => n.tierIncerteza === 'Tier 3').length} Docs Tier 3 •{' '}
+                  {notas.filter((n) => n.tierIncerteza === 'Tier 2').length} Tier 2
+                </span>
               </div>
               <div className="text-sm font-semibold text-[#12B886]">
-                Tier 3 (XML / NF-e Primária)
+                Metodologia Híbrida GHG Protocol
               </div>
               <p className="text-[11px] text-[#93A3B5] mt-1">
-                Incerteza amostral média: <strong>±4.5%</strong>. Dados físicos auditados na SEFAZ.
+                Tier 2 para insumo direto e Tier 3 para NF-e/SEFAZ e spending-based (±20–22%).
               </p>
             </div>
 
@@ -983,7 +992,11 @@ export default function ModoCorporativoDemoPage() {
                         )}
                         {nota.biogenicoKgCo2 > 0 && (
                           <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#12B886]/20 text-[#12B886] font-mono">
-                            Biogênico: {nota.biogenicoKgCo2.toFixed(1)} kg CO₂
+                            Biogênico{' '}
+                            {nota.detalhesJson.mistura_biodiesel
+                              ? `(${nota.detalhesJson.mistura_biodiesel})`
+                              : ''}
+                            : {nota.biogenicoKgCo2.toFixed(1)} kg CO₂
                           </span>
                         )}
                       </div>
@@ -1191,6 +1204,11 @@ export default function ModoCorporativoDemoPage() {
                       {notaSelecionadaDetalhes.tierIncerteza} (±
                       {notaSelecionadaDetalhes.incertezaPct}%)
                     </strong>
+                    {notaSelecionadaDetalhes.detalhesJson.metodologia_tier && (
+                      <span className="block text-[11px] text-[#93A3B5] mt-0.5">
+                        {notaSelecionadaDetalhes.detalhesJson.metodologia_tier}
+                      </span>
+                    )}
                   </div>
                   <div className="text-[#93A3B5]">
                     Subcategoria GHG:{' '}
@@ -1199,6 +1217,81 @@ export default function ModoCorporativoDemoPage() {
                     </strong>
                   </div>
                 </div>
+
+                {/* Bloco de Memória do Insetting ISO 14067 (virgem x reciclado x delta x massa) */}
+                {notaSelecionadaDetalhes.detalhesJson.insetting_memoria && (
+                  <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#12B886]/10 via-[#0A0E12] to-[#12B886]/5 border border-[#12B886]/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#12B886] uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                        <Leaf className="w-3.5 h-3.5" />
+                        Memória de Cálculo de Insetting (ISO 14067)
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono font-bold">
+                        -
+                        {notaSelecionadaDetalhes.detalhesJson.insetting_memoria.total_evitado_tco2e.toFixed(
+                          2,
+                        )}{' '}
+                        tCO₂e Evitadas
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-center">
+                      <div className="p-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+                        <span className="text-[10px] text-[#93A3B5] block">Papelão Virgem</span>
+                        <strong className="font-mono text-xs text-[#F4F7FA]">
+                          {notaSelecionadaDetalhes.detalhesJson.insetting_memoria.fator_virgem_kgco2e_kg.toFixed(
+                            3,
+                          )}
+                        </strong>
+                        <span className="text-[9px] text-[#93A3B5] block">kgCO₂e/kg</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+                        <span className="text-[10px] text-[#93A3B5] block">Papelão Reciclado</span>
+                        <strong className="font-mono text-xs text-[#12B886]">
+                          {notaSelecionadaDetalhes.detalhesJson.insetting_memoria.fator_reciclado_kgco2e_kg.toFixed(
+                            3,
+                          )}
+                        </strong>
+                        <span className="text-[9px] text-[#93A3B5] block">kgCO₂e/kg</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+                        <span className="text-[10px] text-[#93A3B5] block">Delta Evitado</span>
+                        <strong className="font-mono text-xs text-[#D9B36C]">
+                          {notaSelecionadaDetalhes.detalhesJson.insetting_memoria.delta_evitado_kgco2e_kg.toFixed(
+                            3,
+                          )}
+                        </strong>
+                        <span className="text-[9px] text-[#93A3B5] block">kgCO₂e/kg</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)]">
+                        <span className="text-[10px] text-[#93A3B5] block">Massa Faturada</span>
+                        <strong className="font-mono text-xs text-[#F4F7FA]">
+                          {notaSelecionadaDetalhes.detalhesJson.insetting_memoria.massa_kg.toLocaleString(
+                            'pt-BR',
+                          )}{' '}
+                          kg
+                        </strong>
+                        <span className="text-[9px] text-[#93A3B5] block">NF-e Mod 55</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] text-[11px] text-[#93A3B5] font-mono leading-relaxed">
+                      <div>
+                        Fórmula:{' '}
+                        <span className="text-[#F4F7FA]">
+                          Δ (Virgem − Reciclado) × Massa = Emissão Evitada
+                        </span>
+                      </div>
+                      <div className="text-[#12B886] mt-0.5">
+                        (0,500 − 0,250 kgCO₂e/kg) × 4.500 kg = 1.125,0 kgCO₂e (−1,13 tCO₂e evitadas)
+                      </div>
+                      <div className="text-[10px] text-[#93A3B5] mt-1">
+                        Norma:{' '}
+                        {notaSelecionadaDetalhes.detalhesJson.insetting_memoria.norma_referencia}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="p-3 rounded-xl bg-[#16202B] border border-[#12B886]/30 flex items-center justify-between">
                   <div>
@@ -1292,8 +1385,8 @@ export default function ModoCorporativoDemoPage() {
                   <ul className="list-disc list-inside space-y-1">
                     <li>
                       <strong>Abordagem de Localização:</strong> Baseada no fator médio de emissão
-                      do Sistema Interligado Nacional (SIN), publicado mensalmente pelo MCTI (0,0600
-                      kgCO₂e/kWh em Julho/2026).
+                      do Sistema Interligado Nacional (SIN), publicado pelo MCTI – Ano-Base 2025:
+                      0,0289 kgCO₂e/kWh (fator médio anual oficial).
                     </li>
                     <li>
                       <strong>Abordagem de Mercado:</strong> Aplicável caso a corporação apresente

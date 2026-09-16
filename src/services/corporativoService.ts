@@ -62,10 +62,23 @@ export interface NotaFiscalDemonstrativa {
     discriminacao?: string
     fonte_fator?: string
     fator_numerico?: number
+    ano_base?: string
     unidade_fator?: string
     combustivel_tipo?: string
+    mistura_biodiesel?: string
+    biogenico_fator_numerico?: number
     transporte_tkm?: number
     insetting_evitado_kg?: number
+    insetting_memoria?: {
+      massa_kg: number
+      fator_virgem_kgco2e_kg: number
+      fator_reciclado_kgco2e_kg: number
+      delta_evitado_kgco2e_kg: number
+      total_evitado_kgco2e: number
+      total_evitado_tco2e: number
+      norma_referencia: string
+    }
+    metodologia_tier?: string
     duplo_reporte?: {
       localizacao_kg: number
       mercado_irec_kg: number
@@ -92,18 +105,18 @@ export const DOSSIE_DEFAULT_FALLBACK: EmpresaDossieCorporativo = {
   scoreEsg: 840,
   scoreEsgMax: 1000,
   escopo1Tco2e: 480.2,
-  escopo2Tco2e: 310.8,
+  escopo2Tco2e: 310.6,
   escopo3Tco2e: 629.5,
-  totalEmissoesTco2e: 1420.5,
-  amostra12NotasFossilTco2e: 12.91,
-  amostra12NotasBiogenicoTco2e: 2.06,
+  totalEmissoesTco2e: 1420.3,
+  amostra12NotasFossilTco2e: 12.71,
+  amostra12NotasBiogenicoTco2e: 2.44,
   amostra12NotasInsettingTco2e: 1.13,
   hashIntegridade: '0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c',
   padraoAsseguracao: 'ISAE 3000 / NBC TO 3000 (Asseguração Limitada a Razoável)',
   versaoMetodologia: 'GHG Protocol Brasil v2025.1 / IPCC AR6 (GWP100)',
   gwpAr6: { ch4: 27.2, n2o: 273 },
   duploReporte: {
-    localizacaoSinFator: 0.06,
+    localizacaoSinFator: 0.0289,
     mercadoIrecFator: 0.0,
   },
 }
@@ -127,15 +140,16 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
     valorBrl: 4850.0,
     quantidadeDeclarada: '6.420 kWh',
     escopoAlvo: 'escopo_2',
-    fossilKgCo2e: 385.2,
+    fossilKgCo2e: 185.5,
     biogenicoKgCo2: 0.0,
     insettingKgCo2e: 0.0,
     detalhesJson: {
       discriminacao: 'Energia Elétrica Ativa - Fornecimento Fático Mercado Cativo / TUSD',
-      fonte_fator: 'Fator Médio SIN 0,0600 kgCO₂e/kWh (MCTI Julho/2026)',
-      fator_numerico: 0.06,
+      fonte_fator: 'Fator médio SIN – MCTI 2025: 0,0289 kgCO₂e/kWh',
+      fator_numerico: 0.0289,
+      ano_base: '2025',
       unidade_fator: 'kg CO₂e/kWh',
-      duplo_reporte: { localizacao_kg: 385.2, mercado_irec_kg: 0.0 },
+      duplo_reporte: { localizacao_kg: 185.5, mercado_irec_kg: 0.0 },
       subcategoria: 'Eletricidade de Rede (Geração Externa)',
       ncm: '2716.00.00',
     },
@@ -159,14 +173,17 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
     quantidadeDeclarada: '2.150 Litros',
     escopoAlvo: 'escopo_1',
     fossilKgCo2e: 5740.5,
-    biogenicoKgCo2: 387.0,
+    biogenicoKgCo2: 768.0,
     insettingKgCo2e: 0.0,
     detalhesJson: {
       discriminacao: 'Óleo Diesel B S10 - Abastecimento em Base de Frotas Próprias',
-      fonte_fator: 'GHG Protocol BR 2025 (Fator Fóssil 2,670 kgCO₂e/L + Parcela Biodiesel B14)',
+      fonte_fator:
+        'GHG Protocol BR 2025 (Fator Fóssil 2,670 kgCO₂e/L + Parcela Biodiesel B14: 0,357 kgCO₂/L)',
       fator_numerico: 2.67,
       unidade_fator: 'kg CO₂e/L',
       combustivel_tipo: 'diesel',
+      mistura_biodiesel: 'B14',
+      biogenico_fator_numerico: 0.357,
       subcategoria: 'Combustão Móvel - Frota Própria Pesada',
       ncm: '2710.19.21',
     },
@@ -225,12 +242,22 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
     insettingKgCo2e: 1125.0,
     detalhesJson: {
       discriminacao: 'Caixas de Papelão Ondulado Recicláveis com Insetting ISO 14067',
-      fonte_fator: 'ISO 14067:2018 / Ecoinvent 3.10 (0,250 kgCO₂e/kg matéria reciclada)',
+      fonte_fator:
+        'ISO 14067:2018 / Ecoinvent 3.10 (0,250 kgCO₂e/kg matéria reciclada vs 0,500 kgCO₂e/kg virgem)',
       fator_numerico: 0.25,
       insetting_evitado_kg: 1125.0,
       unidade_fator: 'kg CO₂e/kg',
       subcategoria: 'Bens e Serviços Comprados (Cadeia Upstream)',
       ncm: '4819.10.00',
+      insetting_memoria: {
+        massa_kg: 4500,
+        fator_virgem_kgco2e_kg: 0.5,
+        fator_reciclado_kgco2e_kg: 0.25,
+        delta_evitado_kgco2e_kg: 0.25,
+        total_evitado_kgco2e: 1125.0,
+        total_evitado_tco2e: 1.13,
+        norma_referencia: 'ISO 14067:2018 / GHG Protocol Corporate Standard (Scope 3 Upstream)',
+      },
     },
   },
   {
@@ -304,8 +331,8 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
     categoriaOperacional: 'servicos',
     cnae: '7112-0/00',
     statusSefaz: 'OK (Autorizada PMC Curitiba)',
-    tierIncerteza: 'Tier 2',
-    incertezaPct: 12.0,
+    tierIncerteza: 'Tier 3',
+    incertezaPct: 22.0,
     razaoSocialParceiro: 'TECHSERVICES ENGENHARIA & MANUTENCAO LTDA',
     cnpj: '18.990.112/0001-65',
     dataEmissao: '18/07/2026',
@@ -321,6 +348,7 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
       fator_numerico: 0.015,
       unidade_fator: 'kg CO₂e/R$',
       subcategoria: 'Serviços Terceirizados & Manutenção Predial',
+      metodologia_tier: 'Tier 3 (Spending-based / Gasto financeiro R$ - DEFRA/Ecoinvent 3.10)',
     },
   },
   {
@@ -453,8 +481,8 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
     categoriaOperacional: 'instalacoes',
     cnae: '6110-8/03',
     statusSefaz: 'OK (Autorizada SEFAZ-SP)',
-    tierIncerteza: 'Tier 2',
-    incertezaPct: 10.0,
+    tierIncerteza: 'Tier 3',
+    incertezaPct: 20.0,
     razaoSocialParceiro: 'CLARO BRASIL S.A. TELECOMUNICAÇÕES',
     cnpj: '40.432.544/0001-47',
     dataEmissao: '10/07/2026',
@@ -471,6 +499,7 @@ export const NOTAS_DEFAULT_FALLBACK: NotaFiscalDemonstrativa[] = [
       fator_numerico: 0.012,
       unidade_fator: 'kg CO₂e/R$',
       subcategoria: 'Serviços de Telecomunicação Corporativa e Nuvem',
+      metodologia_tier: 'Tier 3 (Spending-based / Gasto financeiro R$ - EPA/DEFRA Telecom)',
     },
   },
 ]
@@ -537,11 +566,11 @@ export async function carregarDadosCorporativoDemo(): Promise<CorporativoDemoDat
         scoreEsg: dj.score_esg || 840,
         scoreEsgMax: dj.score_esg_max || 1000,
         escopo1Tco2e: dj.escopo1_tco2e || 480.2,
-        escopo2Tco2e: dj.escopo2_tco2e || 310.8,
+        escopo2Tco2e: dj.escopo2_tco2e ?? 310.6,
         escopo3Tco2e: dj.escopo3_tco2e || 629.5,
-        totalEmissoesTco2e: dj.total_emissoes_tco2e || 1420.5,
-        amostra12NotasFossilTco2e: dj.amostra_12_notas_fossil_tco2e || 12.91,
-        amostra12NotasBiogenicoTco2e: dj.amostra_12_notas_biogenico_tco2e || 2.06,
+        totalEmissoesTco2e: dj.total_emissoes_tco2e || 1420.3,
+        amostra12NotasFossilTco2e: dj.amostra_12_notas_fossil_tco2e || 12.71,
+        amostra12NotasBiogenicoTco2e: dj.amostra_12_notas_biogenico_tco2e || 2.44,
         amostra12NotasInsettingTco2e: dj.amostra_12_notas_insetting_tco2e || 1.13,
         hashIntegridade: dj.hash_integridade || DOSSIE_DEFAULT_FALLBACK.hashIntegridade,
         padraoAsseguracao: dj.padrao_asseguracao || DOSSIE_DEFAULT_FALLBACK.padraoAsseguracao,
