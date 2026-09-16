@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 import { cleanCNPJ, isValidCNPJ } from '@/services/cnpj'
@@ -157,6 +158,12 @@ export default function Verificador() {
     setIsSearching(true)
     setHasSearched(true)
 
+    // Se o código começar com PR-SEAL, redirecionar para a página do DPP público
+    if (rawInput.toUpperCase().startsWith('PR-SEAL-')) {
+      window.location.href = `/passaporte/${encodeURIComponent(rawInput.toUpperCase())}`
+      return
+    }
+
     try {
       const digitsOnly = cleanCNPJ(rawInput)
       let record: SeloRecord | null = null
@@ -314,6 +321,14 @@ export default function Verificador() {
                   {code}
                 </button>
               ))}
+              {/* Atalho para o DPP do CDVerde */}
+              <Link
+                to="/passaporte/PR-SEAL-2026-991823"
+                className="px-3 py-1 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 text-xs text-[#12B886] hover:bg-[#12B886]/20 transition-colors font-mono font-bold flex items-center gap-1"
+              >
+                <span>PR-SEAL-2026-991823 (DPP CDVerde)</span>
+                <span className="text-[10px]">↗</span>
+              </Link>
             </div>
           </div>
         </div>

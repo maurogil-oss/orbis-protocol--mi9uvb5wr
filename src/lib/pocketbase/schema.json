@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T01:11:56.454Z",
+  "generatedAt": "2026-09-16T01:31:52.044Z",
   "collections": [
     {
       "name": "users",
@@ -1026,6 +1026,357 @@
         "CREATE INDEX idx_relatorios_usuario ON relatorios_exportados (usuario)",
         "CREATE INDEX idx_relatorios_cnpj ON relatorios_exportados (cnpj)",
         "CREATE INDEX idx_relatorios_codigo ON relatorios_exportados (codigo_verificacao)"
+      ]
+    },
+    {
+      "name": "cdv_lotes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "cdv_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_codigo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "api_key_hash",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "veiculo_marca_modelo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "veiculo_chassi",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "veiculo_placa",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "veiculo_baixa_detran",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "veiculo_seguradora",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "origem_envio",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["erp", "ecommerce", "manual_api", "planilha"]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["processado", "parcial", "rejeitado"]
+        },
+        {
+          "name": "total_pecas",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_peso_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_co2e_evitado_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "payload_bruto_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_cdv_lotes_cnpj ON cdv_lotes (cdv_cnpj)",
+        "CREATE INDEX idx_cdv_lotes_baixa ON cdv_lotes (veiculo_baixa_detran)"
+      ]
+    },
+    {
+      "name": "cdv_pecas",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "lote",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "cdv_lotes"
+        },
+        {
+          "name": "sku_interno",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "selo_dpp",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "descricao_peca",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "categoria_material",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["aco", "aluminio", "cobre", "polimeros", "outros"]
+        },
+        {
+          "name": "material_declarado",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "peso_kg",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "ncm",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "fator_co2e_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "co2e_evitado_kg",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "hash_sha256",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "responsavel_crea",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cdv_origem",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cdv_cnpj",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["ativo", "reutilizado", "descartado"]
+        },
+        {
+          "name": "veiculo_marca_modelo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "veiculo_chassi_mascarado",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "veiculo_baixa_detran",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "veiculo_seguradora",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_cdv_pecas_selo ON cdv_pecas (selo_dpp)",
+        "CREATE INDEX idx_cdv_pecas_lote ON cdv_pecas (lote)",
+        "CREATE INDEX idx_cdv_pecas_cnpj ON cdv_pecas (cdv_cnpj)"
+      ]
+    },
+    {
+      "name": "cdv_api_keys",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "cdv_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_codigo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "chave_prefixo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "chave_hash",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "chave_mascarada",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativa",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ultimo_uso",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_cdv_keys_cnpj ON cdv_api_keys (cdv_cnpj)",
+        "CREATE INDEX idx_cdv_keys_hash ON cdv_api_keys (chave_hash)"
       ]
     }
   ]

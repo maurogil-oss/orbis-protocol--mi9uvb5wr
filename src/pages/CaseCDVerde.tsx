@@ -69,7 +69,7 @@ export default function CaseCDVerde() {
               descarbonização.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4 flex-wrap">
               <Link
                 to="/diagnostico"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
@@ -78,10 +78,17 @@ export default function CaseCDVerde() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                to="/trilhas/mover"
+                to="/passaporte/PR-SEAL-2026-991823"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886]/10 transition-all"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>Ver Exemplo de Passaporte Público (DPP)</span>
+              </Link>
+              <Link
+                to="/painel"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] transition-all"
               >
-                <span>Ver Trilha Técnica MOVER</span>
+                <span>Módulo Operacional & Console CDV</span>
               </Link>
             </div>
           </div>

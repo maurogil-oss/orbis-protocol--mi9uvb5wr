@@ -37,7 +37,9 @@ import {
 import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/services/motorEmissoes'
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
 import { InfoSimplesImportTab } from '@/components/InfoSimplesImportTab'
+import { ConsoleApisCdvTab } from '@/components/ConsoleApisCdvTab'
 import { formatarFinalidade } from '@/services/greenCapitalEngine'
+import { Terminal, Car } from 'lucide-react'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -92,9 +94,9 @@ export default function PainelCliente() {
   const [nfeList, setNfeList] = useState<NFeUploadRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Abas de visualização do módulo de ingestão fiscal
+  // Abas de visualização do módulo fiscal, motor pericial e console CDV
   const [abaFiscalAtiva, setAbaFiscalAtiva] = useState<
-    'upload_manual' | 'infosimples' | 'motor_emissoes'
+    'upload_manual' | 'infosimples' | 'motor_emissoes' | 'cdv_apis'
   >('upload_manual')
   const [possuiIREC, setPossuiIREC] = useState(false)
   const [isSalvandoInventario, setIsSalvandoInventario] = useState(false)
@@ -360,11 +362,30 @@ export default function PainelCliente() {
     }
   })
 
-  // Cálculo do Inventário Pericial de Emissões
+  // Consulta se há total evitado em lotes CDV vinculados por CNPJ
+  const [cdvCo2eEvitadoTotal, setCdvCo2eEvitadoTotal] = useState(0)
+
+  useEffect(() => {
+    const buscarCdvTotal = async () => {
+      try {
+        const lotes = await pb.collection('cdv_lotes').getFullList({
+          sort: '-created',
+        })
+        const total = lotes.reduce((acc, curr: any) => acc + (curr.total_co2e_evitado_kg || 0), 0)
+        setCdvCo2eEvitadoTotal(total)
+      } catch {
+        /* intentionally ignored */
+      }
+    }
+    buscarCdvTotal()
+  }, [])
+
+  // Cálculo do Inventário Pericial de Emissões (incorporando insetting ISO 14067 de lotes CDV)
   const inventarioEmissoes = calcularInventarioEmissoes(docsParaEmissoes, {
     empresaNome: currentLead?.razao_social || 'Empresa Cadastrada',
     cnpj: currentLead?.cnpj || 'CNPJ em Análise',
     possuiIREC: possuiIREC,
+    insettingCdvCo2eKg: cdvCo2eEvitadoTotal,
   })
 
   // Exportação do Dossiê Pericial em PDF
@@ -580,6 +601,19 @@ export default function PainelCliente() {
             <FileCheck className="w-4 h-4" />
             <span>Motor Pericial de Emissões (Escopos 1/2/3)</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setAbaFiscalAtiva('cdv_apis')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'cdv_apis'
+                ? 'border-[#12B886] text-[#12B886]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <Terminal className="w-4 h-4" />
+            <span>Console de APIs (Módulo CDV & DPP)</span>
+          </button>
         </div>
 
         {/* FEEDBACK DE SALVAMENTO DO INVENTÁRIO */}
@@ -591,6 +625,16 @@ export default function PainelCliente() {
         )}
 
         {/* CONTEÚDO DAS ABAS */}
+        {abaFiscalAtiva === 'cdv_apis' && (
+          <div className="mb-10">
+            <ConsoleApisCdvTab
+              cdvNome={currentLead?.razao_social || 'CDVerde Centro de Desmontagem Veicular'}
+              cdvCnpj={currentLead?.cnpj || '76.123.456/0001-12'}
+              cdvCodigo="DETRAN-PR-CDV-0089"
+            />
+          </div>
+        )}
+
         {abaFiscalAtiva === 'infosimples' && (
           <div className="mb-10">
             <InfoSimplesImportTab usuarioId={user?.id || ''} onImportSuccess={() => loadData()} />

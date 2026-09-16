@@ -27,6 +27,7 @@ import Privacidade from './pages/Privacidade'
 import Planos from './pages/Planos'
 import Capital from './pages/Capital'
 import RadarRegulatorio from './pages/RadarRegulatorio'
+import PassaportePublicoPage from './pages/PassaportePublicoPage'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/solucoes/case-cdverde" element={<CaseCDVerde />} />
             <Route path="/solucoes/cadeias-produtivas" element={<CadeiasProdutivasPage />} />
             <Route path="/verificador" element={<Verificador />} />
+            <Route path="/passaporte/:selo" element={<PassaportePublicoPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/teste" element={<TestCatalog />} />
             <Route path="/privacidade" element={<Privacidade />} />

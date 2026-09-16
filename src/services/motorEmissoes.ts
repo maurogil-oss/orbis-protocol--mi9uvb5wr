@@ -87,6 +87,7 @@ export interface OpcoesCalculoInventario {
   anoBase?: number
   possuiIREC?: boolean // Se possui energia renovável contratada para Escopo 2 Mercado
   fatorCustomizadoSIN?: number
+  insettingCdvCo2eKg?: number // Adicional: CO2e evitado acumulado dos lotes de CDV vinculado
 }
 
 /**
@@ -319,6 +320,31 @@ export function calcularInventarioEmissoes(
         fonteFator: `${fator.fonte} (${fator.versaoTabela})`,
       })
     }
+  }
+
+  // 7. INSETTING CDV VINCULADO VIA LOTES OPERACIONAIS (kg -> tCO2e)
+  if (opcoes?.insettingCdvCo2eKg && opcoes.insettingCdvCo2eKg > 0) {
+    const tCO2eLotes = Number((opcoes.insettingCdvCo2eKg / 1000).toFixed(3))
+    insettingTotal += tCO2eLotes
+    itensApurados.push({
+      id: 'insetting_cdv_lotes_vinculados',
+      origemDocChave: opcoes.cnpj || 'CDV_LOTES',
+      modeloFiscal: '55_nfe',
+      descricaoItem: `Insetting ISO 14067: ${opcoes.insettingCdvCo2eKg.toLocaleString('pt-BR')} kg CO₂e evitados em lotes operacionais CDV`,
+      categoria: 'Insetting',
+      subcategoria: 'Economia Circular Automotiva (Programa MOVER & DPP)',
+      quantidade: opcoes.insettingCdvCo2eKg,
+      unidade: 'kg CO2e',
+      fatorUtilizado: FATORES_EMISSAO_CURADOS.insetting_cdv_peca,
+      kgCO2: -opcoes.insettingCdvCo2eKg,
+      kgCH4: 0,
+      kgN2O: 0,
+      fossilTCO2e: -tCO2eLotes,
+      biogenicoTCO2e: 0,
+      tierIncerteza: 'Tier 2',
+      incertezaPct: 5.0,
+      fonteFator: 'Orbis dMRV v3.2 / Módulo CDV Operacional',
+    })
   }
 
   // Se não houver itens com combustível/energia explícita nas notas, cria estimativa calibrada pelo total faturado
