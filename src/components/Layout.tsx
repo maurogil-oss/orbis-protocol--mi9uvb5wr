@@ -81,13 +81,13 @@ export default function Layout() {
 
       {/* 2. Sticky Header */}
       <header
-        className={`sticky top-0 z-40 transition-all duration-300 ${
+        className={`sticky top-0 left-0 right-0 w-full z-40 transition-all duration-300 ${
           isScrolled
             ? 'bg-[#0A0E12]/90 backdrop-blur-md border-b border-[rgba(244,247,250,0.12)] shadow-xl'
             : 'bg-[#0A0E12]/60 backdrop-blur-sm border-b border-transparent'
         }`}
       >
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
+        <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
           {/* Brand Logo & Name */}
           <Link to="/" className="flex items-center gap-3.5 group">
             <OrbisGlobe size={40} />

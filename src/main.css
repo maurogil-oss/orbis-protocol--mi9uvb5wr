@@ -52,6 +52,10 @@
     border-color: rgba(244, 247, 250, 0.12);
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     background-color: #0a0e12;
     color: #f4f7fa;

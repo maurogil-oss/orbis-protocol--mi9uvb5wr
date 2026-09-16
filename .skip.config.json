@@ -32,6 +32,9 @@
     "README.md"
   ],
   "deployment": {
-    "lastDevBuildRef": "e3370ca"
+    "lastDevBuildRef": "ec20ea9",
+    "lastProdBuildRef": "ec20ea9",
+    "publishedAt": "2026-09-16T01:43:02.468Z",
+    "lastPublishedRef": "ec20ea9"
   }
 }
