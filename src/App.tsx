@@ -33,6 +33,8 @@ import RadarRegulatorio from './pages/RadarRegulatorio'
 import PassaportePublicoPage from './pages/PassaportePublicoPage'
 import PassaporteLotePublicoPage from './pages/PassaporteLotePublicoPage'
 import PassaporteFornecedorPublicoPage from './pages/PassaporteFornecedorPublicoPage'
+import DcpCorporativoDemoPage from './pages/DcpCorporativoDemoPage'
+import DcpProdutoPublicoPage from './pages/DcpProdutoPublicoPage'
 import CanalTitularPage from './pages/CanalTitularPage'
 import CheckoutPage from './pages/CheckoutPage'
 import NotFound from './pages/NotFound'
@@ -55,6 +57,9 @@ const App = () => (
             <Route path="/solucoes/bureau-acp" element={<BureauACP />} />
             <Route path="/bureau" element={<BureauACP />} />
             <Route path="/corporativo" element={<ModoCorporativoDemoPage />} />
+            <Route path="/corporativo/dcp" element={<DcpCorporativoDemoPage />} />
+            <Route path="/dcp/:selo" element={<DcpProdutoPublicoPage />} />
+            <Route path="/dcp" element={<DcpProdutoPublicoPage />} />
             <Route path="/solucoes/portal-corporativo" element={<PortalCorporativo />} />
             <Route path="/solucoes/case-cdverde" element={<CaseCDVerde />} />
             <Route path="/solucoes/cadeias-produtivas" element={<CadeiasProdutivasPage />} />

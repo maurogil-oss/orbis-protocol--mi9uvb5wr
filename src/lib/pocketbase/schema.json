@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T23:16:07.095Z",
+  "generatedAt": "2026-09-16T23:37:01.190Z",
   "collections": [
     {
       "name": "users",
@@ -274,7 +274,7 @@
       "name": "selos",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' || codigo_selo != ''",
+        "list": "",
         "view": "",
         "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
         "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')",
@@ -2757,8 +2757,8 @@
       "name": "hashes_competencia",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
-        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "list": "",
+        "view": "",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
         "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
@@ -2831,8 +2831,8 @@
       "name": "dpp_consultas",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != ''",
-        "view": "@request.auth.id != ''",
+        "list": "",
+        "view": "",
         "create": "",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"

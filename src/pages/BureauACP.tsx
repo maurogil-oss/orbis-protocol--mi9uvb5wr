@@ -21,6 +21,7 @@ import {
   ArrowRight,
   RefreshCw,
   FileSpreadsheet,
+  Package,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -294,6 +295,95 @@ export function BureauACP() {
             </div>
             <div className="w-12 h-12 rounded-xl bg-[#12B886]/10 flex items-center justify-center text-[#12B886]">
               <FileCheck2 className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        {/* Painel de Acesso Rápido aos Documentos Demonstrativos (DCP Corporativo & DCP do Produto) */}
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-[#111820] via-[#16202B] to-[#111820] border border-[#12B886]/40 shadow-lg space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(244,247,250,0.08)] pb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#12B886] animate-pulse" />
+              <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-[#F4F7FA]">
+                DOCUMENTOS DEMONSTRATIVOS DCP • ESTRUTURA IMPRIMÍVEL (2 PÁGINAS)
+              </h3>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-[#D9B36C] uppercase bg-[#D9B36C]/10 px-2.5 py-0.5 rounded border border-[#D9B36C]/30">
+              Padrão Oficial Orbis • Chave SHA-256 Verificável
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Card DCP Corporativo Demo */}
+            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/60 transition-all flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#12B886]/15 text-[#12B886] border border-[#12B886]/30">
+                    <Building2 className="w-3 h-3" />
+                    Corporativo Demo
+                  </span>
+                  <span className="text-[10px] font-mono text-[#93A3B5]">
+                    Competência Julho/2026
+                  </span>
+                </div>
+                <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
+                  DCP Corporativo Demo (Indústrias & Logística Integrada)
+                </h4>
+                <p className="text-xs text-[#93A3B5] mt-1 leading-relaxed">
+                  Página imprimível de 2 páginas lendo as 12 NF-e: Materialidade por CNAE,
+                  inventário com duplo reporte (SIN × I-REC), classificação física NCM com Tiers,
+                  parecer do Revisor e histórico de consultas.
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] flex items-center justify-between">
+                <span className="font-mono text-[11px] text-[#D9B36C]">12 NF-e • 12 CNAEs</span>
+                <Link
+                  to="/corporativo/dcp"
+                  className="px-3.5 py-1.5 rounded-lg bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-emerald-glow"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Abrir DCP Corporativo</span>
+                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card DCP do Produto Demo (Klabin NCM 4819) */}
+            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/60 transition-all flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#3B82F6]/15 text-[#3B82F6] border border-[#3B82F6]/30">
+                    <Package className="w-3 h-3" />
+                    Produto / NCM 4819
+                  </span>
+                  <span className="text-[10px] font-mono text-[#93A3B5]">
+                    Selo ORB-DCP-KLBN-4819
+                  </span>
+                </div>
+                <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
+                  DCP do Produto (Caixas Kraft Klabin S.A.)
+                </h4>
+                <p className="text-xs text-[#93A3B5] mt-1 leading-relaxed">
+                  Página imprimível de 2 páginas com unidade funcional de "1 unidade vendida",
+                  pegada segregada fóssil × biogênica × emissões evitadas, hash SHA-256 verificável
+                  e QR code público (?via=qr).
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] flex items-center justify-between">
+                <span className="font-mono text-[11px] text-[#D9B36C]">
+                  Unidade Funcional: 1 un
+                </span>
+                <Link
+                  to="/dcp/ORB-DCP-KLBN-4819"
+                  className="px-3.5 py-1.5 rounded-lg bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-emerald-glow"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Abrir DCP do Produto</span>
+                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>

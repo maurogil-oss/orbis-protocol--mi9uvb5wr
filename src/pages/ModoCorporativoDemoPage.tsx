@@ -27,6 +27,7 @@ import {
   Boxes,
   TrendingDown,
   ArrowUpRight,
+  Printer,
 } from 'lucide-react'
 import {
   carregarDadosCorporativoDemo,
@@ -563,6 +564,13 @@ export default function ModoCorporativoDemoPage() {
                 <Download className="w-3.5 h-3.5 text-[#12B886]" />
                 <span>Exportar CSV</span>
               </button>
+              <Link
+                to="/corporativo/dcp"
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all flex items-center gap-1.5 shadow-emerald-glow"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Ver DCP Corporativo Demo (2 Páginas)</span>
+              </Link>
             </div>
           </div>
 
