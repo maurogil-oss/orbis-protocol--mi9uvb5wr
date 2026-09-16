@@ -14,17 +14,17 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     // Tabela de serviços oficiais da plataforma Orbis Protocol:
     // diagnóstico R$ 490 / laudo pericial R$ 2.850 / assinatura bureau R$ 7.800
     let valor = 490
-    let servicoNome = 'Diagnóstico Pericial por CNPJ & Enquadramento SBCE/MOVER'
+    let servicoNome = 'Diagnóstico Orbis'
 
     if (servicoId === 'laudo_pericial') {
       valor = 2850
-      servicoNome = 'Laudo Pericial Completo dMRV com ART & Dossiê Fiscal'
+      servicoNome = 'Laudo Pericial com ART'
     } else if (servicoId === 'assinatura_bureau') {
       valor = 7800
-      servicoNome = 'Assinatura Anual Bureau ACP & Passaporte do Fornecedor'
+      servicoNome = 'Bureau ACP'
     } else if (servicoId === 'diagnostico') {
       valor = 490
-      servicoNome = 'Diagnóstico Pericial por CNPJ & Enquadramento SBCE/MOVER'
+      servicoNome = 'Diagnóstico Orbis'
     }
 
     const cobrancasCol = $app.findCollectionByNameOrId('cobrancas')

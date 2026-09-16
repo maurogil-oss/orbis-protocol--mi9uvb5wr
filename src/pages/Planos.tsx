@@ -15,53 +15,67 @@ export default function Planos() {
   const planos = [
     {
       id: 'essencial',
+      servicoId: 'diagnostico',
       nome: 'Plano Essencial',
+      servicoTitulo: 'Diagnóstico Orbis',
       indicacao: 'Pequenas e Médias Empresas (PME)',
+      valorNumerico: 490,
+      valorFormatado: 'R$ 490',
+      periodo: 'pagamento único / por CNPJ',
+      chamariz: 'Primeiro resultado prévio validado, com Hash de integridade criptográfica.',
       descricao:
-        'Diagnóstico preliminar e protocolo de conformidade para atendimento a fornecedores e bancos credores.',
-      precoApenas: 'A partir de R$ 980 / ano',
+        'Diagnóstico Orbis — primeiro resultado prévio validado, com Hash e demais entregas.',
       destaques: [
-        'Diagnóstico anual preliminar por CNPJ',
+        'Diagnóstico anual preliminar validado por CNPJ',
+        'Hash de integridade criptográfica dMRV',
         'Emissão do Selo Oficial Orbis Protocol dMRV',
         'Atestado preparatório para exigências ESG bancárias (Res. BCB 4.945/2021)',
-        'Suporte técnico via e-mail e comunidade',
         'Ingestão real de XML NF-e (Mod. 55/65) com apuração de créditos tributários ativos',
+        'Suporte técnico via canal oficial',
       ],
       ctaText: 'Fazer Diagnóstico Preliminar',
       popular: false,
     },
     {
-      id: 'profissional',
-      nome: 'Plano MOVER & Descarbonização',
+      id: 'mover',
+      servicoId: 'laudo_pericial',
+      nome: 'Plano MOVER',
+      servicoTitulo: 'Laudo Pericial com ART',
       indicacao: 'Exclusivo Segmento Automotivo & CDVs DETRAN',
-      descricao:
-        'Auditoria preparatória para incentivos de IPI do Programa MOVER e Passaporte Digital de Produto (DPP).',
-      precoApenas: 'Sob Consulta Técnica',
+      valorNumerico: 2850,
+      valorFormatado: 'R$ 2.850',
+      periodo: 'por laudo homologado',
+      chamariz: 'Chancela de perito homologado com Anotação de Responsabilidade Técnica (ART).',
+      descricao: 'Laudo Pericial com ART — chancela de perito homologado.',
       destaques: [
-        'Tudo do plano Essencial',
+        'Tudo do plano Essencial incluído',
+        'Chancela de perito homologado com ART/RRT acoplada',
+        'Laudo pericial emitido sob a norma NBC TO 3000 do CFC',
         'Dossiê preparatório para créditos do Programa MOVER (Lei 14.902/2024)',
         'Passaporte Digital de Produto (DPP) para peças reaproveitadas',
-        'Laudo pericial preliminar com ART técnica acoplada',
-        'Ingestão de XML de NF-e e conciliação de créditos de PIS/Cofins, ICMS e IPI',
-        'Atendimento especializado para desmanches credenciados',
+        'Ingestão ilimitada de NF-e e conciliação de créditos PIS/Cofins, ICMS e IPI',
       ],
       ctaText: 'Diagnóstico para Setor Automotivo',
       popular: true,
     },
     {
       id: 'corporativo',
-      nome: 'Plano Corporativo & SBCE',
+      servicoId: 'assinatura_bureau',
+      nome: 'Plano Corporativo',
+      servicoTitulo: 'Bureau ACP',
       indicacao: 'Indústrias Reguladas & Grandes Exportadores',
-      descricao:
-        'Preparação contábil para o mercado regulado SBCE (Lei 15.042/2024), reporte IFRS voluntário e gateway CBAM.',
-      precoApenas: 'Proposta Customizada',
+      valorNumerico: 7800,
+      valorFormatado: 'R$ 7.800',
+      periodo: 'anual / gestão contínua',
+      chamariz: 'Gestão contínua com passaportes do fornecedor e dossiê BRDE/fomento.',
+      descricao: 'Bureau ACP — gestão contínua, passaportes, dossiê BRDE/fomento.',
       destaques: [
-        'Tudo do plano Profissional',
-        'Gestão multi-CNPJ e filiais corporativas',
-        'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração',
-        'Avaliação de impacto aos limiares do SBCE (> 10k e > 25k tCO₂e)',
-        'Dossiê técnico preparatório para mecanismo de fronteira CBAM (UE)',
-        'Auditor técnico dedicado dMRV',
+        'Tudo do plano MOVER / Laudo Pericial incluído',
+        'Gestão contínua e cockpit completo no Bureau ACP',
+        'Passaporte Digital do Fornecedor com revelação seletiva por parceiro',
+        'Dossiê contínuo de elegibilidade para linhas BRDE e Fomento Paraná',
+        'Curva MAC personalizada (Custo Marginal de Abatimento)',
+        'Preparação para SBCE (Lei 15.042/2024) e reporte IFRS S1/S2',
       ],
       ctaText: 'Solicitar Diagnóstico Corporativo',
       popular: false,
@@ -128,15 +142,24 @@ export default function Planos() {
                     {p.indicacao}
                   </span>
                   <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">{p.nome}</h3>
+                  <div className="mt-1">
+                    <span className="inline-block text-xs font-semibold text-[#12B886]">
+                      {p.servicoTitulo}
+                    </span>
+                  </div>
                   <p className="text-xs text-[#93A3B5] mt-2 leading-relaxed">{p.descricao}</p>
                 </div>
 
+                {/* Preço em destaque */}
                 <div className="py-4 border-y border-[rgba(244,247,250,0.08)] mb-6">
-                  <span className="text-sm font-semibold text-[#12B886] block">
-                    {p.precoApenas}
-                  </span>
-                  <span className="text-[11px] text-[#93A3B5]/70 block mt-0.5">
-                    Definido após conferência de porte e complexidade fiscal
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-heading font-black text-3xl sm:text-4xl text-[#12B886]">
+                      {p.valorFormatado}
+                    </span>
+                    <span className="text-xs text-[#93A3B5] font-medium">{p.periodo}</span>
+                  </div>
+                  <span className="text-[11px] text-[#D9B36C] block mt-1.5 font-medium leading-tight">
+                    {p.chamariz}
                   </span>
                 </div>
 
@@ -155,10 +178,10 @@ export default function Planos() {
 
               <div className="space-y-2">
                 <Link
-                  to="/checkout"
-                  className="w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
+                  to={`/checkout?servico=${p.servicoId}`}
+                  className="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
                 >
-                  <span>Contratar via PIX (R$ 490 / R$ 2.850 / R$ 7.800)</span>
+                  <span>Contratar por {p.valorFormatado}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom'
 import {
   CreditCard,
   QrCode,
@@ -32,10 +32,27 @@ import { QRCodeSVG } from '@/components/QRCodeSVG'
 export default function CheckoutPage() {
   const { cobrancaId } = useParams<{ cobrancaId?: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { user, isAuthenticated } = useAuth()
 
+  // Inicializa o serviço selecionado a partir de query param (?servico=...) ou location.state
+  const servicoFromQuery = (searchParams.get('servico') ||
+    (location.state as any)?.servico) as ServicoCobrancaId | null
+  const servicoValidoInicial: ServicoCobrancaId =
+    servicoFromQuery && servicoFromQuery in SERVICOS_COBRANCA ? servicoFromQuery : 'diagnostico'
+
   // Se veio sem cobrancaId, exibe formulário para iniciar cobrança
-  const [servicoSelecionado, setServicoSelecionado] = useState<ServicoCobrancaId>('diagnostico')
+  const [servicoSelecionado, setServicoSelecionado] =
+    useState<ServicoCobrancaId>(servicoValidoInicial)
+
+  // Atualiza serviço selecionado caso query param mude
+  useEffect(() => {
+    const servicoParam = searchParams.get('servico') as ServicoCobrancaId | null
+    if (servicoParam && servicoParam in SERVICOS_COBRANCA) {
+      setServicoSelecionado(servicoParam)
+    }
+  }, [searchParams])
   const [tomador, setTomador] = useState({
     nome: user?.name || '',
     cpf_cnpj: '',
@@ -454,13 +471,13 @@ export default function CheckoutPage() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-mono text-[#D9B36C] uppercase font-bold">
-                          {key === 'diagnostico' && 'Entrada PME'}
-                          {key === 'laudo_pericial' && 'Perícia Técnica'}
-                          {key === 'assinatura_bureau' && 'Bureau Anual'}
+                          {key === 'diagnostico' && 'Essencial • Entrada'}
+                          {key === 'laudo_pericial' && 'MOVER • Perícia com ART'}
+                          {key === 'assinatura_bureau' && 'Corporativo • Bureau ACP'}
                         </span>
                         {isSelected && <CheckCircle2 className="w-4 h-4 text-[#12B886]" />}
                       </div>
-                      <h3 className="font-heading font-bold text-sm text-[#F4F7FA] mb-2 leading-snug">
+                      <h3 className="font-heading font-bold text-base text-[#F4F7FA] mb-2 leading-snug">
                         {s.nome}
                       </h3>
                       <div className="font-heading font-black text-2xl text-[#12B886] mb-3">
