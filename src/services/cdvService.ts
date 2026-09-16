@@ -247,21 +247,35 @@ export async function consultarLoteConsolidado(
   if (!param) return null
 
   try {
-    // 1. Tentar buscar direto pelo ID do lote
     let lote: CdvLoteRecord | null = null
-    try {
-      lote = await pb.collection('cdv_lotes').getOne<CdvLoteRecord>(param)
-    } catch {
-      // 2. Se falhar, buscar por baixa DETRAN ou código do lote
+
+    // 1. Tentar buscar direto por ID do lote (15 chars alfanuméricos padrão PocketBase)
+    if (/^[a-z0-9]{15}$/i.test(param)) {
+      try {
+        lote = await pb.collection('cdv_lotes').getOne<CdvLoteRecord>(param)
+      } catch {
+        lote = null
+      }
+    }
+
+    // 2. Se não encontrou por ID ou não é um ID alfanumérico de 15 chars, buscar por baixa DETRAN ou código
+    if (!lote) {
       const cleanParam = param.replace(/"/g, '\\"')
       try {
         lote = await pb
           .collection('cdv_lotes')
           .getFirstListItem<CdvLoteRecord>(
-            `veiculo_baixa_detran = "${cleanParam}" || id = "${cleanParam}"`,
+            `veiculo_baixa_detran = "${cleanParam}" || id = "${cleanParam}" || cdv_codigo = "${cleanParam}"`,
           )
       } catch {
-        lote = null
+        // Tentar busca sem case ou com trim caso tenha variação de espaçamento
+        try {
+          lote = await pb
+            .collection('cdv_lotes')
+            .getFirstListItem<CdvLoteRecord>(`veiculo_baixa_detran ~ "${cleanParam}"`)
+        } catch {
+          lote = null
+        }
       }
     }
 

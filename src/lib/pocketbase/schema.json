@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T18:27:58.306Z",
+  "generatedAt": "2026-09-16T18:40:18.676Z",
   "collections": [
     {
       "name": "users",
@@ -1099,8 +1099,8 @@
       "name": "cdv_lotes",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != ''",
-        "view": "@request.auth.id != ''",
+        "list": "",
+        "view": "",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
