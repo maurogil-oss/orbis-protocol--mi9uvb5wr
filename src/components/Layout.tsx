@@ -41,7 +41,12 @@ export default function Layout() {
     { label: 'Soluções', path: '/solucoes' },
     { label: 'Planos', path: '/planos' },
     { label: 'Verificador de Selos', path: '/verificador' },
-    ...(isAuthenticated ? [{ label: 'Financeiro', path: '/financeiro' }] : []),
+    ...(isAuthenticated
+      ? [
+          { label: 'Green Capital', path: '/capital' },
+          { label: 'Financeiro', path: '/financeiro' },
+        ]
+      : []),
   ]
 
   const regulations = [
@@ -373,6 +378,14 @@ export default function Layout() {
                 <li>
                   <Link to="/verificador" className="hover:text-[#12B886] transition-colors">
                     Verificador Público de Selos
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/capital"
+                    className="hover:text-[#12B886] transition-colors text-[#12B886] font-semibold"
+                  >
+                    Green Capital Engine (8 Linhas)
                   </Link>
                 </li>
                 <li>

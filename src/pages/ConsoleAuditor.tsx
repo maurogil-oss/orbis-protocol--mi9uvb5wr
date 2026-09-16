@@ -22,7 +22,12 @@ import {
   Building2,
   FileText,
   UserCheck,
+  Download,
+  Coins,
 } from 'lucide-react'
+import { simularGreenCapitalEngine } from '@/services/greenCapitalEngine'
+import { exportarRelatorioDossiePdf } from '@/services/relatorioLaudoPdf'
+import { calcularComparativoTributario } from '@/services/tributosReforma'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -65,6 +70,7 @@ export default function ConsoleAuditor() {
 
   // Modal / Detalhes de um lead selecionado
   const [selectedLead, setSelectedLead] = useState<LeadDiagnostico | null>(null)
+  const [isExportandoLeadPdf, setIsExportandoLeadPdf] = useState(false)
 
   const loadData = async () => {
     setIsLoading(true)
@@ -115,6 +121,76 @@ export default function ConsoleAuditor() {
       /* intentionally ignored */
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  // Gerar e Exportar Laudo Pericial do Cliente selecionado
+  const handleExportarLaudoCliente = async (lead: LeadDiagnostico) => {
+    setIsExportandoLeadPdf(true)
+    try {
+      // Comparativo Tributário do Lead
+      const comparativo = calcularComparativoTributario({
+        regime_tributario: lead.regime_tributario,
+        categoria_profissional: lead.categoria_profissional,
+        vinculo_institucional: lead.vinculo_institucional,
+        faixa_emissoes: lead.faixa_emissoes,
+        exporta_ue_cbam: lead.exporta_ue_cbam,
+        cbam_bens: lead.cbam_bens,
+        razao_social: lead.razao_social,
+      })
+
+      // Simulação Green Capital para o porte/perfil do lead
+      const simulacao = simularGreenCapitalEngine({
+        valorDesejado: 500000,
+        prazoMeses: 48,
+        finalidade: 'eficiencia_energetica',
+        regimeTributario: lead.regime_tributario,
+      })
+
+      await exportarRelatorioDossiePdf(
+        {
+          identificacao: {
+            razaoSocial: lead.razao_social,
+            cnpj: lead.cnpj,
+            responsavel: lead.responsavel,
+            categoriaProfissional: lead.categoria_profissional,
+            conselho: lead.conselho,
+            email: lead.email,
+            whatsapp: lead.whatsapp,
+            regimeTributario: lead.regime_tributario,
+            vinculoInstitucional: lead.vinculo_institucional,
+            geradoPorNome: user?.name || user?.email || 'Perito Auditor',
+            geradoPorRole: 'perito',
+          },
+          diagnostico: {
+            enquadramentoSbceTexto: lead.enquadramento_sbce,
+            exportaUeCbam: lead.exporta_ue_cbam,
+            cbamBens: lead.cbam_bens,
+            faixaEmissoes: lead.faixa_emissoes,
+          },
+          comparativoTributario: comparativo,
+          greenCapital: simulacao,
+        },
+        async (hash, codigo) => {
+          if (user?.id) {
+            await pb.collection('relatorios_exportados').create({
+              usuario: user.id,
+              cnpj: lead.cnpj,
+              razao_social: lead.razao_social,
+              tipo_relatorio: 'dossie_completo_pericial',
+              codigo_verificacao: codigo,
+              hash_sha256: hash,
+              gerado_por_nome: user.name || user.email,
+              gerado_por_role: 'perito',
+              metadados_json: { peritoAcao: 'emissao_laudo_console_auditor', leadId: lead.id },
+            })
+          }
+        },
+      )
+    } catch (err: any) {
+      alert(err.message || 'Erro ao gerar laudo em PDF.')
+    } finally {
+      setIsExportandoLeadPdf(false)
     }
   }
 
@@ -630,6 +706,16 @@ export default function ConsoleAuditor() {
                       <td className="py-3.5 px-3 text-right">
                         <div className="inline-flex items-center gap-1.5">
                           <button
+                            onClick={() => handleExportarLaudoCliente(item)}
+                            disabled={isExportandoLeadPdf}
+                            className="px-2.5 py-1 rounded bg-[#12B886]/10 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] border border-[#12B886]/30 font-semibold flex items-center gap-1"
+                            title="Gerar laudo pericial em PDF para entrega ao cliente"
+                          >
+                            <Download className="w-3 h-3" />
+                            <span>PDF</span>
+                          </button>
+
+                          <button
                             onClick={() => setSelectedLead(item)}
                             className="px-2.5 py-1 rounded bg-[#16202B] text-[#F4F7FA] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors text-[11px] border border-[rgba(244,247,250,0.15)] font-semibold"
                             title="Ver detalhes completos do diagnóstico"
@@ -779,13 +865,23 @@ export default function ConsoleAuditor() {
                 </button>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => handleExportarLaudoCliente(selectedLead)}
+                    disabled={isExportandoLeadPdf}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Exportar Laudo PDF</span>
+                  </button>
+
                   {selectedLead.status !== 'concluido' ? (
                     <button
                       type="button"
                       onClick={() => handleUpdateStatus(selectedLead.id, 'concluido')}
-                      className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-colors"
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-bold bg-[#16202B] border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
                     >
-                      Homologar Laudo
+                      Homologar
                     </button>
                   ) : (
                     <button
@@ -793,7 +889,7 @@ export default function ConsoleAuditor() {
                       onClick={() => handleUpdateStatus(selectedLead.id, 'em_analise')}
                       className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)]"
                     >
-                      Reabrir Parecer
+                      Reabrir
                     </button>
                   )}
                 </div>

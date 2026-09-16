@@ -86,7 +86,8 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     publico:
       'Indústrias com potencial emissor, Exportadores para a União Europeia, Gestores Financeiros e Tesourarias.',
     destaques: [
-      'Preparação para exigências ESG de credores e redução de spread',
+      'Green Capital Engine: 8 linhas de crédito verde e spread bonificado',
+      'Preparação para exigências ESG de credores e redução de spread (Res. BCB 4.945/2021)',
       'Gateway preparatório CBAM União Europeia: comprovação de emissões incorporadas',
       'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração',
       'Estimativa preliminar de Cotas Brasileiras de Emissão (CBE)',

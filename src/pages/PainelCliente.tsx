@@ -19,7 +19,11 @@ import {
   ExternalLink,
   Receipt,
   FileCheck,
+  Download,
+  Coins,
 } from 'lucide-react'
+import { simularGreenCapitalEngine } from '@/services/greenCapitalEngine'
+import { exportarRelatorioDossiePdf } from '@/services/relatorioLaudoPdf'
 import {
   calcularComparativoTributario,
   ResultadoComparativoTributario,
@@ -33,6 +37,7 @@ import {
 import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/services/motorEmissoes'
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
 import { InfoSimplesImportTab } from '@/components/InfoSimplesImportTab'
+import { formatarFinalidade } from '@/services/greenCapitalEngine'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -94,6 +99,7 @@ export default function PainelCliente() {
   const [possuiIREC, setPossuiIREC] = useState(false)
   const [isSalvandoInventario, setIsSalvandoInventario] = useState(false)
   const [inventarioSalvoMsg, setInventarioSalvoMsg] = useState<string | null>(null)
+  const [isExportandoPdf, setIsExportandoPdf] = useState(false)
 
   // Upload state
   const [isUploading, setIsUploading] = useState(false)
@@ -319,6 +325,67 @@ export default function PainelCliente() {
     possuiIREC: possuiIREC,
   })
 
+  // Exportação do Dossiê Pericial em PDF
+  const handleExportarDossieCompleto = async () => {
+    setIsExportandoPdf(true)
+    try {
+      const simulacaoCap = simularGreenCapitalEngine({
+        valorDesejado: 500000,
+        prazoMeses: 48,
+        finalidade: 'eficiencia_energetica',
+        temInventarioOrbis: Boolean(inventarioEmissoes),
+        emissoesTotaisTCO2e: inventarioEmissoes.emissoesTotaisFosseisTCO2e,
+      })
+
+      await exportarRelatorioDossiePdf(
+        {
+          identificacao: {
+            razaoSocial: currentLead?.razao_social || user?.name || 'Empresa Cadastrada',
+            cnpj: currentLead?.cnpj || 'CNPJ em Análise',
+            responsavel: currentLead?.responsavel || user?.name,
+            regimeTributario: currentLead?.regime_tributario,
+            vinculoInstitucional: currentLead?.vinculo_institucional,
+            geradoPorNome: user?.name || user?.email || 'Perito Orbis',
+            geradoPorRole: 'cliente',
+          },
+          diagnostico: {
+            enquadramentoSbceTexto: currentLead?.enquadramento_sbce,
+            statusSbce: inventarioEmissoes.enquadramentoSBCE.status,
+            exportaUeCbam: currentLead?.exporta_ue_cbam,
+            cbamBens: currentLead?.cbam_bens,
+            faixaEmissoes: currentLead?.faixa_emissoes,
+          },
+          inventario: inventarioEmissoes,
+          comparativoTributario: comparativoCalculado,
+          greenCapital: simulacaoCap,
+          codigoSelo: currentSelo?.codigo_selo,
+        },
+        async (hash, codigo) => {
+          if (user?.id) {
+            await pb.collection('relatorios_exportados').create({
+              usuario: user.id,
+              cnpj: currentLead?.cnpj || 'CNPJ em Análise',
+              razao_social: currentLead?.razao_social || 'Empresa Cadastrada',
+              tipo_relatorio: 'dossie_completo_pericial',
+              codigo_verificacao: codigo,
+              hash_sha256: hash,
+              gerado_por_nome: user.name || user.email,
+              gerado_por_role: 'cliente',
+              metadados_json: {
+                totalNotas: totaisNfe.totalNotas,
+                emissoesTotais: inventarioEmissoes.emissoesTotaisFosseisTCO2e,
+              },
+            })
+          }
+        },
+      )
+    } catch (err: any) {
+      alert(err.message || 'Erro ao gerar relatório em PDF.')
+    } finally {
+      setIsExportandoPdf(false)
+    }
+  }
+
   // Salvar Inventário no Banco de Dados
   const handleSalvarInventario = async () => {
     if (!user?.id) return
@@ -399,19 +466,29 @@ export default function PainelCliente() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={handleExportarDossieCompleto}
+              disabled={isExportandoPdf}
+              className="px-4 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-1.5 disabled:opacity-50"
+              title="Gerar PDF completo do inventário e comparativo para entregar ao cliente"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{isExportandoPdf ? 'Gerando Laudo PDF...' : 'Exportar Laudo PDF'}</span>
+            </button>
+            <Link
+              to="/capital"
+              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886]/10 flex items-center gap-1.5"
+            >
+              <Coins className="w-3.5 h-3.5" />
+              <span>Green Capital (8 Linhas)</span>
+            </Link>
             <Link
               to="/diagnostico"
               className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886]"
             >
               Novo CNPJ
-            </Link>
-            <Link
-              to="/financeiro"
-              className="px-5 py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shadow-emerald-glow flex items-center gap-1.5"
-            >
-              <CreditCard className="w-3.5 h-3.5" />
-              <span>Gerenciar Assinatura</span>
             </Link>
           </div>
         </div>
@@ -474,7 +551,20 @@ export default function PainelCliente() {
         )}
 
         {abaFiscalAtiva === 'motor_emissoes' && (
-          <div className="mb-10">
+          <div className="mb-10 space-y-4">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleExportarDossieCompleto}
+                disabled={isExportandoPdf}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                <span>
+                  {isExportandoPdf ? 'Exportando Laudo...' : 'Exportar Laudo Técnico em PDF'}
+                </span>
+              </button>
+            </div>
             <MotorEmissoesView
               inventario={inventarioEmissoes}
               possuiIREC={possuiIREC}
@@ -675,19 +765,30 @@ export default function PainelCliente() {
         {/* 2. COMPARATIVO DA REFORMA TRIBUTÁRIA ATUALIZADO COM CRÉDITOS REAIS */}
         {currentLead && comparativoCalculado && (
           <div className="p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-10 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <Scale className="w-5 h-5 text-[#12B886]" />
                 <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
                   DIAGNÓSTICO TRIBUTÁRIO • REFORMA EC 132/2023 (IBS/CBS)
                 </h2>
               </div>
-              {totaisNfe.totalNotas > 0 && (
-                <span className="px-3 py-1 rounded-full bg-[#12B886]/10 text-[#12B886] font-bold text-xs uppercase border border-[#12B886]/30 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Alimentado com {totaisNfe.totalNotas} NF-e reais
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {totaisNfe.totalNotas > 0 && (
+                  <span className="px-3 py-1 rounded-full bg-[#12B886]/10 text-[#12B886] font-bold text-xs uppercase border border-[#12B886]/30 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Alimentado com {totaisNfe.totalNotas} NF-e reais
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleExportarDossieCompleto}
+                  disabled={isExportandoPdf}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#12B886]" />
+                  <span>Exportar PDF</span>
+                </button>
+              </div>
             </div>
             <ComparativoTributarioView
               comparativo={comparativoCalculado}
@@ -859,11 +960,21 @@ export default function PainelCliente() {
                     </div>
                   </div>
 
-                  <div className="text-right shrink-0">
-                    <span className="inline-block px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
-                      {doc.status}
-                    </span>
-                    <span className="block text-[10px] text-[#93A3B5] mt-1">{doc.data}</span>
+                  <div className="text-right shrink-0 flex items-center gap-3">
+                    <div>
+                      <span className="inline-block px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
+                        {doc.status}
+                      </span>
+                      <span className="block text-[10px] text-[#93A3B5] mt-1">{doc.data}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleExportarDossieCompleto}
+                      className="p-2 rounded-lg bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] hover:bg-[#12B886]/10 transition-colors"
+                      title="Baixar Laudo em PDF"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}

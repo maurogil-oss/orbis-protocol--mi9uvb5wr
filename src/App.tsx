@@ -25,6 +25,7 @@ import ConsoleAuditor from './pages/ConsoleAuditor'
 import TestCatalog from './pages/TestCatalog'
 import Privacidade from './pages/Privacidade'
 import Planos from './pages/Planos'
+import Capital from './pages/Capital'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -52,6 +53,14 @@ const App = () => (
             <Route path="/planos" element={<Planos />} />
 
             {/* Protected Routes (Require Authentication) */}
+            <Route
+              path="/capital"
+              element={
+                <ProtectedRoute>
+                  <Capital />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/financeiro"
               element={

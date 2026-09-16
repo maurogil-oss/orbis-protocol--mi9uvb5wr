@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T00:35:58.225Z",
+  "generatedAt": "2026-09-16T00:54:59.069Z",
   "collections": [
     {
       "name": "users",
@@ -816,6 +816,216 @@
       "indexes": [
         "CREATE INDEX idx_emissoes_usuario ON emissoes_inventario (usuario)",
         "CREATE INDEX idx_emissoes_cnpj ON emissoes_inventario (cnpj)"
+      ]
+    },
+    {
+      "name": "simulacoes_credito_verde",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "empresa_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_desejado",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "prazo_meses",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "finalidade",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "eficiencia_energetica",
+            "frota_eletrica_gas",
+            "economia_circular",
+            "energia_solar",
+            "agro_verde"
+          ]
+        },
+        {
+          "name": "linha_selecionada_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "linha_selecionada_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "taxa_padrao_aa",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "taxa_bonificada_aa",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "economia_anual_estimada",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "economia_total_estimada",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "detalhes_simulacao_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_simulacao_usuario ON simulacoes_credito_verde (usuario)",
+        "CREATE INDEX idx_simulacao_cnpj ON simulacoes_credito_verde (cnpj)"
+      ]
+    },
+    {
+      "name": "relatorios_exportados",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "razao_social",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tipo_relatorio",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "dossie_completo_pericial",
+            "inventario_emissoes",
+            "comparativo_tributario",
+            "green_capital"
+          ]
+        },
+        {
+          "name": "codigo_verificacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_sha256",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "gerado_por_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "gerado_por_role",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "metadados_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_relatorios_usuario ON relatorios_exportados (usuario)",
+        "CREATE INDEX idx_relatorios_cnpj ON relatorios_exportados (cnpj)",
+        "CREATE INDEX idx_relatorios_codigo ON relatorios_exportados (codigo_verificacao)"
       ]
     }
   ]
