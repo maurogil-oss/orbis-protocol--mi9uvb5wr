@@ -38,7 +38,7 @@ const PLANOS: Plano[] = [
       'Emissão do Selo Oficial Orbis Protocol dMRV',
       'Atestado preparatório para exigências ESG bancárias',
       'Suporte técnico via e-mail e comunidade',
-      'Diagnóstico documental e preparação para ingestão de NF-e (em implantação no roadmap)',
+      'Ingestão real de XML NF-e (Mod. 55/65) com apuração de créditos tributários ativos',
     ],
   },
   {
@@ -54,7 +54,7 @@ const PLANOS: Plano[] = [
       'Dossiê preparatório para créditos do Programa MOVER (exclusivo segmento automotivo/CDVs)',
       'Passaporte Digital de Produto (DPP) automotivo',
       'Laudo pericial preliminar com ART técnica acoplada',
-      'Preparação para ingestão em lote de NF-e e SPED (em implantação no roadmap)',
+      'Ingestão de XML de NF-e e conciliação de créditos de PIS/Cofins, ICMS e IPI',
       'Suporte prioritário via WhatsApp',
     ],
   },
@@ -71,7 +71,7 @@ const PLANOS: Plano[] = [
       'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração',
       'Conectores diretos para ERPs em fase de homologação',
       'Auditor técnico dedicado dMRV',
-      'Preparação de governança documental e volumetria SPED customizada (roadmap)',
+      'Ingestão de XMLs em lote e parametrização volumétrica SPED para asseguração',
     ],
   },
 ]

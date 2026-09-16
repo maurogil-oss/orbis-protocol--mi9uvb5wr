@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { OrbisGlobe } from './OrbisGlobe'
 import { useAuth } from '@/contexts/AuthContext'
+import { AssistenteOrbisWidget } from './AssistenteOrbisWidget'
 import {
   Menu,
   X,
@@ -255,6 +256,9 @@ export default function Layout() {
       <main className="flex-1 flex flex-col">
         <Outlet />
       </main>
+
+      {/* Widget Flutuante do Assistente Orbis IA (Landing / e /diagnostico e todo o site) */}
+      <AssistenteOrbisWidget />
 
       {/* 5. Institutional Footer */}
       <footer className="bg-[#070A0D] border-t border-[rgba(244,247,250,0.12)] pt-14 pb-8">

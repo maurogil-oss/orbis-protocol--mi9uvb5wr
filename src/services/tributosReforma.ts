@@ -25,6 +25,15 @@ export interface ResultadoComparativoTributario {
   disclaimer: string
 }
 
+export interface DadosCreditosReaisNFe {
+  totalNotas: number
+  periodoResumo?: string
+  somaValorTotal: number
+  somaPisCofins: number
+  somaIcms: number
+  somaIpi: number
+}
+
 export interface PerfilTributarioESGInput {
   regime_tributario?: string
   categoria_profissional?: string
@@ -34,6 +43,7 @@ export interface PerfilTributarioESGInput {
   cbam_bens?: string
   cnae_descricao?: string
   razao_social?: string
+  dadosNFeReais?: DadosCreditosReaisNFe
 }
 
 export function calcularComparativoTributario(
@@ -89,39 +99,59 @@ export function calcularComparativoTributario(
       'Fim das disputas de creditamento de PIS/Cofins e ressarcimento célere de saldos credores acumulados.'
   }
 
+  const nfe = input.dadosNFeReais
+
   // 1. Linha PIS / COFINS -> CBS
-  let pisCofinsHoje = 'PIS (0,65% a 1,65%) e Cofins (3% a 7,6%), cumulatividade parcial'
+  let pisCofinsHoje =
+    nfe && nfe.somaPisCofins > 0
+      ? `R$ ${nfe.somaPisCofins.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} apurados (baseado em ${nfe.totalNotas} notas${nfe.periodoResumo ? `, ${nfe.periodoResumo}` : ''})`
+      : 'PIS (0,65% a 1,65%) e Cofins (3% a 7,6%), cumulatividade parcial'
+
   let cbsReforma = 'CBS (Contribuição sobre Bens e Serviços - Federal, ~8,8%) com crédito integral'
   let pisDetalhe =
-    'Não-cumulatividade plena: crédito sobre todas as aquisições de bens e serviços tributados ("base ampla"), acabando com o litígio sobre o conceito restritivo de insumo.'
+    nfe && nfe.somaPisCofins > 0
+      ? `Créditos reais de PIS/Cofins extraídos dos XMLs enviados (R$ ${nfe.somaPisCofins.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}). Na CBS, esses insumos geram crédito financeiro irrestrito sobre a base ampla, eliminando o contencioso fiscal.`
+      : 'Não-cumulatividade plena: crédito sobre todas as aquisições de bens e serviços tributados ("base ampla"), acabando com o litígio sobre o conceito restritivo de insumo.'
 
-  if (isSimples) {
+  if (isSimples && (!nfe || nfe.somaPisCofins === 0)) {
     pisCofinsHoje = 'Recolhido em guia única (DAS) dentro da faixa da receita bruta'
     cbsReforma = 'Possibilidade de recolher CBS no DAS ou apurar pelo regime regular'
     pisDetalhe =
       'Se optar por recolher no regime geral da CBS, transfere crédito financeiro integral para clientes corporativos (B2B), aumentando a competitividade de vendas.'
-  } else if (exportaUE) {
+  } else if (exportaUE && (!nfe || nfe.somaPisCofins === 0)) {
     pisDetalhe =
       'Receitas de exportação mantêm imunidade absoluta na CBS, com devolução rápida em dinheiro ou compensação líquida de créditos decorrentes de insumos.'
   }
 
   // 2. Linha ICMS / ISS -> IBS
-  let icmsIssHoje = 'ICMS (estadual, 17% a 20,5%) e ISS (municipal, 2% a 5%)'
+  let icmsIssHoje =
+    nfe && nfe.somaIcms > 0
+      ? `R$ ${nfe.somaIcms.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} de ICMS destacado (${nfe.totalNotas} notas reais)`
+      : 'ICMS (estadual, 17% a 20,5%) e ISS (municipal, 2% a 5%)'
+
   let ibsReforma = 'IBS (Imposto sobre Bens e Serviços - Estados e Municípios, ~19,2%)'
   let ibsDetalhe =
-    'Cobrança no destino final do consumo (fim da guerra fiscal interestadual e dos benefícios temporários); transição federativa gradual da receita até 2078.'
+    nfe && nfe.somaIcms > 0
+      ? `ICMS real apurado nos XMLs: R$ ${nfe.somaIcms.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Com o IBS cobrado no destino, todo esse montante passa a ser creditável sem necessidade de estorno por guerra fiscal interestadual.`
+      : 'Cobrança no destino final do consumo (fim da guerra fiscal interestadual e dos benefícios temporários); transição federativa gradual da receita até 2078.'
 
-  if (isAssociadoACP) {
+  if (isAssociadoACP && (!nfe || nfe.somaIcms === 0)) {
     ibsDetalhe =
       'Fim da guerra fiscal entre Paraná, Santa Catarina e São Paulo; vendas interestaduais passam a ser tributadas no destino pelo Comitê Gestor do IBS, com regras uniformes.'
   }
 
   // 3. Linha IPI -> Imposto Seletivo ("Imposto do Pecado")
-  let ipiHoje = 'IPI cobrado na industrialização (tabela TIPI ampla de 0% a 30%+)'
+  let ipiHoje =
+    nfe && nfe.somaIpi > 0
+      ? `R$ ${nfe.somaIpi.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} de IPI destacado (${nfe.totalNotas} notas)`
+      : 'IPI cobrado na industrialização (tabela TIPI ampla de 0% a 30%+)'
+
   let ipiReforma =
     'IPI residual apenas para incentivo da ZFM e Imposto Seletivo (IS) sobre nocivos à saúde e meio ambiente'
   let ipiDetalhe =
-    'O IPI tradicional é praticamente extinto. O Imposto Seletivo incidirá estritamente sobre bens prejudiciais à saúde ou meio ambiente (veículos poluentes, combustíveis fósseis, fumo, bebidas).'
+    nfe && nfe.somaIpi > 0
+      ? `IPI real recolhido nas notas: R$ ${nfe.somaIpi.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Na reforma, caso o produto não seja nocivo (fora do Seletivo), essa carga é zerada, aliviando o fluxo de caixa industrial.`
+      : 'O IPI tradicional é praticamente extinto. O Imposto Seletivo incidirá estritamente sobre bens prejudiciais à saúde ou meio ambiente (veículos poluentes, combustíveis fósseis, fumo, bebidas).'
 
   if (isMoverOrCDV) {
     ipiDetalhe =
@@ -189,6 +219,8 @@ export function calcularComparativoTributario(
     transicaoInfo:
       'Cronograma Oficial: Início da fase de teste do IBS/CBS em 2026 (alíquota teste de 0,9% CBS e 0,1% IBS), extinção gradual do PIS/Cofins até 2027 e transição do ICMS/ISS até 2032.',
     disclaimer:
-      'Estimativa preliminar e educativa — não substitui análise tributária formal; a fase de teste do IBS/CBS inicia em 2026 e as alíquotas-setor serão definidas por lei complementar.',
+      nfe && nfe.totalNotas > 0
+        ? `Valores vigentes baseados em ${nfe.totalNotas} notas fiscais (NF-e) reais importadas pelo contribuinte. A transição IBS/CBS e alíquotas de referência têm caráter preliminar e educativo conforme EC 132/2023.`
+        : 'Estimativa preliminar e educativa — não substitui análise tributária formal; a fase de teste do IBS/CBS inicia em 2026 e as alíquotas-setor serão definidas por lei complementar.',
   }
 }

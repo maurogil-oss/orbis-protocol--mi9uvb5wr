@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T23:55:43.165Z",
+  "generatedAt": "2026-09-16T00:05:16.365Z",
   "collections": [
     {
       "name": "users",
@@ -231,6 +231,19 @@
           "type": "json",
           "required": false,
           "system": false
+        },
+        {
+          "name": "origem",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["funil", "agente_ia", "portal"]
+        },
+        {
+          "name": "visto_auditor",
+          "type": "bool",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -312,6 +325,146 @@
         "CREATE UNIQUE INDEX idx_selos_codigo ON selos (codigo_selo)",
         "CREATE INDEX idx_selos_status ON selos (status)",
         "CREATE INDEX idx_selos_cnpj ON selos (cnpj)"
+      ]
+    },
+    {
+      "name": "nfe_upload",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "chave_acesso",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "numero_nota",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "serie",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "modelo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_emissao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cnpj_emitente",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nome_emitente",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cnpj_destinatario",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nome_destinatario",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_total_nf",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_icms",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_ipi",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_pis",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "valor_cofins",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "qtd_itens",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resumo_itens_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nome_arquivo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_nfe_usuario ON nfe_upload (usuario)",
+        "CREATE INDEX idx_nfe_chave ON nfe_upload (chave_acesso)"
       ]
     }
   ]
