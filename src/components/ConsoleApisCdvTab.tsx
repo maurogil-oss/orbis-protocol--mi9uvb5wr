@@ -316,6 +316,17 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href="/api-docs-cdv"
+              target="_blank"
+              rel="noreferrer"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#12B886]/10 border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886]/20 flex items-center gap-1.5 transition-all"
+              title="Abrir documentação técnica da API v1 de Desmontagem Veicular"
+            >
+              <FileCode className="w-3.5 h-3.5" />
+              <span>Documentação da API v1</span>
+              <ExternalLink className="w-3 h-3 opacity-70" />
+            </a>
             <button
               type="button"
               onClick={handleRegenerarChave}

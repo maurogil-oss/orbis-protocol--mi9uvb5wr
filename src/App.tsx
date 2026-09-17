@@ -37,6 +37,7 @@ import DcpCorporativoDemoPage from './pages/DcpCorporativoDemoPage'
 import DcpProdutoPublicoPage from './pages/DcpProdutoPublicoPage'
 import CanalTitularPage from './pages/CanalTitularPage'
 import CheckoutPage from './pages/CheckoutPage'
+import ApiDocsCdvPage from './pages/ApiDocsCdvPage'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="/teste" element={<TestCatalog />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/planos" element={<Planos />} />
+            <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />
 
             {/* Protected Routes (Require Authentication) */}
             <Route

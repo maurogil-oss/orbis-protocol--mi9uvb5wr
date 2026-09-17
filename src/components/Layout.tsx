@@ -710,6 +710,17 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link
+                    to="/api-docs-cdv"
+                    className="text-[#12B886] hover:underline transition-colors flex items-center gap-1.5 font-medium"
+                  >
+                    <span>API v1 — Desmontagem Veicular</span>
+                    <span className="text-[9px] bg-[#12B886]/20 px-1 py-0.2 rounded font-mono">
+                      v1
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/solucoes/cadeias-produtivas"
                     className="hover:text-[#12B886] transition-colors"
                   >

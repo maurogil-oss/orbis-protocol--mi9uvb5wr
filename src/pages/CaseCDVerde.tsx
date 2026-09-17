@@ -99,6 +99,13 @@ export default function CaseCDVerde() {
                 <span>DPP Lote Demo (Renault Clio • 49 peças)</span>
               </Link>
               <Link
+                to="/api-docs-cdv"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#12B886]/15 border border-[#12B886]/50 text-[#12B886] hover:bg-[#12B886]/25 transition-all"
+              >
+                <FileCheck className="w-4 h-4" />
+                <span>Documentação API v1 (CDV)</span>
+              </Link>
+              <Link
                 to="/painel"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] transition-all"
               >
