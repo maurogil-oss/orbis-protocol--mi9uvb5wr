@@ -25,8 +25,13 @@ import {
   FATORES_CDV_MATERIAIS,
   type CdvPecaRecord,
 } from '@/services/cdvService'
+import {
+  consultarDestinacaoFinalLote,
+  type DestinacaoFinalLoteResponse,
+} from '@/services/destinacaoFinalService'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
+import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
 
 export default function PassaportePublicoPage() {
   const { selo } = useParams<{ selo: string }>()
@@ -42,6 +47,8 @@ export default function PassaportePublicoPage() {
   const [copiedHash, setCopiedHash] = useState(false)
   const [copiedEmbed, setCopiedEmbed] = useState(false)
   const [showModalEtiqueta, setShowModalEtiqueta] = useState(false)
+  const [abaAtiva, setAbaAtiva] = useState<'passaporte' | 'destinacao'>('passaporte')
+  const [dadosDestinacao, setDadosDestinacao] = useState<DestinacaoFinalLoteResponse | null>(null)
   const hasRegisteredRef = useRef(false)
 
   const seloParam = (selo || '').trim().toUpperCase()
@@ -86,6 +93,13 @@ export default function PassaportePublicoPage() {
               hash_conferido: conferido,
               hash_calculado: sha,
             })
+          }
+
+          // Carregar destinação final vinculada ao veículo/lote da peça
+          const chaveLoteOuBaixa = record.lote || record.veiculo_baixa_detran || 'PR-BX-2026-991204'
+          const dest = await consultarDestinacaoFinalLote(chaveLoteOuBaixa)
+          if (isMounted) {
+            setDadosDestinacao(dest)
           }
         }
       } catch {
@@ -171,302 +185,355 @@ export default function PassaportePublicoPage() {
           </div>
         ) : (
           <div className="space-y-8 animate-fade-in">
-            {/* HERO DO PASSAPORTE */}
-            <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886]/50 shadow-emerald-glow relative overflow-hidden">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-[rgba(244,247,250,0.1)]">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-3">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    PASSAPORTE DIGITAL DE PRODUTO (DPP) • PEÇA CIRCULAR
-                  </div>
-                  <h1 className="font-heading font-black text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-1">
-                    {peca.descricao_peca}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-[#93A3B5] mt-2">
-                    <span className="font-mono text-[#12B886] font-bold text-sm bg-[#12B886]/10 px-2.5 py-0.5 rounded-md border border-[#12B886]/30">
-                      {peca.selo_dpp}
-                    </span>
-                    <span>•</span>
-                    <span className="font-mono">SKU: {peca.sku_interno}</span>
-                    <span>•</span>
-                    <span className="font-mono">NCM: {peca.ncm || '8708.29.99'}</span>
-                  </div>
-                </div>
+            {/* NAVEGAÇÃO DE ABAS: DPP DA PEÇA & DESTINAÇÃO FINAL */}
+            <div className="flex border-b border-[rgba(244,247,250,0.12)] gap-2 pb-px">
+              <button
+                type="button"
+                onClick={() => setAbaAtiva('passaporte')}
+                className={`flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+                  abaAtiva === 'passaporte'
+                    ? 'border-[#12B886] text-[#12B886] bg-[#12B886]/10 rounded-t-xl'
+                    : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/60 rounded-t-xl'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Passaporte Digital (DPP da Peça)</span>
+              </button>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setShowModalEtiqueta(true)}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-[#16202B] border border-[#12B886]/50 text-[#12B886] hover:bg-[#12B886]/10 transition-all flex items-center justify-center gap-2"
-                  >
-                    <Printer className="w-4 h-4" />
-                    <span>Gerar Etiqueta com QR</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={copyEmbedSnippet}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#111820] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886] transition-all flex items-center justify-center gap-2"
-                  >
-                    <Code2 className="w-4 h-4 text-[#D9B36C]" />
-                    <span>{copiedEmbed ? 'Snippet Copiado!' : 'Embed para E-commerce'}</span>
-                  </button>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setAbaAtiva('destinacao')}
+                className={`flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+                  abaAtiva === 'destinacao'
+                    ? 'border-[#12B886] text-[#12B886] bg-[#12B886]/10 rounded-t-xl'
+                    : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/60 rounded-t-xl'
+                }`}
+              >
+                <FileCheck2 className="w-4 h-4" />
+                <span>Destinação Final (3 Camadas)</span>
+                {dadosDestinacao && (
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#12B886]/20 text-[#12B886] font-mono">
+                    {dadosDestinacao.gateDespoluicaoConforme ? 'Gate OK' : 'Pendente'}
+                  </span>
+                )}
+              </button>
+            </div>
 
-              {/* GRID PRINCIPAL: DADOS TÉCNICOS + QR CODE */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
-                {/* 8 colunas de dados */}
-                <div className="lg:col-span-8 space-y-6">
-                  {/* Destaque CO2e Evitado */}
-                  <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[#12B886]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* CONTEÚDO DA ABA DESTINAÇÃO FINAL */}
+            {abaAtiva === 'destinacao' && dadosDestinacao && (
+              <DestinacaoFinalTab
+                dados={dadosDestinacao}
+                isModoIndividual
+                seloIndividual={peca.selo_dpp}
+                descricaoPeca={peca.descricao_peca}
+              />
+            )}
+
+            {/* CONTEÚDO DA ABA DPP DA PEÇA */}
+            {abaAtiva === 'passaporte' && (
+              <>
+                {/* HERO DO PASSAPORTE */}
+                <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886]/50 shadow-emerald-glow relative overflow-hidden">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-[rgba(244,247,250,0.1)]">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-[#12B886] tracking-wider block mb-1">
-                        DESCARBONIZAÇÃO APURADA (INSETTING ISO 14067)
-                      </span>
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-heading font-black text-3xl sm:text-5xl text-[#12B886]">
-                          -{peca.co2e_evitado_kg.toLocaleString('pt-BR')} kg
-                        </span>
-                        <span className="text-sm font-semibold text-[#F4F7FA]">CO₂e evitado</span>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-3">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        PASSAPORTE DIGITAL DE PRODUTO (DPP) • PEÇA CIRCULAR
                       </div>
-                      <p className="text-[11px] text-[#93A3B5] mt-1">
-                        Cálculo pericial: {peca.peso_kg} kg de{' '}
-                        {peca.material_declarado || 'material'} × {peca.fator_co2e_kg} kg CO₂e/kg (
-                        {fatorInfo?.fonte}, {fatorInfo?.ano})
-                      </p>
+                      <h1 className="font-heading font-black text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-1">
+                        {peca.descricao_peca}
+                      </h1>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#93A3B5] mt-2">
+                        <span className="font-mono text-[#12B886] font-bold text-sm bg-[#12B886]/10 px-2.5 py-0.5 rounded-md border border-[#12B886]/30">
+                          {peca.selo_dpp}
+                        </span>
+                        <span>•</span>
+                        <span className="font-mono">SKU: {peca.sku_interno}</span>
+                        <span>•</span>
+                        <span className="font-mono">NCM: {peca.ncm || '8708.29.99'}</span>
+                      </div>
                     </div>
 
-                    <div className="sm:text-right border-t sm:border-t-0 sm:border-l border-[rgba(244,247,250,0.1)] pt-3 sm:pt-0 sm:pl-6 shrink-0">
-                      <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-1">
-                        Peso Líquido
-                      </span>
-                      <span className="font-heading font-black text-2xl text-[#F4F7FA]">
-                        {peca.peso_kg} kg
-                      </span>
-                      <span className="text-[10px] text-[#D9B36C] block uppercase font-mono mt-0.5">
-                        Mat: {peca.categoria_material}
-                      </span>
+                    <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setShowModalEtiqueta(true)}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-[#16202B] border border-[#12B886]/50 text-[#12B886] hover:bg-[#12B886]/10 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Printer className="w-4 h-4" />
+                        <span>Gerar Etiqueta com QR</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={copyEmbedSnippet}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#111820] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886] transition-all flex items-center justify-center gap-2"
+                      >
+                        <Code2 className="w-4 h-4 text-[#D9B36C]" />
+                        <span>{copiedEmbed ? 'Snippet Copiado!' : 'Embed para E-commerce'}</span>
+                      </button>
                     </div>
                   </div>
 
-                  {/* Informações de Rastreabilidade Veicular (DETRAN) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                      <div className="flex items-center gap-2 text-[#D9B36C] font-bold uppercase mb-2">
-                        <Car className="w-4 h-4" />
-                        <span>Veículo Doador Homologado</span>
+                  {/* GRID PRINCIPAL: DADOS TÉCNICOS + QR CODE */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
+                    {/* 8 colunas de dados */}
+                    <div className="lg:col-span-8 space-y-6">
+                      {/* Destaque CO2e Evitado */}
+                      <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[#12B886]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-[#12B886] tracking-wider block mb-1">
+                            DESCARBONIZAÇÃO APURADA (INSETTING ISO 14067)
+                          </span>
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-heading font-black text-3xl sm:text-5xl text-[#12B886]">
+                              -{peca.co2e_evitado_kg.toLocaleString('pt-BR')} kg
+                            </span>
+                            <span className="text-sm font-semibold text-[#F4F7FA]">
+                              CO₂e evitado
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[#93A3B5] mt-1">
+                            Cálculo pericial: {peca.peso_kg} kg de{' '}
+                            {peca.material_declarado || 'material'} × {peca.fator_co2e_kg} kg
+                            CO₂e/kg ({fatorInfo?.fonte}, {fatorInfo?.ano})
+                          </p>
+                        </div>
+
+                        <div className="sm:text-right border-t sm:border-t-0 sm:border-l border-[rgba(244,247,250,0.1)] pt-3 sm:pt-0 sm:pl-6 shrink-0">
+                          <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-1">
+                            Peso Líquido
+                          </span>
+                          <span className="font-heading font-black text-2xl text-[#F4F7FA]">
+                            {peca.peso_kg} kg
+                          </span>
+                          <span className="text-[10px] text-[#D9B36C] block uppercase font-mono mt-0.5">
+                            Mat: {peca.categoria_material}
+                          </span>
+                        </div>
                       </div>
-                      <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                        {peca.veiculo_marca_modelo || 'Veículo em Lote CDV'}
+
+                      {/* Informações de Rastreabilidade Veicular (DETRAN) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                          <div className="flex items-center gap-2 text-[#D9B36C] font-bold uppercase mb-2">
+                            <Car className="w-4 h-4" />
+                            <span>Veículo Doador Homologado</span>
+                          </div>
+                          <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
+                            {peca.veiculo_marca_modelo || 'Veículo em Lote CDV'}
+                          </div>
+                          <div className="font-mono text-[11px] text-[#93A3B5] mb-2">
+                            Chassi: {peca.veiculo_chassi_mascarado || '9BWAA***204'}
+                          </div>
+                          {peca.lote && (
+                            <Link
+                              to={`/passaporte-lote/${peca.lote}`}
+                              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#D9B36C] hover:underline"
+                            >
+                              <span>Ver DPP Consolidado do Lote</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </Link>
+                          )}
+                        </div>
+                        <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                          <div className="flex items-center gap-2 text-[#12B886] font-bold uppercase mb-2">
+                            <FileCheck2 className="w-4 h-4" />
+                            <span>Registro de Baixa DETRAN</span>
+                          </div>
+                          <div className="font-mono font-bold text-sm text-[#12B886] mb-1">
+                            {peca.veiculo_baixa_detran || 'PR-BX-2026-991204'}
+                          </div>
+                          <div className="text-[11px] text-[#93A3B5]">
+                            Sinistro / Origem:{' '}
+                            <span className="text-[#F4F7FA]">
+                              {peca.veiculo_seguradora || 'Porto Seguro Cia'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                          <div className="flex items-center gap-2 text-[#93A3B5] font-bold uppercase mb-2">
+                            <Building2 className="w-4 h-4 text-[#12B886]" />
+                            <span>CDV Remetente / Desmanche</span>
+                          </div>
+                          <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
+                            {peca.cdv_origem || 'DETRAN-PR-CDV-0089'}
+                          </div>
+                          <div className="font-mono text-[11px] text-[#D9B36C]">
+                            CNPJ: {peca.cdv_cnpj || '76.123.456/0001-12'}
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                          <div className="flex items-center gap-2 text-[#93A3B5] font-bold uppercase mb-2">
+                            <Scale className="w-4 h-4 text-[#D9B36C]" />
+                            <span>Responsável Técnico CREA</span>
+                          </div>
+                          <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
+                            {peca.responsavel_crea || 'CREA-PR 182.940/D'}
+                          </div>
+                          <div className="text-[11px] text-[#93A3B5]">
+                            ART / Laudo Pericial Vinculado
+                          </div>
+                        </div>
                       </div>
-                      <div className="font-mono text-[11px] text-[#93A3B5] mb-2">
-                        Chassi: {peca.veiculo_chassi_mascarado || '9BWAA***204'}
+                    </div>
+
+                    {/* 4 colunas: QR Code e Card de Autenticidade */}
+                    <div className="lg:col-span-4 flex flex-col justify-between p-6 rounded-2xl bg-[#0A0E12] border border-[#12B886]/30">
+                      <div className="text-center">
+                        <div className="inline-block p-3 bg-white rounded-2xl shadow-xl mb-3">
+                          <QRCodeSVG
+                            value={passaporteQrUrl}
+                            size={170}
+                            bgColor="#FFFFFF"
+                            fgColor="#0A0E12"
+                            title={`QR Passaporte ${peca.selo_dpp}`}
+                          />
+                        </div>
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-[#12B886]">
+                          QR CODE PÚBLICO DA PEÇA
+                        </div>
+                        <p className="text-[10px] text-[#93A3B5] mt-1">
+                          Aponte a câmera para auditar a autenticidade e rastreabilidade na URL
+                          oficial.
+                        </p>
                       </div>
-                      {peca.lote && (
-                        <Link
-                          to={`/passaporte-lote/${peca.lote}`}
-                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#D9B36C] hover:underline"
-                        >
-                          <span>Ver DPP Consolidado do Lote</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </Link>
+
+                      <div className="mt-6 pt-4 border-t border-[rgba(244,247,250,0.08)] space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-[#93A3B5]">Status do DPP:</span>
+                          <span className="px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
+                            {peca.status || 'Ativo'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-[#93A3B5]">Data de Emissão:</span>
+                          <span className="font-mono text-[#F4F7FA]">
+                            {new Date(peca.created).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs pt-1 border-t border-[rgba(244,247,250,0.06)]">
+                          <span className="text-[#93A3B5]">Canal de Acesso:</span>
+                          <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#12B886] font-bold uppercase">
+                            {canalDetectado === 'qr' && <QrCode className="w-3 h-3" />}
+                            {canalDetectado === 'embed' && <Code2 className="w-3 h-3" />}
+                            {canalDetectado === 'web' && <Globe className="w-3 h-3" />}
+                            <span>
+                              {canalDetectado === 'qr'
+                                ? 'QR Code'
+                                : canalDetectado === 'embed'
+                                  ? 'Widget Embed'
+                                  : 'Web'}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CARD DE HASH CRIPTOGRÁFICO SHA-256 COM "INTEGRIDADE VERIFICADA ✓" */}
+                  <div className="mt-8 p-5 rounded-2xl bg-[#0A0E12] border border-[#12B886]/40 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-[#12B886]" />
+                        <span className="font-heading font-bold text-sm text-[#F4F7FA]">
+                          HASH SHA-256 DE AUTENTICIDADE CRIPTOGRÁFICA
+                        </span>
+                      </div>
+                      {isIntegridadeValida && (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#12B886] bg-[#12B886]/10 px-3 py-1 rounded-full border border-[#12B886]/30">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Integridade verificada ✓
+                        </span>
                       )}
                     </div>
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                      <div className="flex items-center gap-2 text-[#12B886] font-bold uppercase mb-2">
-                        <FileCheck2 className="w-4 h-4" />
-                        <span>Registro de Baixa DETRAN</span>
-                      </div>
-                      <div className="font-mono font-bold text-sm text-[#12B886] mb-1">
-                        {peca.veiculo_baixa_detran || 'PR-BX-2026-991204'}
-                      </div>
-                      <div className="text-[11px] text-[#93A3B5]">
-                        Sinistro / Origem:{' '}
-                        <span className="text-[#F4F7FA]">
-                          {peca.veiculo_seguradora || 'Porto Seguro Cia'}
-                        </span>
-                      </div>
+
+                    <div className="flex items-center justify-between gap-3 bg-[#111820] p-3 rounded-xl border border-[rgba(244,247,250,0.08)]">
+                      <span
+                        className="font-mono text-xs text-[#D9B36C] truncate"
+                        title={peca.hash_sha256}
+                      >
+                        {peca.hash_sha256}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={copyHash}
+                        className="px-3 py-1.5 rounded-lg bg-[#16202B] text-xs font-semibold text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#12B886]/20 transition-all flex items-center gap-1.5 shrink-0"
+                      >
+                        {copiedHash ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-[#12B886]" />
+                            <span className="text-[#12B886]">Copiado</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copiar Hash</span>
+                          </>
+                        )}
+                      </button>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                      <div className="flex items-center gap-2 text-[#93A3B5] font-bold uppercase mb-2">
-                        <Building2 className="w-4 h-4 text-[#12B886]" />
-                        <span>CDV Remetente / Desmanche</span>
-                      </div>
-                      <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                        {peca.cdv_origem || 'DETRAN-PR-CDV-0089'}
-                      </div>
-                      <div className="font-mono text-[11px] text-[#D9B36C]">
-                        CNPJ: {peca.cdv_cnpj || '76.123.456/0001-12'}
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                      <div className="flex items-center gap-2 text-[#93A3B5] font-bold uppercase mb-2">
-                        <Scale className="w-4 h-4 text-[#D9B36C]" />
-                        <span>Responsável Técnico CREA</span>
-                      </div>
-                      <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                        {peca.responsavel_crea || 'CREA-PR 182.940/D'}
-                      </div>
-                      <div className="text-[11px] text-[#93A3B5]">
-                        ART / Laudo Pericial Vinculado
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4 colunas: QR Code e Card de Autenticidade */}
-                <div className="lg:col-span-4 flex flex-col justify-between p-6 rounded-2xl bg-[#0A0E12] border border-[#12B886]/30">
-                  <div className="text-center">
-                    <div className="inline-block p-3 bg-white rounded-2xl shadow-xl mb-3">
-                      <QRCodeSVG
-                        value={passaporteQrUrl}
-                        size={170}
-                        bgColor="#FFFFFF"
-                        fgColor="#0A0E12"
-                        title={`QR Passaporte ${peca.selo_dpp}`}
-                      />
-                    </div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-[#12B886]">
-                      QR CODE PÚBLICO DA PEÇA
-                    </div>
-                    <p className="text-[10px] text-[#93A3B5] mt-1">
-                      Aponte a câmera para auditar a autenticidade e rastreabilidade na URL oficial.
+                    <p className="text-[10px] text-[#93A3B5] leading-relaxed">
+                      O hash canônico vincula de forma imutável o selo ({peca.selo_dpp}), o SKU (
+                      {peca.sku_interno}), o peso aferido ({peca.peso_kg} kg), o CO₂e evitado (-
+                      {peca.co2e_evitado_kg} kg), a certidão de baixa DETRAN e o CNPJ do CDV
+                      homologado.
                     </p>
                   </div>
+                </div>
 
-                  <div className="mt-6 pt-4 border-t border-[rgba(244,247,250,0.08)] space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#93A3B5]">Status do DPP:</span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
-                        {peca.status || 'Ativo'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#93A3B5]">Data de Emissão:</span>
-                      <span className="font-mono text-[#F4F7FA]">
-                        {new Date(peca.created).toLocaleDateString('pt-BR')}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs pt-1 border-t border-[rgba(244,247,250,0.06)]">
-                      <span className="text-[#93A3B5]">Canal de Acesso:</span>
-                      <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#12B886] font-bold uppercase">
-                        {canalDetectado === 'qr' && <QrCode className="w-3 h-3" />}
-                        {canalDetectado === 'embed' && <Code2 className="w-3 h-3" />}
-                        {canalDetectado === 'web' && <Globe className="w-3 h-3" />}
-                        <span>
-                          {canalDetectado === 'qr'
-                            ? 'QR Code'
-                            : canalDetectado === 'embed'
-                              ? 'Widget Embed'
-                              : 'Web'}
-                        </span>
-                      </span>
+                {/* SEÇÃO INFORMATIVA: PROGRAMA MOVER & EMBED NO E-COMMERCE */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
+                    <h3 className="font-heading font-bold text-base text-[#F4F7FA] flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-[#12B886]" />
+                      <span>Enquadramento Programa MOVER (Lei 14.902/2024)</span>
+                    </h3>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Este Passaporte Digital comprova a reinserção de componente original no
+                      mercado de reposição, substituindo a demanda por peças virgens e habilitando a
+                      pontuação de pegada de carbono do veículo consumidor para créditos fiscais da
+                      cadeia automotiva.
+                    </p>
+                    <div className="pt-2">
+                      <Link
+                        to="/trilhas/mover"
+                        className="text-xs text-[#12B886] hover:underline font-semibold inline-flex items-center gap-1"
+                      >
+                        <span>Consultar Trilha Regulatória MOVER</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* CARD DE HASH CRIPTOGRÁFICO SHA-256 COM "INTEGRIDADE VERIFICADA ✓" */}
-              <div className="mt-8 p-5 rounded-2xl bg-[#0A0E12] border border-[#12B886]/40 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-[#12B886]" />
-                    <span className="font-heading font-bold text-sm text-[#F4F7FA]">
-                      HASH SHA-256 DE AUTENTICIDADE CRIPTOGRÁFICA
-                    </span>
+                  <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
+                    <h3 className="font-heading font-bold text-base text-[#F4F7FA] flex items-center gap-2">
+                      <Code2 className="w-4 h-4 text-[#D9B36C]" />
+                      <span>Widget de Selo para E-commerce</span>
+                    </h3>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Instale o selo ecológico dinâmico no catálogo do Mercado Livre, Shopee ou loja
+                      própria do CDV:
+                    </p>
+                    <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] font-mono text-[11px] text-[#12B886] truncate">
+                      &lt;div class=&quot;orbis-eco-seal&quot; data-seal=&quot;{peca.selo_dpp}
+                      &quot;&gt;🌱 -{peca.co2e_evitado_kg}kg CO₂e&lt;/div&gt;
+                    </div>
+                    <button
+                      type="button"
+                      onClick={copyEmbedSnippet}
+                      className="text-xs text-[#D9B36C] hover:underline font-semibold"
+                    >
+                      {copiedEmbed
+                        ? 'Copiado para a área de transferência!'
+                        : 'Copiar código HTML completo'}
+                    </button>
                   </div>
-                  {isIntegridadeValida && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-[#12B886] bg-[#12B886]/10 px-3 py-1 rounded-full border border-[#12B886]/30">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Integridade verificada ✓
-                    </span>
-                  )}
                 </div>
-
-                <div className="flex items-center justify-between gap-3 bg-[#111820] p-3 rounded-xl border border-[rgba(244,247,250,0.08)]">
-                  <span
-                    className="font-mono text-xs text-[#D9B36C] truncate"
-                    title={peca.hash_sha256}
-                  >
-                    {peca.hash_sha256}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={copyHash}
-                    className="px-3 py-1.5 rounded-lg bg-[#16202B] text-xs font-semibold text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#12B886]/20 transition-all flex items-center gap-1.5 shrink-0"
-                  >
-                    {copiedHash ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-[#12B886]" />
-                        <span className="text-[#12B886]">Copiado</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copiar Hash</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                <p className="text-[10px] text-[#93A3B5] leading-relaxed">
-                  O hash canônico vincula de forma imutável o selo ({peca.selo_dpp}), o SKU (
-                  {peca.sku_interno}), o peso aferido ({peca.peso_kg} kg), o CO₂e evitado (-
-                  {peca.co2e_evitado_kg} kg), a certidão de baixa DETRAN e o CNPJ do CDV homologado.
-                </p>
-              </div>
-            </div>
-
-            {/* SEÇÃO INFORMATIVA: PROGRAMA MOVER & EMBED NO E-COMMERCE */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
-                <h3 className="font-heading font-bold text-base text-[#F4F7FA] flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-[#12B886]" />
-                  <span>Enquadramento Programa MOVER (Lei 14.902/2024)</span>
-                </h3>
-                <p className="text-xs text-[#93A3B5] leading-relaxed">
-                  Este Passaporte Digital comprova a reinserção de componente original no mercado de
-                  reposição, substituindo a demanda por peças virgens e habilitando a pontuação de
-                  pegada de carbono do veículo consumidor para créditos fiscais da cadeia
-                  automotiva.
-                </p>
-                <div className="pt-2">
-                  <Link
-                    to="/trilhas/mover"
-                    className="text-xs text-[#12B886] hover:underline font-semibold inline-flex items-center gap-1"
-                  >
-                    <span>Consultar Trilha Regulatória MOVER</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </Link>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
-                <h3 className="font-heading font-bold text-base text-[#F4F7FA] flex items-center gap-2">
-                  <Code2 className="w-4 h-4 text-[#D9B36C]" />
-                  <span>Widget de Selo para E-commerce</span>
-                </h3>
-                <p className="text-xs text-[#93A3B5] leading-relaxed">
-                  Instale o selo ecológico dinâmico no catálogo do Mercado Livre, Shopee ou loja
-                  própria do CDV:
-                </p>
-                <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] font-mono text-[11px] text-[#12B886] truncate">
-                  &lt;div class=&quot;orbis-eco-seal&quot; data-seal=&quot;{peca.selo_dpp}
-                  &quot;&gt;🌱 -{peca.co2e_evitado_kg}kg CO₂e&lt;/div&gt;
-                </div>
-                <button
-                  type="button"
-                  onClick={copyEmbedSnippet}
-                  className="text-xs text-[#D9B36C] hover:underline font-semibold"
-                >
-                  {copiedEmbed
-                    ? 'Copiado para a área de transferência!'
-                    : 'Copiar código HTML completo'}
-                </button>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         )}
 
