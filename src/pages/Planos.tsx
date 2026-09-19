@@ -11,11 +11,25 @@ import {
   Lock,
 } from 'lucide-react'
 import { listarMinhasCobrancas, CobrancaRecord } from '@/services/cobrancaService'
+import { listarServicosCatalogo, ServicoCatalogoRecord } from '@/services/catalogoServicosService'
 
 export default function Planos() {
   const { isAuthenticated, user } = useAuth()
   const [cobrancas, setCobrancas] = useState<CobrancaRecord[]>([])
   const [carregandoCobrancas, setCarregandoCobrancas] = useState(false)
+  const [catalogo, setCatalogo] = useState<Record<string, ServicoCatalogoRecord>>({})
+
+  useEffect(() => {
+    listarServicosCatalogo()
+      .then((items) => {
+        const map: Record<string, ServicoCatalogoRecord> = {}
+        for (const item of items) {
+          map[item.servico_id] = item
+        }
+        setCatalogo(map)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,18 +41,28 @@ export default function Planos() {
     }
   }, [isAuthenticated])
 
+  const formatPreco = (preco?: number) => {
+    if (preco === undefined) return ''
+    return `R$ ${preco.toLocaleString('pt-BR')}`
+  }
+
+  const precoEssencial = catalogo['diagnostico']?.preco ?? 490
+  const precoMover = catalogo['laudo_pericial']?.preco ?? 2850
+  const precoCorp = catalogo['assinatura_bureau']?.preco ?? 7800
+
   const planos = [
     {
       id: 'essencial',
       servicoId: 'diagnostico',
-      nome: 'Plano Essencial',
+      nome: catalogo['diagnostico']?.nome || 'Plano Essencial',
       servicoTitulo: 'Diagnóstico Orbis',
       indicacao: 'Pequenas e Médias Empresas (PME)',
-      valorNumerico: 490,
-      valorFormatado: 'R$ 490',
+      valorNumerico: precoEssencial,
+      valorFormatado: formatPreco(precoEssencial),
       periodo: 'pagamento único / por CNPJ',
       chamariz: 'Primeiro resultado prévio validado, com Hash de integridade criptográfica.',
       descricao:
+        catalogo['diagnostico']?.descricao ||
         'Diagnóstico Orbis — primeiro resultado prévio validado, com Hash e demais entregas.',
       destaques: [
         'Diagnóstico anual preliminar validado por CNPJ',
@@ -54,14 +78,16 @@ export default function Planos() {
     {
       id: 'mover',
       servicoId: 'laudo_pericial',
-      nome: 'Plano MOVER',
+      nome: catalogo['laudo_pericial']?.nome || 'Plano MOVER',
       servicoTitulo: 'Laudo Pericial com ART',
       indicacao: 'Exclusivo Segmento Automotivo & CDVs DETRAN',
-      valorNumerico: 2850,
-      valorFormatado: 'R$ 2.850',
+      valorNumerico: precoMover,
+      valorFormatado: formatPreco(precoMover),
       periodo: 'por laudo homologado',
       chamariz: 'Chancela de perito homologado com Anotação de Responsabilidade Técnica (ART).',
-      descricao: 'Laudo Pericial com ART — chancela de perito homologado.',
+      descricao:
+        catalogo['laudo_pericial']?.descricao ||
+        'Laudo Pericial com ART — chancela de perito homologado.',
       destaques: [
         'Tudo do plano Essencial incluído',
         'Chancela de perito homologado com ART/RRT acoplada',
@@ -76,14 +102,16 @@ export default function Planos() {
     {
       id: 'corporativo',
       servicoId: 'assinatura_bureau',
-      nome: 'Plano Corporativo',
+      nome: catalogo['assinatura_bureau']?.nome || 'Plano Corporativo',
       servicoTitulo: 'Bureau ACP',
       indicacao: 'Indústrias Reguladas & Grandes Exportadores',
-      valorNumerico: 7800,
-      valorFormatado: 'R$ 7.800',
+      valorNumerico: precoCorp,
+      valorFormatado: formatPreco(precoCorp),
       periodo: 'anual / gestão contínua',
       chamariz: 'Gestão contínua com passaportes do fornecedor e dossiê BRDE/fomento.',
-      descricao: 'Bureau ACP — gestão contínua, passaportes, dossiê BRDE/fomento.',
+      descricao:
+        catalogo['assinatura_bureau']?.descricao ||
+        'Bureau ACP — gestão contínua, passaportes, dossiê BRDE/fomento.',
       destaques: [
         'Tudo do plano MOVER / Laudo Pericial incluído',
         'Gestão contínua e cockpit completo no Bureau ACP',

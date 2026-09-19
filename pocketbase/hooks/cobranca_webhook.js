@@ -47,6 +47,64 @@ routerAdd('POST', '/backend/v1/cobranca/webhook', (e) => {
       cobranca.set('data_pagamento', new Date().toISOString())
       $app.save(cobranca)
 
+      // Atualizar usuário cliente
+      try {
+        const uId = cobranca.getString('usuario')
+        if (uId) {
+          const uRec = $app.findFirstRecordByData('users', 'id', uId)
+          if (uRec) {
+            let uChanged = false
+            if (!uRec.getString('cliente_codigo')) {
+              const randSuffix = Math.floor(1000 + Math.random() * 9000)
+              uRec.set('cliente_codigo', `ORB-CLI-${randSuffix}`)
+              uChanged = true
+            }
+            if (cobranca.getString('tomador_cpf_cnpj') && !uRec.getString('cnpj')) {
+              uRec.set('cnpj', cobranca.getString('tomador_cpf_cnpj'))
+              uChanged = true
+            }
+            uRec.set('plano_ativo', cobranca.getString('servico_id'))
+            uRec.set('assinatura_status', 'ativa')
+            const dataRenovacao = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split('T')[0]
+            uRec.set('assinatura_renovacao', dataRenovacao)
+            uChanged = true
+            $app.save(uRec)
+          }
+        }
+      } catch (_) {}
+
+      // Gerar comissão se houver parceiro_id
+      try {
+        const parceiroId = cobranca.getString('parceiro_id')
+        if (parceiroId) {
+          let comissaoExistente = null
+          try {
+            comissaoExistente = $app.findFirstRecordByData('comissoes', 'cobranca_id', cobranca.id)
+          } catch (_) {}
+
+          if (!comissaoExistente) {
+            const parceiroRec = $app.findFirstRecordByData('parceiros', 'id', parceiroId)
+            if (parceiroRec && parceiroRec.getString('status') === 'ativo') {
+              const pct = parceiroRec.getFloat('percentual_comissao') || 0
+              const base = cobranca.getFloat('valor') || 0
+              const valComissao = Number(((base * pct) / 100).toFixed(2))
+
+              const comissoesCol = $app.findCollectionByNameOrId('comissoes')
+              const comissaoRec = new Record(comissoesCol)
+              comissaoRec.set('cobranca_id', cobranca.id)
+              comissaoRec.set('parceiro_id', parceiroRec.id)
+              comissaoRec.set('base_calculo', base)
+              comissaoRec.set('percentual_aplicado', pct)
+              comissaoRec.set('valor', valComissao)
+              comissaoRec.set('status', 'calculada')
+              $app.save(comissaoRec)
+            }
+          }
+        }
+      } catch (_) {}
+
       // Disparar emissão automática da NFS-e (ou tentativa)
       const focusToken = $os.getenv('FOCUSNFE_TOKEN') || ''
       if (!focusToken || focusToken.trim() === '') {

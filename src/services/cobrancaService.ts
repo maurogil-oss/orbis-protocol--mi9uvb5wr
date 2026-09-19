@@ -58,7 +58,7 @@ export const SERVICOS_COBRANCA: Record<ServicoCobrancaId, ServicoPrecoInfo> = {
 export interface CobrancaRecord {
   id: string
   usuario: string
-  servico_id: ServicoCobrancaId
+  servico_id: ServicoCobrancaId | string
   servico_nome: string
   valor: number
   status: StatusCobranca
@@ -80,17 +80,25 @@ export interface CobrancaRecord {
   nfse_verificacao?: string
   nfse_url?: string
   nfse_status?: string
+  parceiro_id?: string
+  codigo_indicacao?: string
   created: string
   updated: string
+  expand?: {
+    parceiro_id?: any
+    usuario?: any
+  }
 }
 
 export interface CriarCobrancaPixInput {
-  servico_id: ServicoCobrancaId
+  servico_id: ServicoCobrancaId | string
   tomador_nome: string
   tomador_cpf_cnpj: string
   tomador_email: string
   tomador_endereco?: string
   usuario?: string
+  ref?: string
+  codigo_indicacao?: string
 }
 
 export interface CriarCobrancaPixResponse {

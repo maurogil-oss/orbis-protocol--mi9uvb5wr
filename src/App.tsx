@@ -24,6 +24,8 @@ import Verificador from './pages/Verificador'
 import Login from './pages/Login'
 import PainelCliente from './pages/PainelCliente'
 import ConsoleAuditor from './pages/ConsoleAuditor'
+import AdminConsolePage from './pages/AdminConsolePage'
+import AreaParceiroPage from './pages/AreaParceiroPage'
 import TestCatalog from './pages/TestCatalog'
 import Privacidade from './pages/Privacidade'
 import Planos from './pages/Planos'
@@ -120,8 +122,24 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireRole="admin">
+                  <AdminConsolePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parceiro"
+              element={
+                <ProtectedRoute>
+                  <AreaParceiroPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />{' '}
         </Routes>
       </TooltipProvider>
     </AuthProvider>

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  requireRole?: 'admin' | 'perito' | 'adminOrPerito'
+  requireRole?: 'admin' | 'perito' | 'adminOrPerito' | 'parceiro'
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole }) => {
@@ -29,6 +29,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
 
   if (requireRole === 'admin' && role !== 'admin') {
     return <Navigate to="/painel" replace />
+  }
+
+  if (requireRole === 'parceiro' && role !== 'parceiro' && role !== 'admin') {
+    // Permite checar vínculo dentro da página /parceiro se autenticado
   }
 
   if (requireRole === 'perito' && role !== 'perito' && role !== 'admin') {

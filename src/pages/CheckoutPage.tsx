@@ -26,6 +26,7 @@ import {
   ServicoCobrancaId,
   CobrancaRecord,
 } from '@/services/cobrancaService'
+import { listarServicosCatalogo, ServicoCatalogoRecord } from '@/services/catalogoServicosService'
 import { useAuth } from '@/contexts/AuthContext'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 
@@ -36,20 +37,36 @@ export default function CheckoutPage() {
   const [searchParams] = useSearchParams()
   const { user, isAuthenticated } = useAuth()
 
+  // Parâmetro de indicação de parceiro (?ref=ORB-PAR-XXXX)
+  const refCode = searchParams.get('ref') || ''
+
+  const [catalogo, setCatalogo] = useState<Record<string, ServicoCatalogoRecord>>({})
+
+  useEffect(() => {
+    listarServicosCatalogo()
+      .then((items) => {
+        const map: Record<string, ServicoCatalogoRecord> = {}
+        for (const item of items) {
+          map[item.servico_id] = item
+        }
+        setCatalogo(map)
+      })
+      .catch(() => {})
+  }, [])
+
   // Inicializa o serviço selecionado a partir de query param (?servico=...) ou location.state
-  const servicoFromQuery = (searchParams.get('servico') ||
-    (location.state as any)?.servico) as ServicoCobrancaId | null
-  const servicoValidoInicial: ServicoCobrancaId =
-    servicoFromQuery && servicoFromQuery in SERVICOS_COBRANCA ? servicoFromQuery : 'diagnostico'
+  const servicoFromQuery = (searchParams.get('servico') || (location.state as any)?.servico) as
+    | string
+    | null
+  const servicoValidoInicial = servicoFromQuery || 'diagnostico'
 
   // Se veio sem cobrancaId, exibe formulário para iniciar cobrança
-  const [servicoSelecionado, setServicoSelecionado] =
-    useState<ServicoCobrancaId>(servicoValidoInicial)
+  const [servicoSelecionado, setServicoSelecionado] = useState<string>(servicoValidoInicial)
 
   // Atualiza serviço selecionado caso query param mude
   useEffect(() => {
-    const servicoParam = searchParams.get('servico') as ServicoCobrancaId | null
-    if (servicoParam && servicoParam in SERVICOS_COBRANCA) {
+    const servicoParam = searchParams.get('servico')
+    if (servicoParam) {
       setServicoSelecionado(servicoParam)
     }
   }, [searchParams])
@@ -141,6 +158,8 @@ export default function CheckoutPage() {
         tomador_cpf_cnpj: tomador.cpf_cnpj,
         tomador_email: tomador.email,
         tomador_endereco: tomador.endereco,
+        ref: refCode,
+        codigo_indicacao: refCode,
       })
 
       if (resp.aviso_gateway) {
@@ -452,11 +471,32 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Grid dos 3 Serviços Oficiais */}
+            {/* Indicador de Link de Indicação de Parceiro */}
+            {refCode && (
+              <div className="p-3.5 rounded-xl bg-[#12B886]/10 border border-[#12B886]/30 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-[#12B886]">
+                  <Sparkles className="w-4 h-4" />
+                  <span>
+                    Indicação de Parceiro Credenciado ativa:{' '}
+                    <strong className="font-mono">{refCode}</strong>
+                  </span>
+                </div>
+                <span className="text-[10px] uppercase font-bold text-[#D9B36C] bg-[#D9B36C]/10 px-2 py-0.5 rounded">
+                  Parceria Oficial
+                </span>
+              </div>
+            )}
+
+            {/* Grid dos 3 Serviços Oficiais lidos da coleção servicos_catalogo */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(Object.keys(SERVICOS_COBRANCA) as ServicoCobrancaId[]).map((key) => {
+              {(['diagnostico', 'laudo_pericial', 'assinatura_bureau'] as const).map((key) => {
                 const s = SERVICOS_COBRANCA[key]
+                const catItem = catalogo[key]
+                const nomeExibicao = catItem?.nome || s.nome
+                const precoExibicao = catItem?.preco ?? s.valor
+                const descExibicao = catItem?.descricao || s.descricao
                 const isSelected = servicoSelecionado === key
+
                 return (
                   <button
                     key={key}
@@ -478,13 +518,13 @@ export default function CheckoutPage() {
                         {isSelected && <CheckCircle2 className="w-4 h-4 text-[#12B886]" />}
                       </div>
                       <h3 className="font-heading font-bold text-base text-[#F4F7FA] mb-2 leading-snug">
-                        {s.nome}
+                        {nomeExibicao}
                       </h3>
                       <div className="font-heading font-black text-2xl text-[#12B886] mb-3">
-                        R$ {s.valor.toLocaleString('pt-BR')}
+                        R$ {precoExibicao.toLocaleString('pt-BR')}
                       </div>
                       <p className="text-[11px] text-[#93A3B5] leading-relaxed mb-4">
-                        {s.descricao}
+                        {descExibicao}
                       </p>
                     </div>
 
@@ -568,7 +608,11 @@ export default function CheckoutPage() {
                 <span className="text-xs text-[#93A3B5]">Total a Faturar:</span>
                 <div className="font-heading font-black text-2xl text-[#12B886]">
                   R${' '}
-                  {SERVICOS_COBRANCA[servicoSelecionado].valor.toLocaleString('pt-BR', {
+                  {(
+                    catalogo[servicoSelecionado]?.preco ??
+                    SERVICOS_COBRANCA[servicoSelecionado as ServicoCobrancaId]?.valor ??
+                    490
+                  ).toLocaleString('pt-BR', {
                     minimumFractionDigits: 2,
                   })}
                 </div>

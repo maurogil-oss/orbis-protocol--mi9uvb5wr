@@ -11,20 +11,27 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
       return e.badRequestError('Dados incompletos do tomador ou serviço não selecionado.')
     }
 
-    // Tabela de serviços oficiais da plataforma Orbis Protocol:
-    // diagnóstico R$ 490 / laudo pericial R$ 2.850 / assinatura bureau R$ 7.800
+    // Tentar obter preço e nome da coleção servicos_catalogo; fallback para tabela fixa
     let valor = 490
     let servicoNome = 'Diagnóstico Orbis'
 
-    if (servicoId === 'laudo_pericial') {
-      valor = 2850
-      servicoNome = 'Laudo Pericial com ART'
-    } else if (servicoId === 'assinatura_bureau') {
-      valor = 7800
-      servicoNome = 'Bureau ACP'
-    } else if (servicoId === 'diagnostico') {
-      valor = 490
-      servicoNome = 'Diagnóstico Orbis'
+    try {
+      const catalogoItem = $app.findFirstRecordByData('servicos_catalogo', 'servico_id', servicoId)
+      if (catalogoItem) {
+        valor = catalogoItem.getFloat('preco')
+        servicoNome = catalogoItem.getString('nome')
+      }
+    } catch (_) {
+      if (servicoId === 'laudo_pericial') {
+        valor = 2850
+        servicoNome = 'Laudo Pericial com ART'
+      } else if (servicoId === 'assinatura_bureau') {
+        valor = 7800
+        servicoNome = 'Bureau ACP'
+      } else if (servicoId === 'diagnostico') {
+        valor = 490
+        servicoNome = 'Diagnóstico Orbis'
+      }
     }
 
     const cobrancasCol = $app.findCollectionByNameOrId('cobrancas')
@@ -50,6 +57,22 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     cobrancaRecord.set('tomador_email', tomadorEmail)
     cobrancaRecord.set('tomador_endereco', tomadorEndereco)
     cobrancaRecord.set('provider', 'mercadopago')
+
+    // Suporte a código de indicação de parceiro (?ref=ORB-PAR-XXXX ou body.ref)
+    const refCode = body.ref || body.codigo_indicacao || ''
+    if (refCode) {
+      cobrancaRecord.set('codigo_indicacao', String(refCode).trim())
+      try {
+        const parceiroRec = $app.findFirstRecordByData(
+          'parceiros',
+          'codigo_parceiro',
+          String(refCode).trim(),
+        )
+        if (parceiroRec) {
+          cobrancaRecord.set('parceiro_id', parceiroRec.id)
+        }
+      } catch (_) {}
+    }
 
     const txidGerado = 'TXID-' + $security.randomString(16).toUpperCase()
     cobrancaRecord.set('txid', txidGerado)
