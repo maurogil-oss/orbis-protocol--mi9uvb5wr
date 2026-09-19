@@ -159,7 +159,8 @@ export default function TestCatalog() {
                 path: '/solucoes/cadeias-produtivas',
                 label: '15 Cadeias (/solucoes/cadeias-produtivas)',
               },
-              { path: '/financeiro', label: 'Portal Financeiro (/financeiro)' },
+              { path: '/planos', label: 'Planos & Preços (/planos)' },
+              { path: '/checkout', label: 'Checkout PIX (/checkout)' },
               { path: '/verificador', label: 'Verificador de Selos (/verificador)' },
               { path: '/painel', label: 'Painel do Cliente [Auth] (/painel)' },
               {

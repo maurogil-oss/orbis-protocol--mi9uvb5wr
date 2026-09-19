@@ -202,11 +202,11 @@ export default function CheckoutPage() {
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
         <div className="mb-6 flex items-center justify-between">
           <Link
-            to="/financeiro"
+            to="/planos"
             className="inline-flex items-center gap-2 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar ao Financeiro</span>
+            <span>Voltar aos Planos</span>
           </Link>
           <span className="text-[11px] font-mono text-[#D9B36C]">
             Checkout Seguro PIX + NFS-e Probatória
@@ -334,10 +334,10 @@ export default function CheckoutPage() {
 
                 <div className="pt-2 flex justify-center gap-3">
                   <Link
-                    to="/financeiro"
+                    to="/planos"
                     className="px-6 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] text-xs uppercase tracking-wider transition-all shadow-emerald-glow"
                   >
-                    Ver Meu Histórico de Cobranças
+                    Ver Histórico & Planos
                   </Link>
                   <Link
                     to="/painel"

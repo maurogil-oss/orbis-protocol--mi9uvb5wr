@@ -1,17 +1,32 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   ShieldCheck,
   CheckCircle2,
   ArrowRight,
   Sparkles,
   Building2,
-  Car,
-  FileCheck,
+  Receipt,
   Lock,
 } from 'lucide-react'
+import { listarMinhasCobrancas, CobrancaRecord } from '@/services/cobrancaService'
 
 export default function Planos() {
+  const { isAuthenticated, user } = useAuth()
+  const [cobrancas, setCobrancas] = useState<CobrancaRecord[]>([])
+  const [carregandoCobrancas, setCarregandoCobrancas] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setCarregandoCobrancas(true)
+      listarMinhasCobrancas()
+        .then((lista) => setCobrancas(lista))
+        .catch(() => {})
+        .finally(() => setCarregandoCobrancas(false))
+    }
+  }, [isAuthenticated])
+
   const planos = [
     {
       id: 'essencial',
@@ -101,21 +116,22 @@ export default function Planos() {
           </p>
         </div>
 
-        {/* Informative Protected Area Notice */}
-        <div className="mb-10 p-4 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.1)] flex items-center justify-between text-xs">
+        {/* Informative Checkout Notice */}
+        <div className="mb-10 p-4 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5 text-[#93A3B5]">
-            <Lock className="w-4 h-4 text-[#D9B36C] shrink-0" />
+            <Sparkles className="w-4 h-4 text-[#12B886] shrink-0" />
             <span>
-              O ambiente de contratação direta, checkout e histórico de faturas é restrito a
-              usuários autenticados no{' '}
-              <strong className="text-[#F4F7FA]">Módulo Financeiro Protegido</strong>.
+              Contratação direta com ativação instantânea via{' '}
+              <strong className="text-[#F4F7FA]">PIX Dinâmico</strong> e emissão automatizada de
+              NFS-e probatória.
             </span>
           </div>
           <Link
-            to="/financeiro"
-            className="text-[#12B886] hover:underline font-semibold shrink-0 ml-3"
+            to="/checkout"
+            className="text-[#12B886] hover:underline font-semibold shrink-0 flex items-center gap-1"
           >
-            Acessar Financeiro →
+            <span>Ir para Checkout PIX</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -193,6 +209,112 @@ export default function Planos() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Histórico de Faturas & Cobranças para Usuários Autenticados */}
+        <div className="mb-16 p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-[#D9B36C]" />
+              <h3 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                HISTÓRICO DE FATURAS & NOTAS FISCAIS (NFS-E)
+              </h3>
+            </div>
+            {!isAuthenticated && (
+              <span className="inline-flex items-center gap-1 text-xs text-[#D9B36C]">
+                <Lock className="w-3.5 h-3.5" />
+                Requer Autenticação
+              </span>
+            )}
+          </div>
+
+          {isAuthenticated ? (
+            carregandoCobrancas ? (
+              <div className="p-6 text-center text-xs text-[#93A3B5]">
+                Carregando histórico de cobranças...
+              </div>
+            ) : cobrancas.length > 0 ? (
+              <div className="space-y-3">
+                {cobrancas.map((cob) => (
+                  <div
+                    key={cob.id}
+                    className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[#D9B36C] font-bold">
+                          {cob.servico_nome}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            cob.status === 'pago'
+                              ? 'bg-[#12B886]/20 text-[#12B886]'
+                              : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                          }`}
+                        >
+                          {cob.status}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-[#93A3B5]">
+                        TXID: <span className="font-mono text-[#F4F7FA]">{cob.txid}</span> • Criado
+                        em {new Date(cob.created).toLocaleDateString('pt-BR')}
+                      </div>
+                      {cob.nfse_numero && (
+                        <div className="text-[11px] text-[#12B886]">
+                          NFS-e Nº: <strong className="font-mono">{cob.nfse_numero}</strong> (Série{' '}
+                          {cob.nfse_serie || 'E'}) • Cód: {cob.nfse_verificacao}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="font-heading font-black text-base text-[#12B886] block">
+                          R$ {cob.valor?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <Link
+                        to={`/checkout/${cob.id}`}
+                        className="px-4 py-2 rounded-lg bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors font-semibold"
+                      >
+                        Ver Detalhes
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 border border-dashed border-[rgba(244,247,250,0.15)] rounded-xl bg-[#0A0E12] space-y-3">
+                <Receipt className="w-8 h-8 text-[#93A3B5] mx-auto opacity-50" />
+                <p className="text-xs text-[#93A3B5]">
+                  Nenhuma cobrança registrada ainda para a conta de{' '}
+                  <strong className="text-[#F4F7FA]">{user?.email}</strong>.
+                </p>
+                <div>
+                  <Link
+                    to="/checkout"
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shadow-emerald-glow"
+                  >
+                    <span>Contratar via PIX Agora</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="p-6 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-xs text-[#93A3B5]">
+                Faça login para consultar suas notas fiscais de serviço e recibos de liquidação de
+                honorários periciais.
+              </p>
+              <Link
+                to="/login"
+                className="px-5 py-2 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886]"
+              >
+                Fazer Login
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Bottom CTA Banner */}

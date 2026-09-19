@@ -1,5 +1,5 @@
 /* Main App Component - Handles routing (using react-router-dom), query client and other providers */
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -20,7 +20,6 @@ import CaseCDVerde from './pages/CaseCDVerde'
 import CadeiasProdutivasPage from './pages/CadeiasProdutivasPage'
 import ProtocoloDetailPage from './pages/ProtocoloDetailPage'
 import CredenciamentoPage from './pages/CredenciamentoPage'
-import Financeiro from './pages/Financeiro'
 import Verificador from './pages/Verificador'
 import Login from './pages/Login'
 import PainelCliente from './pages/PainelCliente'
@@ -83,6 +82,7 @@ const App = () => (
             <Route path="/teste" element={<TestCatalog />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/planos" element={<Planos />} />
+            <Route path="/financeiro" element={<Navigate to="/planos" replace />} />
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />
             <Route path="/fatores" element={<FatoresEmissaoPublicoPage />} />
             <Route path="/mover" element={<MoverPublicPage />} />
@@ -101,14 +101,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Capital />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/financeiro"
-              element={
-                <ProtectedRoute>
-                  <Financeiro />
                 </ProtectedRoute>
               }
             />

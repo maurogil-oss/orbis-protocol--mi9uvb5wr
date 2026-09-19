@@ -1361,7 +1361,7 @@ export default function PainelCliente() {
           </div>
         </div>
 
-        {/* 5. ATALHO AO FINANCEIRO */}
+        {/* 5. ATALHO AOS PLANOS & FATURAMENTO */}
         <div className="p-6 rounded-2xl bg-gradient-to-r from-[#111820] via-[#16202B] to-[#111820] border border-[rgba(244,247,250,0.12)] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
@@ -1372,7 +1372,7 @@ export default function PainelCliente() {
             </p>
           </div>
           <Link
-            to="/financeiro"
+            to="/planos"
             className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shrink-0"
           >
             Acessar Planos & Faturamento

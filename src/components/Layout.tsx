@@ -101,7 +101,7 @@ export default function Layout() {
   }
 
   // Soluções dropdown items with short 1-line descriptions
-  // Green Capital and Financeiro are only included if user is authenticated
+  // Dossiê MOVER e Green Capital são incluídos apenas se o usuário estiver autenticado
   const solutionItems = [
     {
       title: 'O Protocolo',
@@ -140,8 +140,8 @@ export default function Layout() {
       icon: Building2,
     },
     {
-      title: 'Planos',
-      desc: 'Assinaturas modulares e tabela de serviços técnicos',
+      title: 'Planos & Preços',
+      desc: 'Assinaturas modulares, tabela de serviços e histórico de faturas',
       path: '/planos',
       icon: Sparkles,
     },
@@ -158,12 +158,6 @@ export default function Layout() {
             desc: 'Simulação de crédito verde com taxas bonificadas ESG',
             path: '/capital',
             icon: Coins,
-          },
-          {
-            title: 'Financeiro',
-            desc: 'Gestão de pagamentos PIX instantâneos e NFS-e automática',
-            path: '/financeiro',
-            icon: Receipt,
           },
         ]
       : []),
@@ -804,11 +798,6 @@ export default function Layout() {
                     className="hover:text-[#12B886] transition-colors text-[#12B886] font-semibold"
                   >
                     Green Capital Engine (8 Linhas)
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/financeiro" className="hover:text-[#12B886] transition-colors">
-                    Módulo Financeiro (Protegido)
                   </Link>
                 </li>
                 {isAdminOrPerito && (
