@@ -11,24 +11,32 @@ import {
   Lock,
 } from 'lucide-react'
 import { listarMinhasCobrancas, CobrancaRecord } from '@/services/cobrancaService'
-import { listarServicosCatalogo, ServicoCatalogoRecord } from '@/services/catalogoServicosService'
+import {
+  listarServicosCatalogoComStatus,
+  ServicoCatalogoRecord,
+} from '@/services/catalogoServicosService'
+import { AlertTriangle } from 'lucide-react'
 
 export default function Planos() {
   const { isAuthenticated, user } = useAuth()
   const [cobrancas, setCobrancas] = useState<CobrancaRecord[]>([])
   const [carregandoCobrancas, setCarregandoCobrancas] = useState(false)
   const [catalogo, setCatalogo] = useState<Record<string, ServicoCatalogoRecord>>({})
+  const [emContingencia, setEmContingencia] = useState(false)
 
   useEffect(() => {
-    listarServicosCatalogo()
-      .then((items) => {
+    listarServicosCatalogoComStatus()
+      .then((res) => {
         const map: Record<string, ServicoCatalogoRecord> = {}
-        for (const item of items) {
+        for (const item of res.itens) {
           map[item.servico_id] = item
         }
         setCatalogo(map)
+        setEmContingencia(res.isFallback)
       })
-      .catch(() => {})
+      .catch(() => {
+        setEmContingencia(true)
+      })
   }, [])
 
   useEffect(() => {
@@ -143,6 +151,28 @@ export default function Planos() {
             medida.
           </p>
         </div>
+
+        {/* Aviso de Tabela de Contingência quando ativado */}
+        {emContingencia && (
+          <div className="mb-8 p-4 rounded-xl bg-[#D9B36C]/10 border-2 border-[#D9B36C] text-xs text-[#D9B36C] flex items-start gap-3 shadow-lg">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-[#D9B36C]" />
+            <div className="space-y-1">
+              <strong className="block font-bold uppercase tracking-wider text-sm">
+                Aviso de Contingência de Preços (Parecer CFO):
+              </strong>
+              <p className="leading-relaxed">
+                Preço exibido de tabela de contingência — confirme o valor vigente no Console de
+                Gestão antes de liquidar.
+              </p>
+              <p className="text-[11px] text-[#93A3B5]">
+                A leitura direta da coleção{' '}
+                <code className="font-mono text-[#D9B36C]">servicos_catalogo</code> está operando em
+                regime de proteção. Qualquer divergência entre o valor da contingência e o banco
+                será bloqueada na liquidação com justificativa obrigatória.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Informative Checkout Notice */}
         <div className="mb-10 p-4 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">

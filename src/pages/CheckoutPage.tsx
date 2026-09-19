@@ -26,9 +26,13 @@ import {
   ServicoCobrancaId,
   CobrancaRecord,
 } from '@/services/cobrancaService'
-import { listarServicosCatalogo, ServicoCatalogoRecord } from '@/services/catalogoServicosService'
+import {
+  listarServicosCatalogoComStatus,
+  ServicoCatalogoRecord,
+} from '@/services/catalogoServicosService'
 import { useAuth } from '@/contexts/AuthContext'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
+import { AlertTriangle } from 'lucide-react'
 
 export default function CheckoutPage() {
   const { cobrancaId } = useParams<{ cobrancaId?: string }>()
@@ -41,17 +45,21 @@ export default function CheckoutPage() {
   const refCode = searchParams.get('ref') || ''
 
   const [catalogo, setCatalogo] = useState<Record<string, ServicoCatalogoRecord>>({})
+  const [emContingencia, setEmContingencia] = useState(false)
 
   useEffect(() => {
-    listarServicosCatalogo()
-      .then((items) => {
+    listarServicosCatalogoComStatus()
+      .then((res) => {
         const map: Record<string, ServicoCatalogoRecord> = {}
-        for (const item of items) {
+        for (const item of res.itens) {
           map[item.servico_id] = item
         }
         setCatalogo(map)
+        setEmContingencia(res.isFallback)
       })
-      .catch(() => {})
+      .catch(() => {
+        setEmContingencia(true)
+      })
   }, [])
 
   // Inicializa o serviço selecionado a partir de query param (?servico=...) ou location.state
@@ -231,6 +239,27 @@ export default function CheckoutPage() {
             Checkout Seguro PIX + NFS-e Probatória
           </span>
         </div>
+
+        {/* Aviso de Preço de Tabela de Contingência (Item 1 do CFO) */}
+        {(emContingencia || cobranca?.origem_preco === 'contingencia') && (
+          <div className="mb-6 p-4 rounded-xl bg-[#D9B36C]/15 border-2 border-[#D9B36C] text-xs text-[#D9B36C] flex items-start gap-3 animate-fade-in shadow-xl">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-[#D9B36C]" />
+            <div className="space-y-1">
+              <strong className="block font-bold uppercase tracking-wider text-sm">
+                Aviso de Contingência de Preço (Controle do CFO):
+              </strong>
+              <p className="leading-relaxed">
+                Preço exibido de tabela de contingência — confirme o valor vigente no Console de
+                Gestão antes de liquidar.
+              </p>
+              <p className="text-[11px] text-[#93A3B5]">
+                Esta cobrança gerada em contingência possui rastreamento ativado. Qualquer
+                divergência entre o valor de contingência e a tabela vigente bloqueará a liquidação
+                manual no Console de Gestão, exigindo dupla checagem e justificativa técnica.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Banner Modo Degradação / Aviso de Gateway */}
         {avisoGateway && (

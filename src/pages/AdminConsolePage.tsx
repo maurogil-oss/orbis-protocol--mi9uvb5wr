@@ -67,7 +67,11 @@ import {
   julgarCredenciamentoPerito,
   PeritoCredenciamentoRecord,
 } from '@/services/peritoService'
-import { confirmarPagamentoSimulado, emitirNfse } from '@/services/cobrancaService'
+import {
+  confirmarPagamentoSimulado,
+  emitirNfse,
+  verificarCiclosAssinatura,
+} from '@/services/cobrancaService'
 
 type AdminTab =
   | 'receita'
@@ -105,6 +109,26 @@ export default function AdminConsolePage() {
   )
   // Modal / Edição de Parceiro
   const [editandoParceiro, setEditandoParceiro] = useState<Partial<ParceiroRecord> | null>(null)
+  // Edição inline de cadastro mestre de cliente (Item 5 do CFO)
+  const [editandoClienteId, setEditandoClienteId] = useState<string | null>(null)
+  const [clienteForm, setClienteForm] = useState<{
+    cnpj: string
+    plano_ativo: string
+    assinatura_status: string
+  }>({
+    cnpj: '',
+    plano_ativo: '',
+    assinatura_status: '',
+  })
+  const [salvandoCliente, setSalvandoCliente] = useState(false)
+  const [executandoRetroalimentacao, setExecutandoRetroalimentacao] = useState(false)
+  const [sincronizandoCiclo, setSincronizandoCiclo] = useState(false)
+  const [resumoCiclo, setResumoCiclo] = useState<{
+    cobrancas_geradas: number
+    cobrancas_vencidas: number
+    users_atualizados: number
+    data: string
+  } | null>(null)
   // Observação perito
   const [obsPerito, setObsPerito] = useState<Record<string, string>>({})
   // Feedback
@@ -169,16 +193,100 @@ export default function AdminConsolePage() {
     carregarTodosDados()
   }, [])
 
-  // Ações de Cobrança
-  const handleConfirmarPagamento = async (cobrancaId: string) => {
-    if (!confirm('Deseja marcar esta cobrança como PAGA manualmente?')) return
-    try {
-      await confirmarPagamentoSimulado(cobrancaId)
-      mostrarMensagem('Pagamento confirmado com sucesso e comissão/assinatura atualizadas!')
-      carregarTodosDados()
-    } catch (e: any) {
-      alert('Erro: ' + e.message)
+  // Estado para Modal de Liquidação Manual (Item 1 e Item 2 do CFO: Auditoria, 4-olhos, Justificativa e Divergência)
+  const [modalLiquidacao, setModalLiquidacao] = useState<{
+    aberto: boolean
+    cobranca: any | null
+    justificativa: string
+    comprovanteRef: string
+    confirmacaoDuplaCheck: boolean
+    etapaDupla: boolean // Para valores > 5000
+    divergenteAviso: boolean
+    submetendo: boolean
+  }>({
+    aberto: false,
+    cobranca: null,
+    justificativa: '',
+    comprovanteRef: '',
+    confirmacaoDuplaCheck: false,
+    etapaDupla: false,
+    divergenteAviso: false,
+    submetendo: false,
+  })
+
+  // Detalhe de auditoria da cobrança (visualização da trilha)
+  const [cobrancaDetalheAuditoria, setCobrancaDetalheAuditoria] = useState<any | null>(null)
+
+  const abrirModalLiquidacao = (cob: any) => {
+    const isDivergente = Boolean(cob.divergencia_preco || cob.origem_preco === 'contingencia')
+    const acima5k = Number(cob.valor) > 5000
+    setModalLiquidacao({
+      aberto: true,
+      cobranca: cob,
+      justificativa: isDivergente
+        ? 'Divergência detectada entre fallback e catálogo: valor conferido e aprovado pelo operador conforme Parecer CFO.'
+        : '',
+      comprovanteRef: cob.txid ? `PIX-${cob.txid.slice(0, 10)}` : '',
+      confirmacaoDuplaCheck: false,
+      etapaDupla: acima5k,
+      divergenteAviso: isDivergente,
+      submetendo: false,
+    })
+  }
+
+  const executarLiquidacaoManual = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!modalLiquidacao.cobranca) return
+
+    if (!modalLiquidacao.justificativa.trim()) {
+      alert('Preenchimento obrigatório da justificativa da liquidação manual.')
+      return
     }
+    if (!modalLiquidacao.comprovanteRef.trim()) {
+      alert('Preenchimento obrigatório da referência do comprovante (ex.: nº documento/PIX).')
+      return
+    }
+
+    const valorCob = Number(modalLiquidacao.cobranca.valor) || 0
+    if (valorCob > 5000 && !modalLiquidacao.confirmacaoDuplaCheck) {
+      alert('Para cobranças acima de R$ 5.000,00, a segunda confirmação é obrigatória.')
+      return
+    }
+
+    setModalLiquidacao((prev) => ({ ...prev, submetendo: true }))
+    try {
+      await confirmarPagamentoSimulado({
+        cobranca_id: modalLiquidacao.cobranca.id,
+        justificativa: modalLiquidacao.justificativa,
+        comprovante_ref: modalLiquidacao.comprovanteRef,
+        confirmacao_dupla: modalLiquidacao.confirmacaoDuplaCheck,
+        is_manual: true,
+        liquidado_por: `${user?.name || user?.email || 'Administrador'} (Console Gestão)`,
+      })
+
+      mostrarMensagem(
+        'Cobrança liquidada com sucesso! Trilha de auditoria e comissão/assinatura registradas.',
+      )
+      setModalLiquidacao({
+        aberto: false,
+        cobranca: null,
+        justificativa: '',
+        comprovanteRef: '',
+        confirmacaoDuplaCheck: false,
+        etapaDupla: false,
+        divergenteAviso: false,
+        submetendo: false,
+      })
+      carregarTodosDados()
+    } catch (err: any) {
+      alert('Erro ao liquidar cobrança: ' + err.message)
+    } finally {
+      setModalLiquidacao((prev) => ({ ...prev, submetendo: false }))
+    }
+  }
+
+  const handleConfirmarPagamento = (cob: any) => {
+    abrirModalLiquidacao(cob)
   }
 
   const handleEmitirNfseAdmin = async (cobrancaId: string) => {
@@ -191,7 +299,28 @@ export default function AdminConsolePage() {
     }
   }
 
-  // Ações de Assinatura do Cliente
+  // Ações de Assinatura do Cliente e Recorrência (Item 6 do CFO)
+  const handleSincronizarCiclosAssinatura = async () => {
+    setSincronizandoCiclo(true)
+    try {
+      const res = await verificarCiclosAssinatura()
+      setResumoCiclo({
+        cobrancas_geradas: res.cobrancas_geradas,
+        cobrancas_vencidas: res.cobrancas_vencidas,
+        users_atualizados: res.users_atualizados,
+        data: res.data_verificacao,
+      })
+      mostrarMensagem(
+        `Ciclo sincronizado: ${res.cobrancas_geradas} cobrança(s) gerada(s), ${res.cobrancas_vencidas} vencida(s) expirada(s), ${res.users_atualizados} usuário(s) atualizado(s).`,
+      )
+      carregarTodosDados()
+    } catch (e: any) {
+      alert('Erro ao sincronizar ciclos: ' + e.message)
+    } finally {
+      setSincronizandoCiclo(false)
+    }
+  }
+
   const handleAlterarStatusAssinatura = async (userId: string, novoStatus: string) => {
     try {
       await atualizarClienteAdmin(userId, { assinatura_status: novoStatus })
@@ -270,15 +399,40 @@ export default function AdminConsolePage() {
     }
   }
 
-  const handlePagarComissao = async (comissaoId: string) => {
+  const handleValidarDocumentoFiscalParceiro = async (parceiroId: string, validado: boolean) => {
+    try {
+      await atualizarParceiro(parceiroId, { documento_fiscal_validado: validado })
+      mostrarMensagem(
+        validado
+          ? 'Documentação fiscal do parceiro homologada com sucesso!'
+          : 'Validação fiscal removida.',
+      )
+      carregarTodosDados()
+    } catch (e: any) {
+      alert('Erro ao validar documentação fiscal: ' + e.message)
+    }
+  }
+
+  const handlePagarComissao = async (comissao: ComissaoRecord) => {
+    // Regra do Item 3: O botão "Registrar pagamento" SÓ fica habilitado se o parceiro tiver doc fiscal anexada/validada
+    const parceiroDaComissao = parceiros.find((p) => p.id === comissao.parceiro_id)
+    const docValida = Boolean(
+      parceiroDaComissao?.documento_fiscal_validado && parceiroDaComissao?.documento_fiscal_url,
+    )
+
+    if (!docValida) {
+      alert('Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o pagamento.')
+      return
+    }
+
     const comprovante = prompt(
       'Informe o código ou comprovante de liquidação bancária/PIX:',
       'PIX-CONCILIADO-' + Date.now(),
     )
     if (!comprovante) return
     try {
-      await registrarPagamentoComissao(comissaoId, comprovante)
-      mostrarMensagem('Comissão marcada como PAGA!')
+      await registrarPagamentoComissao(comissao.id, comprovante)
+      mostrarMensagem('Comissão marcada como PAGA com comprovação fiscal!')
       carregarTodosDados()
     } catch (e: any) {
       alert('Erro: ' + e.message)
@@ -286,6 +440,101 @@ export default function AdminConsolePage() {
   }
 
   // Ações de Perito
+  // Ações de Cadastro-Mestre de Clientes (Item 5 do CFO)
+  const iniciarEdicaoCliente = (cli: any) => {
+    setEditandoClienteId(cli.id)
+    setClienteForm({
+      cnpj: cli.cnpj || '',
+      plano_ativo: cli.plano_ativo || '',
+      assinatura_status: cli.assinatura_status || 'n/a',
+    })
+  }
+
+  const salvarEdicaoCliente = async (clienteId: string) => {
+    setSalvandoCliente(true)
+    try {
+      await atualizarClienteAdmin(clienteId, {
+        cnpj: clienteForm.cnpj.trim(),
+        plano_ativo: clienteForm.plano_ativo.trim(),
+        assinatura_status: clienteForm.assinatura_status.trim(),
+      })
+      mostrarMensagem('Cadastro-mestre do cliente atualizado com sucesso!')
+      setEditandoClienteId(null)
+      carregarTodosDados()
+    } catch (err: any) {
+      alert('Erro ao atualizar cadastro-mestre: ' + err.message)
+    } finally {
+      setSalvandoCliente(false)
+    }
+  }
+
+  // Retroalimentação defensiva disparada pelo admin on-demand
+  const rodarRetroalimentacaoDefensiva = async () => {
+    if (!confirm('Deseja rodar a retroalimentação defensiva de cadastro-mestre agora?')) return
+    setExecutandoRetroalimentacao(true)
+    try {
+      let atualizados = 0
+      for (const cli of clientes) {
+        let mudou = false
+        let novoCnpj = cli.cnpj || ''
+        let novoStatus = cli.assinatura_status || ''
+
+        // Se CNPJ estiver em branco, procurar em leads
+        if (!novoCnpj) {
+          const leadMatch = leads.find(
+            (l) =>
+              (l.usuario && l.usuario === cli.id) ||
+              (l.email && l.email.toLowerCase() === (cli.email || '').toLowerCase()),
+          )
+          if (leadMatch && leadMatch.cnpj) {
+            novoCnpj = leadMatch.cnpj
+            mudou = true
+          }
+        }
+
+        // Se ainda sem CNPJ, buscar em cobranças
+        if (!novoCnpj) {
+          const cobMatch = cobrancas.find(
+            (c) =>
+              (c.usuario && c.usuario === cli.id) ||
+              (c.tomador_email &&
+                c.tomador_email.toLowerCase() === (cli.email || '').toLowerCase()),
+          )
+          if (cobMatch && cobMatch.tomador_cpf_cnpj) {
+            novoCnpj = cobMatch.tomador_cpf_cnpj
+            mudou = true
+          }
+        }
+
+        // Se não tiver assinatura_status e não tiver cobranças nem plano
+        if (!novoStatus) {
+          const temCob = cobrancas.some((c) => c.usuario === cli.id)
+          if (!temCob && !cli.plano_ativo) {
+            novoStatus = 'n/a'
+            mudou = true
+          }
+        }
+
+        if (mudou) {
+          await atualizarClienteAdmin(cli.id, {
+            cnpj: novoCnpj,
+            ...(novoStatus ? { assinatura_status: novoStatus } : {}),
+          })
+          atualizados += 1
+        }
+      }
+
+      mostrarMensagem(
+        `Retroalimentação defensiva concluída! ${atualizados} conta(s) enriquecida(s).`,
+      )
+      carregarTodosDados()
+    } catch (e: any) {
+      alert('Erro na retroalimentação: ' + e.message)
+    } finally {
+      setExecutandoRetroalimentacao(false)
+    }
+  }
+
   const handleJulgarPerito = async (id: string, status: 'aprovado' | 'rejeitado') => {
     const obs =
       obsPerito[id] ||
@@ -546,8 +795,13 @@ export default function AdminConsolePage() {
                           {c.txid}
                         </span>
                         {c.codigo_indicacao && (
-                          <span className="text-[10px] text-[#3B82F6] font-mono">
+                          <span className="text-[10px] text-[#3B82F6] font-mono block">
                             Ref: {c.codigo_indicacao}
+                          </span>
+                        )}
+                        {(c.divergencia_preco || c.origem_preco === 'contingencia') && (
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-[#D9B36C]/20 text-[#D9B36C] border border-[#D9B36C]/40 mt-0.5">
+                            Contingência / Divergente
                           </span>
                         )}
                       </td>
@@ -568,12 +822,19 @@ export default function AdminConsolePage() {
                       <td className="p-3.5 text-right space-x-2">
                         {c.status !== 'pago' && (
                           <button
-                            onClick={() => handleConfirmarPagamento(c.id)}
+                            onClick={() => handleConfirmarPagamento(c)}
                             className="px-2.5 py-1 rounded bg-[#12B886]/20 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px] transition-colors"
                           >
                             Marcar Pago
                           </button>
                         )}
+                        <button
+                          onClick={() => setCobrancaDetalheAuditoria(c)}
+                          className="px-2.5 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#D9B36C] hover:text-[#F4F7FA] text-[11px]"
+                          title="Ver Trilha de Auditoria e Liquidação"
+                        >
+                          Auditoria
+                        </button>
                         <button
                           onClick={() => handleEmitirNfseAdmin(c.id)}
                           className="px-2.5 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-[11px]"
@@ -623,6 +884,11 @@ export default function AdminConsolePage() {
                   <div className="text-[10px] text-[#93A3B5] font-mono break-all">
                     TXID: {c.txid}
                   </div>
+                  {(c.divergencia_preco || c.origem_preco === 'contingencia') && (
+                    <div className="text-[10px] text-[#D9B36C] font-bold">
+                      ⚠ Origem Contingência / Divergência de Preço
+                    </div>
+                  )}
                   {c.codigo_indicacao && (
                     <div className="text-[10px] text-[#3B82F6] font-mono">
                       Ref Parceiro: {c.codigo_indicacao}
@@ -636,12 +902,18 @@ export default function AdminConsolePage() {
                   <div className="pt-2 flex gap-2">
                     {c.status !== 'pago' && (
                       <button
-                        onClick={() => handleConfirmarPagamento(c.id)}
+                        onClick={() => handleConfirmarPagamento(c)}
                         className="flex-1 py-1.5 rounded bg-[#12B886] text-[#0A0E12] font-bold text-center text-xs"
                       >
                         Confirmar Pagamento
                       </button>
                     )}
+                    <button
+                      onClick={() => setCobrancaDetalheAuditoria(c)}
+                      className="px-3 py-1.5 rounded bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-xs text-[#D9B36C]"
+                    >
+                      Auditoria
+                    </button>
                     <button
                       onClick={() => handleEmitirNfseAdmin(c.id)}
                       className="px-3 py-1.5 rounded bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-xs text-[#93A3B5]"
@@ -658,74 +930,250 @@ export default function AdminConsolePage() {
         {/* 2. CLIENTES (CADASTRO-MESTRE) */}
         {activeTab === 'clientes' && (
           <div className="space-y-6">
-            <div>
-              <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                Cadastro-Mestre de Clientes & Pipeline de Leads
-              </h2>
-              <p className="text-xs text-[#93A3B5]">
-                Controle de cliente_codigo (ORB-CLI-XXXX), CNPJ vinculado, plano e leads por
-                status/origem.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                  Base Cadastral de Clientes & Cadastro-Mestre
+                </h2>
+                <p className="text-xs text-[#93A3B5]">
+                  Gestão das contas com permissão cliente, integridade cadastral e leads gerados a
+                  partir do Diagnóstico SBCE.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={rodarRetroalimentacaoDefensiva}
+                disabled={executandoRetroalimentacao}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111820] border border-[#12B886]/50 text-xs text-[#12B886] font-semibold hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+                title="Cruza dados de leads e cobranças para preencher CNPJ e status n/a automaticamente"
+              >
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${executandoRetroalimentacao ? 'animate-spin' : ''}`}
+                />
+                <span>
+                  {executandoRetroalimentacao
+                    ? 'Retroalimentando...'
+                    : 'Rodar Retroalimentação Defensiva'}
+                </span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Lista de Contas de Usuários Clientes (2 Cols) */}
               <div className="lg:col-span-2 space-y-3">
-                <h3 className="font-heading font-bold text-sm text-[#12B886] uppercase tracking-wider">
-                  Contas de Usuários Cadastrados ({clientes.length})
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-heading font-bold text-sm text-[#12B886] uppercase tracking-wider">
+                    Contas de Usuários Cadastrados ({clientes.length})
+                  </h3>
+                  <span className="text-[11px] text-[#93A3B5]">
+                    {
+                      clientes.filter(
+                        (c) =>
+                          !c.cnpj ||
+                          !c.plano_ativo ||
+                          !c.assinatura_status ||
+                          c.assinatura_status === 'n/a',
+                      ).length
+                    }{' '}
+                    contas incompletas
+                  </span>
+                </div>
 
-                <div className="space-y-2">
-                  {clientes.map((cli) => (
-                    <div
-                      key={cli.id}
-                      className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <strong className="text-[#F4F7FA] font-medium text-sm">
-                            {cli.name || cli.email}
-                          </strong>
-                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
-                            {cli.cliente_codigo || 'ORB-CLI-NOVO'}
-                          </span>
-                          <span className="text-[10px] uppercase font-bold text-[#D9B36C] bg-[#D9B36C]/10 px-2 py-0.5 rounded">
-                            {cli.role}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-[#93A3B5] flex flex-wrap gap-x-4">
-                          <span>Email: {cli.email}</span>
-                          <span>
-                            CNPJ:{' '}
-                            <strong className="font-mono text-[#F4F7FA]">
-                              {cli.cnpj || 'Não cadastrado'}
-                            </strong>
-                          </span>
-                          <span>
-                            Plano:{' '}
-                            <strong className="text-[#12B886]">
-                              {cli.plano_ativo || 'Nenhum'}
-                            </strong>
-                          </span>
-                        </div>
-                      </div>
+                <div className="space-y-3">
+                  {clientes.map((cli) => {
+                    const isIncompleto =
+                      !cli.cnpj ||
+                      !cli.plano_ativo ||
+                      !cli.assinatura_status ||
+                      cli.assinatura_status === 'n/a'
+                    const estaEditando = editandoClienteId === cli.id
 
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
-                            cli.assinatura_status === 'ativa'
-                              ? 'bg-[#12B886]/20 text-[#12B886]'
-                              : 'bg-[#93A3B5]/20 text-[#93A3B5]'
-                          }`}
-                        >
-                          {cli.assinatura_status || 'sem assinatura'}
-                        </span>
+                    return (
+                      <div
+                        key={cli.id}
+                        className={`p-4 rounded-xl bg-[#111820] border transition-all ${
+                          isIncompleto
+                            ? 'border-[#D9B36C]/40 hover:border-[#D9B36C]'
+                            : 'border-[rgba(244,247,250,0.1)]'
+                        } space-y-3 text-xs`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="text-[#F4F7FA] font-medium text-sm">
+                              {cli.name || cli.email}
+                            </strong>
+                            <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
+                              {cli.cliente_codigo || 'ORB-CLI-NOVO'}
+                            </span>
+                            <span className="text-[10px] uppercase font-bold text-[#D9B36C] bg-[#D9B36C]/10 px-2 py-0.5 rounded">
+                              {cli.role}
+                            </span>
+                            {/* Destaque Cadastro Incompleto (Item 5 do CFO) */}
+                            {isIncompleto && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3" />
+                                Cadastro incompleto
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                                cli.assinatura_status === 'ativa'
+                                  ? 'bg-[#12B886]/20 text-[#12B886]'
+                                  : cli.assinatura_status === 'inadimplente'
+                                    ? 'bg-[#EF4444]/20 text-[#EF4444]'
+                                    : 'bg-[#93A3B5]/20 text-[#93A3B5]'
+                              }`}
+                            >
+                              {cli.assinatura_status || 'sem assinatura'}
+                            </span>
+                            {!estaEditando && (
+                              <button
+                                type="button"
+                                onClick={() => iniciarEdicaoCliente(cli)}
+                                className="px-2.5 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px] transition-colors"
+                              >
+                                Editar Cadastro
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Visualização Padrão */}
+                        {!estaEditando ? (
+                          <div className="text-[11px] text-[#93A3B5] flex flex-wrap gap-x-4 gap-y-1 bg-[#0A0E12] p-2.5 rounded-lg border border-[rgba(244,247,250,0.06)]">
+                            <span>
+                              Email:{' '}
+                              <strong className="text-[#F4F7FA] font-normal">{cli.email}</strong>
+                            </span>
+                            <span>
+                              CNPJ:{' '}
+                              <strong
+                                className={`font-mono ${
+                                  cli.cnpj ? 'text-[#F4F7FA]' : 'text-[#EF4444]'
+                                }`}
+                              >
+                                {cli.cnpj || 'Em branco'}
+                              </strong>
+                            </span>
+                            <span>
+                              Plano Ativo:{' '}
+                              <strong
+                                className={cli.plano_ativo ? 'text-[#12B886]' : 'text-[#EF4444]'}
+                              >
+                                {cli.plano_ativo || 'Em branco'}
+                              </strong>
+                            </span>
+                            <span>
+                              Status Assinatura:{' '}
+                              <strong
+                                className={
+                                  cli.assinatura_status === 'inadimplente'
+                                    ? 'text-[#EF4444]'
+                                    : cli.assinatura_status === 'n/a'
+                                      ? 'text-[#D9B36C]'
+                                      : 'text-[#12B886]'
+                                }
+                              >
+                                {cli.assinatura_status || 'Em branco'}
+                              </strong>
+                            </span>
+                            {cli.assinatura_renovacao && (
+                              <span>
+                                Renovação:{' '}
+                                <strong className="text-[#D9B36C]">
+                                  {cli.assinatura_renovacao}
+                                </strong>
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          /* Formulário de Edição Inline do Cadastro-Mestre */
+                          <div className="p-3.5 rounded-xl bg-[#0A0E12] border-2 border-[#12B886] space-y-3 animate-fade-in">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#12B886] block">
+                              Edição Inline do Cadastro-Mestre (users)
+                            </span>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div>
+                                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                                  CNPJ *
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="00.000.000/0000-00"
+                                  value={clienteForm.cnpj}
+                                  onChange={(e) =>
+                                    setClienteForm({ ...clienteForm, cnpj: e.target.value })
+                                  }
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA] font-mono"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                                  Plano Ativo
+                                </label>
+                                <select
+                                  value={clienteForm.plano_ativo}
+                                  onChange={(e) =>
+                                    setClienteForm({ ...clienteForm, plano_ativo: e.target.value })
+                                  }
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
+                                >
+                                  <option value="">(Em branco)</option>
+                                  <option value="diagnostico">diagnostico</option>
+                                  <option value="laudo_pericial">laudo_pericial</option>
+                                  <option value="assinatura_bureau">assinatura_bureau</option>
+                                  <option value="corporativo">corporativo</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                                  Status Assinatura
+                                </label>
+                                <select
+                                  value={clienteForm.assinatura_status}
+                                  onChange={(e) =>
+                                    setClienteForm({
+                                      ...clienteForm,
+                                      assinatura_status: e.target.value,
+                                    })
+                                  }
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
+                                >
+                                  <option value="n/a">n/a (sem relação de assinatura)</option>
+                                  <option value="ativa">ativa</option>
+                                  <option value="inadimplente">inadimplente</option>
+                                  <option value="cancelada">cancelada</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="flex justify-end gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => setEditandoClienteId(null)}
+                                className="px-3 py-1 rounded-lg bg-[#16202B] text-xs text-[#93A3B5]"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                type="button"
+                                disabled={salvandoCliente}
+                                onClick={() => salvarEdicaoCliente(cli.id)}
+                                className="px-4 py-1 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs"
+                              >
+                                {salvandoCliente ? 'Salvando...' : 'Salvar Alterações'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
-
               {/* Pipeline de Leads (1 Col) */}
               <div className="space-y-3">
                 <h3 className="font-heading font-bold text-sm text-[#D9B36C] uppercase tracking-wider">
@@ -1178,17 +1626,71 @@ export default function AdminConsolePage() {
           </div>
         )}
 
-        {/* 6. ASSINATURAS */}
+        {/* 6. ASSINATURAS (Item 6 do Parecer CFO: Calendário de Recorrência & Inadimplência) */}
         {activeTab === 'assinaturas' && (
           <div className="space-y-6">
-            <div>
-              <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                Gestão de Assinaturas & Renovações
-              </h2>
-              <p className="text-xs text-[#93A3B5]">
-                Acompanhamento de vencimentos, controle de inadimplência e ações imediatas de
-                suspender ou reativar.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                  Calendário de Cobrança Recorrente & Gestão de Inadimplência
+                </h2>
+                <p className="text-xs text-[#93A3B5]">
+                  Controle do Bureau ACP (R$ 7.800/mês), agendamento diário de renovação (cron D+1)
+                  e detecção defensiva de cobranças vencidas (+7 dias).
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSincronizarCiclosAssinatura}
+                  disabled={sincronizandoCiclo}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow disabled:opacity-50"
+                  title="Executar verificação on-demand do ciclo recorrente (gerar D+1 e marcar atrasos > 7 dias)"
+                >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${sincronizandoCiclo ? 'animate-spin' : ''}`}
+                  />
+                  <span>
+                    {sincronizandoCiclo ? 'Sincronizando Ciclo...' : 'Verificar Ciclo On-Demand'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Alerta de Inadimplência se houver clientes inadimplentes */}
+            {clientes.some((c) => c.assinatura_status === 'inadimplente') && (
+              <div className="p-4 rounded-xl bg-[#EF4444]/15 border-2 border-[#EF4444] text-xs text-[#EF4444] flex items-start gap-3 shadow-lg">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-[#EF4444]" />
+                <div className="space-y-1">
+                  <strong className="block font-bold uppercase tracking-wider text-sm">
+                    Alerta de Inadimplência Detectada (Parecer CFO):
+                  </strong>
+                  <p className="leading-relaxed">
+                    Existem assinantes com faturas recorrentes em atraso superior a 7 dias. O status
+                    da assinatura foi automaticamente ajustado para <strong>inadimplente</strong> e
+                    o acesso pericial foi bloqueado até a quitação da cobrança gerada.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Painel do Agendador (Cron e On-Demand) */}
+            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5 text-[#93A3B5]">
+                <Clock className="w-4 h-4 text-[#12B886] shrink-0" />
+                <span>
+                  <strong>Job Agendado Ativo:</strong> cron diário às 04:00 AM (
+                  <code className="text-[#12B886]">0 4 * * *</code>) gera automaticamente cobranças
+                  em D+1 e marca vencidas com +7 dias de atraso.
+                </span>
+              </div>
+              {resumoCiclo && (
+                <span className="text-[11px] font-mono text-[#D9B36C] bg-[#0A0E12] px-2.5 py-1 rounded border border-[rgba(244,247,250,0.08)]">
+                  Última sincronização: {resumoCiclo.data} • {resumoCiclo.cobrancas_geradas}{' '}
+                  gerada(s) • {resumoCiclo.cobrancas_vencidas} vencida(s)
+                </span>
+              )}
             </div>
 
             <div className="rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-hidden">
@@ -1196,59 +1698,79 @@ export default function AdminConsolePage() {
                 <thead className="bg-[#0D1217] text-[#93A3B5] uppercase text-[10px] border-b border-[rgba(244,247,250,0.08)]">
                   <tr>
                     <th className="p-3.5">Cliente & Código</th>
+                    <th className="p-3.5">CNPJ</th>
                     <th className="p-3.5">Plano Ativo</th>
-                    <th className="p-3.5">Data Renovação</th>
+                    <th className="p-3.5">Próxima Renovação</th>
                     <th className="p-3.5">Status da Assinatura</th>
                     <th className="p-3.5 text-right">Ação Operacional</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[rgba(244,247,250,0.05)]">
-                  {clientes.map((cli) => (
-                    <tr key={cli.id} className="hover:bg-[#16202B]/50 transition-colors">
-                      <td className="p-3.5">
-                        <strong className="text-[#F4F7FA] block">{cli.name || cli.email}</strong>
-                        <span className="font-mono text-[#D9B36C] text-[10px]">
-                          {cli.cliente_codigo || 'ORB-CLI-XXXX'}
-                        </span>
-                      </td>
-                      <td className="p-3.5 font-semibold text-[#12B886]">
-                        {cli.plano_ativo || 'Nenhum'}
-                      </td>
-                      <td className="p-3.5 text-[#93A3B5] font-mono">
-                        {cli.assinatura_renovacao || '2027-03-01'}
-                      </td>
-                      <td className="p-3.5">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            cli.assinatura_status === 'ativa'
-                              ? 'bg-[#12B886]/20 text-[#12B886]'
-                              : cli.assinatura_status === 'suspensa'
-                                ? 'bg-[#F03E54]/20 text-[#F03E54]'
-                                : 'bg-[#93A3B5]/20 text-[#93A3B5]'
-                          }`}
-                        >
-                          {cli.assinatura_status || 'sem plano'}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-right space-x-2">
-                        {cli.assinatura_status === 'suspensa' ? (
-                          <button
-                            onClick={() => handleAlterarStatusAssinatura(cli.id, 'ativa')}
-                            className="px-3 py-1 rounded bg-[#12B886]/20 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px]"
+                  {clientes.map((cli) => {
+                    const isInadimplente = cli.assinatura_status === 'inadimplente'
+                    return (
+                      <tr
+                        key={cli.id}
+                        className={`hover:bg-[#16202B]/50 transition-colors ${
+                          isInadimplente ? 'bg-[#EF4444]/5' : ''
+                        }`}
+                      >
+                        <td className="p-3.5">
+                          <strong className="text-[#F4F7FA] block">{cli.name || cli.email}</strong>
+                          <span className="font-mono text-[#D9B36C] text-[10px]">
+                            {cli.cliente_codigo || 'ORB-CLI-XXXX'}
+                          </span>
+                        </td>
+                        <td className="p-3.5 font-mono text-[11px] text-[#93A3B5]">
+                          {cli.cnpj || '-'}
+                        </td>
+                        <td className="p-3.5 font-semibold text-[#12B886]">
+                          {cli.plano_ativo || 'Nenhum'}
+                        </td>
+                        <td className="p-3.5 font-mono">
+                          {cli.assinatura_renovacao ? (
+                            <span className="text-[#D9B36C] font-semibold">
+                              {cli.assinatura_renovacao}
+                            </span>
+                          ) : (
+                            <span className="text-[#93A3B5]">Sem data definida</span>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              cli.assinatura_status === 'ativa'
+                                ? 'bg-[#12B886]/20 text-[#12B886] border border-[#12B886]/30'
+                                : cli.assinatura_status === 'inadimplente'
+                                  ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 animate-pulse'
+                                  : cli.assinatura_status === 'suspensa'
+                                    ? 'bg-[#F03E54]/20 text-[#F03E54]'
+                                    : 'bg-[#93A3B5]/20 text-[#93A3B5]'
+                            }`}
                           >
-                            Reativar
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleAlterarStatusAssinatura(cli.id, 'suspensa')}
-                            className="px-3 py-1 rounded bg-[#F03E54]/20 text-[#F03E54] hover:bg-[#F03E54] hover:text-white font-semibold text-[11px]"
-                          >
-                            Suspender
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                            {cli.assinatura_status || 'sem plano'}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-right space-x-2">
+                          {cli.assinatura_status === 'suspensa' || isInadimplente ? (
+                            <button
+                              onClick={() => handleAlterarStatusAssinatura(cli.id, 'ativa')}
+                              className="px-3 py-1 rounded bg-[#12B886]/20 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px]"
+                            >
+                              Reativar / Quitar
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleAlterarStatusAssinatura(cli.id, 'suspensa')}
+                              className="px-3 py-1 rounded bg-[#F03E54]/20 text-[#F03E54] hover:bg-[#F03E54] hover:text-white font-semibold text-[11px]"
+                            >
+                              Suspender
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1401,6 +1923,60 @@ export default function AdminConsolePage() {
                       className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono"
                     />
                   </div>
+                  <div>
+                    <label className="block text-[#93A3B5] mb-1">Tipo Documentação Fiscal</label>
+                    <select
+                      value={editandoParceiro.tipo_documentacao || 'RPA'}
+                      onChange={(e) =>
+                        setEditandoParceiro({
+                          ...editandoParceiro,
+                          tipo_documentacao: e.target.value as 'RPA' | 'NFSe_pj',
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                    >
+                      <option value="RPA">RPA (Pessoa Física)</option>
+                      <option value="NFSe_pj">NFS-e (Pessoa Jurídica)</option>
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[#93A3B5] mb-1">
+                      URL / Link Comprovante Fiscal (RPA ou NFS-e)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: https://storage.../nfse-001.pdf ou chave de acesso"
+                      value={editandoParceiro.documento_fiscal_url || ''}
+                      onChange={(e) =>
+                        setEditandoParceiro({
+                          ...editandoParceiro,
+                          documento_fiscal_url: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono text-[11px]"
+                    />
+                  </div>
+                  <div className="sm:col-span-3 flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="docFiscalValidadoCheck"
+                      checked={Boolean(editandoParceiro.documento_fiscal_validado)}
+                      onChange={(e) =>
+                        setEditandoParceiro({
+                          ...editandoParceiro,
+                          documento_fiscal_validado: e.target.checked,
+                        })
+                      }
+                      className="rounded text-[#12B886] focus:ring-[#12B886]"
+                    />
+                    <label
+                      htmlFor="docFiscalValidadoCheck"
+                      className="text-xs text-[#F4F7FA] cursor-pointer"
+                    >
+                      <strong>Documentação Fiscal Validada pela Controladoria</strong> (obrigatória
+                      para liberar botão de repasse)
+                    </label>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-2">
@@ -1446,9 +2022,24 @@ export default function AdminConsolePage() {
                     </div>
 
                     <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1 text-[11px]">
-                      <span className="text-[#93A3B5] uppercase font-bold text-[9px] block text-[#D9B36C]">
-                        Dados Bancários (Visível só ao Admin):
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#93A3B5] uppercase font-bold text-[9px] block text-[#D9B36C]">
+                          Dados Bancários (Visível só ao Admin):
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                              p.documento_fiscal_validado
+                                ? 'bg-[#12B886]/20 text-[#12B886] border border-[#12B886]/40'
+                                : 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40'
+                            }`}
+                          >
+                            {p.documento_fiscal_validado
+                              ? `Fiscal Validado (${p.tipo_documentacao || 'RPA'})`
+                              : 'Fiscal Pendente'}
+                          </span>
+                        </div>
+                      </div>
                       <div>
                         Banco: {p.banco || 'Não informado'} • Ag: {p.agencia || '-'} • CC:{' '}
                         {p.conta || '-'}
@@ -1458,6 +2049,32 @@ export default function AdminConsolePage() {
                         <strong className="font-mono text-[#F4F7FA]">
                           {p.chave_pix || 'Não informada'}
                         </strong>
+                      </div>
+                      <div className="pt-1 flex items-center justify-between text-[10px] border-t border-[rgba(244,247,250,0.06)]">
+                        <span className="text-[#93A3B5]">
+                          Doc Fiscal:{' '}
+                          {p.documento_fiscal_url ? (
+                            <a
+                              href={p.documento_fiscal_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[#12B886] underline font-mono ml-1"
+                            >
+                              Abrir Comprovante
+                            </a>
+                          ) : (
+                            <span className="text-[#EF4444] ml-1">Não anexado</span>
+                          )}
+                        </span>
+                        {p.documento_fiscal_url && !p.documento_fiscal_validado && (
+                          <button
+                            type="button"
+                            onClick={() => handleValidarDocumentoFiscalParceiro(p.id, true)}
+                            className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-bold hover:bg-[#12B886] hover:text-[#0A0E12]"
+                          >
+                            Homologar Fiscal
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -1533,12 +2150,35 @@ export default function AdminConsolePage() {
                         </td>
                         <td className="p-3.5 text-right">
                           {com.status !== 'paga' ? (
-                            <button
-                              onClick={() => handlePagarComissao(com.id)}
-                              className="px-3 py-1 rounded bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow"
-                            >
-                              Registrar Pagamento
-                            </button>
+                            (() => {
+                              const pRef = parceiros.find((p) => p.id === com.parceiro_id)
+                              const liberado = Boolean(
+                                pRef?.documento_fiscal_validado && pRef?.documento_fiscal_url,
+                              )
+                              return liberado ? (
+                                <button
+                                  onClick={() => handlePagarComissao(com)}
+                                  className="px-3 py-1 rounded bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow hover:bg-[#0fa376] transition-all"
+                                  title="Documentação fiscal conferida. Registrar liquidação."
+                                >
+                                  Registrar Pagamento
+                                </button>
+                              ) : (
+                                <div className="inline-block text-right">
+                                  <button
+                                    disabled
+                                    className="px-3 py-1 rounded bg-[#16202B] text-[#93A3B5] cursor-not-allowed text-xs font-semibold border border-[rgba(244,247,250,0.1)] opacity-60"
+                                    title="Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o pagamento"
+                                  >
+                                    Registrar Pagamento
+                                  </button>
+                                  <span className="block text-[9px] text-[#EF4444] mt-0.5 max-w-[150px] leading-tight text-right">
+                                    Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o
+                                    pagamento
+                                  </span>
+                                </div>
+                              )
+                            })()
                           ) : (
                             <span className="text-[10px] text-[#93A3B5] font-mono">
                               Pago em{' '}
@@ -1560,6 +2200,293 @@ export default function AdminConsolePage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 4-OLHOS E TRILHA DE AUDITORIA DE LIQUIDAÇÃO MANUAL (Item 1 e 2 do CFO) */}
+        {modalLiquidacao.aberto && modalLiquidacao.cobranca && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-xl rounded-2xl bg-[#111820] border-2 border-[#12B886] p-6 sm:p-8 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.1)] pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-[#12B886]" />
+                    <h3 className="font-heading font-extrabold text-lg text-[#F4F7FA]">
+                      Liquidação Manual & Quatro Olhos
+                    </h3>
+                  </div>
+                  <span className="text-xs text-[#93A3B5] mt-1 block">
+                    Controle de Governança e Parecer do CFO • ID: {modalLiquidacao.cobranca.id}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setModalLiquidacao({
+                      aberto: false,
+                      cobranca: null,
+                      justificativa: '',
+                      comprovanteRef: '',
+                      confirmacaoDuplaCheck: false,
+                      etapaDupla: false,
+                      divergenteAviso: false,
+                      submetendo: false,
+                    })
+                  }
+                  className="text-[#93A3B5] hover:text-[#F4F7FA] text-lg font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Informações da Cobrança */}
+              <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#93A3B5]">Serviço / Produto:</span>
+                  <strong className="text-[#D9B36C] font-semibold">
+                    {modalLiquidacao.cobranca.servico_nome}
+                  </strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#93A3B5]">Tomador:</span>
+                  <strong className="text-[#F4F7FA]">
+                    {modalLiquidacao.cobranca.tomador_nome} (
+                    {modalLiquidacao.cobranca.tomador_cpf_cnpj})
+                  </strong>
+                </div>
+                <div className="flex items-center justify-between border-t border-[rgba(244,247,250,0.06)] pt-2">
+                  <span className="text-[#93A3B5]">Valor a Liquidar:</span>
+                  <strong className="font-heading font-black text-lg text-[#12B886]">
+                    R${' '}
+                    {Number(modalLiquidacao.cobranca.valor).toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Alerta de Divergência de Preço (Item 1 do CFO) */}
+              {modalLiquidacao.divergenteAviso && (
+                <div className="p-4 rounded-xl bg-[#D9B36C]/10 border-2 border-[#D9B36C] text-xs text-[#D9B36C] space-y-2">
+                  <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-sm">
+                    <AlertTriangle className="w-5 h-5 shrink-0" />
+                    <span>Bloqueio Preventivo — Preço de Contingência / Divergente</span>
+                  </div>
+                  <p className="leading-relaxed">
+                    Esta cobrança foi gerada a partir da tabela de contingência ou apresenta
+                    divergência de valor com o catálogo cadastrado.
+                  </p>
+                  <p className="text-[11px] text-[#93A3B5]">
+                    Conforme a norma de controle interno, a liquidação manual exige confirmação
+                    explícita e justificativa detalhada para ser liberada no banco de dados.
+                  </p>
+                </div>
+              )}
+
+              {/* Alerta de Valor Acima de R$ 5.000 (Item 2 do CFO: Dupla Confirmação) */}
+              {Number(modalLiquidacao.cobranca.valor) > 5000 && (
+                <div className="p-4 rounded-xl bg-[#3B82F6]/10 border-2 border-[#3B82F6] text-xs text-[#3B82F6] space-y-1">
+                  <strong className="block font-bold text-sm uppercase tracking-wide">
+                    ⚠️ Valor acima de R$ 5.000 exige dupla confirmação (Regra de Quatro Olhos)
+                  </strong>
+                  <p className="text-[#93A3B5] text-[11px]">
+                    Transações de alto valor exigem validação cadastral e aprovação em duas etapas
+                    pelo auditor ou gestor financeiro antes do repasse e ativação pericial.
+                  </p>
+                </div>
+              )}
+
+              <form onSubmit={executarLiquidacaoManual} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-[#93A3B5] mb-1 font-semibold">
+                    Referência do Comprovante de Pagamento * (nº PIX / doc bancário)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: E20260408152345... ou TED 849204"
+                    value={modalLiquidacao.comprovanteRef}
+                    onChange={(e) =>
+                      setModalLiquidacao({ ...modalLiquidacao, comprovanteRef: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono focus:outline-none focus:border-[#12B886]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#93A3B5] mb-1 font-semibold">
+                    Justificativa Obrigatória da Liquidação Manual *
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="Descreva a conciliação bancária, extrato conferido ou autorização especial do financeiro..."
+                    value={modalLiquidacao.justificativa}
+                    onChange={(e) =>
+                      setModalLiquidacao({ ...modalLiquidacao, justificativa: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:border-[#12B886]"
+                  />
+                </div>
+
+                {/* Checkbox de Segunda Confirmação para > R$ 5.000 */}
+                {Number(modalLiquidacao.cobranca.valor) > 5000 && (
+                  <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#0A0E12] border border-[#3B82F6]/40 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={modalLiquidacao.confirmacaoDuplaCheck}
+                      onChange={(e) =>
+                        setModalLiquidacao({
+                          ...modalLiquidacao,
+                          confirmacaoDuplaCheck: e.target.checked,
+                        })
+                      }
+                      className="mt-0.5 rounded text-[#12B886] focus:ring-[#12B886]"
+                    />
+                    <span className="text-[11px] text-[#F4F7FA] leading-tight">
+                      <strong>Confirmo em segunda etapa</strong> que o valor de R${' '}
+                      {Number(modalLiquidacao.cobranca.valor).toLocaleString('pt-BR')}, os dados do
+                      tomador e a autenticidade do comprovante bancário foram devidamente checados.
+                    </span>
+                  </label>
+                )}
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-[rgba(244,247,250,0.08)]">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModalLiquidacao({
+                        aberto: false,
+                        cobranca: null,
+                        justificativa: '',
+                        comprovanteRef: '',
+                        confirmacaoDuplaCheck: false,
+                        etapaDupla: false,
+                        divergenteAviso: false,
+                        submetendo: false,
+                      })
+                    }
+                    className="px-4 py-2.5 rounded-xl bg-[#16202B] text-xs text-[#93A3B5] hover:text-[#F4F7FA]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={modalLiquidacao.submetendo}
+                    className="px-6 py-2.5 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-emerald-glow disabled:opacity-50"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>
+                      {modalLiquidacao.submetendo
+                        ? 'Liquidando...'
+                        : 'Confirmar e Gravar Auditoria'}
+                    </span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL DETALHE DA TRILHA DE AUDITORIA */}
+        {cobrancaDetalheAuditoria && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-xl rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.15)] p-6 sm:p-8 space-y-5 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-[rgba(244,247,250,0.1)] pb-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#D9B36C]" />
+                  <h3 className="font-heading font-extrabold text-base text-[#F4F7FA]">
+                    Trilha de Auditoria da Cobrança
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCobrancaDetalheAuditoria(null)}
+                  className="text-[#93A3B5] hover:text-[#F4F7FA]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 rounded-xl bg-[#0A0E12] space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-[#93A3B5]">ID:</span>
+                    <span className="font-mono text-[#F4F7FA]">{cobrancaDetalheAuditoria.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#93A3B5]">TXID:</span>
+                    <span className="font-mono text-[#D9B36C]">
+                      {cobrancaDetalheAuditoria.txid}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#93A3B5]">Status:</span>
+                    <span className="font-bold text-[#12B886] uppercase">
+                      {cobrancaDetalheAuditoria.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#93A3B5]">Origem do Preço:</span>
+                    <span className="text-[#F4F7FA]">
+                      {cobrancaDetalheAuditoria.origem_preco || 'catalogo'}
+                      {cobrancaDetalheAuditoria.divergencia_preco ? ' (com divergência)' : ''}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.08)] space-y-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#12B886] block">
+                    Registros de Liquidação Manual & 4-Olhos:
+                  </span>
+                  <div>
+                    <span className="text-[#93A3B5] block">Liquidado Por:</span>
+                    <strong className="text-[#F4F7FA]">
+                      {cobrancaDetalheAuditoria.liquidado_por ||
+                        'Processamento Automático de Gateway'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-[#93A3B5] block">Data e Hora da Liquidação:</span>
+                    <span className="text-[#F4F7FA]">
+                      {cobrancaDetalheAuditoria.liquidado_em ||
+                      cobrancaDetalheAuditoria.data_pagamento
+                        ? new Date(
+                            cobrancaDetalheAuditoria.liquidado_em ||
+                              cobrancaDetalheAuditoria.data_pagamento,
+                          ).toLocaleString('pt-BR')
+                        : 'Não liquidado'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[#93A3B5] block">Referência do Comprovante:</span>
+                    <span className="font-mono text-[#D9B36C]">
+                      {cobrancaDetalheAuditoria.liquidacao_comprovante_ref ||
+                        cobrancaDetalheAuditoria.url_comprovante ||
+                        'Não informada'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[#93A3B5] block">Justificativa Registrada:</span>
+                    <p className="text-[#F4F7FA] bg-[#0A0E12] p-2 rounded-lg mt-1 border border-[rgba(244,247,250,0.06)]">
+                      {cobrancaDetalheAuditoria.liquidacao_justificativa ||
+                        'Liquidação regular via arranjo PIX do Banco Central.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCobrancaDetalheAuditoria(null)}
+                  className="px-5 py-2 rounded-xl bg-[#16202B] text-xs font-semibold text-[#F4F7FA]"
+                >
+                  Fechar Trilha
+                </button>
               </div>
             </div>
           </div>

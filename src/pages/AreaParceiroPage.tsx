@@ -15,6 +15,7 @@ import {
   TrendingUp,
   AlertCircle,
   Sparkles,
+  FileText,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -36,11 +37,13 @@ export default function AreaParceiroPage() {
   const [salvandoBanco, setSalvandoBanco] = useState(false)
   const [sucessoMsg, setSucessoMsg] = useState('')
 
-  // Formulário de dados bancários
+  // Formulário de dados bancários e fiscal
   const [banco, setBanco] = useState('')
   const [agencia, setAgencia] = useState('')
   const [conta, setConta] = useState('')
   const [chavePix, setChavePix] = useState('')
+  const [tipoDocFiscal, setTipoDocFiscal] = useState<'RPA' | 'NFSe_pj'>('RPA')
+  const [docFiscalUrl, setDocFiscalUrl] = useState('')
 
   const carregarDados = async () => {
     setLoading(true)
@@ -62,6 +65,8 @@ export default function AreaParceiroPage() {
         setAgencia(p.agencia || '')
         setConta(p.conta || '')
         setChavePix(p.chave_pix || '')
+        setTipoDocFiscal(p.tipo_documentacao || 'RPA')
+        setDocFiscalUrl(p.documento_fiscal_url || '')
 
         // Carregar comissões deste parceiro
         const coms = await listarComissoes(p.id)
@@ -112,9 +117,11 @@ export default function AreaParceiroPage() {
         agencia,
         conta,
         chave_pix: chavePix,
+        tipo_documentacao: tipoDocFiscal,
+        documento_fiscal_url: docFiscalUrl,
       })
       setParceiro(atualizado)
-      setSucessoMsg('Dados bancários e chave PIX atualizados com sucesso!')
+      setSucessoMsg('Dados bancários e documentação fiscal atualizados com sucesso!')
       setTimeout(() => setSucessoMsg(''), 4000)
     } catch (err: any) {
       alert('Erro ao salvar dados bancários: ' + err.message)
@@ -434,14 +441,39 @@ export default function AreaParceiroPage() {
               <div className="flex items-center gap-2 border-b border-[rgba(244,247,250,0.08)] pb-3">
                 <CreditCard className="w-4 h-4 text-[#D9B36C]" />
                 <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                  Seus Dados Bancários para Repasse
+                  Dados Bancários & Documentação Fiscal
                 </h3>
               </div>
 
               <p className="text-[11px] text-[#93A3B5]">
-                Mantenha sua chave PIX e domicílio bancário atualizados para recebimento pontual das
-                comissões apuradas.
+                Mantenha sua chave PIX e documentação fiscal (RPA ou NFS-e) atualizados para
+                liberação pontual dos repasses de honorários.
               </p>
+
+              {/* Status de Validação Fiscal do Parceiro */}
+              <div
+                className={`p-3 rounded-xl border text-xs space-y-1 ${
+                  parceiro.documento_fiscal_validado
+                    ? 'bg-[#12B886]/10 border-[#12B886]/40 text-[#12B886]'
+                    : 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 font-bold uppercase text-[10px] tracking-wider">
+                  <FileText className="w-4 h-4" />
+                  <span>
+                    Status Fiscal:{' '}
+                    {parceiro.documento_fiscal_validado
+                      ? 'Homologado pela Controladoria'
+                      : 'Pendente de Documentação'}
+                  </span>
+                </div>
+                {!parceiro.documento_fiscal_validado && (
+                  <p className="text-[11px] text-[#93A3B5] leading-relaxed">
+                    Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o pagamento da sua
+                    comissão.
+                  </p>
+                )}
+              </div>
 
               <form onSubmit={handleSalvarDadosBancarios} className="space-y-3 text-xs">
                 <div>
@@ -490,13 +522,46 @@ export default function AreaParceiroPage() {
                   />
                 </div>
 
+                <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] space-y-2">
+                  <span className="font-bold text-[#D9B36C] uppercase text-[10px] block">
+                    Comprovação Fiscal (Exigência CFO):
+                  </span>
+                  <div>
+                    <label className="block text-[#93A3B5] mb-1">Tipo de Documento Fiscal *</label>
+                    <select
+                      value={tipoDocFiscal}
+                      onChange={(e) => setTipoDocFiscal(e.target.value as 'RPA' | 'NFSe_pj')}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                    >
+                      <option value="RPA">
+                        RPA — Recibo de Pagamento a Autônomo (Pessoa Física)
+                      </option>
+                      <option value="NFSe_pj">
+                        NFS-e — Nota Fiscal de Serviços (Pessoa Jurídica)
+                      </option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[#93A3B5] mb-1">
+                      Link / URL do RPA ou NFS-e Anexada
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://.../meu-rpa-assinado.pdf ou chave de acesso"
+                      value={docFiscalUrl}
+                      onChange={(e) => setDocFiscalUrl(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono text-[11px]"
+                    />
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={salvandoBanco}
                   className="w-full py-2.5 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs flex items-center justify-center gap-1.5 shadow-emerald-glow mt-4"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>{salvandoBanco ? 'Salvando...' : 'Atualizar Dados Bancários'}</span>
+                  <span>{salvandoBanco ? 'Salvando...' : 'Salvar Dados Bancários & Fiscal'}</span>
                 </button>
               </form>
 

@@ -9,8 +9,16 @@ export interface ServicoCatalogoRecord {
   tipo: 'avulso' | 'recorrente'
   ativo: boolean
   ordem: number
+  isFallback?: boolean
+  divergenciaDetectada?: boolean
   created: string
   updated: string
+}
+
+export interface CatalogoResult {
+  itens: ServicoCatalogoRecord[]
+  isFallback: boolean
+  divergenciaDetectada: boolean
 }
 
 export const PRODUTOS_REAIS_FALLBACK: Record<
@@ -40,30 +48,63 @@ export const PRODUTOS_REAIS_FALLBACK: Record<
   },
 }
 
-export async function listarServicosCatalogo(): Promise<ServicoCatalogoRecord[]> {
+export async function listarServicosCatalogoComStatus(): Promise<CatalogoResult> {
   try {
     const records = await pb.collection('servicos_catalogo').getFullList<ServicoCatalogoRecord>({
       sort: 'ordem',
       filter: 'ativo = true',
     })
-    if (records.length > 0) return records
+    if (records.length > 0) {
+      // Verificar se há divergência com tabela padrão de fallback
+      let divergencia = false
+      const marcados = records.map((r) => {
+        const fb = PRODUTOS_REAIS_FALLBACK[r.servico_id]
+        const temDivergencia = fb ? Number(fb.preco) !== Number(r.preco) : false
+        if (temDivergencia) divergencia = true
+        return {
+          ...r,
+          isFallback: false,
+          divergenciaDetectada: temDivergencia,
+        }
+      })
+      return {
+        itens: marcados,
+        isFallback: false,
+        divergenciaDetectada: divergencia,
+      }
+    }
   } catch (err) {
-    console.warn('Fallback catálogo serviços:', err)
+    console.warn('Fallback catálogo serviços ativado:', err)
   }
 
-  // Fallback se coleção estiver vazia ou indisponível
-  return Object.entries(PRODUTOS_REAIS_FALLBACK).map(([key, item], index) => ({
-    id: key,
-    nome: item.nome,
-    servico_id: key,
-    descricao: item.descricao,
-    preco: item.preco,
-    tipo: item.tipo,
-    ativo: true,
-    ordem: index + 1,
-    created: new Date().toISOString(),
-    updated: new Date().toISOString(),
-  }))
+  // Fallback ativado por falha ou coleção vazia
+  const fallbackItens: ServicoCatalogoRecord[] = Object.entries(PRODUTOS_REAIS_FALLBACK).map(
+    ([key, item], index) => ({
+      id: key,
+      nome: item.nome,
+      servico_id: key,
+      descricao: item.descricao,
+      preco: item.preco,
+      tipo: item.tipo,
+      ativo: true,
+      ordem: index + 1,
+      isFallback: true,
+      divergenciaDetectada: true,
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+    }),
+  )
+
+  return {
+    itens: fallbackItens,
+    isFallback: true,
+    divergenciaDetectada: true,
+  }
+}
+
+export async function listarServicosCatalogo(): Promise<ServicoCatalogoRecord[]> {
+  const res = await listarServicosCatalogoComStatus()
+  return res.itens
 }
 
 export async function obterServicoCatalogo(

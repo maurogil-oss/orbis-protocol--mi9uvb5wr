@@ -14,22 +14,38 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     // Tentar obter preço e nome da coleção servicos_catalogo; fallback para tabela fixa
     let valor = 490
     let servicoNome = 'Diagnóstico Orbis'
+    let origemPreco = 'catalogo'
+    let divergenciaPreco = false
+
+    // Preços oficiais de fallback tabelados no código
+    let precoFallback = 490
+    if (servicoId === 'laudo_pericial') precoFallback = 2850
+    else if (servicoId === 'assinatura_bureau') precoFallback = 7800
 
     try {
       const catalogoItem = $app.findFirstRecordByData('servicos_catalogo', 'servico_id', servicoId)
-      if (catalogoItem) {
+      if (catalogoItem && catalogoItem.getBool('ativo')) {
         valor = catalogoItem.getFloat('preco')
         servicoNome = catalogoItem.getString('nome')
+        origemPreco = 'catalogo'
+        // Se houver divergência entre o valor de fallback no código e o catálogo vigente
+        if (Number(valor) !== Number(precoFallback)) {
+          divergenciaPreco = true
+        }
+      } else {
+        valor = precoFallback
+        origemPreco = 'contingencia'
+        divergenciaPreco = true
       }
     } catch (_) {
+      valor = precoFallback
+      origemPreco = 'contingencia'
+      divergenciaPreco = true
       if (servicoId === 'laudo_pericial') {
-        valor = 2850
         servicoNome = 'Laudo Pericial com ART'
       } else if (servicoId === 'assinatura_bureau') {
-        valor = 7800
         servicoNome = 'Bureau ACP'
       } else if (servicoId === 'diagnostico') {
-        valor = 490
         servicoNome = 'Diagnóstico Orbis'
       }
     }
@@ -52,6 +68,8 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     cobrancaRecord.set('servico_id', servicoId)
     cobrancaRecord.set('servico_nome', servicoNome)
     cobrancaRecord.set('valor', valor)
+    cobrancaRecord.set('origem_preco', origemPreco)
+    cobrancaRecord.set('divergencia_preco', divergenciaPreco)
     cobrancaRecord.set('tomador_nome', tomadorNome)
     cobrancaRecord.set('tomador_cpf_cnpj', tomadorCpfCnpj)
     cobrancaRecord.set('tomador_email', tomadorEmail)
@@ -169,6 +187,8 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
       modo_degradacao: modoDegradacao,
       aviso_gateway: avisoGateway,
       hash_integridade: cobrancaRecord.getString('hash_integridade'),
+      origem_preco: cobrancaRecord.getString('origem_preco'),
+      divergencia_preco: cobrancaRecord.getBool('divergencia_preco'),
     })
   } catch (err) {
     return e.json(500, { error: err.message || 'Erro ao gerar cobrança PIX.' })

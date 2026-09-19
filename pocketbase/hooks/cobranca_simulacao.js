@@ -2,6 +2,9 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
   try {
     const body = e.requestInfo().body || {}
     const cobrancaId = body.cobranca_id ? String(body.cobranca_id).trim() : ''
+    const justificativa = body.justificativa ? String(body.justificativa).trim() : ''
+    const comprovanteRef = body.comprovante_ref ? String(body.comprovante_ref).trim() : ''
+    const confirmacaoDupla = Boolean(body.confirmacao_dupla)
 
     if (!cobrancaId) {
       return e.badRequestError('ID da cobrança é obrigatório.')
@@ -10,8 +13,46 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
     const cobranca = $app.findCollectionByNameOrId('cobrancas')
     const rec = $app.findFirstRecordByData('cobrancas', 'id', cobrancaId)
 
+    // Trilha de Auditoria e Quatro Olhos:
+    // Se for liquidação iniciada por admin ou com parâmetros de auditoria
+    const valorNum = rec.getFloat('valor') || 0
+    const isDivergente =
+      rec.getBool('divergencia_preco') || rec.getString('origem_preco') === 'contingencia'
+
+    // Se vier de liquidação manual (onde se passa justificativa ou pelo admin)
+    if (justificativa || body.is_manual) {
+      if (!justificativa) {
+        return e.badRequestError('Justificativa é obrigatória para liquidação manual.')
+      }
+      if (!comprovanteRef) {
+        return e.badRequestError('Referência do comprovante (nº doc/PIX) é obrigatória.')
+      }
+    }
+
+    // Cobranças acima de R$ 5.000 exigem dupla confirmação explícita
+    if (valorNum > 5000 && !confirmacaoDupla && body.is_manual) {
+      return e.badRequestError('Cobranças com valor acima de R$ 5.000 exigem dupla confirmação.')
+    }
+
+    let adminId = ''
+    let adminNome = ''
+    if (e.auth && e.auth.id) {
+      adminId = e.auth.id
+      adminNome = e.auth.getString('name') || e.auth.getString('email') || 'Administrador'
+    } else {
+      adminNome = body.liquidado_por || 'Sistema / Operador Autorizado'
+    }
+
     rec.set('status', 'pago')
     rec.set('data_pagamento', new Date().toISOString())
+    rec.set('liquidado_por', adminNome + (adminId ? ` (${adminId})` : ''))
+    rec.set('liquidado_em', new Date().toISOString())
+    if (justificativa) {
+      rec.set('liquidacao_justificativa', justificativa)
+    }
+    if (comprovanteRef) {
+      rec.set('liquidacao_comprovante_ref', comprovanteRef)
+    }
 
     // Atualizar cadastro do usuário cliente (cliente_codigo, plano_ativo, etc.)
     try {
@@ -99,7 +140,12 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
     return e.json(200, {
       id: rec.id,
       status: rec.getString('status'),
+      valor: rec.getFloat('valor'),
       data_pagamento: rec.getString('data_pagamento'),
+      liquidado_por: rec.getString('liquidado_por'),
+      liquidado_em: rec.getString('liquidado_em'),
+      liquidacao_justificativa: rec.getString('liquidacao_justificativa'),
+      liquidacao_comprovante_ref: rec.getString('liquidacao_comprovante_ref'),
       nfse_status: rec.getString('nfse_status'),
       nfse_numero: rec.getString('nfse_numero'),
       nfse_serie: rec.getString('nfse_serie'),

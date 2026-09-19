@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-19T23:26:19.475Z",
+  "generatedAt": "2026-09-19T23:51:22.603Z",
   "collections": [
     {
       "name": "users",
@@ -1873,6 +1873,48 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "liquidado_por",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "liquidado_em",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "liquidacao_justificativa",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "liquidacao_comprovante_ref",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "origem_preco",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "divergencia_preco",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ciclo_recorrencia",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -3447,6 +3489,25 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "tipo_documentacao",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["RPA", "NFSe_pj"]
+        },
+        {
+          "name": "documento_fiscal_url",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "documento_fiscal_validado",
+          "type": "bool",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [

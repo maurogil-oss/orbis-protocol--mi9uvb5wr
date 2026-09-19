@@ -82,6 +82,13 @@ export interface CobrancaRecord {
   nfse_status?: string
   parceiro_id?: string
   codigo_indicacao?: string
+  liquidado_por?: string
+  liquidado_em?: string
+  liquidacao_justificativa?: string
+  liquidacao_comprovante_ref?: string
+  origem_preco?: 'catalogo' | 'contingencia' | string
+  divergencia_preco?: boolean
+  ciclo_recorrencia?: string
   created: string
   updated: string
   expand?: {
@@ -115,6 +122,8 @@ export interface CriarCobrancaPixResponse {
   modo_degradacao: boolean
   aviso_gateway: string
   hash_integridade: string
+  origem_preco?: string
+  divergencia_preco?: boolean
 }
 
 export async function criarCobrancaPix(
@@ -138,6 +147,31 @@ export async function criarCobrancaPix(
   return res.json()
 }
 
+export async function verificarCiclosAssinatura(): Promise<{
+  sucesso: boolean
+  data_verificacao: string
+  cobrancas_geradas: number
+  cobrancas_vencidas: number
+  users_atualizados: number
+}> {
+  const url = `${pb.baseUrl}/backend/v1/assinaturas/verificar-ciclo`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(pb.authStore.token ? { Authorization: pb.authStore.token } : {}),
+    },
+    body: JSON.stringify({}),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Erro ao sincronizar ciclos de assinatura.')
+  }
+
+  return res.json()
+}
+
 export async function consultarCobranca(cobrancaId: string): Promise<CobrancaRecord> {
   return pb.collection('cobrancas').getOne<CobrancaRecord>(cobrancaId)
 }
@@ -148,16 +182,32 @@ export async function listarMinhasCobrancas(): Promise<CobrancaRecord[]> {
   })
 }
 
-export async function confirmarPagamentoSimulado(cobrancaId: string): Promise<{
+export interface ConfirmarPagamentoManualInput {
+  cobranca_id: string
+  justificativa?: string
+  comprovante_ref?: string
+  confirmacao_dupla?: boolean
+  is_manual?: boolean
+  liquidado_por?: string
+}
+
+export async function confirmarPagamentoSimulado(
+  inputOrId: string | ConfirmarPagamentoManualInput,
+): Promise<{
   id: string
   status: StatusCobranca
   data_pagamento: string
+  liquidado_por?: string
+  liquidado_em?: string
+  liquidacao_justificativa?: string
+  liquidacao_comprovante_ref?: string
   nfse_status: string
   nfse_numero?: string
   nfse_serie?: string
   nfse_verificacao?: string
   nfse_url?: string
 }> {
+  const payload = typeof inputOrId === 'string' ? { cobranca_id: inputOrId } : inputOrId
   const url = `${pb.baseUrl}/backend/v1/cobranca/confirmar-simulacao`
   const res = await fetch(url, {
     method: 'POST',
@@ -165,7 +215,7 @@ export async function confirmarPagamentoSimulado(cobrancaId: string): Promise<{
       'Content-Type': 'application/json',
       ...(pb.authStore.token ? { Authorization: pb.authStore.token } : {}),
     },
-    body: JSON.stringify({ cobranca_id: cobrancaId }),
+    body: JSON.stringify(payload),
   })
 
   if (!res.ok) {

@@ -13,6 +13,9 @@ export interface ParceiroRecord {
   chave_pix: string
   status: 'ativo' | 'inativo' | 'suspenso'
   usuario?: string
+  tipo_documentacao?: 'RPA' | 'NFSe_pj'
+  documento_fiscal_url?: string
+  documento_fiscal_validado?: boolean
   created: string
   updated: string
 }
