@@ -893,13 +893,22 @@ export default function ApiDocsCdvPage() {
             <div className="w-9 h-9 rounded-xl bg-[#16202B] border border-[#12B886]/30 flex items-center justify-center text-[#12B886]">
               <Leaf className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
-                5. Catálogo Curado de Fatores de CO₂e Evitado
-              </h2>
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                  5. Catálogo Curado de Fatores de CO₂e Evitado
+                </h2>
+                <Link
+                  to="/fatores"
+                  className="px-3 py-1 rounded-lg bg-[#12B886]/15 hover:bg-[#12B886]/25 border border-[#12B886]/40 text-xs text-[#12B886] font-mono font-bold flex items-center gap-1.5 transition-all"
+                >
+                  <span>Ver Página Completa /fatores</span>
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
               <p className="text-xs text-[#93A3B5]">
                 Fatores conservadores aplicados pelo motor dMRV da plataforma para cálculo de
-                insetting e descarbonização.
+                insetting e descarbonização. Congelados no documento no momento da emissão.
               </p>
             </div>
           </div>

@@ -721,6 +721,17 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link
+                    to="/fatores"
+                    className="hover:text-[#12B886] transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Catálogo de Fatores CO₂e</span>
+                    <span className="text-[9px] bg-[#D9B36C]/20 text-[#D9B36C] px-1 py-0.2 rounded font-mono font-bold">
+                      Bloco 4
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/solucoes/cadeias-produtivas"
                     className="hover:text-[#12B886] transition-colors"
                   >
@@ -753,6 +764,14 @@ export default function Layout() {
                 <li>
                   <Link to="/verificador" className="hover:text-[#12B886] transition-colors">
                     Verificador Público de Selos
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/fatores"
+                    className="hover:text-[#12B886] transition-colors text-[#12B886] font-medium"
+                  >
+                    Fatores CO₂e & Metodologia
                   </Link>
                 </li>
                 <li>
