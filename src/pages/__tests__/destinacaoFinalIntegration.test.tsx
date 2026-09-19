@@ -107,6 +107,41 @@ describe('Aba Destinação Final no DPP Consolidado e DPP da Peça', () => {
       screen.getByText(/Metais, Carcaça & Catalisadores \(Reciclagem em Aciaria\)/i),
     ).not.toBeNull()
     expect(screen.getByText(/Claim Principal de Reciclagem/i)).not.toBeNull()
+
+    // Balanço de massa do veículo presente na aba de destinação
+    expect(screen.getAllByText(/Balanço de Massa do Veículo Doador/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Taxa de Valorização/i).length).toBeGreaterThan(0)
+  })
+
+  it('renderiza o bloco e aba Balanço de Massa do Veículo Doador com comparativo ELV e hash', async () => {
+    render(
+      <MemoryRouter initialEntries={['/passaporte-lote/PR-BX-2026-1240105']}>
+        <Routes>
+          <Route path="/passaporte-lote/:lote" element={<PassaporteLotePublicoPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    // Aguardar carregar e encontrar botão da aba Balanço de Massa
+    const abaBalancoBtn = await screen.findByRole('button', {
+      name: /Balanço de Massa do Veículo/i,
+    })
+    expect(abaBalancoBtn).not.toBeNull()
+
+    fireEvent.click(abaBalancoBtn)
+
+    // Elementos da aba dedicada de Balanço de Massa
+    expect(
+      await screen.findByText(/Balanço de Massa & Taxa de Valorização Circular \(%RRR\)/i),
+    ).not.toBeNull()
+    expect(screen.getAllByText(/Reúso Circular/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Destinação Final/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Perdas \/ Processo/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Diretiva ELV 2000\/53\/EC/i).length).toBeGreaterThan(0)
+    expect(
+      screen.getAllByText(/HASH SHA-256 CANÔNICO DO BALANÇO DE MASSA/i).length,
+    ).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Reserva Metodológica Pré-Laudo/i).length).toBeGreaterThan(0)
   })
 
   it('renderiza o botão da aba Destinação Final no DPP Individual da Peça', async () => {

@@ -119,6 +119,97 @@ export function DestinacaoFinalTab({
           </div>
         </div>
 
+        {/* Destaque do Balanço de Massa do Veículo Doador (% RRR e Diretiva ELV) */}
+        {dados.balancoMassa && (
+          <div className="mt-6 p-4 rounded-2xl bg-[#0A0E12] border-2 border-[#12B886]/40 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[rgba(244,247,250,0.06)]">
+              <div className="flex items-center gap-2">
+                <Scale className="w-4 h-4 text-[#12B886]" />
+                <span className="font-heading font-extrabold text-xs uppercase tracking-wider text-[#F4F7FA]">
+                  Balanço de Massa do Veículo Doador (Curbside{' '}
+                  {dados.balancoMassa.massaEstimadaVeiculoKg} kg)
+                </span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#12B886] bg-[#12B886]/10 px-2.5 py-0.5 rounded-full border border-[#12B886]/30">
+                Taxa de Valorização: {dados.balancoMassa.percentualValorizacaoTotalPct.toFixed(1)}%
+                RRR
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-2.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.04)]">
+                <span className="text-[10px] uppercase font-bold text-[#12B886] block">
+                  Reúso Circular
+                </span>
+                <div className="font-mono font-bold text-sm text-[#F4F7FA]">
+                  {dados.balancoMassa.massaCircularRecuperadaKg.toFixed(1)} kg
+                </div>
+                <span className="text-[10px] text-[#93A3B5] font-mono">
+                  {dados.balancoMassa.percentualReusoPct.toFixed(1)}%
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.04)]">
+                <span className="text-[10px] uppercase font-bold text-[#60A5FA] block">
+                  Destinação Final
+                </span>
+                <div className="font-mono font-bold text-sm text-[#F4F7FA]">
+                  {dados.balancoMassa.massaDestinacaoFinalTotalKg.toFixed(1)} kg
+                </div>
+                <span className="text-[10px] text-[#93A3B5] font-mono">
+                  {dados.balancoMassa.percentualReciclagemDestinacaoPct.toFixed(1)}%
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.04)]">
+                <span className="text-[10px] uppercase font-bold text-[#F4F7FA] block">
+                  Diretiva ELV (85%)
+                </span>
+                <div className="font-mono font-bold text-sm text-[#12B886]">
+                  {dados.balancoMassa.atingiuMetaReusoReciclagem
+                    ? 'Meta Atingida ✓'
+                    : 'Em Progresso'}
+                </div>
+                <span className="text-[10px] text-[#93A3B5] font-mono">
+                  Meta 95% Val:{' '}
+                  {dados.balancoMassa.atingiuMetaValorizacaoTotal ? 'Sim ✓' : 'Parcial'}
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.04)]">
+                <span className="text-[10px] uppercase font-bold text-[#93A3B5] block">
+                  Perdas / Processo
+                </span>
+                <div className="font-mono font-bold text-sm text-[#93A3B5]">
+                  {dados.balancoMassa.massaPerdasProcessoKg.toFixed(1)} kg
+                </div>
+                <span className="text-[10px] text-[#93A3B5] font-mono">
+                  {dados.balancoMassa.percentualPerdasPct.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+
+            {/* Barra */}
+            <div className="h-2 w-full rounded-full bg-[#16202B] overflow-hidden flex">
+              {dados.balancoMassa.itens.map((item) => (
+                <div
+                  key={item.categoria}
+                  style={{
+                    width: `${item.percentual}%`,
+                    backgroundColor: item.cor,
+                  }}
+                  className="h-full"
+                  title={`${item.rotulo}: ${item.percentual.toFixed(1)}%`}
+                />
+              ))}
+            </div>
+
+            <p className="text-[9px] text-[#93A3B5] leading-relaxed">
+              {dados.balancoMassa.reservaPreLaudo}
+            </p>
+          </div>
+        )}
+
         {/* Resumo das 3 Camadas no Banner */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
           <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30">

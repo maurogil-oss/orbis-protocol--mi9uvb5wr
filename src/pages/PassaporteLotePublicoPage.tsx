@@ -40,6 +40,7 @@ import {
 } from '@/services/destinacaoFinalService'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
+import { BalancoMassaVeiculoSection } from '@/components/BalancoMassaVeiculoSection'
 
 // Mapeamento amigável e ordenado das categorias de materiais / subsistemas veiculares
 const CATEGORIAS_CONFIG: Record<string, { label: string; cor: string }> = {
@@ -75,7 +76,7 @@ export default function PassaporteLotePublicoPage() {
   const [hashCalculado, setHashCalculado] = useState<string>('')
   const [copiedHash, setCopiedHash] = useState(false)
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todos')
-  const [abaLoteAtiva, setAbaLoteAtiva] = useState<'laudo' | 'destinacao'>('laudo')
+  const [abaLoteAtiva, setAbaLoteAtiva] = useState<'laudo' | 'balanco' | 'destinacao'>('laudo')
   const [dadosDestinacao, setDadosDestinacao] = useState<DestinacaoFinalLoteResponse | null>(null)
 
   // Histórico de Verificações do Lote
@@ -139,12 +140,16 @@ export default function PassaporteLotePublicoPage() {
             setHistoricoConsultas(hist.ultimas)
           }
 
-          // Carregar matriz de Destinação Final em 3 camadas do lote
+          // Carregar matriz de Destinação Final em 3 camadas e Balanço de Massa do lote
           const chaveBusca =
             resultado.lote.veiculo_baixa_detran ||
             resultado.lote.cartela_desmontagem ||
             resultado.lote.id
-          const dest = await consultarDestinacaoFinalLote(chaveBusca)
+          const massaCircularLote =
+            resultado.pecas.reduce((acc, p) => acc + (Number(p.peso_kg) || 0), 0) ||
+            resultado.lote.total_peso_kg ||
+            0
+          const dest = await consultarDestinacaoFinalLote(chaveBusca, massaCircularLote)
           if (isMounted) {
             setDadosDestinacao(dest)
           }
@@ -407,12 +412,12 @@ export default function PassaporteLotePublicoPage() {
           </div>
         ) : (
           <>
-            {/* NAVEGAÇÃO DE ABAS DO LOTE CONSOLIDADO: DPP DO LOTE vs DESTINAÇÃO FINAL (Oculta na Impressão) */}
-            <div className="flex border-b border-[rgba(244,247,250,0.12)] gap-2 pb-px mb-6 sm:mb-8 no-print">
+            {/* NAVEGAÇÃO DE ABAS DO LOTE CONSOLIDADO: DPP DO LOTE vs BALANÇO DE MASSA vs DESTINAÇÃO FINAL (Oculta na Impressão) */}
+            <div className="flex border-b border-[rgba(244,247,250,0.12)] gap-2 pb-px mb-6 sm:mb-8 no-print overflow-x-auto">
               <button
                 type="button"
                 onClick={() => setAbaLoteAtiva('laudo')}
-                className={`flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+                className={`flex items-center gap-2 px-4 sm:px-5 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all ${
                   abaLoteAtiva === 'laudo'
                     ? 'border-[#12B886] text-[#12B886] bg-[#12B886]/10 rounded-t-xl'
                     : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/60 rounded-t-xl'
@@ -424,8 +429,26 @@ export default function PassaporteLotePublicoPage() {
 
               <button
                 type="button"
+                onClick={() => setAbaLoteAtiva('balanco')}
+                className={`flex items-center gap-2 px-4 sm:px-5 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all ${
+                  abaLoteAtiva === 'balanco'
+                    ? 'border-[#12B886] text-[#12B886] bg-[#12B886]/10 rounded-t-xl'
+                    : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/60 rounded-t-xl'
+                }`}
+              >
+                <Scale className="w-4 h-4" />
+                <span>Balanço de Massa do Veículo</span>
+                {dadosDestinacao?.balancoMassa && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] font-mono font-bold">
+                    {dadosDestinacao.balancoMassa.percentualValorizacaoTotalPct.toFixed(1)}% RRR
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setAbaLoteAtiva('destinacao')}
-                className={`flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all ${
+                className={`flex items-center gap-2 px-4 sm:px-5 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all ${
                   abaLoteAtiva === 'destinacao'
                     ? 'border-[#12B886] text-[#12B886] bg-[#12B886]/10 rounded-t-xl'
                     : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/60 rounded-t-xl'
@@ -441,6 +464,23 @@ export default function PassaporteLotePublicoPage() {
               </button>
             </div>
 
+            {/* ABA BALANÇO DE MASSA DO VEÍCULO (VISUALIZAÇÃO DEDICADA INTERATIVA) */}
+            {abaLoteAtiva === 'balanco' && (
+              <div className="no-print mb-12">
+                {dadosDestinacao?.balancoMassa ? (
+                  <BalancoMassaVeiculoSection
+                    balanco={dadosDestinacao.balancoMassa}
+                    veiculoModelo={lote.veiculo_marca_modelo}
+                    veiculoBaixa={lote.veiculo_baixa_detran}
+                  />
+                ) : (
+                  <div className="p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] text-center text-xs text-[#93A3B5]">
+                    Dados do Balanço de Massa não disponíveis para este lote.
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ABA DESTINAÇÃO FINAL DO LOTE (VISUALIZAÇÃO INTERATIVA) */}
             {abaLoteAtiva === 'destinacao' && dadosDestinacao && (
               <div className="no-print mb-12">
@@ -449,7 +489,7 @@ export default function PassaporteLotePublicoPage() {
             )}
 
             {/* ABA LAUDO / CERTIFICADO CONSOLIDADO (MOSTRADA QUANDO ABA LAUDO OU NA IMPRESSÃO) */}
-            <div className={abaLoteAtiva === 'destinacao' ? 'hidden print:block' : 'block'}>
+            <div className={abaLoteAtiva !== 'laudo' ? 'hidden print:block' : 'block'}>
               {/* ========================================================================= */}
               {/* VISUALIZAÇÃO MOBILE (breakpoint < md / < 768px): Cartão de resumo + fluxo vertical */}
               {/* Oculta em telas médias/grandes (md:hidden) e na impressão (print:hidden) */}
@@ -598,6 +638,72 @@ export default function PassaporteLotePublicoPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Mobile: Mini Bloco do Balanço de Massa do Veículo */}
+                  {dadosDestinacao?.balancoMassa && (
+                    <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-[#F4F7FA]">
+                          <Scale className="w-4 h-4 text-[#12B886]" />
+                          <span className="text-[11px] uppercase tracking-wider">
+                            Balanço de Massa do Veículo
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-[#12B886] bg-[#12B886]/10 px-2 py-0.5 rounded-full border border-[#12B886]/30">
+                          {dadosDestinacao.balancoMassa.percentualValorizacaoTotalPct.toFixed(1)}%
+                          RRR
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                        <div className="p-2 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.04)]">
+                          <span className="text-[#93A3B5] block text-[9px]">Reúso Circular</span>
+                          <strong className="text-[#12B886]">
+                            {dadosDestinacao.balancoMassa.massaCircularRecuperadaKg.toFixed(1)} kg (
+                            {dadosDestinacao.balancoMassa.percentualReusoPct.toFixed(1)}%)
+                          </strong>
+                        </div>
+                        <div className="p-2 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.04)]">
+                          <span className="text-[#93A3B5] block text-[9px]">Destinação Final</span>
+                          <strong className="text-[#60A5FA]">
+                            {dadosDestinacao.balancoMassa.massaDestinacaoFinalTotalKg.toFixed(1)} kg
+                            (
+                            {dadosDestinacao.balancoMassa.percentualReciclagemDestinacaoPct.toFixed(
+                              1,
+                            )}
+                            %)
+                          </strong>
+                        </div>
+                      </div>
+
+                      {/* Barra Mobile */}
+                      <div className="h-2 w-full rounded-full bg-[#16202B] overflow-hidden flex">
+                        {dadosDestinacao.balancoMassa.itens.map((item) => (
+                          <div
+                            key={item.categoria}
+                            style={{
+                              width: `${item.percentual}%`,
+                              backgroundColor: item.cor,
+                            }}
+                            className="h-full"
+                          />
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between text-[9px] text-[#93A3B5] pt-0.5">
+                        <span>
+                          Tara curbside estimada:{' '}
+                          {dadosDestinacao.balancoMassa.massaEstimadaVeiculoKg} kg
+                        </span>
+                        <span className="text-[#12B886] font-semibold">
+                          Meta ELV:{' '}
+                          {dadosDestinacao.balancoMassa.atingiuMetaReusoReciclagem
+                            ? 'Atingida ✓'
+                            : 'Parcial'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* QR Code Tocável e Acesso */}
                   <div className="p-3 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 flex items-center gap-3">
@@ -1075,6 +1181,112 @@ export default function PassaporteLotePublicoPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Bloco 2.5: Resumo Sintético do Balanço de Massa do Veículo Doador (Diretiva ELV 2000/53/EC) */}
+                  {dadosDestinacao?.balancoMassa && (
+                    <div className="p-5 rounded-2xl bg-[#0A0E12] border-2 border-[#12B886]/40 print:bg-slate-50 print:border-emerald-600 print-card space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(244,247,250,0.08)] pb-2 print:border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <Scale className="w-4 h-4 text-[#12B886] print:text-emerald-700" />
+                          <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#F4F7FA] print:text-slate-900">
+                            BALANÇO DE MASSA DO VEÍCULO DOADOR & DIRETIVA ELV 2000/53/EC
+                          </span>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#12B886] print:text-emerald-800 bg-[#12B886]/10 px-2.5 py-0.5 rounded-full border border-[#12B886]/30">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Taxa de Valorização:{' '}
+                          {dadosDestinacao.balancoMassa.percentualValorizacaoTotalPct.toFixed(1)}%
+                          (Curbside {dadosDestinacao.balancoMassa.massaEstimadaVeiculoKg} kg)
+                        </span>
+                      </div>
+
+                      {/* Grade Sintética dos 4 Fluxos do Balanço */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)] print:bg-white print:border-slate-200">
+                          <span className="text-[10px] uppercase font-bold text-[#12B886] block">
+                            Reúso Circular
+                          </span>
+                          <div className="font-mono font-black text-sm text-[#F4F7FA] print:text-slate-900 mt-0.5">
+                            {dadosDestinacao.balancoMassa.massaCircularRecuperadaKg.toFixed(1)} kg
+                          </div>
+                          <span className="text-[10px] text-[#93A3B5] print:text-slate-500 font-mono">
+                            {dadosDestinacao.balancoMassa.percentualReusoPct.toFixed(1)}% do veículo
+                          </span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)] print:bg-white print:border-slate-200">
+                          <span className="text-[10px] uppercase font-bold text-[#60A5FA] block">
+                            Destinação Final
+                          </span>
+                          <div className="font-mono font-black text-sm text-[#F4F7FA] print:text-slate-900 mt-0.5">
+                            {dadosDestinacao.balancoMassa.massaDestinacaoFinalTotalKg.toFixed(1)} kg
+                          </div>
+                          <span className="text-[10px] text-[#93A3B5] print:text-slate-500 font-mono">
+                            {dadosDestinacao.balancoMassa.percentualReciclagemDestinacaoPct.toFixed(
+                              1,
+                            )}
+                            % (Gate+RLO+Metais)
+                          </span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)] print:bg-white print:border-slate-200">
+                          <span className="text-[10px] uppercase font-bold text-[#F4F7FA] print:text-slate-800 block">
+                            Meta ELV (85%)
+                          </span>
+                          <div className="font-mono font-black text-sm text-[#12B886] print:text-emerald-700 mt-0.5">
+                            {dadosDestinacao.balancoMassa.atingiuMetaReusoReciclagem
+                              ? 'Atingida ✓'
+                              : 'Em Análise'}
+                          </div>
+                          <span className="text-[10px] text-[#93A3B5] print:text-slate-500 font-mono">
+                            Meta 95% Val:{' '}
+                            {dadosDestinacao.balancoMassa.atingiuMetaValorizacaoTotal
+                              ? 'Sim ✓'
+                              : 'Parcial'}
+                          </span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)] print:bg-white print:border-slate-200">
+                          <span className="text-[10px] uppercase font-bold text-[#93A3B5] block">
+                            Perdas / Processo
+                          </span>
+                          <div className="font-mono font-black text-sm text-[#93A3B5] print:text-slate-700 mt-0.5">
+                            {dadosDestinacao.balancoMassa.massaPerdasProcessoKg.toFixed(1)} kg
+                          </div>
+                          <span className="text-[10px] text-[#93A3B5] print:text-slate-500 font-mono">
+                            {dadosDestinacao.balancoMassa.percentualPerdasPct.toFixed(1)}% residual
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Barra de Distribuição Ponderada */}
+                      <div className="h-3 w-full rounded-lg bg-[#16202B] overflow-hidden flex border border-[rgba(244,247,250,0.06)] print:border-slate-300">
+                        {dadosDestinacao.balancoMassa.itens.map((item) => (
+                          <div
+                            key={item.categoria}
+                            style={{
+                              width: `${item.percentual}%`,
+                              backgroundColor: item.cor,
+                            }}
+                            className="h-full"
+                            title={`${item.rotulo}: ${item.percentual.toFixed(1)}%`}
+                          />
+                        ))}
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[9px] text-[#93A3B5] print:text-slate-500 gap-1 pt-1">
+                        <span>
+                          Reserva Pré-Laudo: tara em ordem de marcha estimada via parâmetros de
+                          engenharia automotiva (
+                          {dadosDestinacao.balancoMassa.massaEstimadaVeiculoKg} kg).
+                        </span>
+                        <span className="font-mono">
+                          Hash Balanço:{' '}
+                          {dadosDestinacao.balancoMassa.hashBalancoSha256.slice(0, 16)}...
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Bloco 3: Metodologia Científica & Conformidade Normativa */}
                   <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3 print:bg-slate-50 print:border-slate-300 print-card">

@@ -59,6 +59,22 @@ describe('Serviço de Destinação Final do DPP (3 Camadas)', () => {
     expect(camada3.baseLegalPadrao).toContain('ISO 14040')
     expect(camada3.reservaPreLaudo).toContain('Reserva Pré-Laudo')
 
+    // Balanço de Massa do Veículo Doador (Bloco 3)
+    expect(dados.balancoMassa).toBeDefined()
+    const balanco = dados.balancoMassa!
+    expect(balanco.massaEstimadaVeiculoKg).toBe(1100.0) // Estimativa curbside Clio
+    expect(balanco.isEstimativaCurbside).toBe(true)
+    expect(balanco.massaCircularRecuperadaKg).toBeGreaterThan(400) // ~437.7 kg
+    expect(balanco.massaDestinacaoFinalTotalKg).toBeGreaterThan(400) // Gate + RLO + Metais
+    expect(balanco.massaPerdasProcessoKg).toBeGreaterThanOrEqual(0)
+    expect(balanco.percentualValorizacaoTotalPct).toBeGreaterThan(70)
+    expect(balanco.metaElvReusoReciclagemPct).toBe(85.0)
+    expect(balanco.metaElvValorizacaoTotalPct).toBe(95.0)
+    expect(balanco.hashBalancoSha256).toHaveLength(64)
+    expect(balanco.reservaPreLaudo).toContain('Reserva Metodológica Pré-Laudo')
+    expect(balanco.reservaPreLaudo).toContain('curbside')
+    expect(balanco.reservaPreLaudo).toContain('Diretiva ELV 2000/53/EC')
+
     // Hashes SHA-256 e sem menção indevida a terceiros institucionais sem contrato
     expect(dados.hashGeralDestinacao).toBeDefined()
     for (const item of [...camada1.itens, ...camada2.itens, ...camada3.itens]) {
@@ -78,6 +94,12 @@ describe('Serviço de Destinação Final do DPP (3 Camadas)', () => {
     expect(dados.camadas.camada1.itens.length).toBe(3)
     expect(dados.camadas.camada2.isEstimativa).toBe(true)
     expect(dados.camadas.camada3.isClaimPrincipal).toBe(true)
+
+    // Balanço de massa do Gol
+    expect(dados.balancoMassa).toBeDefined()
+    expect(dados.balancoMassa?.massaEstimadaVeiculoKg).toBe(1000.0) // Gol ~1.000 kg curbside
+    expect(dados.balancoMassa?.massaDestinacaoFinalTotalKg).toBeGreaterThan(300)
+    expect(dados.balancoMassa?.hashBalancoSha256).toHaveLength(64)
   })
 
   it('deve calcular hash SHA-256 determinístico para strings de destinação', async () => {
