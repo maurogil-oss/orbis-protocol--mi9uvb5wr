@@ -22,6 +22,7 @@ import {
   RefreshCw,
   FileSpreadsheet,
   Package,
+  AlertCircle,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -29,15 +30,23 @@ import {
   salvarPassaporteBureau,
   PassaporteFornecedorRecord,
 } from '@/services/bureauPassaporteService'
+import {
+  obterDadosProgramaCarbonoCdv,
+  CdvCarbonoProgramaItem,
+  RESERVA_METODOLOGICA_PRE_LAUDO,
+} from '@/services/moverService'
 
 export function BureauACP() {
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
   const [passaportes, setPassaportes] = useState<PassaporteFornecedorRecord[]>([])
+  const [cdvsCarbono, setCdvsCarbono] = useState<CdvCarbonoProgramaItem[]>([])
+  const [abaAtiva, setAbaAtiva] = useState<'passaportes' | 'programa_carbono'>('passaportes')
   const [isLoading, setIsLoading] = useState(true)
   const [busca, setBusca] = useState('')
   const [copiadoId, setCopiadoId] = useState<string | null>(null)
+  const [copiadoHash, setCopiadoHash] = useState<string | null>(null)
 
   // Modal / Edição de Passaporte
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -46,8 +55,24 @@ export function BureauACP() {
   const [isSalvando, setIsSalvando] = useState(false)
 
   useEffect(() => {
-    carregarPassaportes()
+    carregarDados()
   }, [])
+
+  const carregarDados = async () => {
+    setIsLoading(true)
+    try {
+      const [lista, listaCdvs] = await Promise.all([
+        listarPassaportesBureau(),
+        obterDadosProgramaCarbonoCdv(),
+      ])
+      setPassaportes(lista)
+      setCdvsCarbono(listaCdvs)
+    } catch {
+      /* intentionally ignored */
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const carregarPassaportes = async () => {
     setIsLoading(true)
@@ -235,7 +260,7 @@ export function BureauACP() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={carregarPassaportes}
+              onClick={carregarDados}
               className="p-2.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA]"
               title="Atualizar lista"
             >
@@ -249,6 +274,44 @@ export function BureauACP() {
               <span>Novo Passaporte</span>
             </button>
           </div>
+        </div>
+
+        {/* Navegação entre Abas do Cockpit: Passaportes de Fornecedores vs. Programa Carbono (MOVER / CDVs) */}
+        <div className="flex items-center gap-2 border-b border-[rgba(244,247,250,0.1)] pb-2">
+          <button
+            onClick={() => setAbaAtiva('passaportes')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+              abaAtiva === 'passaportes'
+                ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
+                : 'bg-[#111820] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)]'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Passaporte do Fornecedor ({passaportes.length})</span>
+          </button>
+
+          <button
+            onClick={() => setAbaAtiva('programa_carbono')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+              abaAtiva === 'programa_carbono'
+                ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
+                : 'bg-[#111820] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)]'
+            }`}
+          >
+            <Leaf className="w-4 h-4 text-[#12B886]" />
+            <span>Programa Carbono • CDVs ({cdvsCarbono.length})</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#D9B36C]/20 text-[#D9B36C] font-mono">
+              MOVER GS 448
+            </span>
+          </button>
+
+          <Link
+            to="/dossie-mover"
+            className="ml-auto hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[#D9B36C] hover:text-[#F4F7FA] bg-[#16202B] border border-[#D9B36C]/30 transition-colors"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Dossiê do Projeto MOVER →</span>
+          </Link>
         </div>
 
         {/* 3 Métricas Rápidas do Cockpit */}
@@ -409,142 +472,387 @@ export function BureauACP() {
           </div>
         </div>
 
-        {/* Lista de Passaportes do Fornecedor */}
-        {isLoading ? (
-          <div className="text-center py-16">
-            <div className="w-10 h-10 border-4 border-[#12B886] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-xs text-[#93A3B5]">
-              Carregando carteira de fornecedores do Bureau...
-            </p>
-          </div>
-        ) : passaportesFiltrados.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[rgba(244,247,250,0.15)] rounded-2xl bg-[#111820] space-y-3">
-            <Building2 className="w-10 h-10 text-[#93A3B5] mx-auto opacity-50" />
-            <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-              Nenhum fornecedor encontrado
-            </h3>
-            <p className="text-xs text-[#93A3B5]">
-              Crie o primeiro passaporte do fornecedor para gerar links de consulta para os
-              compradores.
-            </p>
-            <button
-              onClick={handleAbrirNovoPassaporte}
-              className="px-5 py-2.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] text-xs uppercase"
-            >
-              Criar Passaporte Demonstrativo
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {passaportesFiltrados.map((pass) => (
-              <div
-                key={pass.id}
-                className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 transition-all space-y-4"
-              >
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.06)] pb-4">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
-                        {pass.empresa_nome}
-                      </h2>
-                      <span className="px-2.5 py-0.5 rounded bg-[#16202B] text-[#D9B36C] font-mono font-bold text-xs">
-                        CNPJ: {pass.empresa_cnpj}
-                      </span>
-                    </div>
-                    <div className="text-xs text-[#93A3B5] mt-1 flex flex-wrap gap-4">
-                      <span>
-                        Setor:{' '}
-                        <strong className="text-[#F4F7FA]">
-                          {pass.setor_atuacao || 'Industrial'}
-                        </strong>
-                      </span>
-                      <span>
-                        Inventário Origem:{' '}
-                        <strong className="text-[#12B886]">
-                          {pass.data_inventario_origem || '2026-02-15'}
-                        </strong>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Score & Indicadores Resumidos */}
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
-                        Intensidade
-                      </span>
-                      <span className="font-heading font-black text-xl text-[#12B886]">
-                        {pass.kg_co2e_por_kg_produzido?.toFixed(2) || '1.84'}{' '}
-                        <span className="text-xs font-normal text-[#93A3B5]">kg CO₂e/kg</span>
-                      </span>
-                    </div>
-
-                    <div className="text-right border-l border-[rgba(244,247,250,0.08)] pl-6">
-                      <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
-                        Score ESG
-                      </span>
-                      <span className="font-heading font-black text-2xl text-[#D9B36C]">
-                        {pass.score_esg || 88}
-                        <span className="text-xs font-normal text-[#93A3B5]">/100</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sub-painel: Acesso Comprador via Link Tokenizado */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                  <div className="space-y-1 max-w-xl">
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-3.5 h-3.5 text-[#12B886]" />
-                      <strong className="text-[#F4F7FA]">
-                        Link Público Tokenizado do Comprador:
-                      </strong>
-                    </div>
-                    <div className="font-mono text-[11px] text-[#93A3B5] truncate">
-                      {window.location.origin}/passaporte-fornecedor/{pass.token_consulta}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <button
-                      type="button"
-                      onClick={() => handleCopiarLink(pass.token_consulta, pass.id)}
-                      className="px-3.5 py-2 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-xs flex items-center gap-1.5"
-                    >
-                      {copiadoId === pass.id ? (
-                        <Check className="w-3.5 h-3.5 text-[#12B886]" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                      <span>{copiadoId === pass.id ? 'Copiado!' : 'Copiar Link Comprador'}</span>
-                    </button>
-
-                    <Link
-                      to={`/passaporte-fornecedor/${pass.token_consulta}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3.5 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] font-bold text-xs flex items-center gap-1.5 shadow-emerald-glow"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Abrir Visão do Comprador</span>
-                      <ExternalLink className="w-3 h-3 ml-0.5" />
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPassaporteEdicao(pass)
-                        setIsModalOpen(true)
-                      }}
-                      className="p-2 rounded-lg bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA]"
-                      title="Editar configurações de revelação"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
+        {/* ABA 2: PROGRAMA CARBONO (CAMADA 2 DO ESPAÇO MOVER) */}
+        {abaAtiva === 'programa_carbono' && (
+          <div className="space-y-6">
+            {/* Banner de Reserva Metodológica da Camada 2 */}
+            <div className="p-4 rounded-xl bg-[#16202B]/80 border border-[#D9B36C]/40 text-xs text-[#D9B36C] flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 flex-shrink-0 text-[#D9B36C] mt-0.5" />
+              <div className="space-y-1">
+                <span className="font-bold uppercase tracking-wider block">
+                  Reserva Metodológica Pré-Laudo (Programa de Descarbonização de CDVs)
+                </span>
+                <p className="text-[#93A3B5] leading-relaxed">{RESERVA_METODOLOGICA_PRE_LAUDO}</p>
               </div>
-            ))}
+            </div>
+
+            {/* Cabeçalho da Seção */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                  MONITORAMENTO DE CDVs & ELEGIBILIDADE AO PROGRAMA CARBONO
+                </h2>
+                <p className="text-xs text-[#93A3B5] mt-1">
+                  Acompanhamento de Centrais de Desmontagem Veicular candidatas e homologadas. O
+                  Selo CDV Conforme atesta conformidade prévia com Lei 12.977/2014, credenciamento
+                  DETRAN e rastreabilidade fiscal de lotes.
+                </p>
+              </div>
+
+              <Link
+                to="/dossie-mover"
+                className="px-4 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase tracking-wider hover:bg-[#0CA678] inline-flex items-center gap-2 shadow-emerald-glow self-start sm:self-auto"
+              >
+                <span>Ver Dossiê Completo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Cards dos CDVs no Programa Carbono */}
+            <div className="space-y-6">
+              {cdvsCarbono.map((cdv) => (
+                <div
+                  key={cdv.cdv_id}
+                  className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-6"
+                >
+                  {/* Topo do Card do CDV */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                          {cdv.cdv_nome}
+                        </h3>
+                        <span className="font-mono text-xs text-[#D9B36C] px-2.5 py-0.5 rounded bg-[#16202B]">
+                          CNPJ: {cdv.cdv_cnpj}
+                        </span>
+                        <span className="font-mono text-xs text-[#93A3B5] px-2.5 py-0.5 rounded bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                          {cdv.codigo_detran} ({cdv.uf})
+                        </span>
+                      </div>
+                      <span className="text-xs text-[#93A3B5] mt-1 block">
+                        Candidato a VPA (Voluntary Project Activity — Área de Projeto Voluntário) •
+                        Metodologia GS 448
+                      </span>
+                    </div>
+
+                    {/* Selo CDV Conforme como Pré-Requisito */}
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
+                          Pré-Requisito do Programa
+                        </span>
+                        <span className="font-heading font-bold text-sm text-[#F4F7FA]">
+                          Selo CDV Conforme
+                        </span>
+                      </div>
+                      {cdv.status_selo_cdv_conforme === 'obtido' ? (
+                        <div className="px-3 py-1.5 rounded-xl bg-[#12B886]/20 border border-[#12B886]/40 text-[#12B886] flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                          <CheckCircle2 className="w-4 h-4 text-[#12B886]" />
+                          <span>Status: Obtido</span>
+                        </div>
+                      ) : (
+                        <div className="px-3 py-1.5 rounded-xl bg-[#D9B36C]/20 border border-[#D9B36C]/40 text-[#D9B36C] flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                          <AlertCircle className="w-4 h-4 text-[#D9B36C]" />
+                          <span>Status: Pendente</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 4 Métricas Principais da Operação de Desmonte */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                      <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
+                        Volume VFV Declarado
+                      </span>
+                      <div className="font-heading font-black text-2xl text-[#F4F7FA] mt-1">
+                        {cdv.vfv_declarado_ano}{' '}
+                        <span className="text-xs font-normal text-[#93A3B5]">veículos/ano</span>
+                      </div>
+                      <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                        Capacidade de pátio informada
+                      </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                      <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
+                        VFV Processados no Sistema
+                      </span>
+                      <div className="font-heading font-black text-2xl text-[#12B886] mt-1">
+                        {cdv.vfv_processados_registrados}{' '}
+                        <span className="text-xs font-normal text-[#93A3B5]">lotes auditados</span>
+                      </div>
+                      <span className="text-[10px] text-[#D9B36C] mt-1 block">
+                        Lastro com baixa no DETRAN
+                      </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                      <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
+                        Massa de Materiais Destinados
+                      </span>
+                      <div className="font-heading font-black text-2xl text-[#F4F7FA] mt-1">
+                        {cdv.peso_total_materiais_kg.toFixed(1)}{' '}
+                        <span className="text-xs font-normal text-[#93A3B5]">kg apurados</span>
+                      </div>
+                      <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                        4 camadas curbside rastreadas
+                      </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30">
+                      <span className="text-[10px] text-[#12B886] uppercase font-bold block">
+                        Emissões Evitadas (Estimativa)
+                      </span>
+                      <div className="font-heading font-black text-2xl text-[#12B886] mt-1">
+                        {cdv.total_tco2e_evitado_estimado.toFixed(2)}{' '}
+                        <span className="text-xs font-normal text-[#93A3B5]">tCO₂e</span>
+                      </div>
+                      <span className="text-[10px] text-[#D9B36C] mt-1 block">
+                        Sujeito a validação do VVB
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Tabela de Composição de Materiais e Destinações (GS 448) */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#F4F7FA]">
+                        Composição de Materiais & Fatores de Substituição (GS 448)
+                      </span>
+                      <span className="text-[11px] font-mono text-[#D9B36C]">
+                        Substituição Reciclado × Primário
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-[rgba(244,247,250,0.08)] bg-[#0A0E12]">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="border-b border-[rgba(244,247,250,0.08)] bg-[#16202B]/60 text-[#93A3B5]">
+                            <th className="py-2.5 px-4 font-semibold">Fração / Material</th>
+                            <th className="py-2.5 px-4 font-semibold text-right">Peso (kg)</th>
+                            <th className="py-2.5 px-4 font-semibold text-right">% Veículo</th>
+                            <th className="py-2.5 px-4 font-semibold text-right">
+                              Fator GS 448 (kg CO₂e/kg)
+                            </th>
+                            <th className="py-2.5 px-4 font-semibold">Evidência / Destinação</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[rgba(244,247,250,0.05)] text-[#F4F7FA]">
+                          {cdv.composicao_materiais.map((mat, i) => (
+                            <tr key={i} className="hover:bg-[#16202B]/30 transition-colors">
+                              <td className="py-2.5 px-4 font-medium">{mat.material}</td>
+                              <td className="py-2.5 px-4 text-right font-mono">
+                                {mat.peso_kg.toFixed(1)} kg
+                              </td>
+                              <td className="py-2.5 px-4 text-right font-mono text-[#D9B36C]">
+                                {mat.percentual}%
+                              </td>
+                              <td className="py-2.5 px-4 text-right font-mono text-[#12B886]">
+                                -{mat.fator_substituicao_kgco2e_por_kg.toFixed(2)}
+                              </td>
+                              <td className="py-2.5 px-4 text-xs text-[#93A3B5]">
+                                {cdv.vfv_processados_registrados > 0 ? (
+                                  <span className="inline-flex items-center gap-1 text-[#12B886]">
+                                    <Check className="w-3.5 h-3.5" />
+                                    DPP Lote + MTR-SINIR
+                                  </span>
+                                ) : (
+                                  <span className="text-[#93A3B5] italic">Aguardando lote</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Rodapé do Card com Hash Canônico e Reserva */}
+                  <div className="pt-3 border-t border-[rgba(244,247,250,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 max-w-xl">
+                      <Lock className="w-3.5 h-3.5 text-[#12B886] flex-shrink-0" />
+                      <span className="text-[#93A3B5] truncate font-mono text-[11px]">
+                        Hash Canônico: {cdv.hash_canonical_programa}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(cdv.hash_canonical_programa)
+                          setCopiadoHash(cdv.cdv_id)
+                          setTimeout(() => setCopiadoHash(null), 3000)
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-xs flex items-center gap-1.5"
+                      >
+                        {copiadoHash === cdv.cdv_id ? (
+                          <Check className="w-3 h-3 text-[#12B886]" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                        <span>{copiadoHash === cdv.cdv_id ? 'Copiado!' : 'Copiar Hash'}</span>
+                      </button>
+
+                      {cdv.vfv_processados_registrados > 0 && (
+                        <Link
+                          to="/passaporte-lote/PR-BX-2026-1240105"
+                          className="px-3.5 py-1.5 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase hover:bg-[#0CA678] inline-flex items-center gap-1.5 shadow-emerald-glow"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Ver DPP do Lote</span>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ABA 1: LISTA PADRÃO DE PASSAPORTES DO FORNECEDOR */}
+        {abaAtiva === 'passaportes' && (
+          <div>
+            {isLoading ? (
+              <div className="text-center py-16">
+                <div className="w-10 h-10 border-4 border-[#12B886] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-xs text-[#93A3B5]">
+                  Carregando carteira de fornecedores do Bureau...
+                </p>
+              </div>
+            ) : passaportesFiltrados.length === 0 ? (
+              <div className="text-center py-16 border border-dashed border-[rgba(244,247,250,0.15)] rounded-2xl bg-[#111820] space-y-3">
+                <Building2 className="w-10 h-10 text-[#93A3B5] mx-auto opacity-50" />
+                <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                  Nenhum fornecedor encontrado
+                </h3>
+                <p className="text-xs text-[#93A3B5]">
+                  Crie o primeiro passaporte do fornecedor para gerar links de consulta para os
+                  compradores.
+                </p>
+                <button
+                  onClick={handleAbrirNovoPassaporte}
+                  className="px-5 py-2.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] text-xs uppercase"
+                >
+                  Criar Passaporte Demonstrativo
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {passaportesFiltrados.map((pass) => (
+                  <div
+                    key={pass.id}
+                    className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 transition-all space-y-4"
+                  >
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.06)] pb-4">
+                      <div>
+                        <div className="flex items-center gap-3">
+                          <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                            {pass.empresa_nome}
+                          </h2>
+                          <span className="px-2.5 py-0.5 rounded bg-[#16202B] text-[#D9B36C] font-mono font-bold text-xs">
+                            CNPJ: {pass.empresa_cnpj}
+                          </span>
+                        </div>
+                        <div className="text-xs text-[#93A3B5] mt-1 flex flex-wrap gap-4">
+                          <span>
+                            Setor:{' '}
+                            <strong className="text-[#F4F7FA]">
+                              {pass.setor_atuacao || 'Industrial'}
+                            </strong>
+                          </span>
+                          <span>
+                            Inventário Origem:{' '}
+                            <strong className="text-[#12B886]">
+                              {pass.data_inventario_origem || '2026-02-15'}
+                            </strong>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Score & Indicadores Resumidos */}
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
+                            Intensidade
+                          </span>
+                          <span className="font-heading font-black text-xl text-[#12B886]">
+                            {pass.kg_co2e_por_kg_produzido?.toFixed(2) || '1.84'}{' '}
+                            <span className="text-xs font-normal text-[#93A3B5]">kg CO₂e/kg</span>
+                          </span>
+                        </div>
+
+                        <div className="text-right border-l border-[rgba(244,247,250,0.08)] pl-6">
+                          <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
+                            Score ESG
+                          </span>
+                          <span className="font-heading font-black text-2xl text-[#D9B36C]">
+                            {pass.score_esg || 88}
+                            <span className="text-xs font-normal text-[#93A3B5]">/100</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sub-painel: Acesso Comprador via Link Tokenizado */}
+                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                      <div className="space-y-1 max-w-xl">
+                        <div className="flex items-center gap-2">
+                          <Lock className="w-3.5 h-3.5 text-[#12B886]" />
+                          <strong className="text-[#F4F7FA]">
+                            Link Público Tokenizado do Comprador:
+                          </strong>
+                        </div>
+                        <div className="font-mono text-[11px] text-[#93A3B5] truncate">
+                          {window.location.origin}/passaporte-fornecedor/{pass.token_consulta}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => handleCopiarLink(pass.token_consulta, pass.id)}
+                          className="px-3.5 py-2 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-xs flex items-center gap-1.5"
+                        >
+                          {copiadoId === pass.id ? (
+                            <Check className="w-3.5 h-3.5 text-[#12B886]" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                          <span>
+                            {copiadoId === pass.id ? 'Copiado!' : 'Copiar Link Comprador'}
+                          </span>
+                        </button>
+
+                        <Link
+                          to={`/passaporte-fornecedor/${pass.token_consulta}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3.5 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] font-bold text-xs flex items-center gap-1.5 shadow-emerald-glow"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Abrir Visão do Comprador</span>
+                          <ExternalLink className="w-3 h-3 ml-0.5" />
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPassaporteEdicao(pass)
+                            setIsModalOpen(true)
+                          }}
+                          className="p-2 rounded-lg bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA]"
+                          title="Editar configurações de revelação"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

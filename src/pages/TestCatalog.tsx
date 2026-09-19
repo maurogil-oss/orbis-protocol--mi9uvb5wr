@@ -137,6 +137,8 @@ export default function TestCatalog() {
               { path: '/', label: 'Landing Institucional (/)' },
               { path: '/diagnostico', label: 'Funil por CNPJ (/diagnostico)' },
               { path: '/trilhas', label: 'Lista de Trilhas (/trilhas)' },
+              { path: '/mover', label: 'Espaço MOVER (/mover)' },
+              { path: '/dossie-mover', label: 'Dossiê do Projeto MOVER (/dossie-mover) [Auth]' },
               { path: '/trilhas/mover', label: 'Trilha MOVER (/trilhas/mover)' },
               {
                 path: '/trilhas/sbce-financas-verdes',

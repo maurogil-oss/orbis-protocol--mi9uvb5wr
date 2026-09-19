@@ -23,6 +23,7 @@ import {
   Receipt,
   Recycle,
   BookOpen,
+  Car,
 } from 'lucide-react'
 
 export default function Layout() {
@@ -121,6 +122,12 @@ export default function Layout() {
       icon: Building2,
     },
     {
+      title: 'Espaço MOVER',
+      desc: 'Créditos de carbono para CDVs alinhados à metodologia GS 448',
+      path: '/mover',
+      icon: Car,
+    },
+    {
       title: 'Case CDVerde',
       desc: 'Rastreabilidade e circularidade automotiva (Lei Mover)',
       path: '/solucoes/case-cdverde',
@@ -140,6 +147,12 @@ export default function Layout() {
     },
     ...(isAuthenticated
       ? [
+          {
+            title: 'Dossiê MOVER',
+            desc: 'Repositório de evidências, VPAs e salvaguarda de dupla contagem',
+            path: '/dossie-mover',
+            icon: Lock,
+          },
           {
             title: 'Green Capital',
             desc: 'Simulação de crédito verde com taxas bonificadas ESG',
@@ -698,6 +711,17 @@ export default function Layout() {
                     className="hover:text-[#12B886] transition-colors"
                   >
                     Portal Corporativo (IFRS/SPED)
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/mover"
+                    className="text-[#12B886] font-semibold hover:underline transition-colors flex items-center gap-1"
+                  >
+                    <span>Espaço MOVER (GS 448)</span>
+                    <span className="text-[9px] bg-[#12B886]/20 px-1 py-0.2 rounded font-mono">
+                      Novo
+                    </span>
                   </Link>
                 </li>
                 <li>

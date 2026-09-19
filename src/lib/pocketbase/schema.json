@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-19T22:41:22.071Z",
+  "generatedAt": "2026-09-19T22:54:48.073Z",
   "collections": [
     {
       "name": "users",
@@ -3037,6 +3037,205 @@
       "indexes": [
         "CREATE INDEX idx_dpp_dest_lote ON dpp_destinacao_final (lote)",
         "CREATE INDEX idx_dpp_dest_camada ON dpp_destinacao_final (camada)"
+      ]
+    },
+    {
+      "name": "mover_vpas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != \"\"",
+        "view": "@request.auth.id != \"\"",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "codigo_vpa",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_cnpj",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "uf",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "estagio",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "identificada",
+            "em_due_diligence",
+            "em_estruturacao",
+            "aberto_candidatos"
+          ]
+        },
+        {
+          "name": "vfv_ano_declarado",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tco2e_ano_estimado",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_selo_cdv_conforme",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["obtido", "pendente", "em_auditoria"]
+        },
+        {
+          "name": "observacoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_sha256",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_mover_vpas_codigo ON mover_vpas (codigo_vpa)",
+        "CREATE INDEX idx_mover_vpas_estagio ON mover_vpas (estagio)"
+      ]
+    },
+    {
+      "name": "mover_evidencias",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != \"\"",
+        "view": "@request.auth.id != \"\"",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "codigo_documento",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "categoria",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "metodologia",
+            "dpp_lastro",
+            "balanco_massa",
+            "dupla_contagem",
+            "baseline",
+            "titularidade"
+          ]
+        },
+        {
+          "name": "tipo_documento",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "hash_sha256",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status_validacao",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["pre_laudo", "auditado_dmrv", "aguardando_vvb"]
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "link_publico",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_documento",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_mover_evid_codigo ON mover_evidencias (codigo_documento)",
+        "CREATE INDEX idx_mover_evid_hash ON mover_evidencias (hash_sha256)",
+        "CREATE INDEX idx_mover_evid_cat ON mover_evidencias (categoria)"
       ]
     }
   ]

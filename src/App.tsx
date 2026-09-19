@@ -39,6 +39,8 @@ import CanalTitularPage from './pages/CanalTitularPage'
 import CheckoutPage from './pages/CheckoutPage'
 import ApiDocsCdvPage from './pages/ApiDocsCdvPage'
 import FatoresEmissaoPublicoPage from './pages/FatoresEmissaoPublicoPage'
+import MoverPublicPage from './pages/MoverPublicPage'
+import DossieMoverPage from './pages/DossieMoverPage'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -83,8 +85,17 @@ const App = () => (
             <Route path="/planos" element={<Planos />} />
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />
             <Route path="/fatores" element={<FatoresEmissaoPublicoPage />} />
+            <Route path="/mover" element={<MoverPublicPage />} />
 
             {/* Protected Routes (Require Authentication) */}
+            <Route
+              path="/dossie-mover"
+              element={
+                <ProtectedRoute>
+                  <DossieMoverPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/capital"
               element={
