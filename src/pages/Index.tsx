@@ -155,9 +155,15 @@ export default function Index() {
                 <span>Iniciar Diagnóstico por CNPJ</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
+              <Link
+                to="/registro"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold border border-[#12B886]/60 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all bg-[#111820]/80 shadow-sm"
+              >
+                <span>Criar Conta Gratuita</span>
+              </Link>
               <a
                 href="#o-que-e"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820]/60"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold border border-[rgba(244,247,250,0.2)] text-[#93A3B5] hover:border-[#F4F7FA] hover:text-[#F4F7FA] transition-all bg-[#111820]/40"
               >
                 <span>Conhecer o Protocolo</span>
               </a>
@@ -330,18 +336,24 @@ export default function Index() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full lg:w-auto">
               <Link
                 to="/diagnostico"
-                className="w-full sm:w-auto text-center px-8 py-4 rounded-xl text-base font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
+                className="w-full sm:w-auto text-center px-7 py-3.5 rounded-xl text-sm font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
               >
-                Iniciar Diagnóstico Agora
+                Iniciar Diagnóstico
+              </Link>
+              <Link
+                to="/registro"
+                className="w-full sm:w-auto text-center px-6 py-3.5 rounded-xl text-sm font-semibold bg-[#16202B] border border-[#12B886]/60 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all"
+              >
+                Criar Conta
               </Link>
               <Link
                 to="/verificador"
-                className="w-full sm:w-auto text-center px-6 py-4 rounded-xl text-base font-semibold border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#D9B36C] hover:text-[#D9B36C] transition-all"
+                className="w-full sm:w-auto text-center px-5 py-3.5 rounded-xl text-sm font-semibold border border-[rgba(244,247,250,0.2)] text-[#93A3B5] hover:border-[#D9B36C] hover:text-[#D9B36C] transition-all"
               >
-                Verificar Selo Existente
+                Verificar Selo
               </Link>
             </div>
           </div>

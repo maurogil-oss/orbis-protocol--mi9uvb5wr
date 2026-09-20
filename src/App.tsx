@@ -22,6 +22,7 @@ import ProtocoloDetailPage from './pages/ProtocoloDetailPage'
 import CredenciamentoPage from './pages/CredenciamentoPage'
 import Verificador from './pages/Verificador'
 import Login from './pages/Login'
+import RegistroPage from './pages/RegistroPage'
 import PainelCliente from './pages/PainelCliente'
 import ConsoleAuditor from './pages/ConsoleAuditor'
 import AdminConsolePage from './pages/AdminConsolePage'
@@ -81,6 +82,8 @@ const App = () => (
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/checkout/:cobrancaId" element={<CheckoutPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/registro" element={<RegistroPage />} />
+            <Route path="/cadastro" element={<Navigate to="/registro" replace />} />
             <Route path="/teste" element={<TestCatalog />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/planos" element={<Planos />} />

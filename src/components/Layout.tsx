@@ -392,12 +392,20 @@ export default function Layout() {
                   </button>
                 </div>
               ) : (
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all"
-                >
-                  Entrar
-                </Link>
+                <div className="flex items-center gap-2.5">
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all"
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    to="/registro"
+                    className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold bg-[#16202B] border border-[#12B886]/60 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all shadow-sm"
+                  >
+                    Criar conta
+                  </Link>
+                </div>
               )}
             </div>
 
@@ -556,24 +564,38 @@ export default function Layout() {
                 <div className="flex flex-col gap-2">
                   <Link
                     to="/painel"
+                    onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886]"
                   >
                     Meu Painel ({user?.name || user?.email})
                   </Link>
                   <button
-                    onClick={logout}
+                    onClick={() => {
+                      logout()
+                      setMobileMenuOpen(false)
+                    }}
                     className="w-full text-center py-2 rounded-lg text-xs font-medium text-[#F03E54] hover:bg-[#F03E54]/10"
                   >
                     Desconectar Sessão
                   </button>
                 </div>
               ) : (
-                <Link
-                  to="/login"
-                  className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA]"
-                >
-                  Entrar na Conta
-                </Link>
+                <div className="flex flex-col gap-2">
+                  <Link
+                    to="/registro"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-[#16202B] border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+                  >
+                    Criar conta
+                  </Link>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886]"
+                  >
+                    Entrar na Conta
+                  </Link>
+                </div>
               )}
             </div>
           </div>

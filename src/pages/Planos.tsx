@@ -258,12 +258,20 @@ export default function Planos() {
                   <span>Contratar por {p.valorFormatado}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link
-                  to="/diagnostico"
-                  className="w-full py-2.5 rounded-xl font-semibold text-xs text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 flex items-center justify-center gap-1.5 transition-all"
-                >
-                  <span>{p.ctaText}</span>
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/registro"
+                    className="py-2.5 rounded-xl font-semibold text-xs text-[#12B886] bg-[#16202B] hover:bg-[#12B886]/20 border border-[#12B886]/40 flex items-center justify-center gap-1 transition-all"
+                  >
+                    <span>Criar conta</span>
+                  </Link>
+                  <Link
+                    to="/diagnostico"
+                    className="py-2.5 rounded-xl font-semibold text-xs text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 flex items-center justify-center gap-1 transition-all"
+                  >
+                    <span className="truncate">{p.ctaText}</span>
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
@@ -386,13 +394,21 @@ export default function Planos() {
               trilha regulatória preparatória mais eficiente para o SBCE ou Programa MOVER.
             </p>
           </div>
-          <Link
-            to="/diagnostico"
-            className="px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 shrink-0 text-xs sm:text-sm uppercase tracking-wider"
-          >
-            <span>Fazer Diagnóstico Gratuito</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <Link
+              to="/registro"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider"
+            >
+              <span>Criar Conta</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/diagnostico"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider"
+            >
+              <span>Diagnóstico Gratuito</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

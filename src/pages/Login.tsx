@@ -96,11 +96,19 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-[#93A3B5]">
-          Não tem cadastro ainda?{' '}
-          <Link to="/diagnostico" className="text-[#12B886] font-semibold hover:underline">
-            Inicie seu diagnóstico por CNPJ
-          </Link>
+        <div className="mt-6 text-center text-xs text-[#93A3B5] space-y-2">
+          <div>
+            Ainda não tem conta no Orbis?{' '}
+            <Link to="/registro" className="text-[#12B886] font-bold hover:underline">
+              Criar conta agora
+            </Link>
+          </div>
+          <div>
+            Quer apenas simular?{' '}
+            <Link to="/diagnostico" className="text-[#93A3B5] hover:text-[#12B886] hover:underline">
+              Inicie seu diagnóstico por CNPJ
+            </Link>
+          </div>
         </div>
       </div>
     </div>
