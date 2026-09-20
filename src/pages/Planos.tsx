@@ -251,23 +251,35 @@ export default function Planos() {
               </div>
 
               <div className="space-y-2">
-                <Link
-                  to={`/checkout?servico=${p.servicoId}`}
-                  className="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
-                >
-                  <span>Contratar por {p.valorFormatado}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                {p.popular ? (
+                  /* Única CTA verde primária no plano destacado (MOVER) */
+                  <Link
+                    to={`/checkout?servico=${p.servicoId}`}
+                    className="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
+                  >
+                    <span>Contratar por {p.valorFormatado}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  /* Botões secundários neutros nos demais planos */
+                  <Link
+                    to={`/checkout?servico=${p.servicoId}`}
+                    className="w-full py-3.5 rounded-xl font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] transition-all"
+                  >
+                    <span>Contratar por {p.valorFormatado}</span>
+                    <ArrowRight className="w-4 h-4 text-[#93A3B5]" />
+                  </Link>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <Link
                     to="/registro"
-                    className="py-2.5 rounded-xl font-semibold text-xs text-[#12B886] bg-[#16202B] hover:bg-[#12B886]/20 border border-[#12B886]/40 flex items-center justify-center gap-1 transition-all"
+                    className="py-2.5 rounded-xl font-medium text-xs text-[#93A3B5] hover:text-[#F4F7FA] bg-[#0A0E12] hover:bg-[#16202B] border border-[rgba(244,247,250,0.1)] flex items-center justify-center gap-1 transition-all"
                   >
                     <span>Criar conta</span>
                   </Link>
                   <Link
                     to="/diagnostico"
-                    className="py-2.5 rounded-xl font-semibold text-xs text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 flex items-center justify-center gap-1 transition-all"
+                    className="py-2.5 rounded-xl font-medium text-xs text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)] hover:bg-[#16202B] flex items-center justify-center gap-1 transition-all"
                   >
                     <span className="truncate">{p.ctaText}</span>
                   </Link>
@@ -396,19 +408,19 @@ export default function Planos() {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
             <Link
-              to="/registro"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider"
+              to="/diagnostico"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#16202B] hover:border-[rgba(244,247,250,0.35)] transition-all text-center text-xs sm:text-sm"
             >
-              <span>Criar Conta</span>
-              <ArrowRight className="w-4 h-4" />
+              Fazer diagnóstico preliminar
             </Link>
             <Link
-              to="/diagnostico"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider"
+              to="/registro"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#1F2C3A] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
             >
-              <span>Diagnóstico Gratuito</span>
+              <span>Criar conta</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
-          </div>
+          </div>{' '}
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ export default function SolucoesIndex() {
       subtitulo: 'Sustentabilidade acessível para empresas do comércio e serviços do Paraná.',
       descricao:
         'Diagnóstico rápido, qualificação tributária subsidiada para associados da Associação Comercial do Paraná e emissão de Selo Oficial para vitrines e websites.',
-      link: '/solucoes/bureau-acp',
+      link: '/bureau',
       ctaText: 'Ver Detalhes do Bureau ACP',
     },
     {
@@ -101,13 +101,25 @@ export default function SolucoesIndex() {
               </div>
 
               <div className="pt-5 border-t border-[rgba(244,247,250,0.08)]">
-                <Link
-                  to={bloco.link}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow text-sm"
-                >
-                  <span>{bloco.ctaText}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                {idx === 0 ? (
+                  /* Única CTA verde primária no primeiro card (Bureau ACP) */
+                  <Link
+                    to={bloco.link}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow text-sm"
+                  >
+                    <span>{bloco.ctaText}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  /* Ações secundárias neutras */
+                  <Link
+                    to={bloco.link}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] transition-all text-sm"
+                  >
+                    <span>{bloco.ctaText}</span>
+                    <ArrowRight className="w-4 h-4 text-[#93A3B5]" />
+                  </Link>
+                )}
               </div>
             </div>
           ))}

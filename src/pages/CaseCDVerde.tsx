@@ -69,47 +69,49 @@ export default function CaseCDVerde() {
               descarbonização.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 flex-wrap">
+            <div className="flex flex-col sm:flex-row items-center gap-3 flex-wrap">
+              {/* Única CTA primária verde de conversão */}
               <Link
                 to="/diagnostico"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
               >
-                <span>Cadastrar CDV / Desmanche Credenciado</span>
+                <span>Cadastrar CDV credenciado</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
+              {/* Ações secundárias neutras */}
               <Link
                 to="/passaporte/PR-SEAL-2026-991823"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886]/10 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.3)] transition-all text-xs"
               >
-                <QrCode className="w-4 h-4" />
-                <span>Passaporte DPP Peça</span>
+                <QrCode className="w-4 h-4 text-[#93A3B5]" />
+                <span>Passaporte da peça</span>
               </Link>
               <Link
                 to="/passaporte-lote/h1dpr8wniludemh"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#D9B36C]/40 text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.3)] transition-all text-xs"
               >
-                <FileCheck className="w-4 h-4" />
-                <span>DPP Consolidado Real (Gol)</span>
+                <FileCheck className="w-4 h-4 text-[#93A3B5]" />
+                <span>Lote real (Gol)</span>
               </Link>
               <Link
                 to="/passaporte-lote/12401050711"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#16202B] border border-[#60A5FA]/40 text-[#60A5FA] hover:bg-[#60A5FA]/10 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.3)] transition-all text-xs"
               >
-                <FileCheck className="w-4 h-4" />
-                <span>DPP Lote Demo (Renault Clio • 49 peças)</span>
+                <FileCheck className="w-4 h-4 text-[#93A3B5]" />
+                <span>Lote demo (Clio • 49 peças)</span>
               </Link>
               <Link
                 to="/api-docs-cdv"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-[#12B886]/15 border border-[#12B886]/50 text-[#12B886] hover:bg-[#12B886]/25 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.3)] transition-all text-xs"
               >
-                <FileCheck className="w-4 h-4" />
-                <span>Documentação API v1 (CDV)</span>
+                <FileCheck className="w-4 h-4 text-[#93A3B5]" />
+                <span>API de integração</span>
               </Link>
               <Link
                 to="/painel"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#1F2C3A] transition-all text-xs"
               >
-                <span>Módulo Operacional & Console CDV</span>
+                <span>Console CDV</span>
               </Link>
             </div>
           </div>

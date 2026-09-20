@@ -89,19 +89,21 @@ export function MoverPublicPage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
+              {/* Única CTA primária verde de conversão */}
               <Link
                 to="/solucoes/case-cdverde"
-                className="px-6 py-3 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs sm:text-sm uppercase tracking-wider hover:bg-[#0CA678] transition-all shadow-emerald-glow inline-flex items-center gap-2"
+                className="px-6 py-3.5 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs sm:text-sm uppercase tracking-wider hover:bg-[#0CA678] transition-all shadow-emerald-glow inline-flex items-center gap-2"
               >
-                <span>Conhecer o Case Operacional</span>
+                <span>Conhecer o case operacional</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
+              {/* Ação secundária neutra */}
               <Link
                 to="/dossie-mover"
-                className="px-6 py-3 rounded-xl border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] font-semibold text-xs sm:text-sm uppercase tracking-wider hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820] inline-flex items-center gap-2"
+                className="px-6 py-3.5 rounded-xl border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] font-medium text-xs sm:text-sm tracking-wider hover:bg-[#16202B] hover:border-[rgba(244,247,250,0.35)] transition-all bg-[#0A0E12] inline-flex items-center gap-2"
               >
                 <Lock className="w-4 h-4 text-[#D9B36C]" />
-                <span>Acessar Dossiê do Projeto (Área Restrita)</span>
+                <span>Acessar dossiê técnico</span>
               </Link>
             </div>
           </div>
@@ -279,17 +281,19 @@ export function MoverPublicPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
+            {/* Única CTA primária verde de conversão */}
             <Link
               to="/diagnostico"
               className="px-6 py-3.5 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase tracking-wider hover:bg-[#0CA678] text-center shadow-emerald-glow transition-all"
             >
-              Iniciar Diagnóstico por CNPJ
+              Iniciar diagnóstico por CNPJ
             </Link>
+            {/* Ação secundária neutra */}
             <Link
               to="/bureau"
-              className="px-6 py-3.5 rounded-xl border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] font-bold text-xs uppercase tracking-wider hover:border-[#12B886] hover:text-[#12B886] text-center bg-[#111820] transition-all"
+              className="px-6 py-3.5 rounded-xl border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] font-medium text-xs tracking-wider hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] text-center bg-[#16202B] transition-all"
             >
-              Acessar Cockpit Bureau
+              Acessar cockpit Bureau
             </Link>
           </div>
         </section>

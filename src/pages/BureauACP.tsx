@@ -402,11 +402,11 @@ export function BureauACP() {
               <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] flex items-center justify-between">
                 <span className="font-mono text-[11px] text-[#D9B36C]">12 NF-e • 12 CNAEs</span>
                 <Link
-                  to="/corporativo/dcp"
-                  className="px-3.5 py-1.5 rounded-lg bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-emerald-glow"
+                  to="/corporativo"
+                  className="px-3.5 py-1.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] font-medium text-xs inline-flex items-center gap-1.5 transition-all"
                 >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Abrir DCP Corporativo</span>
+                  <Eye className="w-3.5 h-3.5 text-[#93A3B5]" />
+                  <span>Abrir demonstração corporativa</span>
                   <ExternalLink className="w-3 h-3 ml-0.5" />
                 </Link>
               </div>
@@ -440,9 +440,9 @@ export function BureauACP() {
                 </span>
                 <Link
                   to="/dcp/ORB-DCP-KLBN-4819"
-                  className="px-3.5 py-1.5 rounded-lg bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-emerald-glow"
+                  className="px-3.5 py-1.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] font-medium text-xs inline-flex items-center gap-1.5 transition-all"
                 >
-                  <Eye className="w-3.5 h-3.5" />
+                  <Eye className="w-3.5 h-3.5 text-[#93A3B5]" />
                   <span>Abrir DCP do Produto</span>
                   <ExternalLink className="w-3 h-3 ml-0.5" />
                 </Link>
@@ -829,9 +829,9 @@ export function BureauACP() {
                           to={`/passaporte-fornecedor/${pass.token_consulta}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-3.5 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] font-bold text-xs flex items-center gap-1.5 shadow-emerald-glow"
+                          className="px-3.5 py-2 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] font-medium text-xs flex items-center gap-1.5 transition-all"
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                          <Eye className="w-3.5 h-3.5 text-[#93A3B5]" />
                           <span>Abrir Visão do Comprador</span>
                           <ExternalLink className="w-3 h-3 ml-0.5" />
                         </Link>

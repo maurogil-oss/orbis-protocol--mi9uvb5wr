@@ -100,89 +100,92 @@ export default function Layout() {
     }, 150)
   }
 
-  // Soluções dropdown items with short 1-line descriptions
-  // Dossiê MOVER e Green Capital são incluídos apenas se o usuário estiver autenticado
-  const solutionItems = [
+  // Grupos de Soluções organizados por persona com linguagem clara e subtítulo de 1 linha
+  const solutionGroups = [
     {
-      title: 'O Protocolo',
-      desc: 'Metodologia e infraestrutura probatória dMRV para conformidade',
-      path: '/#o-que-e',
-      icon: BookOpen,
+      persona: 'Para empresas',
+      rotuloCurto: 'Empresas, indústrias e comércio',
+      itens: [
+        {
+          title: 'Diagnóstico & Mercado de Carbono (SBCE)',
+          desc: 'Calcule seu enquadramento na Lei 15.042/2024 e o impacto tributário do IVA dual.',
+          path: '/diagnostico',
+          icon: Sparkles,
+        },
+        {
+          title: 'Planos & Certificação',
+          desc: 'Tabela de serviços oficiais, assinaturas e contratação com emissão de nota fiscal.',
+          path: '/planos',
+          icon: Receipt,
+        },
+        {
+          title: 'Portal Corporativo',
+          desc: 'Tour interativo de 12 notas fiscais com cálculo de emissões e laudo técnico.',
+          path: '/corporativo',
+          icon: Building2,
+        },
+      ],
     },
     {
-      title: 'Radar Regulatório',
-      desc: 'Monitoramento contínuo de normas, SBCE e reforma tributária',
-      path: '/radar-regulatorio',
-      icon: Scale,
+      persona: 'Para desmontagem veicular',
+      rotuloCurto: 'Centros de Desmontagem (CDVs) e cadeia automotiva',
+      itens: [
+        {
+          title: 'Case CDVerde',
+          desc: 'Rastreabilidade de peças verdes e baterias com passaporte digital de produto.',
+          path: '/solucoes/case-cdverde',
+          icon: Recycle,
+        },
+        {
+          title: 'Créditos de Carbono MOVER',
+          desc: 'Regras da Lei 14.902/2024 e metodologia internacional para descarbonização veicular.',
+          path: '/mover',
+          icon: Car,
+        },
+      ],
     },
     {
-      title: 'Bureau ACP',
-      desc: 'Cockpit e governança de passaporte sustentável de fornecedores',
-      path: '/bureau',
-      icon: Building2,
+      persona: 'Ferramentas públicas',
+      rotuloCurto: 'Consultas abertas a qualquer comprador ou auditor',
+      itens: [
+        {
+          title: 'Verificador de Selos',
+          desc: 'Validação pública de autenticidade criptográfica de laudos e passaportes emitidos.',
+          path: '/verificador',
+          icon: ShieldCheck,
+        },
+        {
+          title: 'Radar Regulatório',
+          desc: 'Calendário de prazos da reforma tributária, marco do SBCE e exigências climáticas.',
+          path: '/radar-regulatorio',
+          icon: Scale,
+        },
+      ],
     },
-    {
-      title: 'Espaço MOVER',
-      desc: 'Créditos de carbono para CDVs alinhados à metodologia GS 448',
-      path: '/mover',
-      icon: Car,
-    },
-    {
-      title: 'Case CDVerde',
-      desc: 'Rastreabilidade e circularidade automotiva (Lei Mover)',
-      path: '/solucoes/case-cdverde',
-      icon: Recycle,
-    },
-    {
-      title: 'Modo Corporativo (Demo)',
-      desc: 'Demonstração de 12 notas fiscais nos 10 modelos fiscais com dMRV',
-      path: '/corporativo',
-      icon: Building2,
-    },
-    {
-      title: 'Planos & Preços',
-      desc: 'Assinaturas modulares, tabela de serviços e histórico de faturas',
-      path: '/planos',
-      icon: Sparkles,
-    },
-    ...(isAuthenticated
-      ? [
-          {
-            title: 'Dossiê MOVER',
-            desc: 'Repositório de evidências, VPAs e salvaguarda de dupla contagem',
-            path: '/dossie-mover',
-            icon: Lock,
-          },
-          {
-            title: 'Green Capital',
-            desc: 'Simulação de crédito verde com taxas bonificadas ESG',
-            path: '/capital',
-            icon: Coins,
-          },
-        ]
-      : []),
   ]
+
+  // Itens planos para verificação de rota ativa e drawer
+  const allSolutionItems = solutionGroups.flatMap((g) => g.itens)
 
   // Check if current route matches any solutions item or solutions index
   const isSolutionsActive =
     location.pathname === '/solucoes' ||
-    solutionItems.some((item) => {
+    location.pathname === '/bureau' ||
+    location.pathname === '/solucoes/bureau-acp' ||
+    location.pathname === '/solucoes/portal-corporativo' ||
+    allSolutionItems.some((item) => {
       if (item.path.startsWith('/#')) {
         return location.pathname === '/' && location.hash === item.path.replace('/', '')
       }
       return location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
     })
 
+  // 4 itens essenciais da faixa regulatória
   const regulations = [
-    '01/08/2026: FASE-TESTE IBS 0,1% / CBS 0,9% NA NF-E (ART. 348 LC 214/2025)',
-    'LC 227/2026 & DECRETO 12.955/2026 (NOVO IVA DUAL)',
-    'LEI 15.042/2024 (DIRETRIZES SBCE - MERCADO REGULADO DE CARBONO)',
-    'PROGRAMA MOVER LEI 14.902/2024 (AUTOMOTIVO & CIRCULARIDADE CDV)',
-    'REPORTE VOLUNTÁRIO IFRS S1/S2 (RES. CVM 193)',
-    'PREPARAÇÃO ESG CREDORES (RES. BCB 4.945/2021)',
-    'MECANISMO CBAM / UNIÃO EUROPEIA (TRANSIÇÃO ATÉ 2026)',
-    'NBR ISO 14064 & METODOLOGIA GHG PROTOCOL',
-    'NBC TO 3000 & ART TÉCNICA dMRV',
+    '01/08/2026: Fase-teste IBS 0,1% / CBS 0,9% na NF-e (Art. 348 LC 214/2025)',
+    'Lei 15.042/2024: Mercado Regulado de Carbono (SBCE - limiares 10k e 25k tCO₂e)',
+    'Programa MOVER Lei 14.902/2024: Desmontagem veicular e circularidade homologada',
+    'Reforma Tributária LC 227/2026 & Decreto 12.955/2026: Novo IVA Dual',
   ]
 
   return (
@@ -287,66 +290,90 @@ export default function Layout() {
                     aria-label="Submenu Soluções"
                     className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
                   >
-                    <div className="w-[520px] max-w-[90vw] p-3 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.12)] shadow-2xl backdrop-blur-xl">
-                      <div className="px-3 py-2 border-b border-[rgba(244,247,250,0.06)] flex items-center justify-between mb-1">
-                        <span className="text-[11px] font-semibold tracking-wider uppercase text-[#12B886]">
-                          Portfólio de Soluções & Módulos
+                    <div className="w-[580px] max-w-[92vw] p-4 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.12)] shadow-2xl backdrop-blur-xl max-h-[85vh] overflow-y-auto">
+                      <div className="px-3 py-2 border-b border-[rgba(244,247,250,0.08)] flex items-center justify-between mb-3">
+                        <span className="text-xs font-semibold tracking-wider text-[#12B886]">
+                          Soluções por perfil
                         </span>
                         <Link
                           to="/solucoes"
                           onClick={() => setSolutionsDropdownOpen(false)}
-                          className="text-[11px] text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                          className="text-xs text-[#93A3B5] hover:text-[#12B886] transition-colors"
                         >
-                          Ver Visão Geral →
+                          Ver visão geral →
                         </Link>
                       </div>
 
-                      <div className="grid grid-cols-1 gap-1">
-                        {solutionItems.map((item) => {
-                          const Icon = item.icon
-                          const isActive = item.path.startsWith('/#')
-                            ? location.pathname === '/' &&
-                              location.hash === item.path.replace('/', '')
-                            : location.pathname === item.path
+                      <div className="space-y-4">
+                        {solutionGroups.map((group) => (
+                          <div key={group.persona} className="space-y-1.5">
+                            <div className="px-2.5 flex items-baseline justify-between">
+                              <span className="text-xs font-bold text-[#F4F7FA] uppercase tracking-wider">
+                                {group.persona}
+                              </span>
+                              <span className="text-[11px] text-[#93A3B5] hidden sm:inline">
+                                {group.rotuloCurto}
+                              </span>
+                            </div>
 
-                          return (
-                            <Link
-                              key={item.title}
-                              to={item.path}
-                              role="menuitem"
-                              onClick={() => setSolutionsDropdownOpen(false)}
-                              className={`group flex items-start gap-3 p-2.5 rounded-lg transition-all ${
-                                isActive
-                                  ? 'bg-[#12B886]/10 border border-[#12B886]/30'
-                                  : 'hover:bg-[#16202B] border border-transparent'
-                              }`}
-                            >
-                              <div
-                                className={`mt-0.5 p-2 rounded-lg flex-shrink-0 transition-colors ${
-                                  isActive
-                                    ? 'bg-[#12B886]/20 text-[#12B886]'
-                                    : 'bg-[#111820] text-[#93A3B5] group-hover:text-[#12B886] group-hover:bg-[#12B886]/10'
-                                }`}
-                              >
-                                <Icon className="w-4 h-4" />
-                              </div>
-                              <div className="flex flex-col min-w-0">
-                                <span
-                                  className={`text-sm font-semibold tracking-wide transition-colors ${
-                                    isActive
-                                      ? 'text-[#12B886]'
-                                      : 'text-[#F4F7FA] group-hover:text-[#12B886]'
-                                  }`}
-                                >
-                                  {item.title}
-                                </span>
-                                <span className="text-xs text-[#93A3B5] leading-snug line-clamp-1">
-                                  {item.desc}
-                                </span>
-                              </div>
-                            </Link>
-                          )
-                        })}
+                            <div className="grid grid-cols-1 gap-1">
+                              {group.itens.map((item) => {
+                                const Icon = item.icon
+                                const isActive = location.pathname === item.path
+
+                                return (
+                                  <Link
+                                    key={item.title}
+                                    to={item.path}
+                                    role="menuitem"
+                                    onClick={() => setSolutionsDropdownOpen(false)}
+                                    className={`group flex items-start gap-3 p-2.5 rounded-lg transition-all ${
+                                      isActive
+                                        ? 'bg-[#12B886]/10 border border-[#12B886]/30'
+                                        : 'hover:bg-[#16202B] border border-transparent'
+                                    }`}
+                                  >
+                                    <div
+                                      className={`mt-0.5 p-2 rounded-lg flex-shrink-0 transition-colors ${
+                                        isActive
+                                          ? 'bg-[#12B886]/20 text-[#12B886]'
+                                          : 'bg-[#111820] text-[#93A3B5] group-hover:text-[#12B886] group-hover:bg-[#12B886]/10'
+                                      }`}
+                                    >
+                                      <Icon className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                      <span
+                                        className={`text-sm font-semibold tracking-wide transition-colors ${
+                                          isActive
+                                            ? 'text-[#12B886]'
+                                            : 'text-[#F4F7FA] group-hover:text-[#12B886]'
+                                        }`}
+                                      >
+                                        {item.title}
+                                      </span>
+                                      <span className="text-xs text-[#93A3B5] leading-snug line-clamp-1">
+                                        {item.desc}
+                                      </span>
+                                    </div>
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Atalho adicional para Bureau ACP unificado */}
+                      <div className="mt-3 pt-3 border-t border-[rgba(244,247,250,0.06)] px-2.5 flex items-center justify-between text-xs text-[#93A3B5]">
+                        <span>Passaporte sustentável de fornecedores:</span>
+                        <Link
+                          to="/bureau"
+                          onClick={() => setSolutionsDropdownOpen(false)}
+                          className="text-[#12B886] hover:underline font-medium"
+                        >
+                          Acessar Cockpit Bureau ACP →
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -490,48 +517,58 @@ export default function Layout() {
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 
-                {/* Grupo Soluções */}
+                {/* Grupo Soluções em 3 personas */}
                 <div className="pt-3 mt-2 border-t border-[rgba(244,247,250,0.08)]">
                   <div className="px-3 pb-2 flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#12B886] flex items-center gap-1.5">
-                      <Layers className="w-3 h-3 text-[#12B886]" />
-                      Soluções & Módulos
+                    <span className="text-xs uppercase font-bold tracking-wider text-[#12B886] flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-[#12B886]" />
+                      Soluções por perfil
                     </span>
                     <Link
                       to="/solucoes"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="text-[10px] text-[#93A3B5] hover:text-[#12B886]"
+                      className="text-xs text-[#93A3B5] hover:text-[#12B886]"
                     >
-                      Ver Tudo
+                      Ver tudo
                     </Link>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    {solutionItems.map((item) => {
-                      const Icon = item.icon
-                      const isActive = item.path.startsWith('/#')
-                        ? location.pathname === '/' && location.hash === item.path.replace('/', '')
-                        : location.pathname === item.path
+                  <div className="flex flex-col gap-3 mt-1">
+                    {solutionGroups.map((group) => (
+                      <div key={group.persona} className="space-y-1">
+                        <div className="px-3 text-[11px] font-semibold text-[#D9B36C] uppercase tracking-wider">
+                          {group.persona}
+                        </div>
+                        {group.itens.map((item) => {
+                          const Icon = item.icon
+                          const isActive = location.pathname === item.path
 
-                      return (
-                        <Link
-                          key={item.title}
-                          to={item.path}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={`flex items-center justify-between py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
-                            isActive
-                              ? 'bg-[#12B886]/10 text-[#12B886]'
-                              : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 truncate">
-                            <Icon className="w-3.5 h-3.5 opacity-70 flex-shrink-0" />
-                            <span className="truncate">{item.title}</span>
-                          </div>
-                          <ChevronRight className="w-3.5 h-3.5 opacity-40 flex-shrink-0" />
-                        </Link>
-                      )
-                    })}
+                          return (
+                            <Link
+                              key={item.title}
+                              to={item.path}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className={`flex items-center justify-between py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
+                                isActive
+                                  ? 'bg-[#12B886]/10 text-[#12B886]'
+                                  : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 truncate">
+                                <Icon className="w-3.5 h-3.5 opacity-70 flex-shrink-0" />
+                                <div className="truncate">
+                                  <div className="truncate font-medium">{item.title}</div>
+                                  <div className="text-[11px] text-[#93A3B5]/70 truncate">
+                                    {item.desc}
+                                  </div>
+                                </div>
+                              </div>
+                              <ChevronRight className="w-3.5 h-3.5 opacity-40 flex-shrink-0" />
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    ))}
                   </div>
                 </div>
 
