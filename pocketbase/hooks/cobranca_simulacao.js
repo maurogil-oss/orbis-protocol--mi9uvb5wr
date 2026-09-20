@@ -137,6 +137,38 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
 
     $app.save(rec)
 
+    // Gravação centralizada no audit_log da liquidação (incluindo quatro-olhos se aplicável)
+    try {
+      const auditCol = $app.findCollectionByNameOrId('audit_log')
+      const log = new Record(auditCol)
+      log.set('acao', body.is_manual ? 'cobranca_liquidacao_manual' : 'cobranca_liquidada')
+      log.set('entidade', 'cobrancas')
+      log.set('entidade_id', rec.id)
+      log.set('ator_id', adminId || 'sistema')
+      log.set('ator_email', adminNome)
+      log.set('papel', 'admin')
+      log.set('detalhes', {
+        txid: rec.getString('txid'),
+        servico: rec.getString('servico_nome'),
+        valor: rec.getFloat('valor'),
+        tomador: rec.getString('tomador_nome'),
+        tomador_cnpj: rec.getString('tomador_cpf_cnpj'),
+        justificativa: justificativa,
+        comprovante_ref: comprovanteRef,
+        confirmacao_dupla: confirmacaoDupla,
+        quatro_olhos_aplicado: valorNum > 5000,
+        divergente: isDivergente,
+        nfse_status: rec.getString('nfse_status'),
+      })
+      log.set(
+        'ip',
+        e.requestInfo().headers['x-forwarded-for'] || e.requestInfo().headers['x-real-ip'] || '',
+      )
+      $app.save(log)
+    } catch (eAudit) {
+      console.log('Erro ao gravar audit_log na liquidacao:', eAudit)
+    }
+
     return e.json(200, {
       id: rec.id,
       status: rec.getString('status'),

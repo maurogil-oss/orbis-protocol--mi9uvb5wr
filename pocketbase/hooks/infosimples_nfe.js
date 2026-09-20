@@ -79,20 +79,8 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
       } catch (_) {}
     }
 
-    // Obtém token preferencialmente das variáveis de ambiente ($os.getenv) ou da coleção segura interna
+    // Obtém token exclusivamente das variáveis de ambiente do Skip Cloud ($os.getenv)
     let token = $os.getenv('INFOSIMPLES_TOKEN') || ''
-    if (!token || token.trim().length === 0) {
-      try {
-        const secRec = $app.findFirstRecordByData(
-          'app_config_secrets',
-          'chave',
-          'INFOSIMPLES_TOKEN',
-        )
-        if (secRec && secRec.getString('valor')) {
-          token = secRec.getString('valor').trim()
-        }
-      } catch (_) {}
-    }
     const tokenConfigurado = Boolean(token && token.trim().length > 0)
 
     // Se o token não estiver configurado no cofre do Skip Cloud, ativa o Modo Degradação Elegante

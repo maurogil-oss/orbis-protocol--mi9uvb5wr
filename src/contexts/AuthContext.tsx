@@ -7,11 +7,18 @@ interface AuthContextType {
   token: string
   isAuthenticated: boolean
   isLoading: boolean
-  role: 'admin' | 'perito' | 'cliente' | string
+  role: 'admin' | 'perito' | 'cliente' | 'financeiro_leitor' | string
   isAdminOrPerito: boolean
+  isFinanceiroLeitor: boolean
+  isAdmin: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   refreshAuth: () => void
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>
+  confirmPasswordReset: (
+    token: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -59,7 +66,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(pb.authStore.token)
   }
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      await pb.collection('users').requestPasswordReset(email)
+      return { success: true }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Falha ao solicitar redefinição de senha.'
+      return { success: false, error: message }
+    }
+  }
+
+  const confirmPasswordReset = async (token: string, password: string) => {
+    try {
+      await pb.collection('users').confirmPasswordReset(token, password, password)
+      return { success: true }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Token inválido ou expirado.'
+      return { success: false, error: message }
+    }
+  }
+
   const role = (user as any)?.role || 'cliente'
+  const isAdmin = role === 'admin'
+  const isFinanceiroLeitor = role === 'financeiro_leitor'
   const isAdminOrPerito = role === 'admin' || role === 'perito'
 
   return (
@@ -70,10 +100,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!token && !!user,
         isLoading,
         role,
+        isAdmin,
+        isFinanceiroLeitor,
         isAdminOrPerito,
         login,
         logout,
         refreshAuth,
+        requestPasswordReset,
+        confirmPasswordReset,
       }}
     >
       {children}

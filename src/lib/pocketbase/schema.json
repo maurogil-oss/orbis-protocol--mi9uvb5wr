@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-09-20T00:01:33.080Z",
+  "generatedAt": "2026-09-20T00:20:07.070Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "id = @request.auth.id",
-        "view": "id = @request.auth.id",
+        "list": "@request.auth.id != '' && (@request.auth.id = id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor')",
+        "view": "@request.auth.id != '' && (@request.auth.id = id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor')",
         "create": "",
-        "update": "id = @request.auth.id",
-        "delete": "id = @request.auth.id"
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || (@request.auth.id = id && @request.body.role:isset = false))",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -43,7 +43,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["admin", "perito", "cliente"]
+          "selectValues": ["admin", "perito", "cliente", "financeiro_leitor"]
         },
         {
           "name": "cliente_codigo",
@@ -1036,8 +1036,8 @@
       "name": "relatorios_exportados",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
-        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || @request.auth.role = 'perito')",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
         "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')"
@@ -1131,9 +1131,9 @@
       "apiRules": {
         "list": "",
         "view": "",
-        "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != ''",
-        "delete": "@request.auth.id != ''"
+        "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -1202,7 +1202,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["processado", "parcial", "rejeitado"]
+          "selectValues": ["processado", "parcial", "rejeitado", "anulado"]
         },
         {
           "name": "total_pecas",
@@ -1265,6 +1265,24 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "motivo_anulacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_em",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_por",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -1278,9 +1296,9 @@
       "apiRules": {
         "list": "",
         "view": "",
-        "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != ''",
-        "delete": "@request.auth.id != ''"
+        "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -1374,7 +1392,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["ativo", "reutilizado", "descartado"]
+          "selectValues": ["ativo", "reutilizado", "descartado", "anulado"]
         },
         {
           "name": "veiculo_marca_modelo",
@@ -1416,6 +1434,24 @@
         },
         {
           "name": "subsistema",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "motivo_anulacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_em",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_por",
           "type": "text",
           "required": false,
           "system": false
@@ -1699,11 +1735,11 @@
       "name": "cobrancas",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
-        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || @request.auth.role = 'perito')",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
-        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'perito')"
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -2193,11 +2229,11 @@
       "name": "perito_credenciamentos",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
-        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
-        "create": "",
-        "update": "@request.auth.role = 'admin'",
-        "delete": "@request.auth.role = 'admin'"
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -2291,7 +2327,7 @@
           "type": "select",
           "required": true,
           "system": false,
-          "selectValues": ["pendente", "aprovado", "rejeitado"]
+          "selectValues": ["pendente", "aprovado", "rejeitado", "suspenso"]
         },
         {
           "name": "observacao_auditor",
@@ -2324,6 +2360,18 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "validade_art",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "motivo_suspensao",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -3001,9 +3049,9 @@
       "apiRules": {
         "list": "",
         "view": "",
-        "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != ''",
-        "delete": "@request.auth.id != ''"
+        "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -3117,6 +3165,31 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["ativo", "anulado"]
+        },
+        {
+          "name": "motivo_anulacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_em",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_por",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -3401,8 +3474,8 @@
       "name": "parceiros",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
-        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
         "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
         "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
         "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
@@ -3520,8 +3593,8 @@
       "name": "comissoes",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || parceiro_id.usuario = @request.auth.id)",
-        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || parceiro_id.usuario = @request.auth.id)",
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || parceiro_id.usuario = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || parceiro_id.usuario = @request.auth.id)",
         "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
         "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
         "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
@@ -3597,6 +3670,88 @@
         "CREATE INDEX idx_comissoes_cobranca ON comissoes (cobranca_id)",
         "CREATE INDEX idx_comissoes_parceiro ON comissoes (parceiro_id)",
         "CREATE INDEX idx_comissoes_status ON comissoes (status)"
+      ]
+    },
+    {
+      "name": "audit_log",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor')",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor')",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "acao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "entidade",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "entidade_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ator_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ator_email",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "papel",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "detalhes",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ip",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_audit_acao ON audit_log (acao)",
+        "CREATE INDEX idx_audit_entidade ON audit_log (entidade)",
+        "CREATE INDEX idx_audit_entidade_id ON audit_log (entidade_id)",
+        "CREATE INDEX idx_audit_ator ON audit_log (ator_id)",
+        "CREATE INDEX idx_audit_created ON audit_log (created DESC)"
       ]
     }
   ]

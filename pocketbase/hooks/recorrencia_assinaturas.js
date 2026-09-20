@@ -155,12 +155,64 @@ routerAdd('POST', '/backend/v1/assinaturas/verificar-ciclo', (e) => {
       }
     }
 
+    // (d) Verificação e suspensão automática de peritos com ART vencida (Item 4)
+    let peritosSuspensos = 0
+    try {
+      const peritos = $app.findRecordsByFilter(
+        'perito_credenciamentos',
+        'status = "aprovado"',
+        'created',
+        500,
+        0,
+      )
+      const auditCol = $app.findCollectionByNameOrId('audit_log')
+
+      for (const p of peritos) {
+        const valArtStr = p.getString('validade_art')
+        if (valArtStr) {
+          const valArt = new Date(valArtStr)
+          if (hoje > valArt) {
+            p.set('status', 'suspenso')
+            p.set(
+              'motivo_suspensao',
+              `ART/RRT vencida em ${valArtStr}. Suspensão automática pelo job de integridade operacional.`,
+            )
+            $app.save(p)
+            peritosSuspensos += 1
+
+            // Registrar no audit_log append-only
+            try {
+              const log = new Record(auditCol)
+              log.set('acao', 'perito_art_vencida_suspensao')
+              log.set('entidade', 'perito_credenciamentos')
+              log.set('entidade_id', p.id)
+              log.set('ator_id', 'job_cron_04h')
+              log.set('ator_email', 'cron@orbisprotocol.org')
+              log.set('papel', 'sistema')
+              log.set('detalhes', {
+                perito_nome: p.getString('nome_completo'),
+                registro: `${p.getString('conselho_tipo')} ${p.getString('registro_profissional')}/${p.getString('registro_uf')}`,
+                numero_art_rrt: p.getString('numero_art_rrt'),
+                validade_art: valArtStr,
+                data_suspensao: hojeIso,
+                motivo: 'ART/RRT vencida',
+              })
+              $app.save(log)
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (ePerito) {
+      console.log('Erro ao checar ART de peritos no endpoint:', ePerito)
+    }
+
     return e.json(200, {
       sucesso: true,
       data_verificacao: hojeIso,
       cobrancas_geradas: cobrancasGeradas,
       cobrancas_vencidas: cobrancasVencidas,
       users_atualizados: usersAtualizados,
+      peritos_suspensos: peritosSuspensos,
     })
   } catch (err) {
     return e.json(500, { error: err.message || 'Erro ao verificar ciclos de assinatura.' })
@@ -171,6 +223,7 @@ routerAdd('POST', '/backend/v1/assinaturas/verificar-ciclo', (e) => {
 cronAdd('recorrencia_diaria_orbis', '0 4 * * *', () => {
   try {
     const hoje = new Date()
+    const hojeIso = hoje.toISOString().split('T')[0]
     let valorBureau = 7800
     let nomeBureau = 'Bureau ACP (Corporativo)'
     try {
@@ -291,6 +344,54 @@ cronAdd('recorrencia_diaria_orbis', '0 4 * * *', () => {
         u.set('assinatura_status', novoStatus)
         $app.save(u)
       }
+    }
+
+    // (d) Suspensão automática de perito com ART vencida (Item 4)
+    try {
+      const peritos = $app.findRecordsByFilter(
+        'perito_credenciamentos',
+        'status = "aprovado"',
+        'created',
+        500,
+        0,
+      )
+      const auditCol = $app.findCollectionByNameOrId('audit_log')
+
+      for (const p of peritos) {
+        const valArtStr = p.getString('validade_art')
+        if (valArtStr) {
+          const valArt = new Date(valArtStr)
+          if (hoje > valArt) {
+            p.set('status', 'suspenso')
+            p.set(
+              'motivo_suspensao',
+              `ART/RRT vencida em ${valArtStr}. Suspensão automática pelo job de integridade operacional.`,
+            )
+            $app.save(p)
+
+            try {
+              const log = new Record(auditCol)
+              log.set('acao', 'perito_art_vencida_suspensao')
+              log.set('entidade', 'perito_credenciamentos')
+              log.set('entidade_id', p.id)
+              log.set('ator_id', 'job_cron_04h')
+              log.set('ator_email', 'cron@orbisprotocol.org')
+              log.set('papel', 'sistema')
+              log.set('detalhes', {
+                perito_nome: p.getString('nome_completo'),
+                registro: `${p.getString('conselho_tipo')} ${p.getString('registro_profissional')}/${p.getString('registro_uf')}`,
+                numero_art_rrt: p.getString('numero_art_rrt'),
+                validade_art: valArtStr,
+                data_suspensao: hojeIso,
+                motivo: 'ART/RRT vencida',
+              })
+              $app.save(log)
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (ePeritoCron) {
+      console.log('Erro ao checar ART de peritos no cron:', ePeritoCron)
     }
   } catch (errCron) {
     console.log('Erro no cron de recorrencia:', errCron)
