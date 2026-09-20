@@ -57,8 +57,12 @@ describe('Espaço MOVER — Camadas 1, 2 e 3 (Regras e Alinhamento Metodológico
 
     // 3. Pioneirismo defensável
     expect(
+      screen.getAllByText(/1ª infraestrutura brasileira de dados alinhada à metodologia GS 448/i)
+        .length,
+    ).toBeGreaterThan(0)
+    expect(
       screen.getAllByText(
-        /iniciativa pioneira — sem registro público conhecido de iniciativa equivalente/i,
+        /A Orbis está estruturando a cadeia completa de validação com entidade independentemente acreditada/i,
       ).length,
     ).toBeGreaterThan(0)
 

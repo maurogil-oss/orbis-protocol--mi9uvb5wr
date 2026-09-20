@@ -102,7 +102,7 @@ export default function Index() {
       tag: 'EIXO 2 • CONFORMIDADE TRIBUTÁRIA',
       titulo: 'Lei 15.042/2024 & Programa MOVER',
       badgeNorma: 'Lei 14.902/2024 • Reforma Tributária (EC 132/2023)',
-      destaque: 'Segurança fiscal e monetização de créditos',
+      destaque: 'Enquadramento tributário e previsão do impacto da reforma',
       itens: [
         'Governança fiscal robusta para habilitação aos incentivos fiscais e créditos financeiros do Programa MOVER (Mobilidade Verde e Inovação).',
         'Interoperabilidade com notas fiscais eletrônicas (NF-e/SPED) diretamente da SEFAZ para apuração de créditos e fatores tributários.',

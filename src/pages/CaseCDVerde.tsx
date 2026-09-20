@@ -27,8 +27,8 @@ export default function CaseCDVerde() {
       desc: 'Protocolo de diagnóstico de degradação das células de tração (SoH), viabilizando reutilização em sistemas estacionários de energia solar.',
     },
     {
-      titulo: 'Dossiê Preparatório para Créditos do Programa MOVER',
-      desc: 'Geração de atestados preparatórios de reciclabilidade automotiva para instrução de desconto e crédito fiscal de IPI sob a Lei 14.902/2024 para o setor automotivo.',
+      titulo: 'Dossiê de Conformidade e Evidências do Programa MOVER',
+      desc: 'A Orbis está estruturando a cadeia completa de validação com entidade independentemente acreditada — hoje entregamos a rastreabilidade e a prova documental que esse processo exige; a emissão de créditos, quando ocorrer, seguirá exclusivamente via organismo validador independente.',
     },
   ]
 

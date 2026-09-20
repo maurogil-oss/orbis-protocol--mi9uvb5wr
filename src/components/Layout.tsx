@@ -137,7 +137,7 @@ export default function Layout() {
           icon: Recycle,
         },
         {
-          title: 'Créditos de Carbono MOVER',
+          title: 'Descarbonização via MOVER',
           desc: 'Regras da Lei 14.902/2024 e metodologia internacional para descarbonização veicular.',
           path: '/mover',
           icon: Car,

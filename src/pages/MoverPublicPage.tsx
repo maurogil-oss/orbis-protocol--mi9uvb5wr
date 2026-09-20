@@ -59,32 +59,29 @@ export function MoverPublicPage() {
             </div>
 
             <h1 className="font-heading font-black text-2xl sm:text-4xl md:text-5xl leading-tight text-[#F4F7FA]">
-              PROGRAMA DE CRÉDITOS DE CARBONO PARA{' '}
-              <span className="text-[#12B886]">DESMONTAGEM VEICULAR</span>
+              RASTREABILIDADE E COMPROVAÇÃO PARA DESMONTAGEM VEICULAR — PROGRAMA MOVER
             </h1>
 
             {/* Destaque do Pioneirismo Defensável com sigla VVB expandida na primeira ocorrência */}
             <div className="p-4 rounded-xl bg-[#12B886]/10 border border-[#12B886]/30 text-xs sm:text-sm text-[#F4F7FA] leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-[#12B886] uppercase tracking-wide">
                 <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-                Diferencial da Tese • 1º Projeto Brasileiro de Créditos para CDVs via GS 448
+                1ª infraestrutura brasileira de dados alinhada à metodologia GS 448 — emissão de
+                créditos, quando houver, exclusivamente via VVB independente
               </div>
               <p className="text-[#93A3B5]">
-                {DECLARACAO_PIONEIRISMO_DEFENSAVEL} Uma arquitetura tecnológica estruturada para
-                converter o desmonte legal em emissões líquidas evitadas, com reserva expressa de
-                que a emissão dos créditos ocorrerá exclusivamente após verificação por{' '}
-                <strong className="text-[#F4F7FA]">
-                  VVB (Validation and Verification Body — Organismo de Validação e Verificação)
-                </strong>{' '}
-                acreditado pelo Gold Standard.
+                A Orbis está estruturando a cadeia completa de validação com entidade
+                independentemente acreditada — hoje entregamos a rastreabilidade e a prova
+                documental que esse processo exige; a emissão de créditos, quando ocorrer, seguirá
+                exclusivamente via organismo validador independente.
               </p>
             </div>
 
             <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
               O Orbis Protocol atende às diretrizes da metodologia{' '}
-              <strong className="text-[#F4F7FA]">GS 448 do Gold Standard</strong> em sua camada de
-              software, garantindo o alinhamento de fatores de substituição reciclado × virgem,
-              requisitos de rastreabilidade física de peças e governança de{' '}
+              <strong className="text-[#F4F7FA]">GS 448</strong> em sua camada de software,
+              garantindo o alinhamento de fatores de substituição reciclado × virgem, requisitos de
+              rastreabilidade física de peças e governança de{' '}
               <strong className="text-[#F4F7FA]">MRV (Monitoramento, Relato e Verificação)</strong>.
             </p>
 
@@ -117,7 +114,7 @@ export function MoverPublicPage() {
                 Rigor Científico & Conformidade Metodológica
               </span>
               <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-[#F4F7FA] mt-1">
-                ALINHAMENTO À METODOLOGIA GS 448 (GOLD STANDARD)
+                ALINHAMENTO À METODOLOGIA GS 448
               </h2>
             </div>
             <span className="px-3 py-1 rounded-full bg-[#16202B] border border-[#3B82F6]/40 text-[#3B82F6] font-mono text-xs font-bold self-start sm:self-auto">
@@ -179,9 +176,9 @@ export function MoverPublicPage() {
                 Nota de Alinhamento Metodológico (Aviso Legal):
               </strong>
               O Orbis Protocol é uma provedora de infraestrutura de dados e dMRV alinhada aos
-              requisitos da GS 448. A plataforma NÃO é credenciadora nem certificadora do Gold
-              Standard. A homologação do projeto e a emissão dos créditos serão conduzidas por um{' '}
-              <strong>VVB acreditado</strong> a ser formalmente contratado para o projeto.
+              requisitos da GS 448. A plataforma não é credenciadora nem certificadora. A validação
+              do projeto e a emissão de créditos, quando houver, serão conduzidas exclusivamente por
+              um <strong>VVB acreditado independente</strong> a ser formalmente contratado.
             </div>
           </div>
         </section>
