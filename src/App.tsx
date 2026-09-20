@@ -147,7 +147,7 @@ const App = () => (
             <Route
               path="/parceiro"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireRole="parceiroOrAdmin">
                   <AreaParceiroPage />
                 </ProtectedRoute>
               }
@@ -155,7 +155,7 @@ const App = () => (
             <Route
               path="/parceiro-painel"
               element={
-                <ProtectedRoute requireRole="parceiro">
+                <ProtectedRoute requireRole="parceiroOrAdmin">
                   <AreaParceiroPage />
                 </ProtectedRoute>
               }

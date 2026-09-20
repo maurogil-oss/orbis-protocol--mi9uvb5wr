@@ -39,11 +39,11 @@ export default function AreaParceiroPage() {
   const [sucessoMsg, setSucessoMsg] = useState('')
 
   // Status de homologação do acesso do parceiro
-  // Requisito 2: enquanto o cadastro não for aprovado, o parceiro logado vê apenas aviso 'Cadastro em homologação pela controladoria'
+  // Requisito 1 & 2: parceiro com parceiro_acesso_status diferente de 'liberado' vê APENAS o aviso
+  // "Cadastro em homologação pela controladoria" (nenhum dado); parceiro liberado vê somente AS SUAS comissões
   const parceiroAcessoStatus = (user as any)?.parceiro_acesso_status || 'pendente'
-  const isHomologacaoPendente = user?.role === 'parceiro' && parceiroAcessoStatus !== 'liberado'
-  const isSuspenso = user?.role === 'parceiro' && parceiroAcessoStatus === 'suspenso'
-
+  const isParceiroUser = user?.role === 'parceiro'
+  const isNaoLiberado = isParceiroUser && parceiroAcessoStatus !== 'liberado'
   // Formulário de dados bancários e fiscal
   const [banco, setBanco] = useState('')
   const [agencia, setAgencia] = useState('')
@@ -55,8 +55,8 @@ export default function AreaParceiroPage() {
   const carregarDados = async () => {
     setLoading(true)
     try {
-      // Se estiver pendente ou suspenso, não carrega dados financeiros (isolamento estrito)
-      if (isHomologacaoPendente || isSuspenso) {
+      // Se não estiver liberado, não carrega dados financeiros (isolamento estrito)
+      if (isNaoLiberado) {
         setLoading(false)
         return
       }
@@ -86,11 +86,11 @@ export default function AreaParceiroPage() {
         setTipoDocFiscal(p.tipo_documentacao || 'RPA')
         setDocFiscalUrl(p.documento_fiscal_url || '')
 
-        // Carregar comissões deste parceiro
+        // Carregar somente as comissões deste parceiro
         const coms = await listarComissoes(p.id)
         setComissoes(coms)
 
-        // Carregar vendas indicadas (cobrancas com parceiro_id ou codigo_indicacao)
+        // Carregar vendas indicadas deste parceiro exclusivamente
         try {
           const cobs = await pb.collection('cobrancas').getFullList({
             filter: `parceiro_id = "${p.id}" || codigo_indicacao = "${p.codigo_parceiro}"`,
@@ -174,8 +174,9 @@ export default function AreaParceiroPage() {
     )
   }
 
-  // Requisito 2: enquanto o cadastro não for aprovado, o parceiro logado vê apenas aviso 'Cadastro em homologação pela controladoria'
-  if (isHomologacaoPendente) {
+  // Requisito 1: parceiro com parceiro_acesso_status diferente de 'liberado' vê APENAS o aviso
+  // "Cadastro em homologação pela controladoria" (nenhum dado)
+  if (isNaoLiberado) {
     return (
       <div className="min-h-screen py-20 bg-[#0A0E12] text-[#F4F7FA] flex items-center justify-center">
         <div className="max-w-xl mx-auto px-4 text-center space-y-6">

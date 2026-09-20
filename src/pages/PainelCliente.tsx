@@ -109,11 +109,8 @@ interface SeloRecord extends RecordModel {
 
 export default function PainelCliente() {
   const { user } = useAuth()
+  const isParceiro = user?.role === 'parceiro'
 
-  // Isolamento estrito de painel: papel parceiro deve usar /parceiro-painel e não o painel do cliente
-  if (user?.role === 'parceiro') {
-    return <Navigate to="/parceiro-painel" replace />
-  }
   const [leads, setLeads] = useState<LeadDiagnostico[]>([])
   const [selos, setSelos] = useState<SeloRecord[]>([])
   const [nfeList, setNfeList] = useState<NFeUploadRecord[]>([])
@@ -155,6 +152,7 @@ export default function PainelCliente() {
   ]
 
   const loadData = async () => {
+    if (isParceiro) return
     setIsLoading(true)
     try {
       const leadsList = await pb.collection('leads_diagnostico').getList<LeadDiagnostico>(1, 10, {
@@ -645,6 +643,11 @@ export default function PainelCliente() {
             : undefined,
       })
     : null
+
+  // Isolamento estrito de painel: papel parceiro deve usar /parceiro-painel e não o painel do cliente
+  if (isParceiro) {
+    return <Navigate to="/parceiro-painel" replace />
+  }
 
   return (
     <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">

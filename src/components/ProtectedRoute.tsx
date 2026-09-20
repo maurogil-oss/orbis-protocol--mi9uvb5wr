@@ -4,7 +4,13 @@ import { useAuth } from '@/contexts/AuthContext'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  requireRole?: 'admin' | 'perito' | 'adminOrPerito' | 'parceiro' | 'adminOrFinanceiro'
+  requireRole?:
+    | 'admin'
+    | 'perito'
+    | 'adminOrPerito'
+    | 'parceiro'
+    | 'adminOrFinanceiro'
+    | 'parceiroOrAdmin'
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole }) => {
@@ -37,6 +43,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
   }
 
   if (requireRole === 'parceiro' && role !== 'parceiro') {
+    return <Navigate to="/painel" replace />
+  }
+
+  if (requireRole === 'parceiroOrAdmin' && role !== 'parceiro' && role !== 'admin') {
     return <Navigate to="/painel" replace />
   }
 
