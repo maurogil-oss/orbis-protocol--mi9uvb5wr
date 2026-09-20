@@ -17,6 +17,7 @@ import SolucoesIndex from './pages/SolucoesIndex'
 import BureauACP from './pages/BureauACP'
 import PortalCorporativo from './pages/PortalCorporativo'
 import ModoCorporativoDemoPage from './pages/ModoCorporativoDemoPage'
+import ModoDemonstracaoOrientadaPage from './pages/ModoDemonstracaoOrientadaPage'
 import CaseCDVerde from './pages/CaseCDVerde'
 import CadeiasProdutivasPage from './pages/CadeiasProdutivasPage'
 import ProtocoloDetailPage from './pages/ProtocoloDetailPage'
@@ -60,6 +61,7 @@ const App = () => (
           <Route element={<Layout />}>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
+            <Route path="/demo" element={<ModoDemonstracaoOrientadaPage />} />
             <Route path="/radar-regulatorio" element={<RadarRegulatorio />} />
             <Route path="/diagnostico" element={<Diagnostico />} />
             <Route path="/trilhas" element={<TrilhasIndex />} />

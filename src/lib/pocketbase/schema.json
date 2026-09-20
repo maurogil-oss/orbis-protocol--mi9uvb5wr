@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T19:53:38.621Z",
+  "generatedAt": "2026-09-20T20:11:23.704Z",
   "collections": [
     {
       "name": "users",
@@ -4416,6 +4416,73 @@
       "indexes": [
         "CREATE UNIQUE INDEX idx_cdv_adic_lote ON cdv_adicionalidade (lote_id)",
         "CREATE INDEX idx_cdv_adic_baixa ON cdv_adicionalidade (veiculo_baixa_detran)"
+      ]
+    },
+    {
+      "name": "demo_audit_trail",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "",
+        "update": null,
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "sessao_id",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "etapa_inicial",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "etapa_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "timestamp_inicio",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "origem_url",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "user_agent_resumido",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_demo_audit_sessao ON demo_audit_trail (sessao_id)",
+        "CREATE INDEX idx_demo_audit_created ON demo_audit_trail (created DESC)"
       ]
     }
   ]
