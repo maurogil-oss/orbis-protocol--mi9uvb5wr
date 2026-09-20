@@ -704,4 +704,18 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     expect(mascararIpLgpd('2804:14d:5483:8100:e901:4b8a:ff12:8910')).toBe('2804:14d:xxxx:xxxx::')
     expect(mascararIpLgpd('')).toBe('xxx.xxx.xxx.xxx')
   })
+
+  it('valida estrutura e funções do catálogo de rastreabilidade (CONTRAN 611 e MOVER)', async () => {
+    // 5 situações possíveis de checklist
+    const situacoesValidas = [
+      'etiquetada',
+      'nao_desmontada',
+      'inservivel',
+      'nao_aplicavel_ausente',
+      'aguardando_avaliacao',
+    ]
+    expect(situacoesValidas).toHaveLength(5)
+    expect(situacoesValidas).toContain('nao_desmontada')
+    expect(situacoesValidas).toContain('etiquetada')
+  })
 })

@@ -430,6 +430,49 @@ export async function listarPecasPorLote(loteId: string): Promise<CdvPecaRecord[
 }
 
 /**
+ * Atualiza a situação de checklist de uma peça em cdv_pecas
+ */
+export async function atualizarSituacaoChecklistPeca(
+  pecaId: string,
+  situacao: SituacaoChecklistPeca,
+): Promise<CdvPecaRecord> {
+  return await pb.collection('cdv_pecas').update<CdvPecaRecord>(pecaId, {
+    situacao_checklist: situacao,
+  })
+}
+
+export interface ItemCatalogoComPecaLote {
+  catalogo: CdvPecaCatalogoRecord
+  peca?: CdvPecaRecord
+}
+
+/**
+ * Cruza o catálogo oficial de 77 peças com as peças do lote via catalogo_numero.
+ * Retorna todos os itens do catálogo com a peça correspondente anexada (se houver).
+ */
+export async function carregarCatalogoComPecasLote(
+  loteId: string,
+): Promise<ItemCatalogoComPecaLote[]> {
+  const [catalogo, pecasLote] = await Promise.all([
+    listarCatalogoPecasCdv(),
+    listarPecasPorLote(loteId),
+  ])
+
+  // Mapeia as peças do lote pelo número de catálogo
+  const pecasPorNumero = new Map<number, CdvPecaRecord>()
+  for (const p of pecasLote) {
+    if (typeof p.catalogo_numero === 'number' && p.catalogo_numero > 0) {
+      pecasPorNumero.set(p.catalogo_numero, p)
+    }
+  }
+
+  return catalogo.map((cat) => ({
+    catalogo: cat,
+    peca: pecasPorNumero.get(cat.numero),
+  }))
+}
+
+/**
  * Busca ou gera a chave de API do CDV para o CNPJ
  */
 export async function obterOuCriarApiKeyCdv(params: {

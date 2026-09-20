@@ -25,6 +25,8 @@ import {
   regenerarApiKeyCdv,
   listarLotesCdv,
   listarPecasPorLote,
+  carregarCatalogoComPecasLote,
+  atualizarSituacaoChecklistPeca,
   enviarLoteCdvApi,
   listarTodasConsultasDpp,
   type CdvApiKeyRecord,
@@ -33,7 +35,11 @@ import {
   type DppConsultaRecord,
   type IngestaoLoteInput,
   type IngestaoLoteResponse,
+  type ItemCatalogoComPecaLote,
+  type SituacaoChecklistPeca,
 } from '@/services/cdvService'
+import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService'
+import { ShieldCheck, Info } from 'lucide-react'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
 import { QrCode, Globe, History } from 'lucide-react'
 
@@ -58,8 +64,14 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
   const [isLoadingLotes, setIsLoadingLotes] = useState(true)
   const [loteExpandidoId, setLoteExpandidoId] = useState<string | null>(null)
   const [pecasDoLote, setPecasDoLote] = useState<Record<string, CdvPecaRecord[]>>({})
+  const [catalogoDoLote, setCatalogoDoLote] = useState<Record<string, ItemCatalogoComPecaLote[]>>(
+    {},
+  )
   const [isLoadingPecas, setIsLoadingPecas] = useState(false)
   const [pecaParaEtiqueta, setPecaParaEtiqueta] = useState<CdvPecaRecord | null>(null)
+  const [abaRastreabilidade, setAbaRastreabilidade] = useState<Record<string, '611' | 'mover'>>({})
+  const [moverHabilitado, setMoverHabilitado] = useState(false)
+  const [salvandoSituacaoId, setSalvandoSituacaoId] = useState<string | null>(null)
 
   // Consultas de Auditoria de DPPs
   const [consultasDpp, setConsultasDpp] = useState<DppConsultaRecord[]>([])
@@ -157,9 +169,19 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
       }
     }
 
+    const verificarMover = async () => {
+      try {
+        const flag = await obterMoverAmpliadoHabilitado()
+        setMoverHabilitado(flag)
+      } catch {
+        setMoverHabilitado(false)
+      }
+    }
+
     carregarChave()
     carregarLotes()
     carregarConsultas()
+    verificarMover()
   }, [cdvCnpj])
 
   const handleRegenerarChave = async () => {
@@ -187,16 +209,62 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
       return
     }
     setLoteExpandidoId(loteId)
-    if (!pecasDoLote[loteId]) {
+    if (!abaRastreabilidade[loteId]) {
+      setAbaRastreabilidade((prev) => ({ ...prev, [loteId]: '611' }))
+    }
+    if (!catalogoDoLote[loteId] || !pecasDoLote[loteId]) {
       setIsLoadingPecas(true)
       try {
-        const pecas = await listarPecasPorLote(loteId)
+        const [itensCatalogo, pecas] = await Promise.all([
+          carregarCatalogoComPecasLote(loteId),
+          listarPecasPorLote(loteId),
+        ])
+        setCatalogoDoLote((prev) => ({ ...prev, [loteId]: itensCatalogo }))
         setPecasDoLote((prev) => ({ ...prev, [loteId]: pecas }))
       } catch {
         /* intentionally ignored */
       } finally {
         setIsLoadingPecas(false)
       }
+    }
+  }
+
+  const handleAtualizarSituacao = async (
+    loteId: string,
+    pecaId: string,
+    novaSituacao: SituacaoChecklistPeca,
+  ) => {
+    setSalvandoSituacaoId(pecaId)
+    try {
+      const atualizada = await atualizarSituacaoChecklistPeca(pecaId, novaSituacao)
+      // Atualiza o estado em catalogoDoLote
+      setCatalogoDoLote((prev) => {
+        const lista = prev[loteId] || []
+        const novaLista = lista.map((item) => {
+          if (item.peca && item.peca.id === pecaId) {
+            return {
+              ...item,
+              peca: { ...item.peca, situacao_checklist: atualizada.situacao_checklist },
+            }
+          }
+          return item
+        })
+        return { ...prev, [loteId]: novaLista }
+      })
+      // Atualiza também em pecasDoLote
+      setPecasDoLote((prev) => {
+        const lista = prev[loteId] || []
+        return {
+          ...prev,
+          [loteId]: lista.map((p) =>
+            p.id === pecaId ? { ...p, situacao_checklist: atualizada.situacao_checklist } : p,
+          ),
+        }
+      })
+    } catch (err: any) {
+      alert(`Falha ao salvar situação do checklist: ${err.message || 'Erro desconhecido'}`)
+    } finally {
+      setSalvandoSituacaoId(null)
     }
   }
 
@@ -868,13 +936,13 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
                     })()}
                   </div>
 
-                  {/* Drill-down de Peças do Lote */}
+                  {/* Drill-down de Peças do Lote — DUAS ABAS DE RASTREABILIDADE */}
                   {isExpanded && (
                     <div className="p-4 bg-[#111820] border-t border-[rgba(244,247,250,0.08)]">
-                      <div className="flex items-center justify-between mb-3 text-xs text-[#93A3B5]">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 text-xs text-[#93A3B5]">
                         <div className="flex items-center gap-2">
                           <span className="font-bold uppercase tracking-wider text-[#F4F7FA] text-[11px]">
-                            Passaportes Digitais Emitidos para este Lote ({pecas.length} DPPs)
+                            Checklist Regulatório & Peças Rastreáveis ({pecas.length} DPPs no banco)
                           </span>
                           <a
                             href={`/passaporte-lote/${lote.id}`}
@@ -891,81 +959,247 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
                         </span>
                       </div>
 
-                      {isLoadingPecas && pecas.length === 0 ? (
-                        <div className="text-center py-4 text-xs text-[#93A3B5]">
-                          Carregando peças...
-                        </div>
-                      ) : pecas.length === 0 ? (
-                        <div className="text-center py-4 text-xs text-[#93A3B5]">
-                          Nenhuma peça listada para este lote.
-                        </div>
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs">
-                            <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
-                              <tr>
-                                <th className="py-2 px-3">Selo DPP</th>
-                                <th className="py-2 px-3">SKU</th>
-                                <th className="py-2 px-3">Descrição da Peça</th>
-                                <th className="py-2 px-3">Material</th>
-                                <th className="py-2 px-3 text-right">Peso</th>
-                                <th className="py-2 px-3 text-right">CO₂e Evitado</th>
-                                <th className="py-2 px-3 text-center">Ações</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
-                              {pecas.map((peca) => (
-                                <tr
-                                  key={peca.id}
-                                  className="hover:bg-[#16202B]/60 transition-colors"
+                      {/* NAVEGAÇÃO DAS DUAS ABAS */}
+                      {(() => {
+                        const tabAtiva = abaRastreabilidade[lote.id] || '611'
+                        const catalogoTotal = catalogoDoLote[lote.id] || []
+                        const itens611 = catalogoTotal.filter(
+                          (it) => it.catalogo.origem === '611_vigente',
+                        )
+                        const itensMover = catalogoTotal.filter(
+                          (it) => it.catalogo.origem === 'ampliada_mover',
+                        )
+
+                        const itensExibidos = tabAtiva === '611' ? itens611 : itensMover
+
+                        return (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 border-b border-[rgba(244,247,250,0.1)] pb-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setAbaRastreabilidade((prev) => ({ ...prev, [lote.id]: '611' }))
+                                }
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                                  tabAtiva === '611'
+                                    ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
+                                    : 'bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/80'
+                                }`}
+                              >
+                                <span>CONTRAN 611 (vigente)</span>
+                                <span
+                                  className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                                    tabAtiva === '611'
+                                      ? 'bg-[#0A0E12]/30 text-[#0A0E12]'
+                                      : 'bg-[#0A0E12] text-[#93A3B5]'
+                                  }`}
                                 >
-                                  <td className="py-2.5 px-3">
-                                    <span className="font-mono font-bold text-[#12B886]">
-                                      {peca.selo_dpp}
-                                    </span>
-                                  </td>
-                                  <td className="py-2.5 px-3 font-mono text-[11px] text-[#93A3B5]">
-                                    {peca.sku_interno}
-                                  </td>
-                                  <td className="py-2.5 px-3 font-medium">{peca.descricao_peca}</td>
-                                  <td className="py-2.5 px-3">
-                                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#16202B] text-[#D9B36C]">
-                                      {peca.categoria_material}
-                                    </span>
-                                  </td>
-                                  <td className="py-2.5 px-3 text-right font-mono">
-                                    {peca.peso_kg} kg
-                                  </td>
-                                  <td className="py-2.5 px-3 text-right font-mono font-bold text-[#12B886]">
-                                    -{peca.co2e_evitado_kg} kg
-                                  </td>
-                                  <td className="py-2.5 px-3 text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                      <a
-                                        href={`/passaporte/${peca.selo_dpp}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-1 rounded text-[#93A3B5] hover:text-[#12B886] hover:bg-[#12B886]/10 transition-colors"
-                                        title="Abrir Passaporte Público (DPP)"
-                                      >
-                                        <ExternalLink className="w-3.5 h-3.5" />
-                                      </a>
-                                      <button
-                                        type="button"
-                                        onClick={() => setPecaParaEtiqueta(peca)}
-                                        className="p-1 rounded text-[#93A3B5] hover:text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-colors"
-                                        title="Imprimir Etiqueta com QR Code"
-                                      >
-                                        <Printer className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
+                                  49 peças
+                                </span>
+                              </button>
+
+                              {moverHabilitado && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setAbaRastreabilidade((prev) => ({
+                                      ...prev,
+                                      [lote.id]: 'mover',
+                                    }))
+                                  }
+                                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                                    tabAtiva === 'mover'
+                                      ? 'bg-[#D9B36C] text-[#0A0E12]'
+                                      : 'bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/80'
+                                  }`}
+                                >
+                                  <span>Ampliação MOVER (em validação)</span>
+                                  <span
+                                    className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                                      tabAtiva === 'mover'
+                                        ? 'bg-[#0A0E12]/30 text-[#0A0E12]'
+                                        : 'bg-[#0A0E12] text-[#93A3B5]'
+                                    }`}
+                                  >
+                                    28 peças
+                                  </span>
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Marca fixa na aba MOVER */}
+                            {tabAtiva === 'mover' && moverHabilitado && (
+                              <div className="p-3 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-xs text-[#D9B36C] flex items-center gap-2 font-medium">
+                                <Info className="w-4 h-4 shrink-0" />
+                                <span>Informativo — não integra o laudo de conformidade 611</span>
+                              </div>
+                            )}
+
+                            {isLoadingPecas && catalogoTotal.length === 0 ? (
+                              <div className="text-center py-6 text-xs text-[#93A3B5]">
+                                Carregando catálogo e peças do lote...
+                              </div>
+                            ) : itensExibidos.length === 0 ? (
+                              <div className="text-center py-6 text-xs text-[#93A3B5]">
+                                Nenhuma peça encontrada nesta categoria.
+                              </div>
+                            ) : (
+                              <div className="overflow-x-auto rounded-xl border border-[rgba(244,247,250,0.08)] bg-[#0A0E12]">
+                                <table className="w-full text-left text-xs">
+                                  <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold text-[10px]">
+                                    <tr>
+                                      <th className="py-2.5 px-3 w-12 text-center">Nº</th>
+                                      <th className="py-2.5 px-3">Peça do Catálogo</th>
+                                      <th className="py-2.5 px-3">Subsistema</th>
+                                      <th className="py-2.5 px-3">Situação Checklist</th>
+                                      <th className="py-2.5 px-3">Selo DPP / SKU</th>
+                                      <th className="py-2.5 px-3 text-right">Peso</th>
+                                      <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
+                                      <th className="py-2.5 px-3 text-center">Ações</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
+                                    {itensExibidos.map((item) => {
+                                      const cat = item.catalogo
+                                      const peca = item.peca
+                                      const situacao = peca?.situacao_checklist || 'nao_desmontada'
+                                      const isSalvando = peca && salvandoSituacaoId === peca.id
+
+                                      return (
+                                        <tr
+                                          key={cat.id || cat.numero}
+                                          className="hover:bg-[#16202B]/60 transition-colors"
+                                        >
+                                          <td className="py-2.5 px-3 text-center font-mono text-xs text-[#93A3B5]">
+                                            {cat.numero}
+                                          </td>
+                                          <td className="py-2.5 px-3">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                              <span className="font-semibold text-[#F4F7FA]">
+                                                {cat.nome_peca}
+                                              </span>
+                                              {cat.item_seguranca && (
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F03E54]/20 border border-[#F03E54]/40 text-[#F03E54]">
+                                                  <ShieldCheck className="w-3 h-3" />
+                                                  <span>Item de segurança</span>
+                                                </span>
+                                              )}
+                                            </div>
+                                            {cat.notas && (
+                                              <p className="text-[10px] text-[#93A3B5]/80 mt-0.5 line-clamp-1">
+                                                {cat.notas}
+                                              </p>
+                                            )}
+                                          </td>
+                                          <td className="py-2.5 px-3">
+                                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#16202B] text-[#93A3B5]">
+                                              {cat.subsistema}
+                                            </span>
+                                          </td>
+                                          <td className="py-2.5 px-3">
+                                            {peca ? (
+                                              <div className="flex items-center gap-1.5">
+                                                <select
+                                                  value={situacao}
+                                                  disabled={isSalvando}
+                                                  onChange={(e) =>
+                                                    handleAtualizarSituacao(
+                                                      lote.id,
+                                                      peca.id,
+                                                      e.target.value as SituacaoChecklistPeca,
+                                                    )
+                                                  }
+                                                  className={`px-2 py-1 rounded-lg text-xs font-semibold border bg-[#111820] transition-all focus:outline-none focus:ring-1 ${
+                                                    situacao === 'etiquetada'
+                                                      ? 'text-[#12B886] border-[#12B886]/40 focus:ring-[#12B886]'
+                                                      : situacao === 'inservivel'
+                                                        ? 'text-[#F03E54] border-[#F03E54]/40 focus:ring-[#F03E54]'
+                                                        : situacao === 'nao_aplicavel_ausente'
+                                                          ? 'text-[#93A3B5] border-[rgba(244,247,250,0.15)]'
+                                                          : situacao === 'aguardando_avaliacao'
+                                                            ? 'text-[#D9B36C] border-[#D9B36C]/40 focus:ring-[#D9B36C]'
+                                                            : 'text-[#F4F7FA] border-[rgba(244,247,250,0.2)]'
+                                                  }`}
+                                                >
+                                                  <option value="nao_desmontada">
+                                                    Não desmontada
+                                                  </option>
+                                                  <option value="etiquetada">Etiquetada</option>
+                                                  <option value="inservivel">Inservível</option>
+                                                  <option value="nao_aplicavel_ausente">
+                                                    Não aplicável / ausente
+                                                  </option>
+                                                  <option value="aguardando_avaliacao">
+                                                    Aguardando avaliação
+                                                  </option>
+                                                </select>
+                                                {isSalvando && (
+                                                  <RefreshCw className="w-3 h-3 text-[#12B886] animate-spin" />
+                                                )}
+                                              </div>
+                                            ) : (
+                                              <span className="text-[11px] text-[#93A3B5] italic">
+                                                Aguardando vínculo
+                                              </span>
+                                            )}
+                                          </td>
+                                          <td className="py-2.5 px-3">
+                                            {peca ? (
+                                              <div>
+                                                <span className="font-mono font-bold text-[#12B886] block text-xs">
+                                                  {peca.selo_dpp}
+                                                </span>
+                                                <span className="font-mono text-[10px] text-[#93A3B5]">
+                                                  {peca.sku_interno}
+                                                </span>
+                                              </div>
+                                            ) : (
+                                              <span className="text-[#93A3B5] text-[11px]">—</span>
+                                            )}
+                                          </td>
+                                          <td className="py-2.5 px-3 text-right font-mono">
+                                            {peca && peca.peso_kg > 0 ? `${peca.peso_kg} kg` : '—'}
+                                          </td>
+                                          <td className="py-2.5 px-3 text-right font-mono font-bold text-[#12B886]">
+                                            {peca && peca.co2e_evitado_kg > 0
+                                              ? `-${peca.co2e_evitado_kg} kg`
+                                              : '—'}
+                                          </td>
+                                          <td className="py-2.5 px-3 text-center">
+                                            {peca ? (
+                                              <div className="flex items-center justify-center gap-1.5">
+                                                <a
+                                                  href={`/passaporte/${peca.selo_dpp}`}
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                  className="p-1 rounded text-[#93A3B5] hover:text-[#12B886] hover:bg-[#12B886]/10 transition-colors"
+                                                  title="Abrir Passaporte Público (DPP)"
+                                                >
+                                                  <ExternalLink className="w-3.5 h-3.5" />
+                                                </a>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setPecaParaEtiqueta(peca)}
+                                                  className="p-1 rounded text-[#93A3B5] hover:text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-colors"
+                                                  title="Imprimir Etiqueta com QR Code"
+                                                >
+                                                  <Printer className="w-3.5 h-3.5" />
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              <span className="text-[#93A3B5] text-[11px]">—</span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      )
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
                   )}
                 </div>
