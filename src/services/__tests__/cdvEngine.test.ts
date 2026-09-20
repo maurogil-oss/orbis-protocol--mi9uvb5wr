@@ -684,6 +684,73 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     expect(hashLoteDemo1).toBe(hashLoteDemo2)
   })
 
+  it('deve filtrar para o hash canônico do lote APENAS peças 611 (catalogo <= 49), excluindo peças MOVER (50-77)', async () => {
+    const loteInfo = {
+      id: 'c1jz14hgmf7n13i',
+      cdv_cnpj: '76.123.456/0001-00',
+      veiculo_baixa_detran: 'PR-BX-2026-1240105',
+    }
+
+    const pecas611 = [
+      {
+        selo_dpp: 'PR-SEAL-2026-000101',
+        sku_interno: 'CLIO-MOT-01',
+        peso_kg: 42.0,
+        co2e_evitado_kg: 119.7,
+        catalogo_numero: 1,
+        origem: '611_vigente',
+        hash_sha256: '8cf76eac8b95ab17d2d59db48acdff144392c14d941d72ca036eb79657098649',
+      },
+      {
+        selo_dpp: 'PR-SEAL-2026-000102',
+        sku_interno: 'CLIO-MOT-02',
+        peso_kg: 16.5,
+        co2e_evitado_kg: 135.3,
+        catalogo_numero: 2,
+        origem: '611_vigente',
+        hash_sha256: 'ca330e4f40d80e3ce7a16fa3418fa0f65b7420fb07af81633c4b7f9417264a72',
+      },
+    ]
+
+    const pecasMover = [
+      {
+        selo_dpp: 'PR-SEAL-2026-000150',
+        sku_interno: 'CLIO-MOV-50',
+        peso_kg: 8.0,
+        co2e_evitado_kg: 65.6,
+        catalogo_numero: 50,
+        origem: 'ampliada_mover',
+        hash_sha256: '1111111111111111111111111111111111111111111111111111111111111111',
+      },
+      {
+        selo_dpp: 'PR-SEAL-2026-000151',
+        sku_interno: 'CLIO-MOV-51',
+        peso_kg: 0.5,
+        co2e_evitado_kg: 4.1,
+        catalogo_numero: 51,
+        origem: 'ampliada_mover',
+        hash_sha256: '2222222222222222222222222222222222222222222222222222222222222222',
+      },
+    ]
+
+    // O hash com apenas as 611 deve ser IDÊNTICO ao hash contendo 611 + MOVER, pois MOVER é descartada do cálculo
+    const hashSomente611 = await calcularHashCanonicalLote(loteInfo, pecas611)
+    const hashMisto = await calcularHashCanonicalLote(loteInfo, [...pecas611, ...pecasMover])
+
+    expect(hashSomente611).toBe(hashMisto)
+
+    // Fallback tolerante para peças antigas sem catalogo_numero: devem ser incluídas no hash
+    const pecasLegado = [
+      {
+        selo_dpp: 'PR-LEGADO-001',
+        peso_kg: 10,
+        co2e_evitado_kg: 28.5,
+      },
+    ]
+    const hashLegado = await calcularHashCanonicalLote(loteInfo, pecasLegado)
+    expect(hashLegado).toHaveLength(64)
+  })
+
   it('deve formatar IP mascarado conforme as regras estritas da LGPD', () => {
     // IPv4: preservar apenas dois primeiros octetos
     const mascararIpLgpd = (rawIp: string): string => {

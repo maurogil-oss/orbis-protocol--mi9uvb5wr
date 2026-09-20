@@ -261,9 +261,20 @@ export async function calcularHashCanonicalLote(
     sku_interno?: string
     peso_kg?: number
     co2e_evitado_kg?: number
+    catalogo_numero?: number
+    origem?: OrigemPecaCatalogo | string
   }>,
 ): Promise<string> {
-  if (!pecas || pecas.length === 0) {
+  // Filtrar para o hash APENAS as peças de origem '611_vigente' (ou catalogo_numero <= 49).
+  // Peças 'ampliada_mover' (catalogo_numero > 49 ou origem === 'ampliada_mover') ficam fora do hash canônico de conformidade 611.
+  // Manter fallback tolerante para selos antigos sem catalogo_numero e sem origem (são incluídos como padrão 611).
+  const pecas611 = (pecas || []).filter((p) => {
+    if (p.origem === 'ampliada_mover') return false
+    if (typeof p.catalogo_numero === 'number' && p.catalogo_numero > 49) return false
+    return true
+  })
+
+  if (!pecas611 || pecas611.length === 0) {
     const rawVazio = `LOTE_VAZIO|${lote.id || ''}|${lote.cdv_cnpj || ''}|${lote.veiculo_baixa_detran || ''}`
     const encoder = new TextEncoder()
     const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(rawVazio))
@@ -272,8 +283,8 @@ export async function calcularHashCanonicalLote(
       .join('')
   }
 
-  // Ordenação lexicográfica estrita dos hashes ou selos das peças
-  const hashesOrdenados = pecas
+  // Ordenação lexicográfica estrita dos hashes ou selos das peças 611
+  const hashesOrdenados = pecas611
     .map((p) => {
       if (p.hash_sha256 && p.hash_sha256.trim()) {
         return p.hash_sha256.trim().toLowerCase()

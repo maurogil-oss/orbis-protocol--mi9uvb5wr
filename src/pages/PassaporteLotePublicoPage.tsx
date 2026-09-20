@@ -38,6 +38,7 @@ import {
   consultarDestinacaoFinalLote,
   type DestinacaoFinalLoteResponse,
 } from '@/services/destinacaoFinalService'
+import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
 import { BalancoMassaVeiculoSection } from '@/components/BalancoMassaVeiculoSection'
@@ -78,6 +79,7 @@ export default function PassaporteLotePublicoPage() {
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todos')
   const [abaLoteAtiva, setAbaLoteAtiva] = useState<'laudo' | 'balanco' | 'destinacao'>('laudo')
   const [dadosDestinacao, setDadosDestinacao] = useState<DestinacaoFinalLoteResponse | null>(null)
+  const [moverHabilitado, setMoverHabilitado] = useState(false)
 
   // Histórico de Verificações do Lote
   const [historicoConsultas, setHistoricoConsultas] = useState<DppConsultaRecord[]>([])
@@ -153,6 +155,16 @@ export default function PassaporteLotePublicoPage() {
           if (isMounted) {
             setDadosDestinacao(dest)
           }
+
+          // Carregar flag da ampliação do Programa MOVER
+          try {
+            const flag = await obterMoverAmpliadoHabilitado()
+            if (isMounted) {
+              setMoverHabilitado(flag)
+            }
+          } catch {
+            if (isMounted) setMoverHabilitado(false)
+          }
         } else {
           setLote(null)
           setPecas([])
@@ -173,14 +185,27 @@ export default function PassaporteLotePublicoPage() {
     }
   }, [loteParam, canalDetectado])
 
-  // Detectar se o lote possui subsistemas explícitos (ex: lote demo de 49 peças)
-  const temSubsistemas = useMemo(() => {
-    return pecas.some((p) => Boolean(p.subsistema))
+  // Separação regulatória estrita: Peças de conformidade CONTRAN 611 vs Peças de expansão MOVER
+  const pecas611 = useMemo(() => {
+    return pecas.filter((p) => {
+      if ((p as any).origem === 'ampliada_mover') return false
+      if (typeof p.catalogo_numero === 'number' && p.catalogo_numero > 49) return false
+      return true
+    })
   }, [pecas])
 
-  // Agrupamento por Subsistema (quando disponível) ou por Categoria de Material
-  const gruposExibicao = useMemo(() => {
-    if (temSubsistemas) {
+  const pecasMover = useMemo(() => {
+    return pecas.filter((p) => {
+      if ((p as any).origem === 'ampliada_mover') return true
+      if (typeof p.catalogo_numero === 'number' && p.catalogo_numero > 49) return true
+      return false
+    })
+  }, [pecas])
+
+  // Função utilitária de agrupamento por subsistema / categoria
+  const agruparPecas = (lista: CdvPecaRecord[]) => {
+    const temSub = lista.some((p) => Boolean(p.subsistema))
+    if (temSub) {
       const grupos: Record<
         string,
         {
@@ -192,7 +217,7 @@ export default function PassaporteLotePublicoPage() {
         }
       > = {}
 
-      for (const p of pecas) {
+      for (const p of lista) {
         const sub = p.subsistema || 'Outros Subsistemas'
         if (!grupos[sub]) {
           grupos[sub] = {
@@ -208,7 +233,6 @@ export default function PassaporteLotePublicoPage() {
         grupos[sub].co2eTotal += Number(p.co2e_evitado_kg) || 0
       }
 
-      // Ordenar conforme ordem de engenharia padrão
       return Object.values(grupos).sort((a, b) => {
         const idxA = SUBSISTEMAS_ORDEM.indexOf(a.id)
         const idxB = SUBSISTEMAS_ORDEM.indexOf(b.id)
@@ -230,7 +254,7 @@ export default function PassaporteLotePublicoPage() {
       }
     > = {}
 
-    for (const p of pecas) {
+    for (const p of lista) {
       const cat = p.categoria_material || 'outros'
       if (!grupos[cat]) {
         grupos[cat] = {
@@ -247,7 +271,10 @@ export default function PassaporteLotePublicoPage() {
     }
 
     return Object.values(grupos)
-  }, [pecas, temSubsistemas])
+  }
+
+  const grupos611 = useMemo(() => agruparPecas(pecas611), [pecas611])
+  const gruposMover = useMemo(() => agruparPecas(pecasMover), [pecasMover])
 
   // Métricas Consolidadas Reais
   const metricas = useMemo(() => {
@@ -851,119 +878,230 @@ export default function PassaporteLotePublicoPage() {
 
                 {/* FLUXO VERTICAL MOBILE: ANEXO I DISCRIMINADO EM CARTÕES EMPILHADOS */}
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-[#D9B36C]" />
-                      <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#F4F7FA]">
-                        Peças do Lote por Grupo
+                  {/* Seção 1 Mobile: Conformidade Regulamentar CONTRAN 611/2016 */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-[rgba(244,247,250,0.1)] pb-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#12B886]" />
+                        <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#12B886]">
+                          Conformidade Regulamentar CONTRAN 611/2016
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-[#93A3B5]">
+                        {pecas611.length} peças
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">
-                      {pecas.length} componentes
-                    </span>
-                  </div>
 
-                  {/* Filtro Mobile */}
-                  <div>
-                    <select
-                      value={filtroCategoria}
-                      onChange={(e) => setFiltroCategoria(e.target.value)}
-                      className="w-full bg-[#111820] border border-[rgba(244,247,250,0.15)] rounded-xl px-3 py-2 text-xs text-[#F4F7FA] focus:outline-none focus:ring-1 focus:ring-[#12B886]"
-                    >
-                      <option value="todos">Todos os Grupos ({gruposExibicao.length})</option>
-                      {gruposExibicao.map((g) => (
-                        <option key={g.id} value={g.id}>
-                          {g.label} ({g.pecas.length} peças)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    {/* Filtro Mobile 611 */}
+                    <div>
+                      <select
+                        value={filtroCategoria}
+                        onChange={(e) => setFiltroCategoria(e.target.value)}
+                        className="w-full bg-[#111820] border border-[rgba(244,247,250,0.15)] rounded-xl px-3 py-2 text-xs text-[#F4F7FA] focus:outline-none focus:ring-1 focus:ring-[#12B886]"
+                      >
+                        <option value="todos">Todos os Grupos 611 ({grupos611.length})</option>
+                        {grupos611.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            {g.label} ({g.pecas.length} peças)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  {/* Grupos e Cartões Empilhados no Mobile */}
-                  <div className="space-y-4">
-                    {gruposExibicao
-                      .filter((g) => filtroCategoria === 'todos' || g.id === filtroCategoria)
-                      .map((grupo) => (
-                        <div
-                          key={grupo.id}
-                          className="rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] p-3.5 space-y-3"
-                        >
-                          <div className="flex items-center justify-between pb-2 border-b border-[rgba(244,247,250,0.06)]">
-                            <div className="flex items-center gap-2">
-                              <span className="w-2.5 h-2.5 rounded-full bg-[#12B886]" />
-                              <span className="font-heading font-bold text-xs text-[#F4F7FA]">
-                                {grupo.label}
+                    {/* Grupos e Cartões Empilhados 611 no Mobile */}
+                    <div className="space-y-4">
+                      {grupos611
+                        .filter((g) => filtroCategoria === 'todos' || g.id === filtroCategoria)
+                        .map((grupo) => (
+                          <div
+                            key={grupo.id}
+                            className="rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] p-3.5 space-y-3"
+                          >
+                            <div className="flex items-center justify-between pb-2 border-b border-[rgba(244,247,250,0.06)]">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#12B886]" />
+                                <span className="font-heading font-bold text-xs text-[#F4F7FA]">
+                                  {grupo.label}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-mono text-[#D9B36C]">
+                                {grupo.pesoTotal.toFixed(1)} kg | -{grupo.co2eTotal.toFixed(1)} kg
                               </span>
                             </div>
-                            <span className="text-[10px] font-mono text-[#D9B36C]">
-                              {grupo.pesoTotal.toFixed(1)} kg | -{grupo.co2eTotal.toFixed(1)} kg
+
+                            {/* Cartões individuais empilhados das peças */}
+                            <div className="space-y-2">
+                              {grupo.pecas.map((peca) => {
+                                const fatorInfo =
+                                  FATORES_CDV_MATERIAIS[peca.categoria_material] ||
+                                  FATORES_CDV_MATERIAIS.outros
+                                return (
+                                  <div
+                                    key={peca.id}
+                                    className="p-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div>
+                                        <div className="font-semibold text-xs text-[#F4F7FA] leading-snug">
+                                          {peca.descricao_peca}
+                                        </div>
+                                        <div className="font-mono text-[10px] text-[#12B886] font-bold mt-0.5">
+                                          {peca.selo_dpp}
+                                        </div>
+                                      </div>
+                                      <Link
+                                        to={`/passaporte/${peca.selo_dpp}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="px-2 py-1 rounded-md bg-[#16202B] text-[10px] font-semibold text-[#12B886] hover:bg-[#12B886]/10 border border-[#12B886]/30 transition-colors inline-flex items-center gap-1 shrink-0"
+                                      >
+                                        <span>DPP</span>
+                                        <ArrowUpRight className="w-2.5 h-2.5" />
+                                      </Link>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-1 text-[10px] pt-1 border-t border-[rgba(244,247,250,0.04)] font-mono">
+                                      <div>
+                                        <span className="text-[#93A3B5] block text-[9px]">
+                                          Massa
+                                        </span>
+                                        <strong className="text-[#D9B36C]">
+                                          {Number(peca.peso_kg).toFixed(2)} kg
+                                        </strong>
+                                      </div>
+                                      <div>
+                                        <span className="text-[#93A3B5] block text-[9px]">
+                                          Fator ACV
+                                        </span>
+                                        <span className="text-[#93A3B5]">
+                                          {Number(
+                                            peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg,
+                                          ).toFixed(2)}
+                                        </span>
+                                      </div>
+                                      <div className="text-right">
+                                        <span className="text-[#93A3B5] block text-[9px]">
+                                          CO₂e Evitado
+                                        </span>
+                                        <strong className="text-[#12B886]">
+                                          -{Number(peca.co2e_evitado_kg).toFixed(2)} kg
+                                        </strong>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Seção 2 Mobile: Expansão Programa MOVER (Visível SOMENTE se moverHabilitado === true) */}
+                  {moverHabilitado && gruposMover.length > 0 && (
+                    <div className="space-y-4 pt-4 border-t border-[rgba(244,247,250,0.12)]">
+                      <div className="flex flex-col gap-1 border-b border-[rgba(244,247,250,0.1)] pb-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-[#D9B36C]" />
+                            <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#D9B36C]">
+                              Expansão Catalográfica Programa MOVER
                             </span>
                           </div>
-
-                          {/* Cartões individuais empilhados das peças */}
-                          <div className="space-y-2">
-                            {grupo.pecas.map((peca) => {
-                              const fatorInfo =
-                                FATORES_CDV_MATERIAIS[peca.categoria_material] ||
-                                FATORES_CDV_MATERIAIS.outros
-                              return (
-                                <div
-                                  key={peca.id}
-                                  className="p-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2"
-                                >
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div>
-                                      <div className="font-semibold text-xs text-[#F4F7FA] leading-snug">
-                                        {peca.descricao_peca}
-                                      </div>
-                                      <div className="font-mono text-[10px] text-[#12B886] font-bold mt-0.5">
-                                        {peca.selo_dpp}
-                                      </div>
-                                    </div>
-                                    <Link
-                                      to={`/passaporte/${peca.selo_dpp}`}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="px-2 py-1 rounded-md bg-[#16202B] text-[10px] font-semibold text-[#12B886] hover:bg-[#12B886]/10 border border-[#12B886]/30 transition-colors inline-flex items-center gap-1 shrink-0"
-                                    >
-                                      <span>DPP</span>
-                                      <ArrowUpRight className="w-2.5 h-2.5" />
-                                    </Link>
-                                  </div>
-
-                                  <div className="grid grid-cols-3 gap-1 text-[10px] pt-1 border-t border-[rgba(244,247,250,0.04)] font-mono">
-                                    <div>
-                                      <span className="text-[#93A3B5] block text-[9px]">Massa</span>
-                                      <strong className="text-[#D9B36C]">
-                                        {Number(peca.peso_kg).toFixed(2)} kg
-                                      </strong>
-                                    </div>
-                                    <div>
-                                      <span className="text-[#93A3B5] block text-[9px]">
-                                        Fator ACV
-                                      </span>
-                                      <span className="text-[#93A3B5]">
-                                        {Number(
-                                          peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg,
-                                        ).toFixed(2)}
-                                      </span>
-                                    </div>
-                                    <div className="text-right">
-                                      <span className="text-[#93A3B5] block text-[9px]">
-                                        CO₂e Evitado
-                                      </span>
-                                      <strong className="text-[#12B886]">
-                                        -{Number(peca.co2e_evitado_kg).toFixed(2)} kg
-                                      </strong>
-                                    </div>
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
+                          <span className="text-[10px] font-mono text-[#D9B36C]">
+                            {pecasMover.length} componentes adicionais
+                          </span>
                         </div>
-                      ))}
-                  </div>
+                        <span className="text-[10px] font-mono text-[#93A3B5] italic">
+                          Informativo — não integra o laudo de conformidade 611
+                        </span>
+                      </div>
+
+                      <div className="space-y-4">
+                        {gruposMover.map((grupo) => (
+                          <div
+                            key={grupo.id}
+                            className="rounded-2xl bg-[#111820] border border-[#D9B36C]/30 p-3.5 space-y-3"
+                          >
+                            <div className="flex items-center justify-between pb-2 border-b border-[rgba(244,247,250,0.06)]">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#D9B36C]" />
+                                <span className="font-heading font-bold text-xs text-[#F4F7FA]">
+                                  {grupo.label}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-mono text-[#D9B36C]">
+                                {grupo.pesoTotal.toFixed(1)} kg | -{grupo.co2eTotal.toFixed(1)} kg
+                              </span>
+                            </div>
+
+                            <div className="space-y-2">
+                              {grupo.pecas.map((peca) => {
+                                const fatorInfo =
+                                  FATORES_CDV_MATERIAIS[peca.categoria_material] ||
+                                  FATORES_CDV_MATERIAIS.outros
+                                return (
+                                  <div
+                                    key={peca.id}
+                                    className="p-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div>
+                                        <div className="font-semibold text-xs text-[#F4F7FA] leading-snug">
+                                          {peca.descricao_peca}
+                                        </div>
+                                        <div className="font-mono text-[10px] text-[#D9B36C] font-bold mt-0.5">
+                                          {peca.selo_dpp}
+                                        </div>
+                                      </div>
+                                      <Link
+                                        to={`/passaporte/${peca.selo_dpp}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="px-2 py-1 rounded-md bg-[#16202B] text-[10px] font-semibold text-[#D9B36C] hover:bg-[#D9B36C]/10 border border-[#D9B36C]/30 transition-colors inline-flex items-center gap-1 shrink-0"
+                                      >
+                                        <span>DPP</span>
+                                        <ArrowUpRight className="w-2.5 h-2.5" />
+                                      </Link>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-1 text-[10px] pt-1 border-t border-[rgba(244,247,250,0.04)] font-mono">
+                                      <div>
+                                        <span className="text-[#93A3B5] block text-[9px]">
+                                          Massa
+                                        </span>
+                                        <strong className="text-[#D9B36C]">
+                                          {Number(peca.peso_kg).toFixed(2)} kg
+                                        </strong>
+                                      </div>
+                                      <div>
+                                        <span className="text-[#93A3B5] block text-[9px]">
+                                          Fator ACV
+                                        </span>
+                                        <span className="text-[#93A3B5]">
+                                          {Number(
+                                            peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg,
+                                          ).toFixed(2)}
+                                        </span>
+                                      </div>
+                                      <div className="text-right">
+                                        <span className="text-[#93A3B5] block text-[9px]">
+                                          CO₂e Evitado
+                                        </span>
+                                        <strong className="text-[#12B886]">
+                                          -{Number(peca.co2e_evitado_kg).toFixed(2)} kg
+                                        </strong>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Botão Secundário CTA Inferior no Mobile */}
@@ -1574,20 +1712,20 @@ export default function PassaporteLotePublicoPage() {
                   {/* Topo do Anexo I */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.12)] pb-4 print:border-slate-300">
                     <div>
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#D9B36C]/40 text-[#D9B36C] text-[11px] font-bold uppercase tracking-wider mb-2 print:border-amber-600 print:bg-amber-50 print:text-amber-800">
-                        <Layers className="w-3.5 h-3.5" />
-                        ANEXO I • RELAÇÃO DISCRIMINADA DE PEÇAS POR SUBSISTEMA
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-[11px] font-bold uppercase tracking-wider mb-2 print:border-emerald-600 print:bg-emerald-50 print:text-emerald-800">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        ANEXO I • CONFORMIDADE REGULAMENTAR CONTRAN 611/2016
                       </div>
                       <h2 className="font-heading font-black text-xl sm:text-2xl text-[#F4F7FA] print:text-slate-900">
-                        Detalhamento dos Componentes Circulares & Memória de Cálculo
+                        Conformidade Regulamentar CONTRAN 611/2016
                       </h2>
                       <p className="text-xs text-[#93A3B5] print:text-slate-600 mt-0.5">
-                        Visão agrupada por categoria de material com link auditável para o DPP
-                        individual de cada peça.
+                        Relação das peças oficiais da cartela do CONTRAN 611/2016 que integram o
+                        laudo de conformidade técnica e a prova criptográfica do lote.
                       </p>
                     </div>
 
-                    {/* Filtro de Categoria Interativo (apenas em tela) */}
+                    {/* Filtro de Categoria Interativo 611 (apenas em tela) */}
                     <div className="no-print flex items-center gap-2">
                       <span className="text-xs text-[#93A3B5]">Filtrar grupo:</span>
                       <select
@@ -1595,8 +1733,8 @@ export default function PassaporteLotePublicoPage() {
                         onChange={(e) => setFiltroCategoria(e.target.value)}
                         className="bg-[#111820] border border-[rgba(244,247,250,0.15)] rounded-lg px-3 py-1.5 text-xs text-[#F4F7FA] focus:outline-none focus:ring-1 focus:ring-[#12B886]"
                       >
-                        <option value="todos">Todos os Grupos ({gruposExibicao.length})</option>
-                        {gruposExibicao.map((g) => (
+                        <option value="todos">Todos os Grupos 611 ({grupos611.length})</option>
+                        {grupos611.map((g) => (
                           <option key={g.id} value={g.id}>
                             {g.label} ({g.pecas.length})
                           </option>
@@ -1605,9 +1743,9 @@ export default function PassaporteLotePublicoPage() {
                     </div>
                   </div>
 
-                  {/* Tabela Agrupada por Categoria / Subsistema */}
+                  {/* Tabela Agrupada por Categoria / Subsistema - CONTRAN 611 */}
                   <div className="space-y-6">
-                    {gruposExibicao
+                    {grupos611
                       .filter((g) => filtroCategoria === 'todos' || g.id === filtroCategoria)
                       .map((grupo) => (
                         <div
@@ -1649,7 +1787,7 @@ export default function PassaporteLotePublicoPage() {
                                 <tr>
                                   <th className="py-2.5 px-3">Selo DPP Oficial</th>
                                   <th className="py-2.5 px-3">Descrição da Peça</th>
-                                  {temSubsistemas && <th className="py-2.5 px-3">Subsistema</th>}
+                                  <th className="py-2.5 px-3">Subsistema</th>
                                   <th className="py-2.5 px-3">Material Declarado</th>
                                   <th className="py-2.5 px-3 text-right">Peso (kg)</th>
                                   <th className="py-2.5 px-3 text-right">Fator (kgCO₂e/kg)</th>
@@ -1685,13 +1823,11 @@ export default function PassaporteLotePublicoPage() {
                                           NCM: {peca.ncm || '8708.29.99'}
                                         </div>
                                       </td>
-                                      {temSubsistemas && (
-                                        <td className="py-2.5 px-3">
-                                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#16202B] text-[#D9B36C] border border-[rgba(244,247,250,0.06)] print:border-slate-200 print:text-amber-800 print:bg-white font-semibold">
-                                            {peca.subsistema || 'Geral'}
-                                          </span>
-                                        </td>
-                                      )}
+                                      <td className="py-2.5 px-3">
+                                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#16202B] text-[#D9B36C] border border-[rgba(244,247,250,0.06)] print:border-slate-200 print:text-amber-800 print:bg-white font-semibold">
+                                          {peca.subsistema || 'Geral'}
+                                        </span>
+                                      </td>
                                       <td className="py-2.5 px-3">
                                         <span className="text-[11px] text-[#93A3B5] print:text-slate-700">
                                           {peca.material_declarado || grupo.label}
@@ -1729,6 +1865,146 @@ export default function PassaporteLotePublicoPage() {
                         </div>
                       ))}
                   </div>
+
+                  {/* BLOCO SEPARADO: EXPANSÃO PROGRAMA MOVER (Visível SOMENTE se obterMoverAmpliadoHabilitado() === true) */}
+                  {moverHabilitado && gruposMover.length > 0 && (
+                    <div className="space-y-6 pt-6 border-t-2 border-dashed border-[#D9B36C]/40">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#111820] border border-[#D9B36C]/40 p-4 rounded-2xl print:bg-amber-50 print:border-amber-400">
+                        <div>
+                          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#D9B36C]/60 text-[#D9B36C] text-[11px] font-bold uppercase tracking-wider mb-1 print:bg-white print:text-amber-900">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            EXPANSÃO CATALOGRÁFICA • PROGRAMA MOVER (PEÇAS 50 A 77)
+                          </div>
+                          <h3 className="font-heading font-black text-lg text-[#F4F7FA] print:text-slate-900">
+                            Inventário de Circularidade Ampliada do Veículo
+                          </h3>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-[#D9B36C]/20 border border-[#D9B36C] text-[#D9B36C] print:bg-amber-100 print:text-amber-900 font-mono">
+                            Informativo — não integra o laudo de conformidade 611
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        {gruposMover.map((grupo) => (
+                          <div
+                            key={grupo.id}
+                            className="rounded-2xl bg-[#111820] border border-[#D9B36C]/30 overflow-hidden print:bg-transparent print:border print:border-amber-300 print-card"
+                          >
+                            <div className="p-4 bg-[#16202B]/90 border-b border-[#D9B36C]/20 flex flex-wrap items-center justify-between gap-3 print:bg-amber-50 print:border-amber-300">
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full bg-[#D9B36C]" />
+                                <span className="font-heading font-bold text-sm text-[#F4F7FA] print:text-slate-900">
+                                  {grupo.label}
+                                </span>
+                                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#0A0E12] text-[#D9B36C] print:bg-white print:border print:border-amber-200">
+                                  {grupo.pecas.length} {grupo.pecas.length === 1 ? 'peça' : 'peças'}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-4 text-xs font-mono">
+                                <span className="text-[#93A3B5] print:text-slate-600">
+                                  Subtotal Peso:{' '}
+                                  <strong className="text-[#D9B36C] print:text-amber-800">
+                                    {grupo.pesoTotal.toFixed(2)} kg
+                                  </strong>
+                                </span>
+                                <span className="text-[#93A3B5] print:text-slate-600">
+                                  Subtotal CO₂e:{' '}
+                                  <strong className="text-[#12B886] print:text-emerald-700">
+                                    -{grupo.co2eTotal.toFixed(2)} kg
+                                  </strong>
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-xs print-table">
+                                <thead className="border-b border-[#D9B36C]/20 text-[#93A3B5] uppercase font-semibold text-[10px] print:text-slate-600 print:border-slate-300">
+                                  <tr>
+                                    <th className="py-2.5 px-3">Selo DPP</th>
+                                    <th className="py-2.5 px-3">Descrição da Peça</th>
+                                    <th className="py-2.5 px-3">Subsistema</th>
+                                    <th className="py-2.5 px-3">Material Declarado</th>
+                                    <th className="py-2.5 px-3 text-right">Peso (kg)</th>
+                                    <th className="py-2.5 px-3 text-right">Fator (kgCO₂e/kg)</th>
+                                    <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
+                                    <th className="py-2.5 px-3 text-center print:hidden">
+                                      DPP Individual
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[rgba(244,247,250,0.05)] text-[#F4F7FA] print:divide-slate-200 print:text-slate-800">
+                                  {grupo.pecas.map((peca) => {
+                                    const fatorInfo =
+                                      FATORES_CDV_MATERIAIS[peca.categoria_material] ||
+                                      FATORES_CDV_MATERIAIS.outros
+                                    return (
+                                      <tr
+                                        key={peca.id}
+                                        className="hover:bg-[#16202B]/60 transition-colors print:hover:bg-transparent"
+                                      >
+                                        <td className="py-2.5 px-3">
+                                          <div className="font-mono font-bold text-[#D9B36C] print:text-amber-700">
+                                            {peca.selo_dpp}
+                                          </div>
+                                          <div className="text-[10px] font-mono text-[#93A3B5] print:text-slate-500">
+                                            SKU: {peca.sku_interno}
+                                          </div>
+                                        </td>
+                                        <td className="py-2.5 px-3">
+                                          <div className="font-semibold text-[#F4F7FA] print:text-slate-900">
+                                            {peca.descricao_peca}
+                                          </div>
+                                          <div className="text-[10px] text-[#93A3B5] print:text-slate-500 font-mono">
+                                            NCM: {peca.ncm || '8708.29.99'}
+                                          </div>
+                                        </td>
+                                        <td className="py-2.5 px-3">
+                                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#16202B] text-[#D9B36C] border border-[rgba(244,247,250,0.06)] print:border-slate-200 print:text-amber-800 print:bg-white font-semibold">
+                                            {peca.subsistema || 'Geral'}
+                                          </span>
+                                        </td>
+                                        <td className="py-2.5 px-3">
+                                          <span className="text-[11px] text-[#93A3B5] print:text-slate-700">
+                                            {peca.material_declarado || grupo.label}
+                                          </span>
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-[#D9B36C] print:text-amber-800">
+                                          {Number(peca.peso_kg).toFixed(2)} kg
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right font-mono text-[#93A3B5] print:text-slate-600">
+                                          {Number(
+                                            peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg,
+                                          ).toFixed(2)}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right font-mono font-bold text-[#12B886] print:text-emerald-700">
+                                          -{Number(peca.co2e_evitado_kg).toFixed(2)} kg
+                                        </td>
+                                        <td className="py-2.5 px-3 text-center print:hidden">
+                                          <Link
+                                            to={`/passaporte/${peca.selo_dpp}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#16202B] text-[11px] font-semibold text-[#D9B36C] hover:bg-[#D9B36C]/10 border border-[#D9B36C]/30 transition-colors"
+                                            title="Abrir Passaporte Individual"
+                                          >
+                                            <span>Ver DPP</span>
+                                            <ArrowUpRight className="w-3 h-3" />
+                                          </Link>
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Rodapé de Consolidação e Totais */}
                   <div className="p-5 rounded-2xl bg-[#0A0E12] border-2 border-[#12B886]/50 print:bg-slate-100 print:border-emerald-600 print-card space-y-3">
