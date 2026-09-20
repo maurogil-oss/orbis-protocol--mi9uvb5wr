@@ -92,12 +92,12 @@ export default function TrilhaDetail() {
                 return (
                   <div
                     key={idx}
-                    className="rounded-xl border border-[rgba(244,247,250,0.12)] bg-[#111820] overflow-hidden transition-all"
+                    className="rounded-xl border border-[rgba(244,247,250,0.12)] bg-[#111820] overflow-hidden transition-all scroll-mt-28"
                   >
                     <button
                       type="button"
                       onClick={() => toggleAccordion(idx)}
-                      className="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-[#16202B] transition-colors"
+                      className="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-[#16202B] transition-colors scroll-mt-28"
                     >
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-[#0A0E12] text-[#12B886] border border-[#12B886]/30">
