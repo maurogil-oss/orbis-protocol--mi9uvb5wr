@@ -7,10 +7,11 @@ interface AuthContextType {
   token: string
   isAuthenticated: boolean
   isLoading: boolean
-  role: 'admin' | 'perito' | 'cliente' | 'financeiro_leitor' | 'cliente_acp' | string
+  role: 'admin' | 'perito' | 'cliente' | 'financeiro_leitor' | 'cliente_acp' | 'parceiro' | string
   isAdminOrPerito: boolean
   isFinanceiroLeitor: boolean
   isClienteAcp: boolean
+  isParceiro: boolean
   isAdmin: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
@@ -92,6 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAdmin = role === 'admin'
   const isFinanceiroLeitor = role === 'financeiro_leitor'
   const isClienteAcp = role === 'cliente_acp'
+  const isParceiro = role === 'parceiro'
   const isAdminOrPerito = role === 'admin' || role === 'perito'
 
   return (
@@ -105,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAdmin,
         isFinanceiroLeitor,
         isClienteAcp,
+        isParceiro,
         isAdminOrPerito,
         login,
         logout,

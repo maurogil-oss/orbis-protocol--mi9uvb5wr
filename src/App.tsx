@@ -152,6 +152,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/parceiro-painel"
+              element={
+                <ProtectedRoute requireRole="parceiro">
+                  <AreaParceiroPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
           <Route path="*" element={<NotFound />} />{' '}
         </Routes>

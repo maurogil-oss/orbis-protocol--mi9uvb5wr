@@ -19,7 +19,7 @@ import {
 
 import { useSearchParams } from 'react-router-dom'
 
-export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp'
+export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp' | 'parceiro'
 
 export default function RegistroPage() {
   const [searchParams] = useSearchParams()
@@ -38,6 +38,7 @@ export default function RegistroPage() {
     const lower = String(rawPapel).toLowerCase().trim()
     if (lower === 'acp' || lower === 'cliente_acp' || lower === 'cliente-acp') return 'cliente_acp'
     if (lower === 'perito') return 'perito'
+    if (lower === 'parceiro' || lower === 'afiliado') return 'parceiro'
     return 'cliente'
   }
 
@@ -97,6 +98,7 @@ export default function RegistroPage() {
         passwordConfirm,
         name: cleanNome,
         role: role,
+        parceiro_acesso_status: role === 'parceiro' ? 'pendente' : undefined,
       })
 
       // 2. Autentica automaticamente
@@ -114,6 +116,9 @@ export default function RegistroPage() {
       setTimeout(() => {
         if (from) {
           navigate(from, { replace: true })
+        } else if (role === 'parceiro') {
+          // Parceiro vai direto ao seu painel financeiro (/parceiro-painel)
+          navigate('/parceiro-painel', { replace: true })
         } else if (role === 'perito') {
           // Perito vai direto ao credenciamento para homologar ART/RRT
           navigate('/credenciamento', { replace: true })
@@ -191,7 +196,9 @@ export default function RegistroPage() {
                   ? 'o Credenciamento Pericial'
                   : role === 'cliente_acp'
                     ? 'seu Painel ACP / dMRV'
-                    : 'seu Painel'}
+                    : role === 'parceiro'
+                      ? 'o Painel Financeiro do Parceiro'
+                      : 'seu Painel'}
                 ...
               </p>
             </div>
@@ -204,7 +211,7 @@ export default function RegistroPage() {
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-2">
               Escolha seu Perfil de Acesso *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Opção Cliente */}
               <button
                 type="button"
@@ -311,17 +318,58 @@ export default function RegistroPage() {
                   </p>
                 </div>
               </button>
+
+              {/* Opção Parceiro */}
+              <button
+                type="button"
+                onClick={() => setRole('parceiro')}
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                  role === 'parceiro'
+                    ? 'bg-[#12B886]/20 border-[#12B886] shadow-lg shadow-[#12B886]/15'
+                    : 'bg-[#0A0E12] border-[rgba(244,247,250,0.1)] hover:border-[rgba(244,247,250,0.25)]'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div
+                    className={`p-2 rounded-lg shrink-0 ${
+                      role === 'parceiro'
+                        ? 'bg-[#12B886] text-[#0A0E12]'
+                        : 'bg-[#16202B] text-[#93A3B5]'
+                    }`}
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  {role === 'parceiro' && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#12B886] shrink-0" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-heading font-bold text-xs sm:text-sm text-[#F4F7FA]">
+                      Parceiro
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#12B886]/20 text-[#12B886] font-mono font-bold">
+                      ORB-PAR
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#93A3B5] leading-snug mt-1">
+                    Afiliados, consultores e distribuidores de soluções ESG.
+                  </p>
+                </div>
+              </button>
             </div>
 
             {/* Explicação contextual sobre o perfil escolhido */}
             <div className="mt-2.5 p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] flex items-start gap-2 text-[11px] text-[#93A3B5]">
               <Info className="w-3.5 h-3.5 text-[#12B886] shrink-0 mt-0.5" />
               <span>
-                {role === 'perito'
-                  ? 'Como Perito Técnico, após criar sua conta você completará o credenciamento com número de ART/RRT e conselho regional para emitir laudos chancelados.'
-                  : role === 'cliente_acp'
-                    ? 'Como Cliente ACP, sua conta receberá identificador exclusivo com prefixo ORB-ACP-XXXX e acesso direto ao Painel Corporativo e dMRV, sem necessidade de passar pelo funil prévio.'
-                    : 'Como Cliente, você terá acesso imediato ao painel, importação de NF-e/SPED, diagnóstico SBCE e contratação de serviços.'}
+                {role === 'parceiro'
+                  ? 'Como Parceiro, sua conta receberá identificador exclusivo com prefixo ORB-PAR-XXXX e vínculo automático ao módulo fiscal/financeiro. Enquanto o cadastro aguarda liberação pela controladoria, seu painel exibirá o status de homologação.'
+                  : role === 'perito'
+                    ? 'Como Perito Técnico, após criar sua conta você completará o credenciamento com número de ART/RRT e conselho regional para emitir laudos chancelados.'
+                    : role === 'cliente_acp'
+                      ? 'Como Cliente ACP, sua conta receberá identificador exclusivo com prefixo ORB-ACP-XXXX e acesso direto ao Painel Corporativo e dMRV, sem necessidade de passar pelo funil prévio.'
+                      : 'Como Cliente, você terá acesso imediato ao painel, importação de NF-e/SPED, diagnóstico SBCE e contratação de serviços.'}
               </span>
             </div>
           </div>
@@ -329,7 +377,11 @@ export default function RegistroPage() {
           {/* Nome / Responsável */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-              {role === 'perito' ? 'Nome Completo do Perito *' : 'Nome Completo ou Razão Social *'}
+              {role === 'perito'
+                ? 'Nome Completo do Perito *'
+                : role === 'parceiro'
+                  ? 'Nome do Parceiro / Razão Social *'
+                  : 'Nome Completo ou Razão Social *'}
             </label>
             <div className="relative">
               <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
@@ -340,7 +392,9 @@ export default function RegistroPage() {
                 placeholder={
                   role === 'perito'
                     ? 'Dr. Eng. Carlos Mendonça'
-                    : 'Maria Silva ou Indústria Alfa Ltda'
+                    : role === 'parceiro'
+                      ? 'Consultoria Verde & Associados ou João Santos'
+                      : 'Maria Silva ou Indústria Alfa Ltda'
                 }
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
                 required
@@ -436,9 +490,11 @@ export default function RegistroPage() {
                   Criar Conta de{' '}
                   {role === 'perito'
                     ? 'Perito'
-                    : role === 'cliente_acp'
-                      ? 'Cliente ACP'
-                      : 'Cliente'}
+                    : role === 'parceiro'
+                      ? 'Parceiro'
+                      : role === 'cliente_acp'
+                        ? 'Cliente ACP'
+                        : 'Cliente'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </>

@@ -64,8 +64,10 @@ import {
   excluirParceiro,
   listarComissoes,
   registrarPagamentoComissao,
+  atualizarStatusAcessoParceiro,
   ParceiroRecord,
   ComissaoRecord,
+  ParceiroAcessoStatus,
 } from '@/services/parceirosService'
 import {
   listarCredenciamentosPeritos,
@@ -98,7 +100,11 @@ type AdminTab =
 
 export default function AdminConsolePage() {
   const { user, isFinanceiroLeitor, isAdmin, requestPasswordReset } = useAuth()
-  const isReadOnly = isFinanceiroLeitor && !isAdmin
+  // Matriz de papéis (Requisito 5):
+  // admin edita, financeiro edita e libera acessos, financeiro_leitor só visualiza, parceiro só o próprio painel
+  const isFinanceiroEditor = (user as any)?.role === 'financeiro'
+  const canEditAndRelease = isAdmin || isFinanceiroEditor
+  const isReadOnly = isFinanceiroLeitor && !canEditAndRelease
   const [activeTab, setActiveTab] = useState<AdminTab>('receita')
   const [loading, setLoading] = useState(true)
   const [kpis, setKpis] = useState<AdminKpis | null>(null)
@@ -593,6 +599,44 @@ export default function AdminConsolePage() {
       carregarTodosDados()
     } catch (err: any) {
       alert('Erro ao atualizar papel do usuário: ' + err.message)
+    }
+  }
+
+  // Gestão de status de liberação/suspensão do Parceiro (Requisito 3)
+  const [salvandoStatusParceiroId, setSalvandoStatusParceiroId] = useState<string | null>(null)
+
+  const handleAlterarAcessoParceiro = async (cli: any, novoStatus: ParceiroAcessoStatus) => {
+    if (!canEditAndRelease) {
+      alert(
+        'Acesso negado: apenas o gestor financeiro ou administrador possui permissão para liberar/suspender parceiros. Leitores financeiros possuem visualização exclusiva.',
+      )
+      return
+    }
+    const statusLabel =
+      novoStatus === 'liberado'
+        ? 'LIBERAR'
+        : novoStatus === 'suspenso'
+          ? 'SUSPENDER'
+          : 'DEFINIR COMO PENDENTE'
+
+    const confirmMsg = `Deseja ${statusLabel} o acesso financeiro do parceiro ${cli.name || cli.email} (${cli.cliente_codigo})? O evento será registrado no audit_log com quem liberou, quando e para quem.`
+    if (!confirm(confirmMsg)) return
+
+    setSalvandoStatusParceiroId(cli.id)
+    try {
+      const res = await atualizarStatusAcessoParceiro(
+        cli.id,
+        novoStatus,
+        `Alteração de status de acesso realizada no Painel de Clientes por ${user?.name || user?.email}`,
+      )
+      mostrarMensagem(
+        res.mensagem || `Status de acesso do parceiro atualizado para ${novoStatus.toUpperCase()}!`,
+      )
+      carregarTodosDados()
+    } catch (err: any) {
+      alert('Erro ao atualizar status de acesso do parceiro: ' + err.message)
+    } finally {
+      setSalvandoStatusParceiroId(null)
     }
   }
 
@@ -1270,11 +1314,31 @@ export default function AdminConsolePage() {
                               {cli.name || cli.email}
                             </strong>
                             <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
-                              {cli.cliente_codigo || 'ORB-CLI-NOVO'}
+                              {cli.cliente_codigo ||
+                                (cli.role === 'parceiro' ? 'ORB-PAR-NOVO' : 'ORB-CLI-NOVO')}
                             </span>
                             <span className="text-[10px] uppercase font-bold text-[#D9B36C] bg-[#D9B36C]/10 px-2 py-0.5 rounded">
                               {cli.role}
                             </span>
+                            {/* Destaque Status de Parceiro */}
+                            {cli.role === 'parceiro' && (
+                              <span
+                                className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${
+                                  cli.parceiro_acesso_status === 'liberado'
+                                    ? 'bg-[#12B886]/20 border-[#12B886] text-[#12B886]'
+                                    : cli.parceiro_acesso_status === 'suspenso'
+                                      ? 'bg-[#EF4444]/20 border-[#EF4444] text-[#EF4444]'
+                                      : 'bg-[#D9B36C]/20 border-[#D9B36C] text-[#D9B36C]'
+                                }`}
+                              >
+                                Parceiro:{' '}
+                                {cli.parceiro_acesso_status === 'liberado'
+                                  ? 'Liberado'
+                                  : cli.parceiro_acesso_status === 'suspenso'
+                                    ? 'Suspenso'
+                                    : 'Pendente'}
+                              </span>
+                            )}
                             {/* Destaque Cadastro Incompleto (Item 5 do CFO) */}
                             {isIncompleto && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 flex items-center gap-1">
@@ -1332,6 +1396,47 @@ export default function AdminConsolePage() {
                                   >
                                     Editar Cadastro
                                   </button>
+                                )}
+
+                                {/* Ações de Liberação/Suspensão exclusiva para Parceiro (Requisito 3) */}
+                                {cli.role === 'parceiro' && (
+                                  <div className="flex items-center gap-1 pl-1 border-l border-[rgba(244,247,250,0.15)]">
+                                    {cli.parceiro_acesso_status !== 'liberado' && (
+                                      <button
+                                        type="button"
+                                        disabled={salvandoStatusParceiroId === cli.id}
+                                        onClick={() => handleAlterarAcessoParceiro(cli, 'liberado')}
+                                        className="px-2 py-1 rounded bg-[#12B886] text-[#0A0E12] hover:bg-[#12B886]/90 font-bold text-[11px] transition-colors shadow-sm"
+                                        title="Liberar acesso do parceiro ao painel financeiro (grava audit_log)"
+                                      >
+                                        {salvandoStatusParceiroId === cli.id
+                                          ? 'Gravando...'
+                                          : 'Liberar Acesso'}
+                                      </button>
+                                    )}
+                                    {cli.parceiro_acesso_status !== 'suspenso' && (
+                                      <button
+                                        type="button"
+                                        disabled={salvandoStatusParceiroId === cli.id}
+                                        onClick={() => handleAlterarAcessoParceiro(cli, 'suspenso')}
+                                        className="px-2 py-1 rounded bg-[#EF4444]/20 border border-[#EF4444]/40 text-[#EF4444] hover:bg-[#EF4444]/30 font-semibold text-[11px] transition-colors"
+                                        title="Suspender acesso do parceiro ao painel financeiro (grava audit_log)"
+                                      >
+                                        Suspender
+                                      </button>
+                                    )}
+                                    {cli.parceiro_acesso_status !== 'pendente' && (
+                                      <button
+                                        type="button"
+                                        disabled={salvandoStatusParceiroId === cli.id}
+                                        onClick={() => handleAlterarAcessoParceiro(cli, 'pendente')}
+                                        className="px-2 py-1 rounded bg-[#D9B36C]/20 border border-[#D9B36C]/40 text-[#D9B36C] hover:bg-[#D9B36C]/30 text-[11px] transition-colors"
+                                        title="Retornar acesso para pendente de homologação"
+                                      >
+                                        Pendente
+                                      </button>
+                                    )}
+                                  </div>
                                 )}
                               </div>
                             )}

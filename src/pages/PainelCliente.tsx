@@ -59,6 +59,7 @@ import { Terminal, Car, Network, Radio, Leaf } from 'lucide-react'
 import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
 import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
 import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
+import { Navigate } from 'react-router-dom'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -108,6 +109,11 @@ interface SeloRecord extends RecordModel {
 
 export default function PainelCliente() {
   const { user } = useAuth()
+
+  // Isolamento estrito de painel: papel parceiro deve usar /parceiro-painel e não o painel do cliente
+  if (user?.role === 'parceiro') {
+    return <Navigate to="/parceiro-painel" replace />
+  }
   const [leads, setLeads] = useState<LeadDiagnostico[]>([])
   const [selos, setSelos] = useState<SeloRecord[]>([])
   const [nfeList, setNfeList] = useState<NFeUploadRecord[]>([])

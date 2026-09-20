@@ -36,8 +36,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
     return <Navigate to="/painel" replace />
   }
 
-  if (requireRole === 'parceiro' && role !== 'parceiro' && role !== 'admin') {
-    // Permite checar vínculo dentro da página /parceiro se autenticado
+  if (requireRole === 'parceiro' && role !== 'parceiro') {
+    return <Navigate to="/painel" replace />
   }
 
   if (requireRole === 'perito' && role !== 'perito' && role !== 'admin') {

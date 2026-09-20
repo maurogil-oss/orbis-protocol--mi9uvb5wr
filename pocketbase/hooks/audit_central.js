@@ -56,6 +56,48 @@ onRecordUpdate((e) => {
     })
     $app.save(log)
   }
+
+  // Liberação / Suspensão / Alteração do status de acesso do Parceiro
+  if (rec.getString('parceiro_acesso_status') !== orig.getString('parceiro_acesso_status')) {
+    const log = new Record(auditCol)
+    const novoStatusAcesso = rec.getString('parceiro_acesso_status') || 'pendente'
+    const statusAntAcesso = orig.getString('parceiro_acesso_status') || 'pendente'
+    log.set('acao', 'parceiro_acesso_alterado')
+    log.set('entidade', 'users')
+    log.set('entidade_id', rec.id)
+    log.set('ator_id', 'financeiro_admin')
+    log.set('ator_email', rec.getString('email'))
+    log.set('papel', 'admin/financeiro')
+    log.set('detalhes', {
+      status_anterior: statusAntAcesso,
+      novo_status: novoStatusAcesso,
+      user_id: rec.id,
+      user_email: rec.getString('email'),
+      user_nome: rec.getString('name'),
+      cliente_codigo: rec.getString('cliente_codigo'),
+      data_evento: new Date().toISOString(),
+    })
+    $app.save(log)
+
+    // Se o parceiro foi liberado, também atualizamos o parceiros correspondente para 'ativo'
+    // Se suspenso, atualizamos para 'suspenso'
+    try {
+      const pCol = $app.findCollectionByNameOrId('parceiros')
+      const pRec = $app.findFirstRecordByData('parceiros', 'usuario', rec.id)
+      if (pRec) {
+        if (novoStatusAcesso === 'liberado') {
+          pRec.set('status', 'ativo')
+          $app.save(pRec)
+        } else if (novoStatusAcesso === 'suspenso') {
+          pRec.set('status', 'suspenso')
+          $app.save(pRec)
+        } else if (novoStatusAcesso === 'pendente') {
+          pRec.set('status', 'inativo')
+          $app.save(pRec)
+        }
+      }
+    } catch (_) {}
+  }
 }, 'users')
 
 // 2. servicos_catalogo: criação e edição de preços

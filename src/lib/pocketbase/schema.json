@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-09-20T12:03:36.126Z",
+  "generatedAt": "2026-09-20T12:25:12.675Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "@request.auth.id != '' && (@request.auth.id = id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor')",
-        "view": "@request.auth.id != '' && (@request.auth.id = id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor')",
+        "list": "@request.auth.id != '' && (@request.auth.id = id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro' || @request.auth.role = 'financeiro_leitor')",
+        "view": "@request.auth.id != '' && (@request.auth.id = id || @request.auth.role = 'admin' || @request.auth.role = 'financeiro' || @request.auth.role = 'financeiro_leitor')",
         "create": "",
-        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || (@request.auth.id = id && @request.body.role:isset = false))",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || (@request.auth.id = id && @request.body.role:isset = false && @request.body.parceiro_acesso_status:isset = false))",
         "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
@@ -43,7 +43,15 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["admin", "perito", "cliente", "financeiro_leitor", "cliente_acp"]
+          "selectValues": [
+            "admin",
+            "perito",
+            "cliente",
+            "financeiro",
+            "financeiro_leitor",
+            "cliente_acp",
+            "parceiro"
+          ]
         },
         {
           "name": "cliente_codigo",
@@ -74,6 +82,13 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "parceiro_acesso_status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["pendente", "liberado", "suspenso"]
         }
       ],
       "indexes": [
@@ -3524,10 +3539,10 @@
       "name": "parceiros",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
-        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro' || @request.auth.role = 'financeiro_leitor' || usuario = @request.auth.id)",
         "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
-        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || usuario = @request.auth.id)",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro' || (usuario = @request.auth.id && @request.body.status:isset = false && @request.body.percentual_comissao:isset = false && @request.body.documento_fiscal_validado:isset = false))",
         "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
       },
       "fields": [
@@ -3643,8 +3658,8 @@
       "name": "comissoes",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || parceiro_id.usuario = @request.auth.id)",
-        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro_leitor' || parceiro_id.usuario = @request.auth.id)",
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro' || @request.auth.role = 'financeiro_leitor' || parceiro_id.usuario = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'financeiro' || @request.auth.role = 'financeiro_leitor' || parceiro_id.usuario = @request.auth.id)",
         "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
         "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
         "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"

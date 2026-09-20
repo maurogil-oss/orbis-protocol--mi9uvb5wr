@@ -33,7 +33,7 @@ export default function Layout() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const location = useLocation()
-  const { isAuthenticated, user, logout, isAdminOrPerito } = useAuth()
+  const { isAuthenticated, user, logout, isAdminOrPerito, isParceiro } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -377,11 +377,11 @@ export default function Layout() {
               {isAuthenticated ? (
                 <div className="flex items-center gap-2">
                   <Link
-                    to="/painel"
+                    to={isParceiro ? '/parceiro-painel' : '/painel'}
                     className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820]"
                   >
                     <LayoutDashboard className="w-4 h-4 text-[#12B886]" />
-                    Painel
+                    {isParceiro ? 'Painel do Parceiro' : 'Painel'}
                   </Link>
                   <button
                     onClick={logout}
@@ -550,6 +550,24 @@ export default function Layout() {
                     </Link>
                   </div>
                 )}
+
+                {isParceiro && (
+                  <div className="pt-2 mt-2 border-t border-[rgba(244,247,250,0.08)]">
+                    <Link
+                      to="/parceiro-painel"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-between py-2.5 px-3 rounded-lg text-xs font-medium text-[#12B886] hover:bg-[#16202B] transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4" />
+                        Painel do Parceiro
+                      </span>
+                      <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[#12B886]/20 text-[#12B886]">
+                        {user?.cliente_codigo || 'ORB-PAR'}
+                      </span>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -563,11 +581,11 @@ export default function Layout() {
               {isAuthenticated ? (
                 <div className="flex flex-col gap-2">
                   <Link
-                    to="/painel"
+                    to={isParceiro ? '/parceiro-painel' : '/painel'}
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886]"
                   >
-                    Meu Painel ({user?.name || user?.email})
+                    {isParceiro ? 'Painel do Parceiro' : 'Meu Painel'} ({user?.name || user?.email})
                   </Link>
                   <button
                     onClick={() => {

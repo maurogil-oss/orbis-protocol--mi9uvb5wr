@@ -22,6 +22,7 @@ import {
   obterMeuPerfilParceiro,
   atualizarParceiro,
   listarComissoes,
+  obterParceiroPorCodigo,
   ParceiroRecord,
   ComissaoRecord,
 } from '@/services/parceirosService'
@@ -37,6 +38,12 @@ export default function AreaParceiroPage() {
   const [salvandoBanco, setSalvandoBanco] = useState(false)
   const [sucessoMsg, setSucessoMsg] = useState('')
 
+  // Status de homologação do acesso do parceiro
+  // Requisito 2: enquanto o cadastro não for aprovado, o parceiro logado vê apenas aviso 'Cadastro em homologação pela controladoria'
+  const parceiroAcessoStatus = (user as any)?.parceiro_acesso_status || 'pendente'
+  const isHomologacaoPendente = user?.role === 'parceiro' && parceiroAcessoStatus !== 'liberado'
+  const isSuspenso = user?.role === 'parceiro' && parceiroAcessoStatus === 'suspenso'
+
   // Formulário de dados bancários e fiscal
   const [banco, setBanco] = useState('')
   const [agencia, setAgencia] = useState('')
@@ -48,8 +55,19 @@ export default function AreaParceiroPage() {
   const carregarDados = async () => {
     setLoading(true)
     try {
+      // Se estiver pendente ou suspenso, não carrega dados financeiros (isolamento estrito)
+      if (isHomologacaoPendente || isSuspenso) {
+        setLoading(false)
+        return
+      }
+
       // 1. Tentar obter perfil de parceiro vinculado ao usuário
       let p = await obterMeuPerfilParceiro()
+
+      // Se não encontrou por ID de usuário mas o usuário tem cliente_codigo ORB-PAR-..., tenta por código
+      if (!p && user?.cliente_codigo) {
+        p = await obterParceiroPorCodigo(user.cliente_codigo)
+      }
 
       // Se o usuário for admin e não tiver registro direto, pegar o primeiro parceiro institucional
       if (!p && user?.role === 'admin') {
@@ -94,7 +112,7 @@ export default function AreaParceiroPage() {
     if (isAuthenticated) {
       carregarDados()
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, user?.id, (user as any)?.parceiro_acesso_status])
 
   const linkIndicacao = parceiro
     ? `${window.location.origin}/checkout?ref=${parceiro.codigo_parceiro}`
@@ -148,7 +166,58 @@ export default function AreaParceiroPage() {
       <div className="min-h-screen py-20 bg-[#0A0E12] text-[#F4F7FA] flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-8 h-8 border-2 border-[#12B886] border-t-transparent rounded-full animate-spin mx-auto" />
-          <span className="text-xs text-[#93A3B5]">Carregando Painel do Parceiro...</span>
+          <span className="text-xs text-[#93A3B5]">
+            Carregando Painel Financeiro do Parceiro...
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  // Requisito 2: enquanto o cadastro não for aprovado, o parceiro logado vê apenas aviso 'Cadastro em homologação pela controladoria'
+  if (isHomologacaoPendente) {
+    return (
+      <div className="min-h-screen py-20 bg-[#0A0E12] text-[#F4F7FA] flex items-center justify-center">
+        <div className="max-w-xl mx-auto px-4 text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-[#D9B36C] flex items-center justify-center mx-auto shadow-lg shadow-[#D9B36C]/5">
+            <Clock className="w-8 h-8 animate-pulse" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="font-mono text-xs text-[#D9B36C] bg-[#D9B36C]/10 px-3 py-1 rounded-full uppercase tracking-wider font-semibold border border-[#D9B36C]/20">
+              {user?.cliente_codigo || 'ORB-PAR-NOVO'}
+            </span>
+            <h1 className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA]">
+              Cadastro em homologação pela controladoria
+            </h1>
+            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed max-w-md mx-auto pt-2">
+              Seu perfil de parceiro foi registrado e vinculado à nossa tesouraria. Nosso time de
+              controladoria e conformidade fiscal está revisando suas informações.
+            </p>
+          </div>
+
+          {/* Cards mobile-friendly com detalhes do protocolo */}
+          <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] text-left space-y-3 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-[rgba(244,247,250,0.05)]">
+              <span className="text-[#93A3B5]">Titular Registrado</span>
+              <strong className="text-[#F4F7FA]">{user?.name || user?.email}</strong>
+            </div>
+            <div className="flex items-center justify-between pb-2 border-b border-[rgba(244,247,250,0.05)]">
+              <span className="text-[#93A3B5]">Status de Liberação</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#D9B36C]/20 text-[#D9B36C]">
+                {parceiroAcessoStatus === 'suspenso' ? 'Suspenso' : 'Pendente de Aprovação'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[#93A3B5]">Módulo de Liquidação</span>
+              <span className="text-[#12B886] font-mono text-[11px]">RPA / NFS-e Automatizado</span>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-[#93A3B5]">
+            Assim que seu acesso for liberado pelo gestor financeiro, este painel dará acesso
+            imediato às suas comissões, link exclusivo de indicação e extrato de repasses.
+          </p>
         </div>
       </div>
     )
@@ -322,7 +391,8 @@ export default function AreaParceiroPage() {
                 Vendas Indicadas ({vendasIndicadas.length})
               </h2>
 
-              <div className="rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-hidden">
+              {/* Versão Desktop (Tabela) */}
+              <div className="hidden sm:block rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-hidden">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-[#0D1217] text-[#93A3B5] uppercase text-[10px] border-b border-[rgba(244,247,250,0.08)]">
                     <tr>
@@ -372,25 +442,72 @@ export default function AreaParceiroPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Versão Mobile (Cartões) */}
+              <div className="sm:hidden space-y-2.5">
+                {vendasIndicadas.map((v) => (
+                  <div
+                    key={v.id}
+                    className="p-3.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] space-y-2 text-xs"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <strong className="text-[#F4F7FA] text-sm block">{v.tomador_nome}</strong>
+                        <span className="font-mono text-[10px] text-[#93A3B5]">
+                          {v.tomador_cpf_cnpj}
+                        </span>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
+                          v.status === 'pago'
+                            ? 'bg-[#12B886]/20 text-[#12B886]'
+                            : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                        }`}
+                      >
+                        {v.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[rgba(244,247,250,0.05)]">
+                      <span className="text-[#D9B36C]">{v.servico_nome}</span>
+                      <span className="font-bold text-[#12B886] font-heading text-sm">
+                        R$ {Number(v.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-[#93A3B5] text-right">
+                      {new Date(v.created).toLocaleDateString('pt-BR')}
+                    </div>
+                  </div>
+                ))}
+                {vendasIndicadas.length === 0 && (
+                  <div className="p-6 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] text-center text-xs text-[#93A3B5]">
+                    Nenhuma venda indicada registrada ainda com seu código.
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Histórico de Comissões e Repasses */}
+            {/* Histórico de Comissões e Extrato de Repasses */}
             <div className="space-y-3">
-              <h2 className="font-heading font-bold text-base text-[#12B886]">
-                Histórico de Comissões ({comissoes.length})
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-bold text-base text-[#12B886]">
+                  Extrato de Comissões & Repasses ({comissoes.length})
+                </h2>
+                <span className="text-[10px] text-[#93A3B5] font-mono">
+                  Snapshot de % preservado
+                </span>
+              </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {comissoes.map((c) => (
                   <div
                     key={c.id}
                     className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#F4F7FA]">Comissão de Venda</span>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-[#F4F7FA]">Comissão de Faturamento</span>
                         <span className="text-[10px] text-[#93A3B5] font-mono">
-                          ID: {c.cobranca_id}
+                          Cobrança: {c.cobranca_id}
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
@@ -399,42 +516,46 @@ export default function AreaParceiroPage() {
                               : 'bg-[#D9B36C]/20 text-[#D9B36C]'
                           }`}
                         >
-                          {c.status}
+                          {c.status === 'paga' ? 'Pago' : 'A Pagar'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-[#93A3B5] mt-1">
-                        Base de cálculo: R$ {Number(c.base_calculo).toLocaleString('pt-BR')} •
-                        Percentual aplicado: {c.percentual_aplicado}%
+                      <div className="text-[11px] text-[#93A3B5]">
+                        Base de cálculo:{' '}
+                        <strong className="text-[#F4F7FA]">
+                          R$ {Number(c.base_calculo).toLocaleString('pt-BR')}
+                        </strong>{' '}
+                        • Percentual snapshot:{' '}
+                        <strong className="text-[#3B82F6]">{c.percentual_aplicado}%</strong>
                       </div>
                       {c.comprovante && (
-                        <div className="text-[10px] text-[#12B886] mt-0.5">
-                          Comprovante: {c.comprovante}
+                        <div className="text-[10px] text-[#12B886] font-mono flex items-center gap-1">
+                          <span>Comprovante de Repasse:</span>
+                          <strong>{c.comprovante}</strong>
                         </div>
                       )}
                     </div>
 
-                    <div className="text-right">
-                      <div className="font-heading font-black text-base text-[#12B886]">
+                    <div className="text-left sm:text-right pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(244,247,250,0.05)]">
+                      <div className="font-heading font-black text-lg text-[#12B886]">
                         R$ {Number(c.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
-                      <span className="text-[10px] text-[#93A3B5]">
+                      <span className="text-[10px] text-[#93A3B5] block">
                         {c.data_pagamento
-                          ? `Pago em ${new Date(c.data_pagamento).toLocaleDateString('pt-BR')}`
-                          : 'Aguardando liquidação'}
+                          ? `Repassado em ${new Date(c.data_pagamento).toLocaleDateString('pt-BR')}`
+                          : 'Aguardando liquidação e validação fiscal'}
                       </span>
                     </div>
                   </div>
                 ))}
                 {comissoes.length === 0 && (
                   <div className="p-6 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] text-center text-xs text-[#93A3B5]">
-                    Nenhuma comissão apurada ainda. Assim que uma cobrança com seu link for
-                    liquidada, o valor aparecerá aqui.
+                    Nenhuma comissão apurada ainda. Assim que uma contratação pelo seu link for
+                    liquidada e confirmada, seu extrato e percentual constarão nesta seção.
                   </div>
                 )}
               </div>
             </div>
           </div>
-
           {/* Coluna 3: Edição dos Próprios Dados Bancários */}
           <div className="space-y-4">
             <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-4">

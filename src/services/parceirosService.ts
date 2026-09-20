@@ -20,6 +20,24 @@ export interface ParceiroRecord {
   updated: string
 }
 
+export type ParceiroAcessoStatus = 'pendente' | 'liberado' | 'suspenso'
+
+export async function atualizarStatusAcessoParceiro(
+  userId: string,
+  status: ParceiroAcessoStatus,
+  motivo?: string,
+): Promise<{ sucesso: boolean; novo_status: ParceiroAcessoStatus; mensagem: string }> {
+  const res = await pb.send('/backend/v1/admin/parceiro-acesso', {
+    method: 'POST',
+    body: {
+      user_id: userId,
+      status,
+      motivo,
+    },
+  })
+  return res
+}
+
 export interface ComissaoRecord {
   id: string
   cobranca_id: string
