@@ -17,6 +17,19 @@ import pb from '@/lib/pocketbase/client'
 export type CamadaDestinacaoTipo = 'camada_1_gate' | 'camada_2_oleo_rlo' | 'camada_3_reciclagem'
 export type StatusEvidenciaTipo = 'comprovado' | 'pendente_comprovacao' | 'em_analise'
 
+export type LrDecreto11413Classificacao = 'sujeito_lr_11413' | 'convencional'
+export type LrCategoriaResiduo =
+  | 'oluc'
+  | 'baterias'
+  | 'pneus'
+  | 'oleos_lubrificantes'
+  | 'embalagens'
+  | 'aco'
+  | 'aluminio'
+  | 'cobre'
+  | 'polimeros'
+  | 'outros'
+
 export interface ItemDestinacaoFinal {
   id: string
   lote_id: string
@@ -37,6 +50,8 @@ export interface ItemDestinacaoFinal {
   hash_sha256: string
   observacoes?: string
   data_destinacao?: string
+  lr_decreto_11413?: LrDecreto11413Classificacao
+  lr_categoria?: LrCategoriaResiduo
 }
 
 export interface CamadaDestinacaoGrupo {
@@ -150,6 +165,8 @@ export const DEMO_DESTINACAO_CLIO: ItemDestinacaoFinal[] = [
     observacoes:
       'Pré-requisito cumprido. Destinação reversa homologada com manifesto de transporte ativo no SINIR.',
     data_destinacao: '2026-08-12',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'baterias',
   },
   {
     id: 'dest-clio-c1-02',
@@ -172,6 +189,8 @@ export const DEMO_DESTINACAO_CLIO: ItemDestinacaoFinal[] = [
     observacoes:
       'Trituração e envio para co-processamento cimentício em forno rotativo licenciado.',
     data_destinacao: '2026-08-12',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'pneus',
   },
   {
     id: 'dest-clio-c1-03',
@@ -195,6 +214,8 @@ export const DEMO_DESTINACAO_CLIO: ItemDestinacaoFinal[] = [
     observacoes:
       'Drenagem estanque antes da desmontagem mecânica. Armazenamento em contenção secundária.',
     data_destinacao: '2026-08-11',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'oleos_lubrificantes',
   },
 
   // Camada 2: Óleo Lubrificante Usado ou Contaminado (RLO) -> Rerrefinador
@@ -219,6 +240,8 @@ export const DEMO_DESTINACAO_CLIO: ItemDestinacaoFinal[] = [
     observacoes:
       'Estimativa prévia de carbono evitado via processo de rerrefino (~1,80 kg CO₂e/L vs. óleo virgem de base fóssil). Reserva técnica: sujeito à validação do VVB.',
     data_destinacao: '2026-08-13',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'oluc',
   },
 
   // Camada 3: Metais / Carcaça / Catalisadores (Reciclagem / Claim Principal de Carbono Evitado)
@@ -243,6 +266,8 @@ export const DEMO_DESTINACAO_CLIO: ItemDestinacaoFinal[] = [
     observacoes:
       'Claim principal de reciclagem do lote com nota fiscal eletrônica de entrada em aciaria elétrica.',
     data_destinacao: '2026-08-14',
+    lr_decreto_11413: 'convencional',
+    lr_categoria: 'aco',
   },
   {
     id: 'dest-clio-c3-02',
@@ -265,6 +290,8 @@ export const DEMO_DESTINACAO_CLIO: ItemDestinacaoFinal[] = [
     hash_sha256: '5f7a9b1c3e5d7f90b2d4f6a8c0e2b4d6f8a02b4c6e80a1d3f579b2e4d6f80a2c',
     observacoes: 'Recuperação hidrometalúrgica de catalisadores automotivos desativados.',
     data_destinacao: '2026-08-14',
+    lr_decreto_11413: 'convencional',
+    lr_categoria: 'outros',
   },
 ]
 
@@ -294,6 +321,8 @@ export const DEMO_DESTINACAO_GOL: ItemDestinacaoFinal[] = [
     observacoes:
       'Gate atendido. Logística reversa homologada via sistema SINIR com baixa regularizada.',
     data_destinacao: '2026-09-02',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'baterias',
   },
   {
     id: 'dest-gol-c1-02',
@@ -315,6 +344,8 @@ export const DEMO_DESTINACAO_GOL: ItemDestinacaoFinal[] = [
     hash_sha256: '3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e',
     observacoes: 'Destinação para co-processamento em parque cimenteiro conforme Resolução CONAMA.',
     data_destinacao: '2026-09-02',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'pneus',
   },
   {
     id: 'dest-gol-c1-03',
@@ -337,6 +368,8 @@ export const DEMO_DESTINACAO_GOL: ItemDestinacaoFinal[] = [
     hash_sha256: '7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b',
     observacoes: 'Despoluição concluída com certificado de destinação final de resíduos perigosos.',
     data_destinacao: '2026-09-03',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'oleos_lubrificantes',
   },
 
   // Camada 2: RLO Óleo Usado
@@ -362,6 +395,8 @@ export const DEMO_DESTINACAO_GOL: ItemDestinacaoFinal[] = [
     observacoes:
       'Estimativa prévia de carbono evitado via processo de rerrefino. Sujeito à verificação por organismo de terceira parte.',
     data_destinacao: '2026-09-04',
+    lr_decreto_11413: 'sujeito_lr_11413',
+    lr_categoria: 'oluc',
   },
 
   // Camada 3: Metais / Carcaça
@@ -387,6 +422,8 @@ export const DEMO_DESTINACAO_GOL: ItemDestinacaoFinal[] = [
     observacoes:
       'Claim principal de reciclagem com entrada atestada em parque siderúrgico elétrico.',
     data_destinacao: '2026-09-05',
+    lr_decreto_11413: 'convencional',
+    lr_categoria: 'aco',
   },
 ]
 
@@ -828,6 +865,8 @@ export async function consultarDestinacaoFinalLote(
         status_evidencia: r.status_evidencia || 'comprovado',
         hash_sha256: r.hash_sha256 || '',
         observacoes: r.observacoes,
+        lr_decreto_11413: r.lr_decreto_11413,
+        lr_categoria: r.lr_categoria,
       }))
 
       return estruturarCamadasDestinacao(itens, {

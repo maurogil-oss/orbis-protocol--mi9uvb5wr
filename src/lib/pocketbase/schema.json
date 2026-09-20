@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T00:32:33.926Z",
+  "generatedAt": "2026-09-20T01:01:02.806Z",
   "collections": [
     {
       "name": "users",
@@ -1455,6 +1455,31 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "lr_decreto_11413",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["sujeito_lr_11413", "convencional"]
+        },
+        {
+          "name": "lr_categoria",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "oluc",
+            "baterias",
+            "pneus",
+            "oleos_lubrificantes",
+            "embalagens",
+            "aco",
+            "aluminio",
+            "cobre",
+            "polimeros",
+            "outros"
+          ]
         }
       ],
       "indexes": [
@@ -3190,6 +3215,31 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "lr_decreto_11413",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["sujeito_lr_11413", "convencional"]
+        },
+        {
+          "name": "lr_categoria",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "oluc",
+            "baterias",
+            "pneus",
+            "oleos_lubrificantes",
+            "embalagens",
+            "aco",
+            "aluminio",
+            "cobre",
+            "polimeros",
+            "outros"
+          ]
         }
       ],
       "indexes": [
@@ -3752,6 +3802,358 @@
         "CREATE INDEX idx_audit_entidade_id ON audit_log (entidade_id)",
         "CREATE INDEX idx_audit_ator ON audit_log (ator_id)",
         "CREATE INDEX idx_audit_created ON audit_log (created DESC)"
+      ]
+    },
+    {
+      "name": "lastro_circularidade",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "codigo_lastro",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cnpj_emissor",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "razao_social_emissor",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "entidade_gestora_alvo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj_entidade_gestora",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "periodo_inicio",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "periodo_fim",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "ano_base",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "massa_oluc_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "massa_baterias_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "massa_pneus_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "massa_oleos_lubrificantes_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "massa_embalagens_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "massa_total_lr_obrigatoria_kg",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "massa_metais_convencionais_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_manifestos_mtr",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "co2e_evitado_total_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_sha256",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "qr_code_url",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["emitido", "anulado"]
+        },
+        {
+          "name": "aviso_legal",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "detalhes_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "motivo_anulacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_em",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "anulado_por",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_lastro_codigo ON lastro_circularidade (codigo_lastro)",
+        "CREATE INDEX idx_lastro_cnpj ON lastro_circularidade (cnpj_emissor)",
+        "CREATE INDEX idx_lastro_status ON lastro_circularidade (status)",
+        "CREATE INDEX idx_lastro_hash ON lastro_circularidade (hash_sha256)"
+      ]
+    },
+    {
+      "name": "ccrlr_manifestos_sinir",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "numero_manifesto_mtr",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "destinacao_final",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "dpp_destinacao_final"
+        },
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cnpj_gerador",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "razao_social_gerador",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj_destinador",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "razao_social_destinador",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "nf_destinador",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "categoria_residuo_sinir",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "oluc",
+            "baterias_chumbo_acido",
+            "pneus_inserviveis",
+            "oleos_lubrificantes",
+            "embalagens_contaminadas",
+            "metais_ferrosos",
+            "metais_nao_ferrosos",
+            "polimeros_plasticos",
+            "outros"
+          ]
+        },
+        {
+          "name": "lr_decreto_11413",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["sujeito_lr_11413", "convencional"]
+        },
+        {
+          "name": "quantidade_massa_kg",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "data_recebimento_destinador",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "codigo_ibama_residuo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_sinir",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "pronto_para_o_sinir",
+            "submetido_entidade_gestora",
+            "homologado_ccrlr",
+            "anulado"
+          ]
+        },
+        {
+          "name": "entidade_gestora_alvo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_sha256",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "observacoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_ccrlr_mtr ON ccrlr_manifestos_sinir (numero_manifesto_mtr)",
+        "CREATE INDEX idx_ccrlr_cnpj_ger ON ccrlr_manifestos_sinir (cnpj_gerador)",
+        "CREATE INDEX idx_ccrlr_categoria ON ccrlr_manifestos_sinir (categoria_residuo_sinir)",
+        "CREATE INDEX idx_ccrlr_status ON ccrlr_manifestos_sinir (status_sinir)"
       ]
     }
   ]

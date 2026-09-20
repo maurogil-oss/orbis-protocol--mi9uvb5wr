@@ -16,6 +16,7 @@ import {
   Info,
   ExternalLink,
   Lock,
+  ShieldAlert,
 } from 'lucide-react'
 import type {
   DestinacaoFinalLoteResponse,
@@ -384,6 +385,7 @@ export function DestinacaoFinalTab({
                 <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] uppercase font-semibold text-[10px]">
                   <tr>
                     <th className="py-2.5 px-3">Fluxo / Material</th>
+                    <th className="py-2.5 px-3">Taxonomia Decreto 11.413/2023</th>
                     <th className="py-2.5 px-3">Qtd / Massa</th>
                     <th className="py-2.5 px-3">MTR / SINIR</th>
                     <th className="py-2.5 px-3">NF do Destinador</th>
@@ -400,6 +402,12 @@ export function DestinacaoFinalTab({
                         <div className="text-[10px] text-[#93A3B5] leading-snug">
                           {item.descricao_material}
                         </div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D9B36C]/15 text-[#D9B36C] border border-[#D9B36C]/40">
+                          <ShieldAlert className="w-3 h-3 text-[#D9B36C]" />
+                          Sujeito à LR Dec. 11.413
+                        </span>
                       </td>
                       <td className="py-3 px-3 font-mono font-bold text-[#D9B36C] whitespace-nowrap">
                         {item.quantidade} {item.unidade}
@@ -508,13 +516,14 @@ export function DestinacaoFinalTab({
               <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] uppercase font-semibold text-[10px]">
                 <tr>
                   <th className="py-2.5 px-3">Fluxo RLO</th>
+                  <th className="py-2.5 px-3">Taxonomia Decreto 11.413/2023</th>
                   <th className="py-2.5 px-3">Volume Coletado</th>
                   <th className="py-2.5 px-3">MTR / SINIR</th>
                   <th className="py-2.5 px-3">NF do Rerrefinador</th>
                   <th className="py-2.5 px-3">Rerrefinador Autorizado</th>
                   <th className="py-2.5 px-3 text-right">CO₂e Evitado (Estimativa)</th>
                   <th className="py-2.5 px-3 text-right">Hash SHA-256</th>
-                </tr>
+                </tr>{' '}
               </thead>
               <tbody className="divide-y divide-[rgba(244,247,250,0.05)] text-[#F4F7FA]">
                 {camada2.itens.map((item) => (
@@ -522,6 +531,12 @@ export function DestinacaoFinalTab({
                     <td className="py-3 px-3">
                       <div className="font-semibold text-[#F4F7FA]">{item.titulo}</div>
                       <div className="text-[10px] text-[#93A3B5]">{item.descricao_material}</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D9B36C]/15 text-[#D9B36C] border border-[#D9B36C]/40">
+                        <ShieldAlert className="w-3 h-3 text-[#D9B36C]" />
+                        Sujeito à LR Dec. 11.413 (OLUC)
+                      </span>
                     </td>
                     <td className="py-3 px-3 font-mono font-bold text-[#D9B36C] whitespace-nowrap">
                       {item.quantidade} {item.unidade}
@@ -630,13 +645,14 @@ export function DestinacaoFinalTab({
               <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] uppercase font-semibold text-[10px]">
                 <tr>
                   <th className="py-2.5 px-3">Fração Reciclada</th>
+                  <th className="py-2.5 px-3">Taxonomia Decreto 11.413/2023</th>
                   <th className="py-2.5 px-3">Massa Aferida</th>
                   <th className="py-2.5 px-3">MTR / SINIR</th>
                   <th className="py-2.5 px-3">NF do Reciclador</th>
                   <th className="py-2.5 px-3">Reciclador Homologado</th>
                   <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
                   <th className="py-2.5 px-3 text-right">Hash SHA-256</th>
-                </tr>
+                </tr>{' '}
               </thead>
               <tbody className="divide-y divide-[rgba(244,247,250,0.05)] text-[#F4F7FA]">
                 {camada3.itens.map((item) => (
@@ -644,6 +660,11 @@ export function DestinacaoFinalTab({
                     <td className="py-3 px-3">
                       <div className="font-semibold text-[#F4F7FA]">{item.titulo}</div>
                       <div className="text-[10px] text-[#93A3B5]">{item.descricao_material}</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.08)]">
+                        Metal Convencional
+                      </span>
                     </td>
                     <td className="py-3 px-3 font-mono font-bold text-[#D9B36C] whitespace-nowrap">
                       {item.quantidade} {item.unidade}

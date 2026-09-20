@@ -37,6 +37,7 @@ import RadarRegulatorio from './pages/RadarRegulatorio'
 import PassaportePublicoPage from './pages/PassaportePublicoPage'
 import PassaporteLotePublicoPage from './pages/PassaporteLotePublicoPage'
 import PassaporteFornecedorPublicoPage from './pages/PassaporteFornecedorPublicoPage'
+import { ConferenciaLastroPublicaPage } from './pages/ConferenciaLastroPublicaPage'
 import DcpCorporativoDemoPage from './pages/DcpCorporativoDemoPage'
 import DcpProdutoPublicoPage from './pages/DcpProdutoPublicoPage'
 import CanalTitularPage from './pages/CanalTitularPage'
@@ -80,6 +81,12 @@ const App = () => (
               path="/passaporte-fornecedor/:token"
               element={<PassaporteFornecedorPublicoPage />}
             />
+            {/* Página pública de conferência de Lastro de Circularidade (Decreto 11.413/2023) */}
+            <Route
+              path="/conferencia-lastro/:codigoOuId"
+              element={<ConferenciaLastroPublicaPage />}
+            />
+            <Route path="/lastro/:codigoOuId" element={<ConferenciaLastroPublicaPage />} />
             <Route path="/titular-dados" element={<CanalTitularPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/checkout/:cobrancaId" element={<CheckoutPage />} />

@@ -55,7 +55,10 @@ import {
 } from '@/services/peritoService'
 import { HubConexaoFiscal } from '@/components/HubConexaoFiscal'
 import { formatarFinalidade } from '@/services/greenCapitalEngine'
-import { Terminal, Car, Network, Radio } from 'lucide-react'
+import { Terminal, Car, Network, Radio, Leaf } from 'lucide-react'
+import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
+import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
+import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -112,7 +115,15 @@ export default function PainelCliente() {
 
   // Abas de visualização do módulo fiscal, motor pericial e console CDV
   const [abaFiscalAtiva, setAbaFiscalAtiva] = useState<
-    'hub_fiscal' | 'upload_manual' | 'infosimples' | 'motor_emissoes' | 'cdv_apis' | 'webhooks_b2b'
+    | 'hub_fiscal'
+    | 'dmrv_emissoes'
+    | 'lastro_circularidade'
+    | 'ccrlr_sinir'
+    | 'upload_manual'
+    | 'infosimples'
+    | 'motor_emissoes'
+    | 'cdv_apis'
+    | 'webhooks_b2b'
   >('hub_fiscal')
   const [peritoCredenciado, setPeritoCredenciado] = useState<PeritoCredenciamentoRecord | null>(
     null,
@@ -682,6 +693,45 @@ export default function PainelCliente() {
         <div className="flex border-b border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">
           <button
             type="button"
+            onClick={() => setAbaFiscalAtiva('dmrv_emissoes')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'dmrv_emissoes'
+                ? 'border-[#12B886] text-[#12B886]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <Leaf className="w-4 h-4 text-emerald-500" />
+            <span>Painel dMRV Emissões Evitadas (GHG & SBCE)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAbaFiscalAtiva('lastro_circularidade')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'lastro_circularidade'
+                ? 'border-[#D9B36C] text-[#D9B36C]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
+            <span>Lastro de Circularidade (Dec. 11.413)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAbaFiscalAtiva('ccrlr_sinir')}
+            className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              abaFiscalAtiva === 'ccrlr_sinir'
+                ? 'border-[#3B82F6] text-[#3B82F6]'
+                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+            }`}
+          >
+            <FileText className="w-4 h-4 text-[#60A5FA]" />
+            <span>CCRLR & Interoperabilidade SINIR</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setAbaFiscalAtiva('hub_fiscal')}
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'hub_fiscal'
@@ -768,6 +818,24 @@ export default function PainelCliente() {
         )}
 
         {/* CONTEÚDO DAS ABAS */}
+        {abaFiscalAtiva === 'dmrv_emissoes' && (
+          <div className="mb-10">
+            <PainelDmrvEmissoesEvitadas />
+          </div>
+        )}
+
+        {abaFiscalAtiva === 'lastro_circularidade' && (
+          <div className="mb-10">
+            <GerenciadorLastrosTab />
+          </div>
+        )}
+
+        {abaFiscalAtiva === 'ccrlr_sinir' && (
+          <div className="mb-10">
+            <CcrlrSinirInteroperabilidadeTab />
+          </div>
+        )}
+
         {abaFiscalAtiva === 'hub_fiscal' && (
           <div className="mb-10">
             <HubConexaoFiscal

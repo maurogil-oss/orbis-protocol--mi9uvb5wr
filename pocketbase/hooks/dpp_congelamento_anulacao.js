@@ -28,12 +28,14 @@ routerAdd(
       }
 
       const body = e.requestInfo().body || {}
-      const tipo = String(body.tipo || '').trim() // 'peca' | 'lote' | 'destinacao' | 'selo'
+      const tipo = String(body.tipo || '').trim() // 'peca' | 'lote' | 'destinacao' | 'selo' | 'lastro'
       const id = String(body.id || '').trim()
       const motivo = String(body.motivo || '').trim()
 
       if (!tipo || !id) {
-        return e.badRequestError('Tipo (peca, lote, destinacao, selo) e ID são obrigatórios.')
+        return e.badRequestError(
+          'Tipo (peca, lote, destinacao, selo, lastro) e ID são obrigatórios.',
+        )
       }
 
       if (!motivo || motivo.length < 10) {
@@ -51,6 +53,7 @@ routerAdd(
       else if (tipo === 'lote') collectionName = 'cdv_lotes'
       else if (tipo === 'destinacao') collectionName = 'dpp_destinacao_final'
       else if (tipo === 'selo') collectionName = 'selos'
+      else if (tipo === 'lastro') collectionName = 'lastro_circularidade'
       else {
         return e.badRequestError('Tipo inválido para anulação.')
       }
@@ -92,6 +95,7 @@ routerAdd(
         log.set('detalhes', {
           tipo: tipo,
           identificador:
+            rec.getString('codigo_lastro') ||
             rec.getString('selo_dpp') ||
             rec.getString('codigo_selo') ||
             rec.getString('veiculo_chassi') ||
@@ -203,3 +207,49 @@ onRecordDelete((e) => {
     )
   }
 }, 'dpp_destinacao_final')
+
+// Trava antes de deletar ou alterar indevidamente lastro_circularidade
+onRecordUpdate((e) => {
+  const rec = e.record
+  const orig = rec.original()
+  if (!orig) return
+
+  const hashOriginal = orig.getString('hash_sha256')
+  const statusOriginal = orig.getString('status')
+  const novoStatus = rec.getString('status')
+
+  if (hashOriginal && hashOriginal.trim() !== '') {
+    if (statusOriginal === 'anulado') {
+      throw new BadRequestError('Documento de Lastro já anulado é estritamente imutável.')
+    }
+
+    if (novoStatus === 'anulado') {
+      return
+    }
+
+    const camposProtegidos = [
+      'codigo_lastro',
+      'hash_sha256',
+      'cnpj_emissor',
+      'entidade_gestora_alvo',
+      'massa_total_lr_obrigatoria_kg',
+      'periodo_inicio',
+      'periodo_fim',
+      'aviso_legal',
+    ]
+
+    for (const c of camposProtegidos) {
+      if (rec.get(c) !== orig.get(c)) {
+        throw new BadRequestError(
+          `Violação de Governança: o campo "${c}" de Lastro de Circularidade emitido não pode ser alterado. Utilize o caminho formal de anulação com justificativa.`,
+        )
+      }
+    }
+  }
+}, 'lastro_circularidade')
+
+onRecordDelete((e) => {
+  throw new BadRequestError(
+    'Violação de Governança: Documentos de Lastro de Circularidade emitidos são imutáveis e não podem ser excluídos. Utilize o fluxo formal de anulação administrativa.',
+  )
+}, 'lastro_circularidade')

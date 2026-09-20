@@ -31,7 +31,12 @@ import {
   Trash2,
   Ban,
   Check,
+  Leaf,
+  FileCheck2,
 } from 'lucide-react'
+import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
+import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
+import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   carregarAdminKpis,
@@ -87,6 +92,9 @@ type AdminTab =
   | 'comissoes'
   | 'peritos'
   | 'auditoria'
+  | 'lastro_conformidade'
+  | 'ccrlr_sinir'
+  | 'dmrv_todas_empresas'
 
 export default function AdminConsolePage() {
   const { user, isFinanceiroLeitor, isAdmin, requestPasswordReset } = useAuth()
@@ -798,6 +806,13 @@ export default function AdminConsolePage() {
     { id: 'comissoes', label: '7. Comissões & Parceiros', icon: Percent },
     { id: 'peritos', label: '8. Rede Pericial & Conselhos', icon: Award },
     { id: 'auditoria', label: '9. Auditoria & Trilha Imutável', icon: ShieldCheck },
+    {
+      id: 'lastro_conformidade',
+      label: '10. Lastro Circularidade (Dec. 11.413)',
+      icon: FileCheck2,
+    },
+    { id: 'ccrlr_sinir', label: '11. CCRLR & Interoperabilidade SINIR', icon: Layers },
+    { id: 'dmrv_todas_empresas', label: '12. dMRV Emissões Evitadas (SBCE)', icon: Leaf },
   ]
 
   const cobrancasFiltradas = cobrancas.filter((c) => {
@@ -3503,6 +3518,27 @@ export default function AdminConsolePage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* 10. LASTRO DE CIRCULARIDADE (DECRETO 11.413/2023) */}
+        {activeTab === 'lastro_conformidade' && (
+          <div className="space-y-6">
+            <GerenciadorLastrosTab />
+          </div>
+        )}
+
+        {/* 11. CCRLR & INTEROPERABILIDADE SINIR */}
+        {activeTab === 'ccrlr_sinir' && (
+          <div className="space-y-6">
+            <CcrlrSinirInteroperabilidadeTab />
+          </div>
+        )}
+
+        {/* 12. dMRV EMISSÕES EVITADAS (SBCE / GHG PROTOCOL) */}
+        {activeTab === 'dmrv_todas_empresas' && (
+          <div className="space-y-6">
+            <PainelDmrvEmissoesEvitadas />
           </div>
         )}
 

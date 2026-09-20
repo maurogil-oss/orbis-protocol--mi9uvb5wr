@@ -272,3 +272,29 @@ onRecordCreate((e) => {
     $app.save(log)
   } catch (_) {}
 }, 'selos')
+
+// 8. lastro_circularidade: emissão de Lastro de Circularidade
+onRecordCreate((e) => {
+  try {
+    const rec = e.record
+    const auditCol = $app.findCollectionByNameOrId('audit_log')
+    const log = new Record(auditCol)
+    log.set('acao', 'lastro_circularidade_emitido')
+    log.set('entidade', 'lastro_circularidade')
+    log.set('entidade_id', rec.id)
+    log.set('ator_id', rec.getString('usuario') || 'sistema')
+    log.set('ator_email', rec.getString('cnpj_emissor') || 'emissor@orbisprotocol.org')
+    log.set('papel', 'emissor')
+    log.set('detalhes', {
+      codigo_lastro: rec.getString('codigo_lastro'),
+      entidade_gestora_alvo: rec.getString('entidade_gestora_alvo'),
+      cnpj_emissor: rec.getString('cnpj_emissor'),
+      periodo_inicio: rec.getString('periodo_inicio'),
+      periodo_fim: rec.getString('periodo_fim'),
+      massa_total_lr_obrigatoria_kg: rec.getFloat('massa_total_lr_obrigatoria_kg'),
+      massa_metais_convencionais_kg: rec.getFloat('massa_metais_convencionais_kg'),
+      hash_sha256: rec.getString('hash_sha256'),
+    })
+    $app.save(log)
+  } catch (_) {}
+}, 'lastro_circularidade')

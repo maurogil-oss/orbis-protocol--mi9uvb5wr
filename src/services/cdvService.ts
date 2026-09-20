@@ -101,6 +101,8 @@ export interface CdvPecaRecord extends RecordModel {
   veiculo_baixa_detran?: string
   veiculo_seguradora?: string
   subsistema?: string
+  lr_decreto_11413?: 'sujeito_lr_11413' | 'convencional'
+  lr_categoria?: string
 }
 
 export interface CdvApiKeyRecord extends RecordModel {

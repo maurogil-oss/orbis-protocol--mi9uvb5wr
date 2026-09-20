@@ -15,8 +15,12 @@ import {
   TrendingUp,
   Percent,
   HelpCircle,
+  Filter,
+  ShieldAlert,
 } from 'lucide-react'
 import type { BalancoMassaVeiculo, ItemBalancoMassa } from '@/services/destinacaoFinalService'
+
+export type FiltroLrTaxonomia = 'todos' | 'sujeito_lr_11413' | 'convencional'
 
 interface BalancoMassaVeiculoSectionProps {
   balanco: BalancoMassaVeiculo
@@ -33,6 +37,7 @@ export function BalancoMassaVeiculoSection({
 }: BalancoMassaVeiculoSectionProps) {
   const [copiedHash, setCopiedHash] = useState(false)
   const [itemDetalheAberto, setItemDetalheAberto] = useState<string | null>(null)
+  const [filtroLr, setFiltroLr] = useState<FiltroLrTaxonomia>('todos')
 
   const copyHash = () => {
     if (!balanco.hashBalancoSha256) return
@@ -390,15 +395,68 @@ export function BalancoMassaVeiculoSection({
           </div>
         </div>
 
-        {/* TABELA DISCRIMINADA DAS FRAÇÕES DO BALANÇO DE MASSA */}
+        {/* TABELA DISCRIMINADA DAS FRAÇÕES DO BALANÇO DE MASSA COM FILTRO E BADGES LR DECRETO 11.413/2023 */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#93A3B5]">
-              Detalhamento de Fluxos Ponderais & Rastreabilidade de Saída
-            </span>
-            <span className="text-[10px] font-mono text-[#D9B36C]">
-              Soma: {balanco.massaEstimadaVeiculoKg} kg (100%)
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#93A3B5]">
+                Detalhamento de Fluxos Ponderais & Rastreabilidade de Saída
+              </span>
+            </div>
+
+            {/* Filtro Interativo de Taxonomia LR */}
+            <div className="flex flex-wrap items-center gap-1.5 bg-[#0A0E12] p-1 rounded-xl border border-[rgba(244,247,250,0.08)]">
+              <span className="text-[10px] text-[#93A3B5] px-2 flex items-center gap-1 font-semibold">
+                <Filter className="w-3 h-3 text-[#12B886]" />
+                Taxonomia LR:
+              </span>
+              <button
+                type="button"
+                onClick={() => setFiltroLr('todos')}
+                className={`text-[10px] font-mono px-2.5 py-1 rounded-lg transition-all ${
+                  filtroLr === 'todos'
+                    ? 'bg-[#12B886] text-[#0A0E12] font-bold shadow'
+                    : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
+                }`}
+              >
+                Todos ({balanco.itens.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltroLr('sujeito_lr_11413')}
+                className={`text-[10px] font-mono px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                  filtroLr === 'sujeito_lr_11413'
+                    ? 'bg-[#D9B36C] text-[#0A0E12] font-bold shadow'
+                    : 'text-[#D9B36C] hover:bg-[#D9B36C]/15'
+                }`}
+              >
+                <ShieldAlert className="w-3 h-3" />
+                LR Dec. 11.413 (
+                {
+                  balanco.itens.filter(
+                    (i) => i.categoria === 'despoluicao_gate' || i.categoria === 'oleo_rlo',
+                  ).length
+                }
+                )
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltroLr('convencional')}
+                className={`text-[10px] font-mono px-2.5 py-1 rounded-lg transition-all ${
+                  filtroLr === 'convencional'
+                    ? 'bg-[#3B82F6] text-[#0A0E12] font-bold shadow'
+                    : 'text-[#60A5FA] hover:bg-[#3B82F6]/15'
+                }`}
+              >
+                Convencional (
+                {
+                  balanco.itens.filter(
+                    (i) => i.categoria === 'metais_reciclagem' || i.categoria === 'reuso_circular',
+                  ).length
+                }
+                )
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-[rgba(244,247,250,0.08)] bg-[#0A0E12]">
@@ -406,6 +464,7 @@ export function BalancoMassaVeiculoSection({
               <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] uppercase font-semibold text-[10px] bg-[#111820]">
                 <tr>
                   <th className="py-2.5 px-3">Fração / Destino Ponderal</th>
+                  <th className="py-2.5 px-3">Taxonomia Decreto 11.413/2023</th>
                   <th className="py-2.5 px-3">Tipo de Destinação</th>
                   <th className="py-2.5 px-3 text-right">Massa (kg)</th>
                   <th className="py-2.5 px-3 text-right">% Veículo Doador</th>
@@ -413,54 +472,79 @@ export function BalancoMassaVeiculoSection({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[rgba(244,247,250,0.04)] text-[#F4F7FA]">
-                {balanco.itens.map((item) => (
-                  <tr key={item.categoria} className="hover:bg-[#16202B]/50 transition-colors">
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-2">
-                        {getCategoriaIcon(item.categoria)}
-                        <div>
-                          <div className="font-semibold text-[#F4F7FA]">{item.rotulo}</div>
-                          <div className="text-[10px] text-[#93A3B5] line-clamp-1">
-                            {item.descricao}
+                {balanco.itens
+                  .filter((item) => {
+                    const isLrObrigatoria =
+                      item.categoria === 'despoluicao_gate' || item.categoria === 'oleo_rlo'
+                    if (filtroLr === 'sujeito_lr_11413') return isLrObrigatoria
+                    if (filtroLr === 'convencional') return !isLrObrigatoria
+                    return true
+                  })
+                  .map((item) => {
+                    const isLrObrigatoria =
+                      item.categoria === 'despoluicao_gate' || item.categoria === 'oleo_rlo'
+
+                    return (
+                      <tr key={item.categoria} className="hover:bg-[#16202B]/50 transition-colors">
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2">
+                            {getCategoriaIcon(item.categoria)}
+                            <div>
+                              <div className="font-semibold text-[#F4F7FA]">{item.rotulo}</div>
+                              <div className="text-[10px] text-[#93A3B5] line-clamp-1">
+                                {item.descricao}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-[#93A3B5]">
-                      {item.tipoFluxoResumo}
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-[#D9B36C] whitespace-nowrap">
-                      {item.massaKg.toLocaleString('pt-BR', {
-                        minimumFractionDigits: 1,
-                        maximumFractionDigits: 2,
-                      })}{' '}
-                      kg
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold whitespace-nowrap">
-                      <span
-                        className="px-2 py-0.5 rounded text-[11px]"
-                        style={{
-                          backgroundColor: `${item.cor}20`,
-                          color: item.cor,
-                        }}
-                      >
-                        {item.percentual.toFixed(1)}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      {item.categoria === 'perdas_processo' ? (
-                        <span className="text-[10px] font-mono text-[#93A3B5] bg-[#16202B] px-2 py-0.5 rounded">
-                          Fração Não Recuperada
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#12B886] bg-[#12B886]/10 px-2 py-0.5 rounded border border-[#12B886]/20">
-                          <CheckCircle2 className="w-3 h-3" />
-                          Valorização Computada
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        </td>
+                        <td className="py-3 px-3">
+                          {isLrObrigatoria ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D9B36C]/15 text-[#D9B36C] border border-[#D9B36C]/40">
+                              <ShieldAlert className="w-3 h-3 text-[#D9B36C]" />
+                              Sujeito à LR Dec. 11.413
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.08)]">
+                              Metal Convencional / Reúso
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 font-mono text-[11px] text-[#93A3B5]">
+                          {item.tipoFluxoResumo}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono font-bold text-[#D9B36C] whitespace-nowrap">
+                          {item.massaKg.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 2,
+                          })}{' '}
+                          kg
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono font-bold whitespace-nowrap">
+                          <span
+                            className="px-2 py-0.5 rounded text-[11px]"
+                            style={{
+                              backgroundColor: `${item.cor}20`,
+                              color: item.cor,
+                            }}
+                          >
+                            {item.percentual.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {item.categoria === 'perdas_processo' ? (
+                            <span className="text-[10px] font-mono text-[#93A3B5] bg-[#16202B] px-2 py-0.5 rounded">
+                              Fração Não Recuperada
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#12B886] bg-[#12B886]/10 px-2 py-0.5 rounded border border-[#12B886]/20">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Valorização Computada
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
               </tbody>
             </table>
           </div>
