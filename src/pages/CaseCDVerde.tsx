@@ -11,6 +11,7 @@ import {
   QrCode,
   FileCheck,
 } from 'lucide-react'
+import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
 
 export default function CaseCDVerde() {
   const pilaresCase = [
@@ -131,6 +132,15 @@ export default function CaseCDVerde() {
               <p className="text-sm text-[#93A3B5] leading-relaxed">{p.desc}</p>
             </div>
           ))}
+        </div>
+
+        {/* Parecer Pericial de Adicionalidade Anexo ao Case CDVerde */}
+        <div className="mb-12">
+          <SecaoAvaliacaoAdicionalidade
+            loteId="c1jz14hgmf7n13i"
+            forceExibir={true}
+            readOnly={false}
+          />
         </div>
       </div>
     </div>

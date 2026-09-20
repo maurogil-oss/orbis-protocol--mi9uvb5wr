@@ -29,6 +29,8 @@ import {
   TEXTO_MATRIZ_DUPLA_CONTAGEM,
   BASELINE_REGIONAL_STATUS,
 } from '@/services/moverService'
+import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
+import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService'
 
 export function DossieMoverPage() {
   const { user } = useAuth()
@@ -38,6 +40,8 @@ export function DossieMoverPage() {
   const [copiadoHash, setCopiadoHash] = useState<string | null>(null)
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todos')
   const [termoBusca, setTermoBusca] = useState('')
+  const [moverHabilitado, setMoverHabilitado] = useState(true)
+  const [loteReferenciaId, setLoteReferenciaId] = useState('c1jz14hgmf7n13i')
 
   useEffect(() => {
     carregarDados()
@@ -46,9 +50,14 @@ export function DossieMoverPage() {
   const carregarDados = async () => {
     setIsLoading(true)
     try {
-      const [vpaList, evidList] = await Promise.all([listarMoverVpas(), listarMoverEvidencias()])
+      const [vpaList, evidList, hab] = await Promise.all([
+        listarMoverVpas(),
+        listarMoverEvidencias(),
+        obterMoverAmpliadoHabilitado(),
+      ])
       setVpas(vpaList)
       setEvidencias(evidList)
+      setMoverHabilitado(hab)
     } catch {
       /* fallback controlado */
     } finally {
@@ -119,6 +128,14 @@ export function DossieMoverPage() {
             </Link>
           </div>
         </div>
+
+        {/* SEÇÃO INTEGRADA: AVALIAÇÃO DE ADICIONALIDADE PERICIAL (MOVER / GS 448) */}
+        <SecaoAvaliacaoAdicionalidade
+          loteId={loteReferenciaId}
+          moverHabilitado={moverHabilitado}
+          forceExibir={true}
+          readOnly={false}
+        />
 
         {/* 1. SEÇÃO STATUS DAS VPAs (ÁREAS DE PROJETO VOLUNTÁRIO) */}
         <section className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-6">

@@ -785,4 +785,52 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     expect(situacoesValidas).toContain('nao_desmontada')
     expect(situacoesValidas).toContain('etiquetada')
   })
+
+  it('deve manter o hash SHA-256 do lote inalterado independentemente da avaliação de adicionalidade anexada', async () => {
+    const loteInfo = {
+      id: 'lote-hash-test-01',
+      cdv_cnpj: '76.123.456/0001-12',
+      veiculo_baixa_detran: 'PR-BX-2026-991204',
+    }
+
+    const pecas611 = [
+      {
+        selo_dpp: 'PR-SEAL-2026-000101',
+        sku_interno: 'CLIO-MOT-01',
+        peso_kg: 42.0,
+        co2e_evitado_kg: 119.7,
+        catalogo_numero: 1,
+        origem: '611_vigente',
+        hash_sha256: '8cf76eac8b95ab17d2d59db48acdff144392c14d941d72ca036eb79657098649',
+      },
+      {
+        selo_dpp: 'PR-SEAL-2026-000102',
+        sku_interno: 'CLIO-MOT-02',
+        peso_kg: 16.5,
+        co2e_evitado_kg: 135.3,
+        catalogo_numero: 2,
+        origem: '611_vigente',
+        hash_sha256: 'ca330e4f40d80e3ce7a16fa3418fa0f65b7420fb07af81633c4b7f9417264a72',
+      },
+    ]
+
+    // 1. Hash canônico original do lote
+    const hashOriginal = await calcularHashCanonicalLote(loteInfo, pecas611)
+
+    // 2. Lote com metadados de adicionalidade presentes no payload/objeto
+    const loteComAdicionalidade = {
+      ...loteInfo,
+      adicionalidade_json: {
+        adicionalidade_investimento: true,
+        barreira_tecnologica: true,
+        nao_obrigatoriedade_legal: true,
+        justificativa_pericial: 'Justificativa pericial de demonstração de adicionalidade',
+      },
+    }
+
+    // O hash CANÔNICO do lote avalia apenas os atributos de identidade CONTRAN 611 (id, cdv_cnpj, veiculo_baixa_detran) + hashes das peças 611
+    const hashComAdicionalidade = await calcularHashCanonicalLote(loteComAdicionalidade, pecas611)
+
+    expect(hashComAdicionalidade).toBe(hashOriginal)
+  })
 })

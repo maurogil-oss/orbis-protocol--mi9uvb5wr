@@ -42,6 +42,7 @@ import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
 import { BalancoMassaVeiculoSection } from '@/components/BalancoMassaVeiculoSection'
+import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
 
 // Mapeamento amigável e ordenado das categorias de materiais / subsistemas veiculares
 const CATEGORIAS_CONFIG: Record<string, { label: string; cor: string }> = {
@@ -850,6 +851,15 @@ export default function PassaporteLotePublicoPage() {
                   </div>
                 </div>
 
+                {/* FLUXO VERTICAL MOBILE: AVALIAÇÃO DE ADICIONALIDADE PERICIAL */}
+                <SecaoAvaliacaoAdicionalidade
+                  loteId={lote.id}
+                  lote={lote}
+                  moverHabilitado={moverHabilitado}
+                  forceExibir={false}
+                  readOnly={false}
+                />
+
                 {/* FLUXO VERTICAL MOBILE: METODOLOGIA & NORMAS */}
                 <div className="p-4 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-2 text-xs">
                   <div className="flex items-center gap-2 text-[#F4F7FA] font-bold text-xs uppercase">
@@ -1458,6 +1468,15 @@ export default function PassaporteLotePublicoPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* SEÇÃO INTEGRADA: AVALIAÇÃO DE ADICIONALIDADE PERICIAL (MOVER / GS 448) */}
+                  <SecaoAvaliacaoAdicionalidade
+                    loteId={lote.id}
+                    lote={lote}
+                    moverHabilitado={moverHabilitado}
+                    forceExibir={false}
+                    readOnly={false}
+                  />
 
                   {/* Bloco 3: Metodologia Científica & Conformidade Normativa */}
                   <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3 print:bg-slate-50 print:border-slate-300 print-card">

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T19:44:06.567Z",
+  "generatedAt": "2026-09-20T19:53:38.621Z",
   "collections": [
     {
       "name": "users",
@@ -1302,6 +1302,12 @@
         {
           "name": "anulado_por",
           "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "adicionalidade_json",
+          "type": "json",
           "required": false,
           "system": false
         }
@@ -4313,6 +4319,103 @@
       ],
       "indexes": [
         "CREATE UNIQUE INDEX idx_cdv_pecas_catalogo_numero ON cdv_pecas_catalogo (numero)"
+      ]
+    },
+    {
+      "name": "cdv_adicionalidade",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "",
+        "update": "",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "lote_id",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "veiculo_baixa_detran",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cdv_cnpj",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "adicionalidade_investimento",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "barreira_tecnologica",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nao_obrigatoriedade_legal",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "justificativa_pericial",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "avaliador_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "avaliador_registro",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_declaracao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_declaracao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_cdv_adic_lote ON cdv_adicionalidade (lote_id)",
+        "CREATE INDEX idx_cdv_adic_baixa ON cdv_adicionalidade (veiculo_baixa_detran)"
       ]
     }
   ]

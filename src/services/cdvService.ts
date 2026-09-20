@@ -75,6 +75,26 @@ export interface CdvLoteRecord extends RecordModel {
   cartela_desmontagem?: string
   ctf_ibama?: string
   selo_detran_lote?: string
+  adicionalidade_json?: AvaliacaoAdicionalidadeData
+}
+
+export interface AvaliacaoAdicionalidadeData {
+  adicionalidade_investimento: boolean
+  barreira_tecnologica: boolean
+  nao_obrigatoriedade_legal: boolean
+  justificativa_pericial: string
+  data_avaliacao?: string
+  avaliador_nome?: string
+  avaliador_registro?: string
+  status_parecer?: 'conforme_declarado' | 'em_analise' | 'nao_conforme'
+}
+
+export interface CdvAdicionalidadeRecord extends RecordModel, AvaliacaoAdicionalidadeData {
+  lote_id: string
+  veiculo_baixa_detran?: string
+  cdv_cnpj?: string
+  data_declaracao?: string
+  hash_declaracao?: string
 }
 
 export type SituacaoChecklistPeca =
@@ -690,4 +710,161 @@ export async function listarTodasConsultasDpp(limit: number = 500): Promise<DppC
   } catch {
     return []
   }
+}
+
+/**
+ * Carrega a avaliação de adicionalidade técnica pericial de um lote.
+ * Busca primeiro em cdv_adicionalidade ou fallback em adicionalidade_json do lote.
+ * Fallback seguro de localStorage caso o backend não esteja disponível.
+ */
+export async function carregarAvaliacaoAdicionalidade(
+  loteId: string,
+  loteFallback?: CdvLoteRecord | null,
+): Promise<AvaliacaoAdicionalidadeData | null> {
+  if (!loteId && !loteFallback?.id) return null
+  const id = loteId || loteFallback?.id || ''
+
+  // 1. Tentar ler da coleção dedicada cdv_adicionalidade
+  try {
+    const rec = await pb
+      .collection('cdv_adicionalidade')
+      .getFirstListItem<CdvAdicionalidadeRecord>(`lote_id = "${id}"`)
+    if (rec) {
+      return {
+        adicionalidade_investimento: !!rec.adicionalidade_investimento,
+        barreira_tecnologica: !!rec.barreira_tecnologica,
+        nao_obrigatoriedade_legal: !!rec.nao_obrigatoriedade_legal,
+        justificativa_pericial: rec.justificativa_pericial || '',
+        data_avaliacao: rec.data_declaracao || rec.created,
+        avaliador_nome: rec.avaliador_nome,
+        avaliador_registro: rec.avaliador_registro,
+        status_parecer: 'conforme_declarado',
+      }
+    }
+  } catch {
+    /* fallback para campo json do lote */
+  }
+
+  // 2. Se não encontrou, verificar campo adicionalidade_json no registro do lote
+  if (loteFallback?.adicionalidade_json) {
+    const raw = loteFallback.adicionalidade_json
+    const parsed: AvaliacaoAdicionalidadeData = typeof raw === 'string' ? JSON.parse(raw) : raw
+    return parsed
+  }
+
+  // 3. Tentar carregar o lote atualizado do PocketBase
+  try {
+    const loteRec = await pb.collection('cdv_lotes').getOne<CdvLoteRecord>(id)
+    if (loteRec.adicionalidade_json) {
+      const raw = loteRec.adicionalidade_json
+      return typeof raw === 'string' ? JSON.parse(raw) : raw
+    }
+  } catch {
+    /* fallback local */
+  }
+
+  // 4. Fallback no localStorage
+  try {
+    const storageKey = `orbis_cdv_adicionalidade_${id}`
+    const local = localStorage.getItem(storageKey)
+    if (local) {
+      return JSON.parse(local)
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return null
+}
+
+/**
+ * Salva a avaliação pericial de adicionalidade associada a um lote.
+ * Persiste na coleção cdv_adicionalidade e/ou no campo adicionalidade_json de cdv_lotes,
+ * além de persistir no localStorage como redundância.
+ * A seção é uma camada declaratória anexa e NÃO afeta o hash SHA-256 do selo DPP.
+ */
+export async function salvarAvaliacaoAdicionalidade(
+  loteId: string,
+  dados: AvaliacaoAdicionalidadeData,
+  loteContexto?: Partial<CdvLoteRecord> | null,
+): Promise<{ sucesso: boolean; salvoBackend: boolean }> {
+  if (!loteId) throw new Error('ID do lote é obrigatório para registrar a adicionalidade.')
+
+  const payload: AvaliacaoAdicionalidadeData = {
+    adicionalidade_investimento: !!dados.adicionalidade_investimento,
+    barreira_tecnologica: !!dados.barreira_tecnologica,
+    nao_obrigatoriedade_legal: !!dados.nao_obrigatoriedade_legal,
+    justificativa_pericial: (dados.justificativa_pericial || '').trim(),
+    data_avaliacao: dados.data_avaliacao || new Date().toISOString(),
+    avaliador_nome: dados.avaliador_nome || 'VVB independente acreditado',
+    avaliador_registro: dados.avaliador_registro || '',
+    status_parecer:
+      dados.adicionalidade_investimento &&
+      dados.barreira_tecnologica &&
+      dados.nao_obrigatoriedade_legal
+        ? 'conforme_declarado'
+        : 'em_analise',
+  }
+
+  // Sempre gravar no localStorage para acesso offline/imediato do navegador
+  try {
+    const storageKey = `orbis_cdv_adicionalidade_${loteId}`
+    localStorage.setItem(storageKey, JSON.stringify(payload))
+  } catch {
+    /* ignore */
+  }
+
+  let salvoBackend = false
+
+  // 1. Tentar gravar na coleção cdv_adicionalidade (upsert)
+  try {
+    let recExistente: any = null
+    try {
+      recExistente = await pb
+        .collection('cdv_adicionalidade')
+        .getFirstListItem(`lote_id = "${loteId}"`)
+    } catch {
+      recExistente = null
+    }
+
+    if (recExistente) {
+      await pb.collection('cdv_adicionalidade').update(recExistente.id, {
+        adicionalidade_investimento: payload.adicionalidade_investimento,
+        barreira_tecnologica: payload.barreira_tecnologica,
+        nao_obrigatoriedade_legal: payload.nao_obrigatoriedade_legal,
+        justificativa_pericial: payload.justificativa_pericial,
+        avaliador_nome: payload.avaliador_nome,
+        avaliador_registro: payload.avaliador_registro,
+        data_declaracao: payload.data_avaliacao,
+      })
+    } else {
+      await pb.collection('cdv_adicionalidade').create({
+        lote_id: loteId,
+        veiculo_baixa_detran: loteContexto?.veiculo_baixa_detran || '',
+        cdv_cnpj: loteContexto?.cdv_cnpj || '',
+        adicionalidade_investimento: payload.adicionalidade_investimento,
+        barreira_tecnologica: payload.barreira_tecnologica,
+        nao_obrigatoriedade_legal: payload.nao_obrigatoriedade_legal,
+        justificativa_pericial: payload.justificativa_pericial,
+        avaliador_nome: payload.avaliador_nome,
+        avaliador_registro: payload.avaliador_registro,
+        data_declaracao: payload.data_avaliacao,
+      })
+    }
+    salvoBackend = true
+  } catch (err) {
+    console.warn('[adicionalidade] Gravação em cdv_adicionalidade ignorada ou sem permissão:', err)
+  }
+
+  // 2. Tentar atualizar diretamente no lote via campo adicionalidade_json
+  try {
+    await pb.collection('cdv_lotes').update(loteId, {
+      adicionalidade_json: payload,
+    })
+    salvoBackend = true
+  } catch (errLote) {
+    console.warn('[adicionalidade] Atualização do lote em cdv_lotes ignorada:', errLote)
+  }
+
+  return { sucesso: true, salvoBackend }
 }

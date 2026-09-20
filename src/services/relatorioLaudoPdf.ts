@@ -44,6 +44,16 @@ export interface DadosRelatorioDossie {
       numeroArtRrt?: string
       termoVersao?: string
     }
+    // Avaliação de Adicionalidade MOVER (Camada Declaratória Anexa - Fora do Hash)
+    avaliacaoAdicionalidade?: {
+      adicionalidade_investimento: boolean
+      barreira_tecnologica: boolean
+      nao_obrigatoriedade_legal: boolean
+      justificativa_pericial?: string
+      data_avaliacao?: string
+      avaliador_nome?: string
+      status_parecer?: string
+    }
   }
   diagnostico: {
     enquadramentoSbceTexto?: string
@@ -848,6 +858,50 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
         </div>
       </div>
     `
+    }
+
+    ${
+      dados.identificacao.avaliacaoAdicionalidade
+        ? `
+    <!-- SEÇÃO ANEXA: AVALIAÇÃO DE ADICIONALIDADE (METODOLOGIA GS 448 / PROGRAMA MOVER) -->
+    <div class="section-title" style="border-left-color: #D9B36C;">Camada Anexa: Avaliação de Adicionalidade (GS 448 / MOVER)</div>
+    <div class="section-subtitle">
+      Checklist pericial e fundamentação técnica declaratória anexa — sem afetação do hash SHA-256 do documento.
+    </div>
+
+    <div class="card" style="margin-bottom: 12px; border-left: 4px solid #12B886;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 8pt; color: #4B5563;">
+        <span><strong>Avaliador Responsável:</strong> ${dados.identificacao.avaliacaoAdicionalidade.avaliador_nome || 'VVB independente acreditado'}</span>
+        <span><strong>Status do Parecer:</strong> ${dados.identificacao.avaliacaoAdicionalidade.adicionalidade_investimento && dados.identificacao.avaliacaoAdicionalidade.barreira_tecnologica && dados.identificacao.avaliacaoAdicionalidade.nao_obrigatoriedade_legal ? '<span style="color:#059669; font-weight:700;">CONFORME DECLARADO ✓</span>' : '<span style="color:#B45309; font-weight:700;">EM ANÁLISE</span>'}</span>
+      </div>
+
+      <div style="font-size: 8.5pt; color: #1F2937; margin-bottom: 8px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 4px;">
+          <span>${dados.identificacao.avaliacaoAdicionalidade.adicionalidade_investimento ? '☑' : '☐'}</span>
+          <span><strong>(a) Adicionalidade de investimento:</strong> Atesta que o desmonte técnico com descaracterização rastreada e triagem dMRV impõe custos operacionais (OPEX/CAPEX) adicionais não absorvidos pela comercialização convencional de sucata mista.</span>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 4px;">
+          <span>${dados.identificacao.avaliacaoAdicionalidade.barreira_tecnologica ? '☑' : '☐'}</span>
+          <span><strong>(b) Barreira tecnológica:</strong> Superação de gargalos de rastreabilidade mediante etiquetagem individual de componentes, balanço de massa e custódia digital criptográfica berço-ao-portão.</span>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+          <span>${dados.identificacao.avaliacaoAdicionalidade.nao_obrigatoriedade_legal ? '☑' : '☐'}</span>
+          <span><strong>(c) Não-obrigatoriedade legal:</strong> A segregação de 77 subsistemas e a emissão de passaportes com emissões evitadas extrapolam as obrigações estritas de baixa veicular do DETRAN/CONTRAN.</span>
+        </div>
+      </div>
+
+      ${
+        dados.identificacao.avaliacaoAdicionalidade.justificativa_pericial
+          ? `
+      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #D1D5DB; font-size: 8pt; color: #374151; font-style: italic; background: #F9FAFB; padding: 6px 8px; border-radius: 4px;">
+        <strong>(d) Justificativa Pericial:</strong> "${dados.identificacao.avaliacaoAdicionalidade.justificativa_pericial}"
+      </div>
+      `
+          : ''
+      }
+    </div>
+    `
+        : ''
     }
 
     <!-- SEÇÃO 5: CONCLUSÃO PERICIAL & ASSINATURA CRIPTOGRÁFICA -->
