@@ -7,7 +7,7 @@
  * - Camada 3: Dossiê do Projeto /dossie-mover (status de VPAs, baseline regional pendente, matriz de dupla contagem e repositório de evidências com hash SHA-256)
  *
  * REGRAS INVIOLÁVEIS:
- * - NENHUM nome de terceiros sem acordo formalizado ("instituto de pesquisa e inovação a ser contratado — negociação em curso", "VVB acreditado pelo Gold Standard", CDV-âncora "em definição").
+ * - NENHUM nome de terceiros sem acordo formalizado ("instituto de pesquisa e inovação a ser contratado — negociação em curso", "VVB independente acreditado", CDV-âncora "em definição").
  * - Reserva permanente pré-laudo em todo material.
  * - Alinhamento à metodologia GS 448 (fatores substituição reciclado x virgem e rastreabilidade), sem alegar certificação.
  */
@@ -84,10 +84,10 @@ export interface CdvCarbonoProgramaItem {
 }
 
 export const RESERVA_METODOLOGICA_PRE_LAUDO =
-  'Estimativa pré-laudo, sujeita a validação por VVB (Validation and Verification Body — Organismo de Validação e Verificação) acreditado pelo Gold Standard. A plataforma Orbis Protocol atua como parceiro técnico de monitoramento, relato e verificação (MRV), não como entidade certificadora.'
+  'Estimativa pré-laudo, sujeita a validação por VVB (Validation and Verification Body — Organismo de Validação e Verificação) VVB independente acreditado. A plataforma Orbis Protocol atua como parceiro técnico de monitoramento, relato e verificação (MRV), não como entidade certificadora.'
 
 export const DECLARACAO_PIONEIRISMO_DEFENSAVEL =
-  'Iniciativa pioneira — sem registro público conhecido de iniciativa equivalente no mercado brasileiro de créditos para desmontagem veicular no âmbito da metodologia GS 448 do Gold Standard.'
+  'Iniciativa pioneira — sem registro público conhecido de iniciativa equivalente no mercado brasileiro de créditos para desmontagem veicular no âmbito da metodologia GS 448 (VVB independente acreditado).'
 
 export const OS_QUATRO_PAPEIS_PROGRAMA = [
   {
@@ -109,7 +109,7 @@ export const OS_QUATRO_PAPEIS_PROGRAMA = [
   {
     papel: 'Organismo de Validação e Verificação (VVB)',
     entidade:
-      'VVB (Validation and Verification Body — Organismo de Validação e Verificação) acreditado pelo Gold Standard',
+      'VVB (Validation and Verification Body — Organismo de Validação e Verificação) VVB independente acreditado',
     atribuicao:
       'Auditoria de terceira parte independente, validação do documento de concepção de projeto (PDD) e verificação conclusiva para emissão de créditos de carbono.',
     status: 'Seleção em curso — contratação formal pré-emissão',
@@ -128,7 +128,7 @@ export const OS_QUATRO_PAPEIS_PROGRAMA = [
 export const TEXTO_MATRIZ_DUPLA_CONTAGEM = {
   titulo: 'Matriz de Salvaguarda contra Dupla Contagem e Atribuição de Titularidade',
   normas_referencia:
-    'Metodologia GS 448 (Gold Standard), Diretiva ELV 2000/53/EC, Lei 14.902/2024 e Lei 15.042/2024 (SBCE)',
+    'Metodologia GS 448 (VVB independente acreditado), Diretiva ELV 2000/53/EC, Lei 14.902/2024 e Lei 15.042/2024 (SBCE)',
   sumario:
     'Para assegurar a integridade ambiental e evitar a reivindicação simultânea do mesmo benefício de mitigação climática por múltiplos agentes na cadeia (desmontador, reciclador, siderúrgica ou montadora), o projeto adota segregação estrita por hash SHA-256 canônico de lote e regra unívoca de titularidade.',
   clausula_titularidade:
@@ -152,7 +152,7 @@ export const TEXTO_MATRIZ_DUPLA_CONTAGEM = {
     {
       mecanismo: 'Segregação entre Escopo 1/2/3 e Créditos de Carbono',
       descricao:
-        'Evita a sobreposição entre compensação de metas compulsórias do SBCE (Lei 15.042/2024) e créditos transacionáveis voluntários do Gold Standard.',
+        'Evita a sobreposição entre compensação de metas compulsórias do SBCE (Lei 15.042/2024) e créditos transacionáveis voluntários de VVB independente acreditado.',
     },
   ],
 }
