@@ -77,6 +77,24 @@ export interface CdvLoteRecord extends RecordModel {
   selo_detran_lote?: string
 }
 
+export type SituacaoChecklistPeca =
+  | 'etiquetada'
+  | 'nao_desmontada'
+  | 'inservivel'
+  | 'nao_aplicavel_ausente'
+  | 'aguardando_avaliacao'
+
+export type OrigemPecaCatalogo = '611_vigente' | 'ampliada_mover'
+
+export interface CdvPecaCatalogoRecord extends RecordModel {
+  numero: number
+  nome_peca: string
+  origem: OrigemPecaCatalogo
+  subsistema: string
+  item_seguranca: boolean
+  notas: string
+}
+
 export interface CdvPecaRecord extends RecordModel {
   lote: string
   sku_interno: string
@@ -103,6 +121,8 @@ export interface CdvPecaRecord extends RecordModel {
   subsistema?: string
   lr_decreto_11413?: 'sujeito_lr_11413' | 'convencional'
   lr_categoria?: string
+  catalogo_numero?: number
+  situacao_checklist?: SituacaoChecklistPeca
 }
 
 export interface CdvApiKeyRecord extends RecordModel {
@@ -269,6 +289,20 @@ export async function calcularHashCanonicalLote(
   return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
+}
+
+/**
+ * Lista todo o catálogo oficial de peças CDV (77 registros: 49 CONTRAN 611 + 28 Ampliação MOVER)
+ */
+export async function listarCatalogoPecasCdv(): Promise<CdvPecaCatalogoRecord[]> {
+  try {
+    return await pb.collection('cdv_pecas_catalogo').getFullList<CdvPecaCatalogoRecord>({
+      sort: 'numero',
+      requestKey: null,
+    })
+  } catch {
+    return []
+  }
 }
 
 /**

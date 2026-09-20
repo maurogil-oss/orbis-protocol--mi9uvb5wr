@@ -33,7 +33,12 @@ import {
   Check,
   Leaf,
   FileCheck2,
+  SlidersHorizontal,
 } from 'lucide-react'
+import {
+  obterMoverAmpliadoHabilitado,
+  setMoverAmpliadoHabilitado,
+} from '@/services/platformSettingsService'
 import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
 import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
 import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
@@ -97,6 +102,7 @@ type AdminTab =
   | 'lastro_conformidade'
   | 'ccrlr_sinir'
   | 'dmrv_todas_empresas'
+  | 'configuracoes'
 
 export default function AdminConsolePage() {
   const { user, isFinanceiroLeitor, isAdmin, requestPasswordReset } = useAuth()
@@ -328,6 +334,35 @@ export default function AdminConsolePage() {
 
   // Detalhe de auditoria da cobrança (visualização da trilha)
   const [cobrancaDetalheAuditoria, setCobrancaDetalheAuditoria] = useState<any | null>(null)
+
+  // Estado para Flag de Configuração MOVER Ampliado
+  const [moverAmpliadoHabilitado, setMoverAmpliadoHabilitadoState] = useState<boolean>(false)
+  const [salvandoMoverFlag, setSalvandoMoverFlag] = useState<boolean>(false)
+
+  useEffect(() => {
+    obterMoverAmpliadoHabilitado()
+      .then((val) => setMoverAmpliadoHabilitadoState(val))
+      .catch(() => {})
+  }, [])
+
+  const handleToggleMoverAmpliado = async () => {
+    if (isReadOnly) return
+    const novoValor = !moverAmpliadoHabilitado
+    setSalvandoMoverFlag(true)
+    try {
+      await setMoverAmpliadoHabilitado(novoValor, user?.email || user?.name || 'admin')
+      setMoverAmpliadoHabilitadoState(novoValor)
+      mostrarMensagem(
+        novoValor
+          ? 'Catálogo Ampliado do Programa MOVER habilitado na plataforma!'
+          : 'Catálogo Ampliado do Programa MOVER desabilitado (restringido a CONTRAN 611 vigente).',
+      )
+    } catch (err: any) {
+      alert('Erro ao atualizar configuração da plataforma: ' + err.message)
+    } finally {
+      setSalvandoMoverFlag(false)
+    }
+  }
 
   const abrirModalLiquidacao = (cob: any) => {
     const isDivergente = Boolean(cob.divergencia_preco || cob.origem_preco === 'contingencia')
@@ -857,6 +892,7 @@ export default function AdminConsolePage() {
     },
     { id: 'ccrlr_sinir', label: '11. CCRLR & Interoperabilidade SINIR', icon: Layers },
     { id: 'dmrv_todas_empresas', label: '12. dMRV Emissões Evitadas (SBCE)', icon: Leaf },
+    { id: 'configuracoes', label: '13. Governança & MOVER', icon: SlidersHorizontal },
   ]
 
   const cobrancasFiltradas = cobrancas.filter((c) => {
@@ -3644,6 +3680,102 @@ export default function AdminConsolePage() {
         {activeTab === 'dmrv_todas_empresas' && (
           <div className="space-y-6">
             <PainelDmrvEmissoesEvitadas />
+          </div>
+        )}
+
+        {/* 13. GOVERNANÇA DA PLATAFORMA & PARÂMETROS REGULATÓRIOS (MOVER) */}
+        {activeTab === 'configuracoes' && (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                Parâmetros Regulatórios & Governança da Plataforma
+              </h2>
+              <p className="text-xs text-[#93A3B5]">
+                Controle de escopo metodológico para centros de desmontagem veicular (CDV) e
+                catálogo oficial.
+              </p>
+            </div>
+
+            <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-[rgba(244,247,250,0.08)]">
+                <div className="space-y-1 max-w-2xl">
+                  <div className="flex items-center gap-2">
+                    <span className="font-heading font-bold text-base text-[#F4F7FA]">
+                      Ampliação do Programa MOVER (28 Peças em Validação)
+                    </span>
+                    <span
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase font-bold border ${
+                        moverAmpliadoHabilitado
+                          ? 'bg-[#12B886]/10 text-[#12B886] border-[#12B886]/30'
+                          : 'bg-[#93A3B5]/10 text-[#93A3B5] border-[rgba(244,247,250,0.1)]'
+                      }`}
+                    >
+                      {moverAmpliadoHabilitado ? 'HABILITADO' : 'DESABILITADO'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                    Quando ativado, os centros de desmontagem visualizam e podem preencher a segunda
+                    aba do checklist com as 28 peças ampliadas do Programa MOVER (Airbags, Cintos,
+                    Climatização, Vidros, Interior). A aba é estritamente informativa e não integra
+                    o hash SHA-256 canônico de conformidade da Res. CONTRAN 611/2016.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    disabled={isReadOnly || salvandoMoverFlag}
+                    onClick={handleToggleMoverAmpliado}
+                    className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-40 ${
+                      moverAmpliadoHabilitado ? 'bg-[#12B886]' : 'bg-[#16202B]'
+                    }`}
+                    role="switch"
+                    aria-checked={moverAmpliadoHabilitado}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                        moverAmpliadoHabilitado ? 'translate-x-7' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs font-bold text-[#F4F7FA]">
+                    {salvandoMoverFlag
+                      ? 'Salvando...'
+                      : moverAmpliadoHabilitado
+                        ? 'Ativo'
+                        : 'Inativo'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Informações Regulatórias do Catálogo */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
+                  <strong className="text-[#12B886] block font-heading font-semibold">
+                    1. CONTRAN 611/2016 Vigente (49 Peças)
+                  </strong>
+                  <p className="text-[#93A3B5] leading-relaxed">
+                    Sempre ativo na plataforma. Base legal vinculante para emissão do laudo de
+                    rastreabilidade e baixa pericial via DETRAN. 7 itens classificados formalmente
+                    como de segurança com destinação restrita a reciclagem ou recondicionamento
+                    autorizado.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
+                  <strong className="text-[#D9B36C] block font-heading font-semibold">
+                    2. Ampliação MOVER (28 Peças Informativas)
+                  </strong>
+                  <p className="text-[#93A3B5] leading-relaxed">
+                    Submetido à validação metodológica. Inclui ressalva do compressor do
+                    ar-condicionado (descontaminação HFC/PAG), enquadramento pendente do eixo
+                    traseiro e neutralização de airbags pirotécnicos. Se a flag for desligada, as
+                    leituras salvas são preservadas na base, ficando ocultas dos relatórios
+                    públicos.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

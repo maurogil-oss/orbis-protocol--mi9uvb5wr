@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T13:52:18.844Z",
+  "generatedAt": "2026-09-20T15:00:09.293Z",
   "collections": [
     {
       "name": "users",
@@ -1500,6 +1500,25 @@
             "cobre",
             "polimeros",
             "outros"
+          ]
+        },
+        {
+          "name": "catalogo_numero",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "situacao_checklist",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "etiquetada",
+            "nao_desmontada",
+            "inservivel",
+            "nao_aplicavel_ausente",
+            "aguardando_avaliacao"
           ]
         }
       ],
@@ -4175,6 +4194,125 @@
         "CREATE INDEX idx_ccrlr_cnpj_ger ON ccrlr_manifestos_sinir (cnpj_gerador)",
         "CREATE INDEX idx_ccrlr_categoria ON ccrlr_manifestos_sinir (categoria_residuo_sinir)",
         "CREATE INDEX idx_ccrlr_status ON ccrlr_manifestos_sinir (status_sinir)"
+      ]
+    },
+    {
+      "name": "platform_settings",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "chave",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "valor",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "atualizado_por",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "atualizado_em",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_platform_settings_chave ON platform_settings (chave)"]
+    },
+    {
+      "name": "cdv_pecas_catalogo",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "numero",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "nome_peca",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "origem",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["611_vigente", "ampliada_mover"]
+        },
+        {
+          "name": "subsistema",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "item_seguranca",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "notas",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_cdv_pecas_catalogo_numero ON cdv_pecas_catalogo (numero)"
       ]
     }
   ]
