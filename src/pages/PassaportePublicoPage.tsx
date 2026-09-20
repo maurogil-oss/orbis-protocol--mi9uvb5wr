@@ -4,6 +4,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
+  XCircle,
   Copy,
   Check,
   Car,
