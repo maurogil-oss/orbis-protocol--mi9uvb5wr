@@ -26,6 +26,7 @@ import {
   ServicoCobrancaId,
   CobrancaRecord,
 } from '@/services/cobrancaService'
+import { isCnpjDemonstracao } from '@/services/demonstracaoService'
 import {
   listarServicosCatalogoComStatus,
   ServicoCatalogoRecord,

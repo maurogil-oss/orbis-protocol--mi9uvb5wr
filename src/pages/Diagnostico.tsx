@@ -9,6 +9,7 @@ import {
   EmpresaModeloDemonstrativa,
   isCnpjDemonstracao,
   obterModeloDemonstracao,
+  obterModeloDemonstracaoPorRaiz,
   converterModeloParaDadosCNPJ,
 } from '@/services/demonstracaoService'
 import {
@@ -86,6 +87,9 @@ export default function Diagnostico() {
   // CNPJ Consultation State
   const [isConsultingCNPJ, setIsConsultingCNPJ] = useState(false)
   const [cnpjLookupError, setCnpjLookupError] = useState<string>('')
+  const [sugestaoModeloRaiz, setSugestaoModeloRaiz] = useState<EmpresaModeloDemonstrativa | null>(
+    null,
+  )
   const [cnpjSuccessData, setCnpjSuccessData] = useState<DadosEmpresaCNPJ | null>(null)
   const [isModelMode, setIsModelMode] = useState<boolean>(false)
   const [modeloAtivo, setModeloAtivo] = useState<EmpresaModeloDemonstrativa | null>(null)
@@ -177,6 +181,7 @@ export default function Diagnostico() {
     setCnpjLookupError('')
     setCnpjSuccessData(null)
     setIsModelMode(false)
+    setSugestaoModeloRaiz(null)
 
     // 1. Base Demonstrativa Local Pedagógica: Pula consulta externa (BrasilAPI / Minha Receita)
     const matchingModel = obterModeloDemonstracao(digits)
@@ -185,7 +190,18 @@ export default function Diagnostico() {
       return
     }
 
-    // 2. Se não for modelo pedagógico, busca na API pública (BrasilAPI / Minha Receita)
+    // 2. Se não for modelo direto, mas os DVs forem matematicamente inválidos
+    // e a raiz bater com um modelo demo pedagógico (ex.: o usuário digitou o DV antigo 76.123.456/0001-12)
+    if (!isValidCNPJ(digits)) {
+      const modeloPorRaiz = obterModeloDemonstracaoPorRaiz(digits)
+      if (modeloPorRaiz) {
+        setSugestaoModeloRaiz(modeloPorRaiz)
+        setCnpjLookupError('CNPJ inválido (dígitos verificadores incorretos).')
+        return
+      }
+    }
+
+    // 3. Se não for modelo pedagógico, busca na API pública (BrasilAPI / Minha Receita)
     setModeloAtivo(null)
     setIsModelMode(false)
     setIsConsultingCNPJ(true)
@@ -227,6 +243,7 @@ export default function Diagnostico() {
     setModeloAtivo(model)
     setCnpjSuccessData(converterModeloParaDadosCNPJ(model))
     setCnpjLookupError('')
+    setSugestaoModeloRaiz(null)
     setFormData((prev) => ({
       ...prev,
       cnpj: model.cnpj,
@@ -259,6 +276,11 @@ export default function Diagnostico() {
     if (digits.length !== 14) {
       errors.cnpj = 'Informe um CNPJ válido com 14 dígitos'
     } else if (!isValidCNPJ(digits)) {
+      // Se coincidir com a raiz de um modelo de teste, define sugestão
+      const modeloPorRaiz = obterModeloDemonstracaoPorRaiz(digits)
+      if (modeloPorRaiz) {
+        setSugestaoModeloRaiz(modeloPorRaiz)
+      }
       errors.cnpj = 'CNPJ inválido (dígitos verificadores incorretos)'
     }
     if (!formData.razao_social.trim()) {
@@ -748,8 +770,11 @@ export default function Diagnostico() {
                             const formatted = maskCNPJ(e.target.value)
                             setFormData({ ...formData, cnpj: formatted })
                             setCnpjLookupError('')
-                            if (cleanCNPJ(formatted).length === 14) {
+                            const digits = cleanCNPJ(formatted)
+                            if (digits.length === 14) {
                               handleConsultarCNPJ(formatted)
+                            } else {
+                              setSugestaoModeloRaiz(null)
                             }
                           }}
                           onKeyDown={(e) => {
@@ -784,6 +809,36 @@ export default function Diagnostico() {
                     </div>
                     {fieldErrors.cnpj && (
                       <span className="text-xs text-[#F03E54] mt-1 block">{fieldErrors.cnpj}</span>
+                    )}
+
+                    {/* Sugestão UX: Se a raiz corresponder a um modelo pedagógico */}
+                    {sugestaoModeloRaiz && (
+                      <div className="mt-2.5 p-3.5 rounded-xl bg-[#D9B36C]/15 border border-[#D9B36C]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-fade-in">
+                        <div className="flex items-start gap-2 text-[#D9B36C]">
+                          <Sparkles className="w-4 h-4 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-semibold text-[#F4F7FA] block">
+                              Você quis dizer{' '}
+                              <strong className="text-[#D9B36C] font-mono font-bold">
+                                {sugestaoModeloRaiz.cnpj}
+                              </strong>
+                              ?
+                            </span>
+                            <span className="text-[11px] text-[#93A3B5]">
+                              A raiz informada corresponde ao modelo pedagógico &quot;
+                              {sugestaoModeloRaiz.razao_social}&quot; com DVs oficiais calculados.
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => applyModel(sugestaoModeloRaiz)}
+                          className="px-3.5 py-1.5 rounded-lg bg-[#D9B36C] text-[#0A0E12] hover:bg-[#C9A25B] font-bold text-xs uppercase tracking-wider transition-all shadow flex items-center justify-center gap-1.5 shrink-0"
+                        >
+                          <span>Usar modelo {sugestaoModeloRaiz.cnpj}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
 
@@ -1660,6 +1715,7 @@ export default function Diagnostico() {
                         setStep(1)
                         setCnpjSuccessData(null)
                         setCnpjLookupError('')
+                        setSugestaoModeloRaiz(null)
                         setIsModelMode(false)
                         setFormData({
                           cnpj: '',

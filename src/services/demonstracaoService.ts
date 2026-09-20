@@ -6,10 +6,10 @@
  * com pesos 5,4,3,2,9,8,7,6,5,4,3,2 e 6,5,4,3,2,9,8,7,6,5,4,3,2 mantendo as mesmas raízes).
  *
  * Configuração exigida:
- * 1) 76.123.456/0001-49: Lucro Presumido
- * 2) 14.882.310/0001-81: Lucro Real
- * 3) 43.904.740/0001-81: Lucro Real
- * 4) 18.394.029/0001-44: Lucro Presumido
+ * 1) 76.123.456/0001-00: Lucro Presumido
+ * 2) 14.882.310/0001-91: Lucro Real
+ * 3) 43.904.740/0001-65: Lucro Real
+ * 4) 18.394.029/0001-60: Lucro Presumido
  *
  * 2 configurados como Lucro Presumido e 2 como Lucro Real.
  * Razão social pedagógica:
@@ -63,8 +63,8 @@ export const EMPRESAS_MODELO_DEMONSTRACAO: EmpresaModeloDemonstrativa[] = [
   // 1. Modelo Lucro Presumido (Comércio & Distribuição)
   {
     id: 'demo-lp-1',
-    cnpj: '76.123.456/0001-49',
-    cnpjLimpo: '76123456000149',
+    cnpj: '76.123.456/0001-00',
+    cnpjLimpo: '76123456000100',
     razao_social: 'Empresa Demonstrativa — Lucro Presumido Ltda.',
     nome_fantasia: 'Demonstração Orbis Protocol — Modelo Presumido 1',
     regime_tributario: 'Lucro Presumido',
@@ -100,8 +100,8 @@ export const EMPRESAS_MODELO_DEMONSTRACAO: EmpresaModeloDemonstrativa[] = [
   // 2. Modelo Lucro Real (Indústria Metalmecânica)
   {
     id: 'demo-lr-1',
-    cnpj: '14.882.310/0001-81',
-    cnpjLimpo: '14882310000181',
+    cnpj: '14.882.310/0001-91',
+    cnpjLimpo: '14882310000191',
     razao_social: 'Empresa Demonstrativa — Lucro Real S.A.',
     nome_fantasia: 'Demonstração Orbis Protocol — Modelo Lucro Real 1',
     regime_tributario: 'Lucro Real',
@@ -137,8 +137,8 @@ export const EMPRESAS_MODELO_DEMONSTRACAO: EmpresaModeloDemonstrativa[] = [
   // 3. Modelo Lucro Real (Logística Pesada & Emissões Severas)
   {
     id: 'demo-lr-2',
-    cnpj: '43.904.740/0001-81',
-    cnpjLimpo: '43904740000181',
+    cnpj: '43.904.740/0001-65',
+    cnpjLimpo: '43904740000165',
     razao_social: 'Empresa Demonstrativa — Lucro Real S.A.',
     nome_fantasia: 'Demonstração Orbis Protocol — Modelo Lucro Real 2',
     regime_tributario: 'Lucro Real',
@@ -175,8 +175,8 @@ export const EMPRESAS_MODELO_DEMONSTRACAO: EmpresaModeloDemonstrativa[] = [
   // 4. Modelo Lucro Presumido (Desmontagem Veicular CDV / MOVER)
   {
     id: 'demo-lp-2',
-    cnpj: '18.394.029/0001-44',
-    cnpjLimpo: '18394029000144',
+    cnpj: '18.394.029/0001-60',
+    cnpjLimpo: '18394029000160',
     razao_social: 'Empresa Demonstrativa — Lucro Presumido Ltda.',
     nome_fantasia: 'Demonstração Orbis Protocol — CDV Modelo Presumido',
     regime_tributario: 'Lucro Presumido',
@@ -233,6 +233,25 @@ export function isCnpjDemonstracao(cnpjInput: string): boolean {
 export function obterModeloDemonstracao(cnpjInput: string): EmpresaModeloDemonstrativa | null {
   const digits = cleanCNPJ(cnpjInput)
   return MAPA_MODELOS_CNPJ.get(digits) || null
+}
+
+/**
+ * Retorna uma empresa-modelo cuja raiz de 8 ou 12 dígitos coincida com o CNPJ informado.
+ * Útil para sugerir correção pedagógica quando o usuário digita DVs antigos ou incorretos
+ * mantendo a raiz de um modelo de teste (ex.: raiz 76123456 ou 761234560001).
+ */
+export function obterModeloDemonstracaoPorRaiz(
+  cnpjInput: string,
+): EmpresaModeloDemonstrativa | null {
+  const digits = cleanCNPJ(cnpjInput)
+  if (digits.length < 8) return null
+  const raiz8 = digits.slice(0, 8)
+  for (const modelo of EMPRESAS_MODELO_DEMONSTRACAO) {
+    if (modelo.cnpjLimpo.startsWith(raiz8)) {
+      return modelo
+    }
+  }
+  return null
 }
 
 /**

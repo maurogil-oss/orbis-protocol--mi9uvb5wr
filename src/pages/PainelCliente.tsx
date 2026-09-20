@@ -862,7 +862,7 @@ export default function PainelCliente() {
           <div className="mb-10">
             <ConsoleApisCdvTab
               cdvNome={currentLead?.razao_social || 'CDVerde Centro de Desmontagem Veicular'}
-              cdvCnpj={currentLead?.cnpj || '76.123.456/0001-49'}
+              cdvCnpj={currentLead?.cnpj || '76.123.456/0001-00'}
               cdvCodigo="DETRAN-PR-CDV-0089"
             />
           </div>

@@ -449,7 +449,9 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
               <h4 className="font-bold text-[#F4F7FA] text-xs">Dados do Outorgado</h4>
               <p className="text-[11px] text-[#93A3B5] leading-relaxed">
                 Informe o CNPJ do Bureau ACP:{' '}
-                <strong className="text-[#12B886] font-mono block mt-1">76.123.456/0001-12</strong>
+                <strong className="text-[#12B886] font-mono block mt-1">
+                  76.123.456/0001-00
+                </strong>{' '}
               </p>
             </div>
 

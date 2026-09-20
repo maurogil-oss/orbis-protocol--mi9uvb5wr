@@ -291,7 +291,7 @@ export default function Verificador() {
                     setCodigoInput(e.target.value)
                     setSearchError('')
                   }}
-                  placeholder="Ex.: ORB-2024-0001 ou 76.123.456/0001-12"
+                  placeholder="Ex.: ORB-2024-0001 ou 76.123.456/0001-00"
                   className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] font-mono text-sm"
                   required
                 />
