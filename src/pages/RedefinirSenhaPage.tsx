@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
 import { Lock, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, ShieldAlert } from 'lucide-react'
+import { validarSenhaForte } from '@/lib/passwordPolicy'
 
 export default function RedefinirSenhaPage() {
   const [searchParams] = useSearchParams()
@@ -111,7 +112,7 @@ export default function RedefinirSenhaPage() {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-                Nova Senha (Mínimo 8 caracteres)
+                Nova Senha (Mínimo 10 caracteres, 1 maiúscula, 1 minúscula e 1 número)
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
@@ -119,8 +120,8 @@ export default function RedefinirSenhaPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={8}
+                  placeholder="••••••••••"
+                  minLength={10}
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
                   required
                 />
@@ -137,8 +138,8 @@ export default function RedefinirSenhaPage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={8}
+                  placeholder="••••••••••"
+                  minLength={10}
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
                   required
                 />
