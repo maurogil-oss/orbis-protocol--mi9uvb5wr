@@ -63,7 +63,9 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
           let uChanged = false
           if (!uRec.getString('cliente_codigo')) {
             const randSuffix = Math.floor(1000 + Math.random() * 9000)
-            uRec.set('cliente_codigo', `ORB-CLI-${randSuffix}`)
+            const role = uRec.getString('role')
+            const prefix = role === 'cliente_acp' ? 'ORB-ACP-' : 'ORB-CLI-'
+            uRec.set('cliente_codigo', `${prefix}${randSuffix}`)
             uChanged = true
           }
           if (rec.getString('tomador_cpf_cnpj') && !uRec.getString('cnpj')) {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T01:01:02.806Z",
+  "generatedAt": "2026-09-20T12:03:36.126Z",
   "collections": [
     {
       "name": "users",
@@ -43,7 +43,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["admin", "perito", "cliente", "financeiro_leitor"]
+          "selectValues": ["admin", "perito", "cliente", "financeiro_leitor", "cliente_acp"]
         },
         {
           "name": "cliente_codigo",

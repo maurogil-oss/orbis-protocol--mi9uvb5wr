@@ -1,128 +1,156 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
+import { NumerosVerificaveisSection } from '@/components/NumerosVerificaveisSection'
 import {
   ShieldCheck,
   ArrowRight,
-  Database,
-  FileCheck,
   TrendingDown,
-  Layers,
   ChevronRight,
-  Sparkles,
   ExternalLink,
   Award,
-  BarChart3,
+  Layers,
+  Sparkles,
+  Building2,
+  ShoppingCart,
+  UserCheck,
   CheckCircle2,
-  Lock,
-  Boxes,
-  ScrollText,
+  FileCheck2,
+  Cpu,
   Search,
+  Scale,
+  Car,
+  QrCode,
+  Lock,
 } from 'lucide-react'
 
 export default function Index() {
-  const pilares = [
+  // Bloco de entrada por papel (Item 3)
+  // Rótulos exatos: 'Sou empresa', 'Sou comprador', 'Sou perito', 'Sou cliente ACP'
+  const papeisEntrada = [
     {
-      icon: ShieldCheck,
-      tag: 'ANTIFRAUDE TRIBUTÁRIA',
-      title: 'Comprovação sem Greenwashing',
-      desc: 'Evidências técnicas e atestados probatórios baseados em notas fiscais oficiais (SEFAZ) e dados primários de campo, eliminando declarações corporativas sem lastro.',
+      rotulo: 'Sou empresa',
+      subtitulo: 'Indústrias, manufatura, geradores de emissões e frotas corporativas',
+      papelParam: 'empresa',
+      targetRole: 'cliente',
+      descricao:
+        'Diagnóstico SBCE por CNPJ, inventário GHG Escopos 1, 2 e 3 e importação automatizada de SPED/NF-e.',
+      beneficio: 'Mitigação de risco regulatório e laudo pericial auditável',
+      icon: Building2,
+      corBadge: 'bg-[#12B886]/10 text-[#12B886]',
+      bordaHover: 'hover:border-[#12B886]',
     },
     {
-      icon: Database,
-      tag: 'RASTREIO DE EXTREMO A EXTREMO',
-      title: 'Rastreabilidade Completa',
-      desc: 'Acompanhamento sequencial de cada nota fiscal, lote de insumo, transporte e destinação de resíduos ao longo de toda a cadeia de fornecedores e clientes.',
+      rotulo: 'Sou comprador',
+      subtitulo: 'Grandes corporações, compras sustentáveis e gestores de suprimentos',
+      papelParam: 'comprador',
+      targetRole: 'cliente',
+      descricao:
+        'Conferência do Passaporte Digital de Produto dos fornecedores, lastro de reciclagem e relatórios IFRS S1/S2.',
+      beneficio: 'Rastreabilidade de Escopo 3 sem risco de greenwashing',
+      icon: ShoppingCart,
+      corBadge: 'bg-[#12B886]/10 text-[#12B886]',
+      bordaHover: 'hover:border-[#12B886]',
     },
     {
-      icon: TrendingDown,
-      tag: 'EFICIÊNCIA FINANCEIRA',
-      title: 'Sustentabilidade & Caixa',
-      desc: 'Métricas de carbono (GHG Protocol Escopos 1, 2 e 3), eficiência de recursos e cálculo de economia fiscal e redução de taxas em financiamentos bancários.',
+      rotulo: 'Sou perito',
+      subtitulo: 'Engenheiros CREA, contadores CRC e auditores independentes de carbono',
+      papelParam: 'perito',
+      targetRole: 'perito',
+      descricao:
+        'Chancela pericial de inventários, validação NBC TO 3000 do CFC e vinculação direta de ART/RRT homologada.',
+      beneficio: 'Credenciamento profissional remunerado na rede Orbis',
+      icon: UserCheck,
+      corBadge: 'bg-[#12B886]/10 text-[#12B886]',
+      bordaHover: 'hover:border-[#12B886]',
     },
     {
-      icon: Layers,
-      tag: 'PADRONIZAÇÃO GLOBAL',
-      title: 'Dados Oficiais e Padronizados',
-      desc: 'Calibração preparatória com diretrizes do IPCC, normas ABNT ISO 14064, matriz energética oficial do SIN/MCTI e alinhamento à Lei 15.042/2024 (SBCE).',
-    },
-  ]
-
-  const passos = [
-    {
-      step: '01',
-      title: 'Diagnóstico Setorial',
-      desc: 'Mapeamento das atividades produtivas, identificação de fatores críticos de impacto e enquadramento na cadeia aplicável.',
-    },
-    {
-      step: '02',
-      title: 'Fatores Oficiais',
-      desc: 'Aplicação automática de fatores de emissão oficiais e reconhecidos (MCTI, IPCC, SIN, ABNT) para o setor e localização.',
-    },
-    {
-      step: '03',
-      title: 'Ingestão & Validação',
-      desc: 'Diagnóstico documental, preparação para ingestão de dados fiscais (SPED/NF-e em implantação) e verificação técnica de consistência pericial.',
-    },
-    {
-      step: '04',
-      title: 'Emissão de Laudos',
-      desc: 'Geração de relatórios técnicos completos e laudos periciais com lastro probatório para auditorias e compliance regulatório.',
-    },
-    {
-      step: '05',
-      title: 'Selo Oficial',
-      desc: 'Concessão de selo digital verificável com QR Code dinâmico, atestando autenticidade para rótulos, clientes e investidores.',
+      rotulo: 'Sou cliente ACP',
+      subtitulo: 'Empresas associadas à Associação Comercial do Paraná e rede ACP',
+      papelParam: 'acp',
+      targetRole: 'cliente_acp',
+      descricao:
+        'Identificador corporativo ORB-ACP-XXXX com entrada direta no Painel ACP / dMRV sem passar pelo funil prévio.',
+      beneficio: 'Acesso prioritário a linhas de crédito verde e bureau contínuo',
+      icon: Sparkles,
+      corBadge: 'bg-[#D9B36C]/10 text-[#D9B36C]',
+      bordaHover: 'hover:border-[#D9B36C]',
     },
   ]
 
-  const regulamentacoesCards = [
+  // 3 Eixos Narrativos (Item 3)
+  const eixosNarrativos = [
     {
-      lei: 'Lei 15.042/2024',
-      nome: 'Diretrizes do Sistema Brasileiro de Comércio de Emissões (SBCE)',
-      impacto:
-        'Preparação documental e inventários técnicos alinhados aos limiares do SBCE (reporte a partir de 10.000 tCO2e/ano e metas acima de 25.000 tCO2e/ano).',
+      id: 'descarbonizacao',
+      tag: 'EIXO 1 • DESCARBONIZAÇÃO',
+      titulo: 'SBCE, IFRS S1-S2 & dMRV Digital',
+      badgeNorma: 'Lei 15.042/2024 • Resolução CVM 193',
+      destaque: 'Auditoria digital contínua de carbono (dMRV)',
+      itens: [
+        'Enquadramento automático nos limiares do SBCE (reporte a partir de 10.000 tCO2e/ano e metas obrigatórias acima de 25.000 tCO2e/ano).',
+        'Inventário de GEE nos Escopos 1, 2 e 3 com fatores oficiais de emissão (MCTI, IPCC AR6, SIN) e taxonomia GHG Protocol.',
+        'Divulgações de sustentabilidade e clima alinhadas aos padrões globais IFRS S1 (Requisitos Gerais) e IFRS S2 (Clima), acolhidos pela CVM 193.',
+        'Eliminação do greenwashing por meio de hashes SHA-256 canônicos e chancela de peritos com ART/RRT acoplada.',
+      ],
+      linkTexto: 'Calcular enquadramento SBCE',
+      linkUrl: '/diagnostico',
+      corIcon: 'text-[#12B886]',
+      bordaCard: 'border-[#12B886]/30',
     },
     {
-      lei: 'Lei 14.902/2024',
-      nome: 'Programa MOVER (Automotivo & CDV)',
-      impacto:
-        'Créditos de IPI específicos para montadoras, importadores e Centrais de Desmontagem de Veículos (CDVs DETRAN) via Passaporte Digital de Produto.',
+      id: 'tributaria',
+      tag: 'EIXO 2 • CONFORMIDADE TRIBUTÁRIA',
+      titulo: 'Lei 15.042/2024 & Programa MOVER',
+      badgeNorma: 'Lei 14.902/2024 • Reforma Tributária (EC 132/2023)',
+      destaque: 'Segurança fiscal e monetização de créditos',
+      itens: [
+        'Governança fiscal robusta para habilitação aos incentivos fiscais e créditos financeiros do Programa MOVER (Mobilidade Verde e Inovação).',
+        'Interoperabilidade com notas fiscais eletrônicas (NF-e/SPED) diretamente da SEFAZ para apuração de créditos e fatores tributários.',
+        'Diagnóstico do Imposto Seletivo e futura transição para a CBS/IBS da Reforma Tributária com simulação de impacto financeiro.',
+        'Geração de dossiês probatórios defensáveis perante auditorias fiscais, bancos de fomento (BRDE/BNDES) e agências reguladoras.',
+      ],
+      linkTexto: 'Conhecer dossiê MOVER',
+      linkUrl: '/mover',
+      corIcon: 'text-[#D9B36C]',
+      bordaCard: 'border-[#D9B36C]/30',
     },
     {
-      lei: 'Resolução CVM 193 / IFRS S1 & S2',
-      nome: 'Divulgação Climática Voluntária e Asseguração',
-      impacto:
-        'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração e governança de sustentabilidade para o mercado de capitais.',
-    },
-    {
-      lei: 'Resolução BCB 4.945/2021',
-      nome: 'Exigências ESG de Credores e Instituições Financeiras',
-      impacto:
-        'Preparação para as exigências da Política PRSAC aplicadas pelos bancos credores, viabilizando melhores condições de financiamento verde.',
+      id: 'circularidade',
+      tag: 'EIXO 3 • CIRCULARIDADE',
+      titulo: 'Decreto 11.413/2023 & Passaporte de Produto',
+      badgeNorma: 'Decreto Federal 11.413/2023 • Logística Reversa',
+      destaque: 'Lastro probatório e balanço de massa',
+      itens: [
+        'Comprovação de logística reversa e conformidade com o Decreto 11.413/2023 para frações prioritárias (óleos lubrificantes/OLUC, baterias, pneus e embalagens).',
+        'Passaporte Digital de Produto (DPP) peça a peça com QR Code dinâmico e rastreabilidade da baixa do DETRAN até o destinador final.',
+        'Emissão formal de Lastro de Circularidade segregado de metais e materiais convencionais, vedando simulações sem comprovação física.',
+        'Interoperabilidade com manifestos MTR-SINIR para emissão e homologação de CCRLR junto a entidades gestoras credenciadas.',
+      ],
+      linkTexto: 'Explorar Passaporte Digital',
+      linkUrl: '/passaporte-lote/PR-BX-2026-1240105',
+      corIcon: 'text-[#12B886]',
+      bordaCard: 'border-[#12B886]/30',
     },
   ]
 
   return (
     <div className="flex flex-col w-full overflow-x-hidden">
-      {/* 1. HERO SECTION */}
+      {/* 1. HERO SECTION SIMPLIFICADO */}
+      {/* Regra: 1 CTA primário ('Iniciar Diagnóstico') e demais CTAs secundários discretos ('Conhecer o Protocolo', 'Criar conta'). Sem badge 'ATIVO'. */}
       <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 bg-[#0A0E12] border-b border-[rgba(244,247,250,0.08)]">
-        {/* Subtle Ambient Radial Glows */}
+        {/* Glows de ambientação */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] max-w-full h-[360px] bg-gradient-to-b from-[#D9B36C]/10 via-[#12B886]/10 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[500px] max-w-full h-[300px] bg-[#12B886]/10 blur-[120px] pointer-events-none" />
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-            {/* Top Security Badge */}
+            {/* Top Security Header (Sem badge 'ATIVO') */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-8 shadow-sm">
               <ShieldCheck className="w-4 h-4 text-[#12B886]" />
               <span>ORBIS PROTOCOL • AUDIT GRADE dMRV</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#12B886]/20 text-[#12B886]">
-                ATIVO
-              </span>
             </div>
 
-            {/* Main Hero Headline */}
+            {/* Headline Principal */}
             <h1 className="font-heading font-extrabold text-3xl sm:text-5xl md:text-6xl text-[#F4F7FA] tracking-[0.03em] leading-[1.1] mb-6">
               INFRAESTRUTURA DE COMPROVAÇÃO E{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#12B886] via-[#27C08C] to-[#D9B36C]">
@@ -132,44 +160,50 @@ export default function Index() {
 
             {/* Sub-headline */}
             <p className="font-heading text-lg sm:text-xl md:text-2xl text-[#93A3B5] font-semibold tracking-wide mb-6">
-              para Descarbonização e Governança Tributária
+              para Descarbonização, Governança Tributária e Circularidade
             </p>
 
-            {/* Paragraph Description */}
+            {/* Descrição em parágrafo */}
             <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed max-w-2xl mb-10">
               A plataforma que transforma notas fiscais e dados operacionais em{' '}
               <strong className="text-[#F4F7FA] font-semibold">
                 laudos periciais de descarbonização
               </strong>
               , <strong className="text-[#F4F7FA] font-semibold">conformidade tributária</strong> e{' '}
-              <strong className="text-[#F4F7FA] font-semibold">selos de sustentabilidade</strong>{' '}
-              aceitos por grandes clientes e pelo sistema financeiro (bancos públicos e privados).
+              <strong className="text-[#F4F7FA] font-semibold">
+                passaportes digitais de produto
+              </strong>{' '}
+              aceitos por grandes compradores e pelo sistema financeiro.
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            {/* CTAs do Hero: 1 Primário em destaque + Secundários discretos */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
+              {/* CTA Primário Único */}
               <Link
                 to="/diagnostico"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-base font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
               >
-                <span>Iniciar Diagnóstico por CNPJ</span>
+                <span>Iniciar Diagnóstico</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link
-                to="/registro"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold border border-[#12B886]/60 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all bg-[#111820]/80 shadow-sm"
-              >
-                <span>Criar Conta Gratuita</span>
-              </Link>
+
+              {/* CTAs Secundários Discretos */}
               <a
-                href="#o-que-e"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold border border-[rgba(244,247,250,0.2)] text-[#93A3B5] hover:border-[#F4F7FA] hover:text-[#F4F7FA] transition-all bg-[#111820]/40"
+                href="#eixos-narrativos"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-medium border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] hover:border-[#12B886]/50 hover:bg-[#111820] transition-all"
               >
                 <span>Conhecer o Protocolo</span>
               </a>
+
+              <Link
+                to="/registro"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-medium border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] hover:border-[#12B886]/50 hover:bg-[#111820] transition-all"
+              >
+                <span>Criar conta</span>
+              </Link>
             </div>
 
-            {/* Rotating Emblem in Hero */}
+            {/* Globo Orbis rotativo no Hero */}
             <div className="mt-16 flex flex-col items-center gap-3">
               <div className="p-3.5 rounded-full bg-[#111820]/90 border border-[#12B886]/40 shadow-2xl relative group">
                 <div className="absolute inset-0 rounded-full bg-[#12B886]/20 blur-md group-hover:scale-125 transition-transform" />
@@ -184,43 +218,73 @@ export default function Index() {
         </div>
       </section>
 
-      {/* 2. SECTION: O QUE É O ORBIS PROTOCOL */}
-      <section id="o-que-e" className="py-20 md:py-28 bg-[#0A0E12] relative scroll-mt-32">
+      {/* 2. NOVA SEÇÃO: NÚMEROS VERIFICÁVEIS */}
+      {/* Contagens REAIS do PocketBase: selos emitidos, lastros, manifestos MTR-SINIR, peças rastreadas, dpp_consultas */}
+      {/* Regra crítica: se for zero, exibe o módulo SEM o número */}
+      <NumerosVerificaveisSection />
+
+      {/* 3. BLOCO DE ENTRADA POR PAPEL */}
+      {/* Rótulos exatos: 'Sou empresa', 'Sou comprador', 'Sou perito', 'Sou cliente ACP' */}
+      {/* Todos levam para /registro com o perfil pré-selecionado */}
+      <section className="py-20 md:py-28 bg-[#0A0E12] relative">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D9B36C] block mb-2">
-              ARQUITETURA INTEGRADA
+              ACESSO DIRECIONADO
             </span>
             <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-4">
-              O QUE É O ORBIS PROTOCOL
+              COMO VOCÊ SE CONECTA AO ORBIS PROTOCOL?
             </h2>
             <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed">
-              O Orbis Protocol é a infraestrutura tecnológica que padroniza comprovação e
-              rastreabilidade para cadeias produtivas globais e regionais. Conectamos diagnósticos
-              independentes, fatores oficiais de cálculo reconhecidos internacionalmente, laudos
-              técnicos auditáveis e a emissão de selos de sustentabilidade invioláveis.
+              Selecione o seu papel para acessar a plataforma com o fluxo de credenciamento e
+              recursos adequados à sua atuação.
             </p>
           </div>
 
-          {/* 4 Pillars Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {pilares.map((pilar, idx) => {
-              const Icon = pilar.icon
+            {papeisEntrada.map((papel, idx) => {
+              const Icon = papel.icon
+              const destino = `/registro?papel=${papel.papelParam}`
+
               return (
                 <div
                   key={idx}
-                  className="group relative flex flex-col p-6 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886] hover:bg-[#16202B] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
+                  className={`flex flex-col justify-between p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] ${papel.bordaHover} hover:bg-[#16202B] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group`}
                 >
-                  <div className="w-12 h-12 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.12)] flex items-center justify-center mb-5 text-[#12B886] group-hover:scale-110 group-hover:bg-[#12B886]/10 transition-all">
-                    <Icon className="w-6 h-6" />
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="w-12 h-12 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.1)] flex items-center justify-center text-[#12B886] group-hover:scale-110 group-hover:bg-[#12B886]/10 transition-all">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span
+                        className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${papel.corBadge}`}
+                      >
+                        {papel.rotulo}
+                      </span>
+                    </div>
+
+                    <h3 className="font-heading font-bold text-lg text-[#F4F7FA] mb-1 group-hover:text-[#12B886] transition-colors">
+                      {papel.rotulo}
+                    </h3>
+                    <p className="text-xs font-medium text-[#D9B36C] mb-3">{papel.subtitulo}</p>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed mb-4">{papel.descricao}</p>
+
+                    <div className="p-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] text-[11px] text-[#93A3B5] mb-6">
+                      <span className="text-[#F4F7FA] font-semibold block mb-0.5">
+                        Diferencial:
+                      </span>
+                      {papel.beneficio}
+                    </div>
                   </div>
-                  <span className="text-[11px] font-bold tracking-wider uppercase text-[#D9B36C] mb-2 block">
-                    {pilar.tag}
-                  </span>
-                  <h3 className="font-heading font-bold text-lg text-[#F4F7FA] mb-3 group-hover:text-[#12B886] transition-colors">
-                    {pilar.title}
-                  </h3>
-                  <p className="text-sm text-[#93A3B5] leading-relaxed flex-1">{pilar.desc}</p>
+
+                  <Link
+                    to={destino}
+                    state={{ papel: papel.papelParam, role: papel.targetRole }}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] group-hover:bg-[#12B886] group-hover:text-[#0A0E12] group-hover:border-[#12B886] transition-all"
+                  >
+                    <span>Entrar como {papel.rotulo}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               )
             })}
@@ -228,90 +292,72 @@ export default function Index() {
         </div>
       </section>
 
-      {/* 3. SECTION: METODOLOGIA (5 PASSOS) */}
-      <section className="py-20 md:py-28 bg-[#0D1217] border-y border-[rgba(244,247,250,0.08)]">
+      {/* 4. HOME EM 3 EIXOS NARRATIVOS */}
+      {/* Eixo 1: Descarbonização (SBCE/IFRS S1-S2, dMRV) */}
+      {/* Eixo 2: Conformidade Tributária (Lei 15.042/2024, Programa MOVER) */}
+      {/* Eixo 3: Circularidade (Decreto 11.413/2023, Passaporte de Produto, Lastro de Circularidade) */}
+      {/* Sem nada sobre catadores */}
+      <section
+        id="eixos-narrativos"
+        className="py-20 md:py-28 bg-[#0D1217] border-y border-[rgba(244,247,250,0.08)] scroll-mt-24"
+      >
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#12B886] block mb-2">
-              METODOLOGIA PROBATÓRIA
+              ARQUITETURA DE VALOR
             </span>
             <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-4">
-              COMO FUNCIONA O ORBIS PROTOCOL
+              OS 3 EIXOS NARRATIVOS DO ORBIS PROTOCOL
             </h2>
-            <p className="text-base sm:text-lg text-[#93A3B5]">
-              Da identificação do CNPJ à emissão de atestados auditáveis aceitos por grandes
-              compradores e pelo sistema financeiro.
+            <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed">
+              Integração técnica entre compromissos climáticos, incentivos fiscais e rastreio de
+              materiais para mitigar riscos e gerar valor financeiro real.
             </p>
           </div>
 
-          {/* Timeline */}
-          <div className="relative">
-            {/* Desktop connecting line */}
-            <div className="hidden lg:block absolute top-1/4 left-10 right-10 h-0.5 bg-gradient-to-r from-[#12B886]/20 via-[#12B886] to-[#D9B36C]/40 -z-0" />
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 relative z-10">
-              {passos.map((passo, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col p-6 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/60 transition-all hover:-translate-y-1"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-heading font-black text-3xl text-transparent bg-clip-text bg-gradient-to-b from-[#12B886] to-[#12B886]/30">
-                      {passo.step}
-                    </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded bg-[#16202B] text-[#93A3B5]">
-                      FASE {passo.step}
-                    </span>
-                  </div>
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA] mb-2">
-                    {passo.title}
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">{passo.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. SECTION: REGULAMENTAÇÕES EM DESTAQUE */}
-      <section className="py-20 md:py-28 bg-[#0A0E12]">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D9B36C] block mb-2">
-                SEGURANÇA JURÍDICA & COMPLIANCE
-              </span>
-              <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA]">
-                MARCO REGULATÓRIO INTEGRADO
-              </h2>
-            </div>
-            <Link
-              to="/trilhas"
-              className="inline-flex items-center gap-1.5 text-sm text-[#12B886] font-semibold hover:underline"
-            >
-              <span>Ver todas as trilhas regulatórias</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {regulamentacoesCards.map((reg, idx) => (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {eixosNarrativos.map((eixo) => (
               <div
-                key={idx}
-                className="p-6 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.12)] flex flex-col justify-between hover:border-[rgba(244,247,250,0.25)] transition-all"
+                key={eixo.id}
+                className={`p-6 sm:p-8 rounded-2xl bg-[#111820] border ${eixo.bordaCard} flex flex-col justify-between hover:border-[rgba(244,247,250,0.3)] transition-all duration-300 hover:shadow-2xl`}
               >
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#16202B] text-[#12B886] text-xs font-bold tracking-wider uppercase mb-3">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#12B886]" />
-                    {reg.lei}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D9B36C]">
+                      {eixo.tag}
+                    </span>
                   </div>
-                  <h3 className="font-heading font-bold text-lg text-[#F4F7FA] mb-2">{reg.nome}</h3>
-                  <p className="text-sm text-[#93A3B5] leading-relaxed">{reg.impacto}</p>
+
+                  <h3 className="font-heading font-extrabold text-xl sm:text-2xl text-[#F4F7FA] mb-2 leading-tight">
+                    {eixo.titulo}
+                  </h3>
+
+                  <div className="inline-block px-3 py-1 rounded bg-[#16202B] text-xs font-mono text-[#93A3B5] mb-5 border border-[rgba(244,247,250,0.08)]">
+                    {eixo.badgeNorma}
+                  </div>
+
+                  <p className="text-xs sm:text-sm font-semibold text-[#12B886] mb-4">
+                    {eixo.destaque}
+                  </p>
+
+                  <ul className="space-y-3 mb-8">
+                    {eixo.itens.map((it, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-xs text-[#93A3B5]">
+                        <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">{it}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="mt-5 pt-4 border-t border-[rgba(244,247,250,0.08)] flex items-center justify-between text-xs text-[#93A3B5]">
-                  <span className="text-[#D9B36C] font-semibold">Exigência ativa</span>
-                  <span>Impacto Fiscal & Spread</span>
+
+                <div className="pt-4 border-t border-[rgba(244,247,250,0.08)]">
+                  <Link
+                    to={eixo.linkUrl}
+                    className="inline-flex items-center gap-2 text-xs font-bold text-[#12B886] hover:text-[#0CA678] transition-colors"
+                  >
+                    <span>{eixo.linkTexto}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </div>
             ))}
@@ -319,7 +365,135 @@ export default function Index() {
         </div>
       </section>
 
-      {/* 5. SECTION: CTAs E CAMINHOS RÁPIDOS */}
+      {/* 5. BLOCO DEDICADO DE CIRCULARIDADE (Item 5) */}
+      {/* Links diretos para Passaporte de Produto e Verificador público de selos/lastros */}
+      <section className="py-20 md:py-28 bg-[#0A0E12] relative overflow-hidden">
+        {/* Glow de fundo */}
+        <div className="absolute top-1/2 right-0 w-[500px] h-[300px] bg-[#12B886]/10 blur-[140px] pointer-events-none" />
+
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
+          <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-[#111820] via-[#16202B] to-[#111820] border border-[#12B886]/40 shadow-2xl relative overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-7 space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#12B886]/10 border border-[#12B886]/30 text-[#12B886] text-xs font-semibold uppercase tracking-wider">
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>Passaporte Digital de Produto & Lastro de Circularidade</span>
+                </div>
+
+                <h2 className="font-heading font-black text-2xl sm:text-3xl md:text-4xl text-[#F4F7FA] leading-tight">
+                  CIRCULARIDADE COM PROVA CRIPTOGRÁFICA DE ORIGEM E DESTINAÇÃO
+                </h2>
+
+                <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
+                  Conectamos a baixa oficial de veículos no DETRAN, balanço de massa, emissões de
+                  CO2e evitadas e destinação final homologada no SINIR. Sem declarações corporativas
+                  vazias.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="p-3.5 rounded-xl bg-[#0A0E12]/80 border border-[rgba(244,247,250,0.08)] flex items-start gap-2.5">
+                    <QrCode className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <span className="font-bold text-[#F4F7FA] block">QR Code Dinâmico</span>
+                      <span className="text-[#93A3B5]">
+                        Acesso público instantâneo por peça e por lote veicular
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-[#0A0E12]/80 border border-[rgba(244,247,250,0.08)] flex items-start gap-2.5">
+                    <Lock className="w-4 h-4 text-[#D9B36C] shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <span className="font-bold text-[#F4F7FA] block">Lastro Inviolável</span>
+                      <span className="text-[#93A3B5]">
+                        Hash SHA-256 canônico gerado sob o Decreto 11.413/2023
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-4">
+                  {/* Link direto para Passaporte de Produto */}
+                  <Link
+                    to="/passaporte-lote/PR-BX-2026-1240105"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.01] transition-all shadow-emerald-glow"
+                  >
+                    <span>Abrir Passaporte de Produto (DPP)</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+
+                  {/* Link direto para Verificador público de selos e lastros */}
+                  <Link
+                    to="/verificador"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold border border-[#D9B36C]/60 text-[#D9B36C] hover:bg-[#D9B36C] hover:text-[#0A0E12] transition-all bg-[#111820]"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Verificador Público de Selos & Lastros</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Prévia interativa do Passaporte */}
+              <div className="lg:col-span-5">
+                <div className="p-5 sm:p-6 rounded-2xl bg-[#0A0E12] border border-[#12B886]/30 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[rgba(244,247,250,0.08)]">
+                    <span className="text-[11px] font-mono text-[#12B886] font-bold">
+                      DEMO OPERACIONAL • CDVERDE
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono">
+                      DECRETO 11.413
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-xs text-[#93A3B5]">Lote de Desmontagem Veicular:</div>
+                    <div className="font-heading font-bold text-sm text-[#F4F7FA]">
+                      Renault Clio Authentique 1.0 16V Hi-Flex
+                    </div>
+                    <div className="text-[11px] font-mono text-[#D9B36C]">
+                      Baixa DETRAN: PR-BX-2026-1240105
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <div className="p-2.5 rounded-lg bg-[#16202B] text-center">
+                      <span className="text-[10px] text-[#93A3B5] uppercase block">
+                        CO2e Evitado
+                      </span>
+                      <span className="font-heading font-black text-sm text-[#12B886]">
+                        1.584,81 kg
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-[#16202B] text-center">
+                      <span className="text-[10px] text-[#93A3B5] uppercase block">
+                        Peças Rastreáveis
+                      </span>
+                      <span className="font-heading font-black text-sm text-[#F4F7FA]">
+                        49 componentes
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 text-[11px] text-[#93A3B5] flex items-center justify-between">
+                    <Link
+                      to="/solucoes/case-cdverde"
+                      className="text-[#12B886] hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>Ler estudo de caso completo</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </Link>
+                    <Link to="/verificador" className="text-[#D9B36C] hover:underline">
+                      Auditar hash →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. SECTION: CTAs FINAIS */}
       <section className="py-16 bg-gradient-to-b from-[#111820] to-[#0A0E12] border-t border-[rgba(244,247,250,0.12)]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="p-8 sm:p-12 rounded-2xl bg-gradient-to-r from-[#111820] via-[#16202B] to-[#111820] border border-[#12B886]/40 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl">

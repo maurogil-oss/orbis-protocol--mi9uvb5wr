@@ -105,6 +105,7 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
 
     expect(screen.getByRole('heading', { name: /CRIAR SUA CONTA/i })).toBeDefined()
     expect(screen.getByText(/Cliente \/ Empresa/i)).toBeDefined()
+    expect(screen.getByText(/Cliente ACP/i)).toBeDefined()
     expect(screen.getByText(/Perito Técnico/i)).toBeDefined()
 
     // Link para login existente
@@ -199,6 +200,45 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     })
 
     expect(await screen.findByText(/Conta criada e autenticada com sucesso!/i)).toBeDefined()
+  })
+
+  it('Página /registro suporta cadastro como Cliente ACP com role="cliente_acp" e pré-seleção via query/state', async () => {
+    const mockCreate = vi.fn().mockResolvedValue({ id: 'new-acp-123' })
+    vi.mocked(pb.collection).mockReturnValue({
+      create: mockCreate,
+    } as any)
+
+    render(
+      <MemoryRouter initialEntries={['/registro?papel=acp']}>
+        <RegistroPage />
+      </MemoryRouter>,
+    )
+
+    // Preenche campos
+    const nomeInput = screen.getByPlaceholderText(/Maria Silva ou Indústria Alfa Ltda/i)
+    const emailInput = screen.getByPlaceholderText(/seu\.email@empresa\.com\.br/i)
+    const senhas = screen.getAllByPlaceholderText(/••••••••/i)
+    const checkboxTermo = screen.getByRole('checkbox')
+
+    fireEvent.change(nomeInput, { target: { value: 'Associada ACP Curitiba S.A.' } })
+    fireEvent.change(emailInput, { target: { value: 'acp@associada.com.br' } })
+    fireEvent.change(senhas[0], { target: { value: 'SenhaForteACP2026' } })
+    fireEvent.change(senhas[1], { target: { value: 'SenhaForteACP2026' } })
+    fireEvent.click(checkboxTermo)
+
+    const submitBtn = screen.getByRole('button', { name: /Criar Conta de Cliente ACP/i })
+    fireEvent.click(submitBtn)
+
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith({
+        email: 'acp@associada.com.br',
+        password: 'SenhaForteACP2026',
+        passwordConfirm: 'SenhaForteACP2026',
+        name: 'Associada ACP Curitiba S.A.',
+        role: 'cliente_acp',
+      })
+      expect(mockAuthState.login).toHaveBeenCalledWith('acp@associada.com.br', 'SenhaForteACP2026')
+    })
   })
 
   it('Página /login contém link direto para /registro', () => {

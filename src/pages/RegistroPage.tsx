@@ -17,10 +17,31 @@ import {
   Info,
 } from 'lucide-react'
 
-type PerfilRole = 'cliente' | 'perito'
+import { useSearchParams } from 'react-router-dom'
+
+export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp'
 
 export default function RegistroPage() {
-  const [role, setRole] = useState<PerfilRole>('cliente')
+  const [searchParams] = useSearchParams()
+  const location = useLocation()
+
+  // Determinar role inicial via query param (?papel=... ou ?role=...) ou state de navegação
+  const getInitialRole = (): PerfilRole => {
+    const rawPapel =
+      (location.state as any)?.papel ||
+      (location.state as any)?.role ||
+      searchParams.get('papel') ||
+      searchParams.get('role') ||
+      searchParams.get('perfil')
+
+    if (!rawPapel) return 'cliente'
+    const lower = String(rawPapel).toLowerCase().trim()
+    if (lower === 'acp' || lower === 'cliente_acp' || lower === 'cliente-acp') return 'cliente_acp'
+    if (lower === 'perito') return 'perito'
+    return 'cliente'
+  }
+
+  const [role, setRole] = useState<PerfilRole>(getInitialRole)
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,7 +53,6 @@ export default function RegistroPage() {
 
   const { login } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
   const from = (location.state as any)?.from?.pathname
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,8 +117,11 @@ export default function RegistroPage() {
         } else if (role === 'perito') {
           // Perito vai direto ao credenciamento para homologar ART/RRT
           navigate('/credenciamento', { replace: true })
+        } else if (role === 'cliente_acp') {
+          // Cliente ACP vai direto à área autenticada do painel (sem funil de diagnóstico)
+          navigate('/painel', { replace: true })
         } else {
-          // Cliente vai ao seu painel
+          // Cliente comum vai ao seu painel
           navigate('/painel', { replace: true })
         }
       }, 900)
@@ -163,7 +186,12 @@ export default function RegistroPage() {
             <div>
               <p className="font-semibold">Conta criada e autenticada com sucesso!</p>
               <p className="text-[11px] text-[#93A3B5] mt-0.5">
-                Redirecionando para {role === 'perito' ? 'o Credenciamento Pericial' : 'seu Painel'}
+                Redirecionando para{' '}
+                {role === 'perito'
+                  ? 'o Credenciamento Pericial'
+                  : role === 'cliente_acp'
+                    ? 'seu Painel ACP / dMRV'
+                    : 'seu Painel'}
                 ...
               </p>
             </div>
@@ -176,37 +204,76 @@ export default function RegistroPage() {
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-2">
               Escolha seu Perfil de Acesso *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Opção Cliente */}
               <button
                 type="button"
                 onClick={() => setRole('cliente')}
-                className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 ${
                   role === 'cliente'
                     ? 'bg-[#12B886]/15 border-[#12B886] shadow-emerald-glow'
                     : 'bg-[#0A0E12] border-[rgba(244,247,250,0.1)] hover:border-[rgba(244,247,250,0.25)]'
                 }`}
               >
-                <div
-                  className={`p-2 rounded-lg shrink-0 ${
-                    role === 'cliente'
-                      ? 'bg-[#12B886] text-[#0A0E12]'
-                      : 'bg-[#16202B] text-[#93A3B5]'
-                  }`}
-                >
-                  <Building2 className="w-4 h-4" />
+                <div className="flex items-center justify-between w-full">
+                  <div
+                    className={`p-2 rounded-lg shrink-0 ${
+                      role === 'cliente'
+                        ? 'bg-[#12B886] text-[#0A0E12]'
+                        : 'bg-[#16202B] text-[#93A3B5]'
+                    }`}
+                  >
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  {role === 'cliente' && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#12B886] shrink-0" />
+                  )}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-1">
+                  <span className="font-heading font-bold text-xs sm:text-sm text-[#F4F7FA] block">
+                    Cliente / Empresa
+                  </span>
+                  <p className="text-[11px] text-[#93A3B5] leading-snug mt-1">
+                    Empresas, compradores, frotas e indústrias.
+                  </p>
+                </div>
+              </button>
+
+              {/* Opção Cliente ACP */}
+              <button
+                type="button"
+                onClick={() => setRole('cliente_acp')}
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                  role === 'cliente_acp'
+                    ? 'bg-[#D9B36C]/15 border-[#D9B36C] shadow-lg shadow-[#D9B36C]/10'
+                    : 'bg-[#0A0E12] border-[rgba(244,247,250,0.1)] hover:border-[rgba(244,247,250,0.25)]'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div
+                    className={`p-2 rounded-lg shrink-0 ${
+                      role === 'cliente_acp'
+                        ? 'bg-[#D9B36C] text-[#0A0E12]'
+                        : 'bg-[#16202B] text-[#93A3B5]'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  {role === 'cliente_acp' && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#D9B36C] shrink-0" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-heading font-bold text-xs sm:text-sm text-[#F4F7FA]">
-                      Cliente / Empresa
+                      Cliente ACP
                     </span>
-                    {role === 'cliente' && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#12B886] shrink-0" />
-                    )}
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#D9B36C]/20 text-[#D9B36C] font-mono font-bold">
+                      PARANÁ
+                    </span>
                   </div>
                   <p className="text-[11px] text-[#93A3B5] leading-snug mt-1">
-                    Indústrias, CDVs, frotas e gestores de sustentabilidade.
+                    Associados ACP com código exclusivo ORB-ACP e acesso direto.
                   </p>
                 </div>
               </button>
@@ -215,30 +282,30 @@ export default function RegistroPage() {
               <button
                 type="button"
                 onClick={() => setRole('perito')}
-                className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 ${
                   role === 'perito'
                     ? 'bg-[#12B886]/15 border-[#12B886] shadow-emerald-glow'
                     : 'bg-[#0A0E12] border-[rgba(244,247,250,0.1)] hover:border-[rgba(244,247,250,0.25)]'
                 }`}
               >
-                <div
-                  className={`p-2 rounded-lg shrink-0 ${
-                    role === 'perito'
-                      ? 'bg-[#12B886] text-[#0A0E12]'
-                      : 'bg-[#16202B] text-[#93A3B5]'
-                  }`}
-                >
-                  <Award className="w-4 h-4" />
+                <div className="flex items-center justify-between w-full">
+                  <div
+                    className={`p-2 rounded-lg shrink-0 ${
+                      role === 'perito'
+                        ? 'bg-[#12B886] text-[#0A0E12]'
+                        : 'bg-[#16202B] text-[#93A3B5]'
+                    }`}
+                  >
+                    <Award className="w-4 h-4" />
+                  </div>
+                  {role === 'perito' && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#12B886] shrink-0" />
+                  )}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-heading font-bold text-xs sm:text-sm text-[#F4F7FA]">
-                      Perito Técnico
-                    </span>
-                    {role === 'perito' && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#12B886] shrink-0" />
-                    )}
-                  </div>
+                  <span className="font-heading font-bold text-xs sm:text-sm text-[#F4F7FA] block">
+                    Perito Técnico
+                  </span>
                   <p className="text-[11px] text-[#93A3B5] leading-snug mt-1">
                     Engenheiros CREA, contadores CRC e auditores dMRV.
                   </p>
@@ -252,7 +319,9 @@ export default function RegistroPage() {
               <span>
                 {role === 'perito'
                   ? 'Como Perito Técnico, após criar sua conta você completará o credenciamento com número de ART/RRT e conselho regional para emitir laudos chancelados.'
-                  : 'Como Cliente, você terá acesso imediato ao painel, importação de NF-e/SPED, diagnóstico SBCE e contratação de serviços.'}
+                  : role === 'cliente_acp'
+                    ? 'Como Cliente ACP, sua conta receberá identificador exclusivo com prefixo ORB-ACP-XXXX e acesso direto ao Painel Corporativo e dMRV, sem necessidade de passar pelo funil prévio.'
+                    : 'Como Cliente, você terá acesso imediato ao painel, importação de NF-e/SPED, diagnóstico SBCE e contratação de serviços.'}
               </span>
             </div>
           </div>
@@ -363,7 +432,14 @@ export default function RegistroPage() {
               <span>Criando conta e autenticando...</span>
             ) : (
               <>
-                <span>Criar Conta de {role === 'perito' ? 'Perito' : 'Cliente'}</span>
+                <span>
+                  Criar Conta de{' '}
+                  {role === 'perito'
+                    ? 'Perito'
+                    : role === 'cliente_acp'
+                      ? 'Cliente ACP'
+                      : 'Cliente'}
+                </span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
