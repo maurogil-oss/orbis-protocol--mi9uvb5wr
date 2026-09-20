@@ -34,6 +34,7 @@ export interface DadosRelatorioDossie {
     dataGeracao?: string
     geradoPorNome?: string
     geradoPorRole?: string
+    demonstracao?: boolean
     // Credenciamento do Perito Técnico (ART/RRT, CREA/CRC)
     peritoCredenciado?: {
       nome: string
@@ -98,12 +99,13 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
   const inv = dados.inventario
   const trib = dados.comparativoTributario
   const cap = dados.greenCapital
+  const isDemo = Boolean(dados.identificacao.demonstracao)
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Dossiê Pericial Orbis Protocol — ${dados.identificacao.razaoSocial}</title>
+  <title>${isDemo ? '[DEMONSTRAÇÃO] ' : ''}Dossiê Pericial Orbis Protocol — ${dados.identificacao.razaoSocial}</title>
   <style>
     @page {
       size: A4;
@@ -134,6 +136,7 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
 
     /* CAPA */
     .capa-container {
+      position: relative;
       background: linear-gradient(135deg, #0A0E12 0%, #111820 60%, #070A0D 100%);
       color: #F4F7FA;
       padding: 40px 35px;
@@ -142,7 +145,35 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border-left: 6px solid #12B886;
+      border-left: 6px solid ${isDemo ? '#D9B36C' : '#12B886'};
+      overflow: hidden;
+    }
+    .watermark-demo {
+      position: fixed;
+      top: 35%;
+      left: 10%;
+      right: 10%;
+      transform: rotate(-35deg);
+      font-size: 82pt;
+      font-weight: 900;
+      color: rgba(217, 179, 108, 0.13);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 12px;
+      pointer-events: none;
+      z-index: 9999;
+      user-select: none;
+    }
+    .badge-demo-top {
+      background: #D9B36C;
+      color: #0A0E12;
+      font-weight: 900;
+      font-size: 8.5pt;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: inline-block;
     }
     .capa-header {
       display: flex;
@@ -408,11 +439,17 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
 </head>
 <body>
 
+  <!-- ==================== MARCA D'ÁGUA DEMONSTRAÇÃO SE APLICÁVEL ==================== -->
+  ${isDemo ? '<div class="watermark-demo">DEMONSTRAÇÃO</div>' : ''}
+
   <!-- ==================== PÁGINA 1: CAPA INSTITUCIONAL ==================== -->
   <div class="capa-container page-break">
     <div class="capa-header">
       <div class="capa-brand">ORBIS<span>.</span>PROTOCOL</div>
-      <div class="capa-tag">DOSSIÊ TÉCNICO & DMRV • LEI 15.042/2024</div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        ${isDemo ? '<div class="badge-demo-top">DEMONSTRAÇÃO • MODELO PEDAGÓGICO</div>' : ''}
+        <div class="capa-tag">DOSSIÊ TÉCNICO & DMRV • LEI 15.042/2024</div>
+      </div>
     </div>
 
     <div class="capa-title-area">
@@ -459,9 +496,9 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
   </div>
 
   <!-- ==================== PÁGINA 2: SEÇÃO 1 & SEÇÃO 2 (INVENTÁRIO GEE) ==================== -->
-  <div class="page-break">
+  <div class="page-break" style="position: relative;">
     <div class="page-header">
-      <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV</span>
+      <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV ${isDemo ? '• [DEMONSTRAÇÃO]' : ''}</span>
       <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
     </div>
 
@@ -631,9 +668,9 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
   </div>
 
   <!-- ==================== PÁGINA 3: SEÇÃO 3 (COMPARATIVO TRIBUTÁRIO) ==================== -->
-  <div class="page-break">
+  <div class="page-break" style="position: relative;">
     <div class="page-header">
-      <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV</span>
+      <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV ${isDemo ? '• [DEMONSTRAÇÃO]' : ''}</span>
       <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
     </div>
 
@@ -735,9 +772,9 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
   </div>
 
   <!-- ==================== PÁGINA 4: SEÇÃO 4 & 5 (GREEN CAPITAL & CONCLUSÃO) ==================== -->
-  <div>
+  <div style="position: relative;">
     <div class="page-header">
-      <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV</span>
+      <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV ${isDemo ? '• [DEMONSTRAÇÃO]' : ''}</span>
       <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
     </div>
 
@@ -848,6 +885,11 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
     <div class="disclaimer-box" style="margin-top: 15px;">
       <strong>AVISO LEGAL REGULATÓRIO & BANCÁRIO:</strong>
       Este documento constitui dossiê pericial preparatório e preliminar. Não substitui auditoria contábil formal nem assegura deferimento de financiamento, estando as linhas de crédito verde sujeitas à análise soberana de risco e crédito das respectivas instituições bancárias.
+      ${
+        isDemo
+          ? '<br/><strong style="color: #B45309;">MARCA D\'ÁGUA PEDAGÓGICA (DEMONSTRAÇÃO):</strong> Este laudo foi emitido a partir de modelo demonstrativo pré-configurado para fins estritamente pedagógicos e de simulação. Não gera efeitos jurídicos ou fiscais reais.'
+          : ''
+      }
     </div>
 
     <div class="footer-fixed">

@@ -24,6 +24,7 @@ routerAdd('POST', '/backend/v1/lead-diagnostico-submit', (e) => {
 
     leadRecord.set('cnpj', cnpj)
     leadRecord.set('razao_social', razaoSocial)
+    leadRecord.set('demonstracao', Boolean(body.demonstracao))
     if (body.email) leadRecord.set('email', String(body.email).trim())
     if (body.whatsapp) leadRecord.set('whatsapp', String(body.whatsapp).trim())
     if (body.responsavel) leadRecord.set('responsavel', String(body.responsavel).trim())
@@ -75,6 +76,7 @@ routerAdd('POST', '/backend/v1/lead-diagnostico-submit', (e) => {
       cnpj: leadRecord.getString('cnpj'),
       razao_social: leadRecord.getString('razao_social'),
       status: leadRecord.getString('status'),
+      demonstracao: leadRecord.getBool('demonstracao'),
       consentimento_ip: leadRecord.getString('consentimento_ip'),
       consentimento_data_hora: leadRecord.getString('consentimento_data_hora'),
       termo_versao: leadRecord.getString('termo_versao'),

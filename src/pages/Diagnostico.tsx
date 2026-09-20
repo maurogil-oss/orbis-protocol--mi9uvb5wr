@@ -5,6 +5,13 @@ import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import { consultarCNPJ, cleanCNPJ, isValidCNPJ, DadosEmpresaCNPJ } from '@/services/cnpj'
 import {
+  EMPRESAS_MODELO_DEMONSTRACAO,
+  EmpresaModeloDemonstrativa,
+  isCnpjDemonstracao,
+  obterModeloDemonstracao,
+  converterModeloParaDadosCNPJ,
+} from '@/services/demonstracaoService'
+import {
   calcularComparativoTributario,
   ResultadoComparativoTributario,
 } from '@/services/tributosReforma'
@@ -46,117 +53,9 @@ function maskPhone(value: string) {
     .slice(0, 15)
 }
 
-interface TestModel {
-  razao_social: string
-  cnpj: string
-  regime_tributario: string
-  email: string
-  whatsapp: string
-  responsavel: string
-  categoria_profissional: string
-  conselho: string
-  vinculo_institucional: string
-  consumo_energia?: string
-  frota_propria?: 'sim' | 'nao'
-  inventario_ghg?: 'sim' | 'nao' | 'em_andamento'
-  iso_14001?: 'sim' | 'nao'
-  faixa_emissoes?: 'abaixo_10k' | 'entre_10k_25k' | 'acima_25k' | 'nao_sei_calcular'
-  exporta_ue_cbam?: 'sim' | 'nao'
-  cbam_bens?: string
-}
+export type TestModel = EmpresaModeloDemonstrativa
 
-const MODELOS_TESTE: TestModel[] = [
-  {
-    razao_social: 'Distribuidora de Alimentos & Bebidas Brasil S.A.',
-    cnpj: '76.123.456/0001-12',
-    regime_tributario: 'Lucro Presumido',
-    email: 'contato@alimentosbrasil.com.br',
-    whatsapp: '(41) 99123-4567',
-    responsavel: 'Carlos Eduardo Silva',
-    categoria_profissional: 'Empresário / Diretor / Gestor da Empresa',
-    conselho: 'CRA-PR 12948',
-    vinculo_institucional: 'Associado ACP (Paraná)',
-    consumo_energia: 'Consumo moderado de refrigeração e logística urbana (baixa tensão)',
-    frota_propria: 'sim',
-    inventario_ghg: 'nao',
-    iso_14001: 'nao',
-    faixa_emissoes: 'abaixo_10k',
-    exporta_ue_cbam: 'nao',
-    cbam_bens: '',
-  },
-  {
-    razao_social: 'Metalúrgica & Peças Industriais Confiança Ltda',
-    cnpj: '14.882.310/0001-44',
-    regime_tributario: 'Lucro Real',
-    email: 'fiscal@confiancametal.ind.br',
-    whatsapp: '(11) 98765-4321',
-    responsavel: 'Roberto Antunes Mendes',
-    categoria_profissional: 'Engenheiro Mecânico / Ambiental (CREA - Resp. Técnico)',
-    conselho: 'CREA-SP 5061234',
-    vinculo_institucional: 'Mercado Nacional (Bahia, SP, Brasil)',
-    consumo_energia: 'Alto consumo eletrointensivo industrial (alta tensão 138kV)',
-    frota_propria: 'sim',
-    inventario_ghg: 'em_andamento',
-    iso_14001: 'sim',
-    faixa_emissoes: 'entre_10k_25k',
-    exporta_ue_cbam: 'sim',
-    cbam_bens: 'aço e fixadores industriais',
-  },
-  {
-    razao_social: 'Transportes & Logística de Cargas Expresso Verde Ltda',
-    cnpj: '43.904.740/0001-44',
-    regime_tributario: 'Lucro Real',
-    email: 'sustentabilidade@expressoverde.com.br',
-    whatsapp: '(71) 99234-8899',
-    responsavel: 'Mariana Barreto Costa',
-    categoria_profissional: 'Consultor de Sustentabilidade & Compliance',
-    conselho: 'CRBio 04981',
-    vinculo_institucional: 'Mercado Nacional (Bahia, SP, Brasil)',
-    consumo_energia: 'Frota pesada de caminhões diesel S-10 e matriz elétrica em galpões',
-    frota_propria: 'sim',
-    inventario_ghg: 'sim',
-    iso_14001: 'sim',
-    faixa_emissoes: 'acima_25k',
-    exporta_ue_cbam: 'nao',
-    cbam_bens: '',
-  },
-  {
-    razao_social: 'CDV Modelo — Demonstração Operacional (Credenciado DETRAN)',
-    cnpj: '18.394.029/0001-88',
-    regime_tributario: 'Lucro Presumido',
-    email: 'contato@cdvmodelo.com.br',
-    whatsapp: '(19) 98112-9900',
-    responsavel: 'Felipe Nogueira',
-    categoria_profissional: 'Centro de Desmontagem Veicular (CDV / Desmanche Credenciado)',
-    conselho: 'DETRAN-SP 0842/2022',
-    vinculo_institucional: 'Cadeia Automotiva / CDV (Programa MOVER)',
-    consumo_energia: 'Pátio de desmontagem com energia solar fotovoltaica e compressores',
-    frota_propria: 'nao',
-    inventario_ghg: 'nao',
-    iso_14001: 'nao',
-    faixa_emissoes: 'abaixo_10k',
-    exporta_ue_cbam: 'nao',
-    cbam_bens: '',
-  },
-  {
-    razao_social: 'Comércio & Serviços Varejistas Prime Ltda (MGM)',
-    cnpj: '19.598.964/0001-01',
-    regime_tributario: 'Simples Nacional',
-    email: 'diretoria@mgmconsultoria.com.br',
-    whatsapp: '(41) 99876-0011',
-    responsavel: 'Mauro Gilberto',
-    categoria_profissional: 'Contador / Auditor Independente (CRC)',
-    conselho: 'CRC-PR 054812',
-    vinculo_institucional: 'Associado ACP (Paraná)',
-    consumo_energia: 'Escritório corporativo de serviços contábeis e consultoria',
-    frota_propria: 'nao',
-    inventario_ghg: 'nao',
-    iso_14001: 'nao',
-    faixa_emissoes: 'abaixo_10k',
-    exporta_ue_cbam: 'nao',
-    cbam_bens: '',
-  },
-]
+export const MODELOS_TESTE = EMPRESAS_MODELO_DEMONSTRACAO
 
 export function calcularEnquadramentoSBCE(
   faixa: 'abaixo_10k' | 'entre_10k_25k' | 'acima_25k' | 'nao_sei_calcular',
@@ -189,6 +88,7 @@ export default function Diagnostico() {
   const [cnpjLookupError, setCnpjLookupError] = useState<string>('')
   const [cnpjSuccessData, setCnpjSuccessData] = useState<DadosEmpresaCNPJ | null>(null)
   const [isModelMode, setIsModelMode] = useState<boolean>(false)
+  const [modeloAtivo, setModeloAtivo] = useState<EmpresaModeloDemonstrativa | null>(null)
 
   // Form Fields
   const [formData, setFormData] = useState({
@@ -244,6 +144,7 @@ export default function Diagnostico() {
     cnpj: string
     razao_social: string
     status: string
+    demonstracao?: boolean
     vinculo_institucional?: string
     enquadramento_sbce?: string
     comparativo?: ResultadoComparativoTributario
@@ -255,6 +156,7 @@ export default function Diagnostico() {
     cnpj: string
     razao_social: string
     regime_tributario: string
+    demonstracao?: boolean
     enquadramento_sbce?: string
     exporta_ue_cbam?: string
     cbam_bens?: string
@@ -276,15 +178,16 @@ export default function Diagnostico() {
     setCnpjSuccessData(null)
     setIsModelMode(false)
 
-    // 1. Verifica se corresponde a um dos 5 modelos de teste semeados
-    const matchingModel = MODELOS_TESTE.find((m) => cleanCNPJ(m.cnpj) === digits)
+    // 1. Base Demonstrativa Local Pedagógica: Pula consulta externa (BrasilAPI / Minha Receita)
+    const matchingModel = obterModeloDemonstracao(digits)
     if (matchingModel) {
       applyModel(matchingModel)
-      setIsModelMode(true)
       return
     }
 
-    // 2. Se não for modelo de teste, busca na API pública (BrasilAPI / Minha Receita)
+    // 2. Se não for modelo pedagógico, busca na API pública (BrasilAPI / Minha Receita)
+    setModeloAtivo(null)
+    setIsModelMode(false)
     setIsConsultingCNPJ(true)
     try {
       const data = await consultarCNPJ(digits)
@@ -319,9 +222,10 @@ export default function Diagnostico() {
   }
 
   // Apply quick test model
-  const applyModel = (model: TestModel) => {
+  const applyModel = (model: EmpresaModeloDemonstrativa) => {
     setIsModelMode(true)
-    setCnpjSuccessData(null)
+    setModeloAtivo(model)
+    setCnpjSuccessData(converterModeloParaDadosCNPJ(model))
     setCnpjLookupError('')
     setFormData((prev) => ({
       ...prev,
@@ -433,6 +337,7 @@ export default function Diagnostico() {
     setGeneralError('')
     setFieldErrors({})
 
+    const isDemo = isModelMode || Boolean(obterModeloDemonstracao(formData.cnpj))
     const enquadramentoPreliminar = calcularEnquadramentoSBCE(formData.faixa_emissoes)
 
     try {
@@ -485,6 +390,7 @@ export default function Diagnostico() {
         faixa_impacto_tributario: comparativoCalculado.faixaImpacto,
         comparativo_tributario_json: comparativoCalculado,
         status: 'novo',
+        demonstracao: isDemo,
         ...(createdUserId ? { usuario: createdUserId } : {}),
       }
 
@@ -541,6 +447,7 @@ export default function Diagnostico() {
         cnpj: leadRecord.cnpj,
         razao_social: leadRecord.razao_social,
         status: leadRecord.status || 'novo',
+        demonstracao: isDemo,
         vinculo_institucional: leadRecord.vinculo_institucional || formData.vinculo_institucional,
         enquadramento_sbce: enquadramentoPreliminar,
         comparativo: comparativoCalculado,
@@ -609,6 +516,7 @@ export default function Diagnostico() {
         cnpj: lead.cnpj,
         razao_social: lead.razao_social,
         regime_tributario: lead.regime_tributario,
+        demonstracao: Boolean(lead.demonstracao || isCnpjDemonstracao(lead.cnpj)),
         enquadramento_sbce: lead.enquadramento_sbce,
         exporta_ue_cbam: lead.exporta_ue_cbam,
         cbam_bens: lead.cbam_bens,
@@ -741,11 +649,17 @@ export default function Diagnostico() {
                       {leadRetomado.razao_social}
                     </h3>
                   </div>
-                  <span className="px-2.5 py-1 rounded bg-[#12B886]/20 border border-[#12B886]/40 text-[#12B886] text-xs font-semibold uppercase">
-                    Status: {leadRetomado.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {leadRetomado.demonstracao && (
+                      <span className="px-2.5 py-1 rounded bg-[#D9B36C] text-[#0A0E12] text-xs font-black uppercase tracking-wider">
+                        DEMONSTRAÇÃO
+                      </span>
+                    )}
+                    <span className="px-2.5 py-1 rounded bg-[#12B886]/20 border border-[#12B886]/40 text-[#12B886] text-xs font-semibold uppercase">
+                      Status: {leadRetomado.status}
+                    </span>
+                  </div>
                 </div>
-
                 <ComparativoTributarioView
                   comparativo={leadRetomado.comparativo}
                   regimeDeclarado={leadRetomado.regime_tributario}
@@ -961,16 +875,26 @@ export default function Diagnostico() {
                     </div>
                   )}
 
-                  {/* Feedback de Consulta: Modelo de Teste Ativo */}
+                  {/* Selo / Banner Visível de MODO DEMONSTRAÇÃO */}
                   {isModelMode && (
-                    <div className="p-3.5 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/40 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2 text-[#D9B36C]">
-                        <Sparkles className="w-4 h-4 shrink-0" />
-                        <span>
-                          <strong>Modelo de Teste Homologado:</strong> Dados pré-configurados para
-                          simulação rápida.
+                    <div className="p-4 rounded-xl bg-[#D9B36C]/15 border-2 border-[#D9B36C] space-y-2">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-md bg-[#D9B36C] text-[#0A0E12] font-black text-xs tracking-wider uppercase shadow-sm">
+                            DEMONSTRAÇÃO
+                          </span>
+                          <span className="text-xs font-bold text-[#F4F7FA]">
+                            EMPRESA-MODELO PEDAGÓGICA (MODO DEMO ATIVO)
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-mono font-semibold text-[#D9B36C]">
+                          {formData.regime_tributario} • ISENTO DE COBRANÇA
                         </span>
                       </div>
+                      <p className="text-xs text-[#93A3B5] leading-relaxed">
+                        {modeloAtivo?.descricao_pedagogica ||
+                          'Esta empresa é um modelo pedagógico com dados pré-configurados para demonstrar o enquadramento tributário e de emissões. Diagnósticos gerados em modo demonstração não geram cobrança e não compõem estatísticas públicas.'}
+                      </p>
                     </div>
                   )}
 
@@ -1611,14 +1535,41 @@ export default function Diagnostico() {
                     </p>
                   </div>
 
+                  {/* Selo Visível DEMONSTRAÇÃO caso gerado por modelo */}
+                  {protocoloGerado.demonstracao && (
+                    <div className="max-w-xl mx-auto p-3.5 rounded-xl bg-[#D9B36C]/20 border-2 border-[#D9B36C] flex items-center justify-between gap-3 text-left">
+                      <div className="flex items-center gap-2.5">
+                        <span className="px-3 py-1 rounded bg-[#D9B36C] text-[#0A0E12] font-black text-xs tracking-wider uppercase">
+                          DEMONSTRAÇÃO
+                        </span>
+                        <div>
+                          <div className="text-xs font-bold text-[#F4F7FA]">
+                            Diagnóstico Pedagógico de Modelo
+                          </div>
+                          <div className="text-[11px] text-[#93A3B5]">
+                            Isento de cobrança • Excluído das métricas públicas e relatórios do
+                            Console
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Summary Card */}
-                  <div className="p-6 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 text-left max-w-xl mx-auto space-y-3">
+                  <div className="p-6 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 text-left max-w-xl mx-auto space-y-3 relative overflow-hidden">
+                    {protocoloGerado.demonstracao && (
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-10 select-none">
+                        <span className="text-6xl font-black text-[#D9B36C] -rotate-12 uppercase tracking-widest">
+                          DEMONSTRAÇÃO
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center text-xs border-b border-[rgba(244,247,250,0.08)] pb-2">
                       <span className="text-[#93A3B5]">Identificador:</span>
                       <span className="font-mono text-xs text-[#D9B36C] font-semibold">
                         {protocoloGerado.id}
                       </span>
-                    </div>
+                    </div>{' '}
                     <div className="flex justify-between items-center text-xs border-b border-[rgba(244,247,250,0.08)] pb-2">
                       <span className="text-[#93A3B5]">Razão Social:</span>
                       <span className="font-semibold text-[#F4F7FA]">
@@ -1747,14 +1698,14 @@ export default function Diagnostico() {
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-5 h-5 text-[#D9B36C]" />
                   <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    MODELOS REAIS PARA TESTE RÁPIDO
+                    EMPRESAS-MODELO DE DEMONSTRAÇÃO
                   </h3>
                 </div>
                 <p className="text-xs text-[#93A3B5] mb-5">
-                  Clique em um dos 5 modelos homologados abaixo para preencher automaticamente os
-                  campos do diagnóstico e testar o fluxo completo:
+                  4 modelos pedagógicos com CNPJs válidos pré-configurados (2 Lucro Presumido e 2
+                  Lucro Real) para demonstração a prospects. Pulam consulta externa, recebem selo
+                  DEMONSTRAÇÃO e não geram cobrança:
                 </p>
-
                 <div className="space-y-3">
                   {MODELOS_TESTE.map((m, idx) => (
                     <div

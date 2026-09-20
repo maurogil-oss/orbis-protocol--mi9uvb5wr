@@ -91,6 +91,7 @@ export default function ConsoleAuditor() {
     setIsLoading(true)
     try {
       const records = await pb.collection('leads_diagnostico').getFullList<LeadDiagnostico>({
+        filter: 'demonstracao != true',
         sort: '-created',
       })
       setLeads(records)
@@ -134,9 +135,15 @@ export default function ConsoleAuditor() {
   // Realtime updates on leads_diagnostico
   useRealtime<LeadDiagnostico>('leads_diagnostico', (data) => {
     if (data.action === 'create') {
-      setLeads((prev) => [data.record, ...prev])
+      if (!data.record.demonstracao) {
+        setLeads((prev) => [data.record, ...prev])
+      }
     } else if (data.action === 'update') {
-      setLeads((prev) => prev.map((item) => (item.id === data.record.id ? data.record : item)))
+      if (data.record.demonstracao) {
+        setLeads((prev) => prev.filter((item) => item.id !== data.record.id))
+      } else {
+        setLeads((prev) => prev.map((item) => (item.id === data.record.id ? data.record : item)))
+      }
     } else if (data.action === 'delete') {
       setLeads((prev) => prev.filter((item) => item.id !== data.record.id))
     }
@@ -199,6 +206,7 @@ export default function ConsoleAuditor() {
             vinculoInstitucional: lead.vinculo_institucional,
             geradoPorNome: user?.name || user?.email || 'Perito Auditor',
             geradoPorRole: 'perito',
+            demonstracao: Boolean(lead.demonstracao),
           },
           diagnostico: {
             enquadramentoSbceTexto: lead.enquadramento_sbce,

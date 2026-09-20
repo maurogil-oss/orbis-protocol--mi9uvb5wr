@@ -159,6 +159,15 @@ export default function CheckoutPage() {
       return
     }
 
+    // CNPJs da base demonstrativa não geram cobrança real
+    if (isCnpjDemonstracao(tomador.cpf_cnpj)) {
+      setErro(
+        'Este CNPJ é um modelo demonstrativo pedagógico homologado. Diagnósticos e simulações com ele são isentos de cobrança e não geram faturamento.',
+      )
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       const resp = await criarCobrancaPix({
         servico_id: servicoSelecionado,

@@ -496,6 +496,7 @@ export default function PainelCliente() {
             vinculoInstitucional: currentLead?.vinculo_institucional,
             geradoPorNome: user?.name || user?.email || 'Perito Orbis',
             geradoPorRole: 'cliente',
+            demonstracao: Boolean(currentLead?.demonstracao),
             peritoCredenciado: peritoCredenciado
               ? {
                   nome: peritoCredenciado.nome_completo,
@@ -861,7 +862,7 @@ export default function PainelCliente() {
           <div className="mb-10">
             <ConsoleApisCdvTab
               cdvNome={currentLead?.razao_social || 'CDVerde Centro de Desmontagem Veicular'}
-              cdvCnpj={currentLead?.cnpj || '76.123.456/0001-12'}
+              cdvCnpj={currentLead?.cnpj || '76.123.456/0001-49'}
               cdvCodigo="DETRAN-PR-CDV-0089"
             />
           </div>

@@ -224,13 +224,9 @@ export async function consultarCNPJ(cnpjInput: string): Promise<DadosEmpresaCNPJ
       const resFallback = await fetchMinhaReceita(digits)
       return resFallback
     } catch (errMinhaReceita) {
-      const msg =
-        errBrasil instanceof Error
-          ? errBrasil.message
-          : errMinhaReceita instanceof Error
-            ? errMinhaReceita.message
-            : 'CNPJ não encontrado na base de dados pública da Receita Federal.'
-      throw new Error(`Não foi possível localizar dados para o CNPJ ${cnpjInput}. Motivo: ${msg}`)
+      throw new Error(
+        'CNPJ não localizado na base da Receita Federal — confira se a empresa está ativa',
+      )
     }
   }
 }

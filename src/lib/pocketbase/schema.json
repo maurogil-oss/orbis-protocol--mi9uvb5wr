@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T12:28:09.848Z",
+  "generatedAt": "2026-09-20T12:47:42.229Z",
   "collections": [
     {
       "name": "users",
@@ -305,6 +305,12 @@
         {
           "name": "termo_versao",
           "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "demonstracao",
+          "type": "bool",
           "required": false,
           "system": false
         }

@@ -33,7 +33,10 @@ export async function carregarAdminKpis(): Promise<AdminKpis> {
   ] = await Promise.allSettled([
     pb.collection('cobrancas').getFullList({ fields: 'valor,status' }),
     pb.collection('users').getFullList({ fields: 'id,role' }),
-    pb.collection('leads_diagnostico').getFullList({ fields: 'id,status' }),
+    pb.collection('leads_diagnostico').getFullList({
+      filter: 'demonstracao != true',
+      fields: 'id,status,demonstracao',
+    }),
     pb.collection('dpp_consultas').getFullList({ fields: 'id' }),
     pb.collection('cdv_lotes').getFullList({ fields: 'id' }),
     pb.collection('pericial_revisoes').getFullList({ fields: 'id' }),
@@ -126,8 +129,10 @@ export async function listarCobrancasAdmin(filtroStatus?: string) {
   })
 }
 
-export async function listarLeadsAdmin() {
+export async function listarLeadsAdmin(incluirDemonstracao = false) {
+  const filter = incluirDemonstracao ? '' : 'demonstracao != true'
   return pb.collection('leads_diagnostico').getFullList({
+    filter,
     sort: '-created',
     expand: 'usuario',
   })
