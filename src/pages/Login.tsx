@@ -70,9 +70,17 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-              Senha de Acesso
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]">
+                Senha de Acesso
+              </label>
+              <Link
+                to="/recuperar-senha"
+                className="text-xs text-[#12B886] hover:underline transition-colors"
+              >
+                Esqueci minha senha?
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
               <input

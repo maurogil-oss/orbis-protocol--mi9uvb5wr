@@ -23,6 +23,8 @@ import CredenciamentoPage from './pages/CredenciamentoPage'
 import Verificador from './pages/Verificador'
 import Login from './pages/Login'
 import RegistroPage from './pages/RegistroPage'
+import RecuperarSenhaPage from './pages/RecuperarSenhaPage'
+import RedefinirSenhaPage from './pages/RedefinirSenhaPage'
 import PainelCliente from './pages/PainelCliente'
 import ConsoleAuditor from './pages/ConsoleAuditor'
 import AdminConsolePage from './pages/AdminConsolePage'
@@ -82,6 +84,8 @@ const App = () => (
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/checkout/:cobrancaId" element={<CheckoutPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
+            <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
             <Route path="/registro" element={<RegistroPage />} />
             <Route path="/cadastro" element={<Navigate to="/registro" replace />} />
             <Route path="/teste" element={<TestCatalog />} />

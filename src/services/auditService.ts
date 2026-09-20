@@ -5,6 +5,7 @@ export interface AuditLogRecord {
   acao: string
   entidade: string
   entidade_id?: string
+  registro_id?: string
   ator_id?: string
   ator_email?: string
   papel?: string

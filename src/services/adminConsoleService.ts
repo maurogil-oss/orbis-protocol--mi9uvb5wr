@@ -145,6 +145,19 @@ export async function listarLotesCdvAdmin() {
   })
 }
 
+export async function listarPecasCdvAdmin() {
+  return pb.collection('cdv_pecas').getFullList({
+    sort: '-created',
+  })
+}
+
+export async function listarDestinacoesFinaisAdmin() {
+  return pb.collection('dpp_destinacao_final').getFullList({
+    sort: '-created',
+    expand: 'lote',
+  })
+}
+
 export async function listarRevisoesPericiaisAdmin() {
   return pb.collection('pericial_revisoes').getFullList({
     sort: '-created',

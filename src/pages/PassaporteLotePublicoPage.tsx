@@ -412,6 +412,32 @@ export default function PassaporteLotePublicoPage() {
           </div>
         ) : (
           <>
+            {/* AVISO DESTACADO DE LOTE ANULADO (Item 3) */}
+            {lote.status === 'anulado' && (
+              <div className="p-5 sm:p-6 rounded-3xl bg-[#EF4444]/15 border-2 border-[#EF4444] text-xs text-[#EF4444] space-y-2 mb-6 shadow-xl animate-fade-in no-print">
+                <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-sm text-[#EF4444]">
+                  <AlertTriangle className="w-5 h-5 shrink-0" />
+                  <span>Passaporte Consolidado de Lote Anulado na Trilha de Auditoria</span>
+                </div>
+                <p className="text-[#F4F7FA] leading-relaxed text-sm">
+                  Documento de lote veicular anulado em{' '}
+                  <strong>
+                    {new Date((lote as any).anulado_em || lote.updated).toLocaleDateString('pt-BR')}
+                  </strong>{' '}
+                  — motivo registrado na trilha de auditoria: &ldquo;
+                  <span className="italic text-[#EF4444] font-semibold">
+                    {(lote as any).motivo_anulacao || 'Anulação homologada'}
+                  </span>
+                  &rdquo;.
+                </p>
+                <p className="text-[11px] text-[#93A3B5]">
+                  Por conformidade legal e governança dMRV, este lote e suas peças NÃO foram
+                  excluídos da base. A conferência pública e o hash canônico SHA-256 continuam
+                  acessíveis e auditáveis.
+                </p>
+              </div>
+            )}
+
             {/* NAVEGAÇÃO DE ABAS DO LOTE CONSOLIDADO: DPP DO LOTE vs BALANÇO DE MASSA vs DESTINAÇÃO FINAL (Oculta na Impressão) */}
             <div className="flex border-b border-[rgba(244,247,250,0.12)] gap-2 pb-px mb-6 sm:mb-8 no-print overflow-x-auto">
               <button
@@ -537,8 +563,15 @@ export default function PassaporteLotePublicoPage() {
 
                   {/* Identificação do Lote / Veículo */}
                   <div>
-                    <div className="text-[10px] uppercase font-bold text-[#93A3B5] tracking-wider">
-                      Veículo Doador
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] uppercase font-bold text-[#93A3B5] tracking-wider">
+                        Veículo Doador
+                      </span>
+                      {lote.status === 'anulado' && (
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40">
+                          LOTE ANULADO
+                        </span>
+                      )}
                     </div>
                     <h1 className="font-heading font-black text-xl text-[#F4F7FA] mt-0.5">
                       {lote.veiculo_marca_modelo}

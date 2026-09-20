@@ -376,6 +376,31 @@ export default function Verificador() {
                   <div>{renderStatusBadge(calculatedStatus)}</div>
                 </div>
 
+                {/* Aviso Destacado de Selo Revogado / Anulado (Item 3) */}
+                {calculatedStatus === 'REVOGADO' && (
+                  <div className="p-4 rounded-xl bg-[#F03E54]/15 border-2 border-[#F03E54] text-xs text-[#F03E54] space-y-2">
+                    <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-sm">
+                      <XCircle className="w-5 h-5 shrink-0" />
+                      <span>Documento / Selo Revogado na Trilha dMRV</span>
+                    </div>
+                    <p className="text-[#F4F7FA] leading-relaxed">
+                      Este documento foi formally revogado/anulado em{' '}
+                      <strong>
+                        {formatDate(
+                          (seloEncontrado as any).anulado_em ||
+                            (seloEncontrado as any).updated ||
+                            seloEncontrado.data_validade,
+                        )}
+                      </strong>{' '}
+                      — o motivo está permanentemente registrado na trilha de auditoria central.
+                    </p>
+                    <p className="text-[11px] text-[#93A3B5]">
+                      Por exigência de governança e transparência pública, o hash de integridade
+                      abaixo permanece visível e verificável contra adulterações.
+                    </p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
                   <div>
                     <span className="text-[#93A3B5] block mb-1 uppercase font-semibold">

@@ -65,8 +65,12 @@ import {
 import {
   listarCredenciamentosPeritos,
   julgarCredenciamentoPerito,
+  atualizarValidadeArtPerito,
+  reativarPeritoSuspenso,
   PeritoCredenciamentoRecord,
 } from '@/services/peritoService'
+import { listarAuditLogs, anularDocumentoDpp, AuditLogRecord } from '@/services/auditService'
+import { listarPecasCdvAdmin, listarDestinacoesFinaisAdmin } from '@/services/adminConsoleService'
 import {
   confirmarPagamentoSimulado,
   emitirNfse,
@@ -82,9 +86,11 @@ type AdminTab =
   | 'assinaturas'
   | 'comissoes'
   | 'peritos'
+  | 'auditoria'
 
 export default function AdminConsolePage() {
-  const { user } = useAuth()
+  const { user, isFinanceiroLeitor, isAdmin, requestPasswordReset } = useAuth()
+  const isReadOnly = isFinanceiroLeitor && !isAdmin
   const [activeTab, setActiveTab] = useState<AdminTab>('receita')
   const [loading, setLoading] = useState(true)
   const [kpis, setKpis] = useState<AdminKpis | null>(null)
@@ -102,6 +108,57 @@ export default function AdminConsolePage() {
   const [parceiros, setParceiros] = useState<ParceiroRecord[]>([])
   const [comissoes, setComissoes] = useState<ComissaoRecord[]>([])
   const [peritos, setPeritos] = useState<PeritoCredenciamentoRecord[]>([])
+  const [pecasCdv, setPecasCdv] = useState<any[]>([])
+  const [destinacoesFinais, setDestinacoesFinais] = useState<any[]>([])
+
+  // Estado da Trilha de Auditoria (Painel 9)
+  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([])
+  const [totalAuditLogs, setTotalAuditLogs] = useState<number>(0)
+  const [auditLoading, setAuditLoading] = useState<boolean>(false)
+  const [auditFiltroEntidade, setAuditFiltroEntidade] = useState<string>('todas')
+  const [auditFiltroAcao, setAuditFiltroAcao] = useState<string>('todas')
+  const [auditFiltroAtor, setAuditFiltroAtor] = useState<string>('')
+  const [auditFiltroDataInicio, setAuditFiltroDataInicio] = useState<string>('')
+  const [auditFiltroDataFim, setAuditFiltroDataFim] = useState<string>('')
+  const [auditPagina, setAuditPagina] = useState<number>(1)
+  const [auditDetalheLog, setAuditDetalheLog] = useState<AuditLogRecord | null>(null)
+
+  // Estado para Anulação Formal de Documento DPP
+  const [modalAnulacao, setModalAnulacao] = useState<{
+    aberto: boolean
+    tipo: 'peca' | 'lote' | 'destinacao' | 'selo'
+    id: string
+    identificadorVisual: string
+    motivo: string
+    submetendo: boolean
+  }>({
+    aberto: false,
+    tipo: 'lote',
+    id: '',
+    identificadorVisual: '',
+    motivo: '',
+    submetendo: false,
+  })
+
+  // Estado para Reativação de Perito Suspenso
+  const [modalReativarPerito, setModalReativarPerito] = useState<{
+    aberto: boolean
+    perito: PeritoCredenciamentoRecord | null
+    motivo: string
+    novaValidadeArt: string
+    submetendo: boolean
+  }>({
+    aberto: false,
+    perito: null,
+    motivo: '',
+    novaValidadeArt: '',
+    submetendo: false,
+  })
+
+  // Estado para Edição Inline de ART
+  const [editandoArtId, setEditandoArtId] = useState<string | null>(null)
+  const [novaValidadeArtInput, setNovaValidadeArtInput] = useState<string>('')
+  const [salvandoArt, setSalvandoArt] = useState<boolean>(false)
 
   // Modal / Edição de Produto
   const [editandoProduto, setEditandoProduto] = useState<Partial<ServicoCatalogoRecord> | null>(
@@ -155,6 +212,8 @@ export default function AdminConsolePage() {
         parcData,
         comData,
         peritosData,
+        pecasData,
+        destData,
       ] = await Promise.all([
         carregarAdminKpis(),
         listarCobrancasAdmin(),
@@ -168,6 +227,8 @@ export default function AdminConsolePage() {
         listarParceiros(),
         listarComissoes(),
         listarCredenciamentosPeritos(),
+        listarPecasCdvAdmin().catch(() => []),
+        listarDestinacoesFinaisAdmin().catch(() => []),
       ])
 
       setKpis(kpisData)
@@ -182,6 +243,8 @@ export default function AdminConsolePage() {
       setParceiros(parcData)
       setComissoes(comData)
       setPeritos(peritosData)
+      setPecasCdv(pecasData)
+      setDestinacoesFinais(destData)
     } catch (err) {
       console.error('Erro ao carregar dados admin:', err)
     } finally {
@@ -189,9 +252,44 @@ export default function AdminConsolePage() {
     }
   }
 
+  const carregarAuditLogs = async () => {
+    setAuditLoading(true)
+    try {
+      const res = await listarAuditLogs({
+        entidade: auditFiltroEntidade,
+        acao: auditFiltroAcao,
+        ator: auditFiltroAtor,
+        dataInicio: auditFiltroDataInicio || undefined,
+        dataFim: auditFiltroDataFim || undefined,
+        page: auditPagina,
+        perPage: 25,
+      })
+      setAuditLogs(res.items)
+      setTotalAuditLogs(res.totalItems)
+    } catch (err) {
+      console.error('Erro ao carregar audit_logs:', err)
+    } finally {
+      setAuditLoading(false)
+    }
+  }
+
   useEffect(() => {
     carregarTodosDados()
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'auditoria') {
+      carregarAuditLogs()
+    }
+  }, [
+    activeTab,
+    auditFiltroEntidade,
+    auditFiltroAcao,
+    auditFiltroAtor,
+    auditFiltroDataInicio,
+    auditFiltroDataFim,
+    auditPagina,
+  ])
 
   // Estado para Modal de Liquidação Manual (Item 1 e Item 2 do CFO: Auditoria, 4-olhos, Justificativa e Divergência)
   const [modalLiquidacao, setModalLiquidacao] = useState<{
@@ -468,6 +566,142 @@ export default function AdminConsolePage() {
     }
   }
 
+  // Concessão / Revogação do Papel financeiro_leitor (Item 2)
+  const handleAlternarPapelFinanceiroLeitor = async (cli: any) => {
+    if (isReadOnly) return
+    const novoPapel = cli.role === 'financeiro_leitor' ? 'cliente' : 'financeiro_leitor'
+    const confirmMsg =
+      novoPapel === 'financeiro_leitor'
+        ? `Deseja conceder o papel 'financeiro_leitor' para ${cli.email}? O usuário terá acesso de apenas leitura a todo o console de gestão financeira.`
+        : `Deseja revogar o papel 'financeiro_leitor' de ${cli.email}, retornando-o a 'cliente'?`
+
+    if (!confirm(confirmMsg)) return
+
+    try {
+      await atualizarClienteAdmin(cli.id, { role: novoPapel })
+      mostrarMensagem(
+        `Papel de ${cli.email} atualizado para '${novoPapel}'! Mudança registrada na trilha de auditoria.`,
+      )
+      carregarTodosDados()
+    } catch (err: any) {
+      alert('Erro ao atualizar papel do usuário: ' + err.message)
+    }
+  }
+
+  // Disparo de reset de senha pelo Admin no painel Clientes (Item 1)
+  const handleAdminResetSenha = async (cli: any) => {
+    if (isReadOnly) return
+    if (!cli.email) {
+      alert('Usuário não possui e-mail cadastrado.')
+      return
+    }
+    if (
+      !confirm(
+        `Confirmar envio de link seguro de redefinição de senha para ${cli.email}? O evento será auditado.`,
+      )
+    ) {
+      return
+    }
+
+    try {
+      await requestPasswordReset(cli.email)
+      mostrarMensagem(
+        `Link de redefinição de senha enviado para ${cli.email} e evento auditado! (Nenhum token é exposto)`,
+      )
+    } catch (err: any) {
+      alert('Erro ao solicitar redefinição: ' + err.message)
+    }
+  }
+
+  // Edição inline de validade ART (Item 2)
+  const handleSalvarValidadeArt = async (peritoId: string) => {
+    if (isReadOnly) return
+    if (!novaValidadeArtInput) {
+      alert('Informe uma data de validade para a ART.')
+      return
+    }
+    setSalvandoArt(true)
+    try {
+      await atualizarValidadeArtPerito(peritoId, novaValidadeArtInput)
+      mostrarMensagem('Validade da ART atualizada com sucesso e registrada na trilha!')
+      setEditandoArtId(null)
+      setNovaValidadeArtInput('')
+      carregarTodosDados()
+    } catch (err: any) {
+      alert('Erro ao atualizar validade da ART: ' + err.message)
+    } finally {
+      setSalvandoArt(false)
+    }
+  }
+
+  // Reativação formal de perito suspenso (Item 2)
+  const handleExecutarReativacaoPerito = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (isReadOnly || !modalReativarPerito.perito) return
+    if (!modalReativarPerito.motivo || modalReativarPerito.motivo.length < 5) {
+      alert('O motivo da reativação é obrigatório (mínimo 5 caracteres).')
+      return
+    }
+
+    setModalReativarPerito((prev) => ({ ...prev, submetendo: true }))
+    try {
+      await reativarPeritoSuspenso({
+        id: modalReativarPerito.perito.id,
+        motivoReativacao: modalReativarPerito.motivo,
+        novaValidadeArt: modalReativarPerito.novaValidadeArt || undefined,
+        auditorEmail: user?.email || 'admin@orbisprotocol.org',
+      })
+      mostrarMensagem('Perito reativado com sucesso e status restaurado!')
+      setModalReativarPerito({
+        aberto: false,
+        perito: null,
+        motivo: '',
+        novaValidadeArt: '',
+        submetendo: false,
+      })
+      carregarTodosDados()
+    } catch (err: any) {
+      alert('Erro ao reativar perito: ' + err.message)
+    } finally {
+      setModalReativarPerito((prev) => ({ ...prev, submetendo: false }))
+    }
+  }
+
+  // Anulação formal de documento DPP (Peça, Lote, Destinação) (Item 2)
+  const handleExecutarAnulacaoDpp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (isReadOnly || !modalAnulacao.id) return
+    if (!modalAnulacao.motivo || modalAnulacao.motivo.length < 10) {
+      alert('O motivo da anulação é obrigatório e deve ter no mínimo 10 caracteres.')
+      return
+    }
+
+    setModalAnulacao((prev) => ({ ...prev, submetendo: true }))
+    try {
+      const res = await anularDocumentoDpp({
+        tipo: modalAnulacao.tipo,
+        id: modalAnulacao.id,
+        motivo: modalAnulacao.motivo.trim(),
+      })
+      mostrarMensagem(
+        res.mensagem || 'Documento formalmente anulado. Permanece auditável na trilha pública!',
+      )
+      setModalAnulacao({
+        aberto: false,
+        tipo: 'lote',
+        id: '',
+        identificadorVisual: '',
+        motivo: '',
+        submetendo: false,
+      })
+      carregarTodosDados()
+    } catch (err: any) {
+      alert('Erro ao anular documento DPP: ' + err.message)
+    } finally {
+      setModalAnulacao((prev) => ({ ...prev, submetendo: false }))
+    }
+  }
+
   // Retroalimentação defensiva disparada pelo admin on-demand
   const rodarRetroalimentacaoDefensiva = async () => {
     if (!confirm('Deseja rodar a retroalimentação defensiva de cadastro-mestre agora?')) return
@@ -563,6 +797,7 @@ export default function AdminConsolePage() {
     { id: 'assinaturas', label: '6. Assinaturas', icon: CreditCard },
     { id: 'comissoes', label: '7. Comissões & Parceiros', icon: Percent },
     { id: 'peritos', label: '8. Rede Pericial & Conselhos', icon: Award },
+    { id: 'auditoria', label: '9. Auditoria & Trilha Imutável', icon: ShieldCheck },
   ]
 
   const cobrancasFiltradas = cobrancas.filter((c) => {
@@ -576,20 +811,27 @@ export default function AdminConsolePage() {
         {/* Header Admin */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-[rgba(244,247,250,0.1)]">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded-full bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30 text-[10px] font-mono uppercase font-bold tracking-wider">
-                CONSOLE DE GESTÃO ESTRATÉGICA • ETAPA 1
+                CONSOLE DE GESTÃO ESTRATÉGICA • CONTROLES INTERNOS
               </span>
               <span className="text-[11px] text-[#93A3B5] font-mono">
                 Role: {user?.role || 'admin'}
               </span>
+              {/* Badge fixo de Acesso Somente Visualização para papel financeiro_leitor */}
+              {isReadOnly && (
+                <span className="px-3 py-1 rounded-full bg-[#D9B36C]/20 text-[#D9B36C] border border-[#D9B36C]/50 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#D9B36C]" />
+                  <span>Acesso somente visualização</span>
+                </span>
+              )}
             </div>
             <h1 className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA] tracking-wide">
               ADMINISTRAÇÃO ORBIS PROTOCOL
             </h1>
             <p className="text-xs sm:text-sm text-[#93A3B5] mt-1">
-              Governança centralizada de faturamento, clientes mestres, consumo de APIs, parceiros e
-              rede pericial.
+              Governança centralizada de faturamento, clientes mestres, consumo de APIs, parceiros,
+              rede pericial e trilha de auditoria append-only.
             </p>
           </div>
 
@@ -820,13 +1062,18 @@ export default function AdminConsolePage() {
                         )}
                       </td>
                       <td className="p-3.5 text-right space-x-2">
-                        {c.status !== 'pago' && (
+                        {c.status !== 'pago' && !isReadOnly && (
                           <button
                             onClick={() => handleConfirmarPagamento(c)}
                             className="px-2.5 py-1 rounded bg-[#12B886]/20 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px] transition-colors"
                           >
                             Marcar Pago
                           </button>
+                        )}
+                        {c.status !== 'pago' && isReadOnly && (
+                          <span className="text-[11px] text-[#93A3B5]/50 italic pr-1">
+                            Somente leitura
+                          </span>
                         )}
                         <button
                           onClick={() => setCobrancaDetalheAuditoria(c)}
@@ -835,12 +1082,14 @@ export default function AdminConsolePage() {
                         >
                           Auditoria
                         </button>
-                        <button
-                          onClick={() => handleEmitirNfseAdmin(c.id)}
-                          className="px-2.5 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-[11px]"
-                        >
-                          NFS-e
-                        </button>
+                        {!isReadOnly && (
+                          <button
+                            onClick={() => handleEmitirNfseAdmin(c.id)}
+                            className="px-2.5 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-[11px]"
+                          >
+                            NFS-e
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -900,7 +1149,7 @@ export default function AdminConsolePage() {
                     </div>
                   )}
                   <div className="pt-2 flex gap-2">
-                    {c.status !== 'pago' && (
+                    {c.status !== 'pago' && !isReadOnly && (
                       <button
                         onClick={() => handleConfirmarPagamento(c)}
                         className="flex-1 py-1.5 rounded bg-[#12B886] text-[#0A0E12] font-bold text-center text-xs"
@@ -914,12 +1163,14 @@ export default function AdminConsolePage() {
                     >
                       Auditoria
                     </button>
-                    <button
-                      onClick={() => handleEmitirNfseAdmin(c.id)}
-                      className="px-3 py-1.5 rounded bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-xs text-[#93A3B5]"
-                    >
-                      NFS-e
-                    </button>
+                    {!isReadOnly && (
+                      <button
+                        onClick={() => handleEmitirNfseAdmin(c.id)}
+                        className="px-3 py-1.5 rounded bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-xs text-[#93A3B5]"
+                      >
+                        NFS-e
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -944,8 +1195,8 @@ export default function AdminConsolePage() {
               <button
                 type="button"
                 onClick={rodarRetroalimentacaoDefensiva}
-                disabled={executandoRetroalimentacao}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111820] border border-[#12B886]/50 text-xs text-[#12B886] font-semibold hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+                disabled={executandoRetroalimentacao || isReadOnly}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111820] border border-[#12B886]/50 text-xs text-[#12B886] font-semibold hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors disabled:opacity-40"
                 title="Cruza dados de leads e cobranças para preencher CNPJ e status n/a automaticamente"
               >
                 <RefreshCw
@@ -1030,14 +1281,49 @@ export default function AdminConsolePage() {
                             >
                               {cli.assinatura_status || 'sem assinatura'}
                             </span>
-                            {!estaEditando && (
-                              <button
-                                type="button"
-                                onClick={() => iniciarEdicaoCliente(cli)}
-                                className="px-2.5 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px] transition-colors"
-                              >
-                                Editar Cadastro
-                              </button>
+
+                            {/* Ações por Usuário: Reset de Senha, Papel financeiro_leitor, Editar Cadastro */}
+                            {!isReadOnly && (
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdminResetSenha(cli)}
+                                  className="px-2 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] hover:border-[#12B886] text-[11px] transition-colors"
+                                  title="Envia link seguro de redefinição de senha para o e-mail do usuário e registra em audit_log"
+                                >
+                                  Enviar link de redefinição
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleAlternarPapelFinanceiroLeitor(cli)}
+                                  className={`px-2 py-1 rounded border text-[11px] font-medium transition-colors ${
+                                    cli.role === 'financeiro_leitor'
+                                      ? 'bg-[#D9B36C]/20 border-[#D9B36C] text-[#D9B36C] hover:bg-[#D9B36C]/30'
+                                      : 'bg-[#16202B] border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#D9B36C]'
+                                  }`}
+                                  title="Conceder ou revogar papel financeiro_leitor (somente leitura financeira)"
+                                >
+                                  {cli.role === 'financeiro_leitor'
+                                    ? 'Revogar Financeiro Leitor'
+                                    : 'Tornar Financeiro Leitor'}
+                                </button>
+
+                                {!estaEditando && (
+                                  <button
+                                    type="button"
+                                    onClick={() => iniciarEdicaoCliente(cli)}
+                                    className="px-2.5 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px] transition-colors"
+                                  >
+                                    Editar Cadastro
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                            {isReadOnly && (
+                              <span className="text-[11px] text-[#93A3B5]/50 italic">
+                                Modo Leitura
+                              </span>
                             )}
                           </div>
                         </div>
@@ -1241,7 +1527,9 @@ export default function AdminConsolePage() {
                       className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] text-[11px] space-y-0.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-[#D9B36C]">{d.alvo_identificador}</span>
+                        <span className="font-mono text-[#D9B36C] truncate max-w-[170px]">
+                          {d.alvo_identificador}
+                        </span>
                         <span className="text-[9px] uppercase font-bold text-[#12B886]">
                           {d.canal}
                         </span>
@@ -1267,26 +1555,67 @@ export default function AdminConsolePage() {
                   <Layers className="w-4 h-4 text-[#3B82F6]" />
                 </div>
                 <p className="text-[11px] text-[#93A3B5]">
-                  Veículos desmontados com balanço de massa.
+                  Veículos desmontados com balanço de massa e controle de anulação.
                 </p>
                 <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
                   {lotes.map((lt) => (
                     <div
                       key={lt.id}
-                      className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] text-[11px] space-y-0.5"
+                      className={`p-2.5 rounded-lg bg-[#0A0E12] border text-[11px] space-y-1 ${
+                        lt.status === 'anulado'
+                          ? 'border-[#EF4444]/40 bg-[#EF4444]/5'
+                          : 'border-[rgba(244,247,250,0.06)]'
+                      }`}
                     >
                       <div className="flex items-center justify-between">
-                        <strong className="text-[#F4F7FA]">{lt.veiculo_marca_modelo}</strong>
-                        <span className="text-[9px] uppercase font-bold text-[#3B82F6]">
+                        <strong className="text-[#F4F7FA] truncate max-w-[160px]">
+                          {lt.veiculo_marca_modelo}
+                        </strong>
+                        <span
+                          className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                            lt.status === 'anulado'
+                              ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40'
+                              : 'text-[#3B82F6] bg-[#3B82F6]/10'
+                          }`}
+                        >
                           {lt.status}
                         </span>
                       </div>
                       <div className="text-[10px] text-[#93A3B5] font-mono">
-                        {lt.cdv_nome} • Baixa: {lt.veiculo_baixa_detran}
+                        {lt.cdv_nome} • Lote: {lt.numero_lote || lt.id}
                       </div>
                       <div className="text-[10px] text-[#12B886]">
                         {lt.total_pecas} peças • {lt.total_co2e_evitado_kg} kg CO2e evitado
                       </div>
+
+                      {lt.status === 'anulado' ? (
+                        <div className="text-[9px] text-[#EF4444] pt-0.5">
+                          Anulado em{' '}
+                          {new Date(lt.anulado_em || lt.updated).toLocaleDateString('pt-BR')}:{' '}
+                          {lt.motivo_anulacao}
+                        </div>
+                      ) : (
+                        !isReadOnly && (
+                          <div className="pt-1 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setModalAnulacao({
+                                  aberto: true,
+                                  tipo: 'lote',
+                                  id: lt.id,
+                                  identificadorVisual: `Lote ${lt.numero_lote || lt.id} (${lt.veiculo_marca_modelo})`,
+                                  motivo: '',
+                                  submetendo: false,
+                                })
+                              }
+                              className="px-2 py-0.5 rounded bg-[#EF4444]/15 hover:bg-[#EF4444]/30 text-[#EF4444] text-[10px] font-semibold border border-[#EF4444]/30 transition-colors"
+                            >
+                              Anular documento
+                            </button>
+                          </div>
+                        )
+                      )}
                     </div>
                   ))}
                   {lotes.length === 0 && (
@@ -1331,6 +1660,178 @@ export default function AdminConsolePage() {
                     <span className="text-xs text-[#93A3B5]">
                       Nenhuma revisão pericial registrada.
                     </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Subseções Adicionais de Lote / Peça / Destinação com Anulação */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+              {/* Peças CDV Ingeridas */}
+              <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
+                      Peças CDV / Passaportes Rastreados ({pecasCdv.length})
+                    </h3>
+                    <p className="text-[11px] text-[#93A3B5]">
+                      Passaportes unitários de componentes automotivos (cdv_pecas).
+                    </p>
+                  </div>
+                  <Layers className="w-4 h-4 text-[#12B886]" />
+                </div>
+
+                <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                  {pecasCdv.map((peca) => (
+                    <div
+                      key={peca.id}
+                      className={`p-2.5 rounded-lg bg-[#0A0E12] border text-xs space-y-1 ${
+                        peca.status === 'anulado'
+                          ? 'border-[#EF4444]/40 bg-[#EF4444]/5'
+                          : 'border-[rgba(244,247,250,0.06)]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="text-[#F4F7FA]">
+                          {peca.descricao || peca.codigo_peca}
+                        </strong>
+                        <span
+                          className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                            peca.status === 'anulado'
+                              ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40'
+                              : 'text-[#12B886] bg-[#12B886]/10'
+                          }`}
+                        >
+                          {peca.status}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#93A3B5] font-mono">
+                        Cód: {peca.codigo_peca} • Material:{' '}
+                        {peca.material_predominante || 'Diversos'}
+                      </div>
+                      {peca.hash_canonical && (
+                        <div className="text-[9px] text-[#93A3B5]/70 font-mono truncate">
+                          Hash: {peca.hash_canonical}
+                        </div>
+                      )}
+
+                      {peca.status === 'anulado' ? (
+                        <div className="text-[9px] text-[#EF4444] pt-0.5">
+                          Anulado em{' '}
+                          {new Date(peca.anulado_em || peca.updated).toLocaleDateString('pt-BR')}:{' '}
+                          {peca.motivo_anulacao}
+                        </div>
+                      ) : (
+                        !isReadOnly && (
+                          <div className="pt-1 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setModalAnulacao({
+                                  aberto: true,
+                                  tipo: 'peca',
+                                  id: peca.id,
+                                  identificadorVisual: `Peça ${peca.codigo_peca} (${peca.descricao || 'Componente'})`,
+                                  motivo: '',
+                                  submetendo: false,
+                                })
+                              }
+                              className="px-2 py-0.5 rounded bg-[#EF4444]/15 hover:bg-[#EF4444]/30 text-[#EF4444] text-[10px] font-semibold border border-[#EF4444]/30 transition-colors"
+                            >
+                              Anular documento
+                            </button>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ))}
+                  {pecasCdv.length === 0 && (
+                    <span className="text-xs text-[#93A3B5]">Nenhuma peça CDV cadastrada.</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Destinações Finais DPP */}
+              <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
+                      Destinações Finais DPP ({destinacoesFinais.length})
+                    </h3>
+                    <p className="text-[11px] text-[#93A3B5]">
+                      Manifestos de destinação final sustentável e reciclagem
+                      (dpp_destinacao_final).
+                    </p>
+                  </div>
+                  <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
+                </div>
+
+                <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                  {destinacoesFinais.map((dest) => (
+                    <div
+                      key={dest.id}
+                      className={`p-2.5 rounded-lg bg-[#0A0E12] border text-xs space-y-1 ${
+                        dest.status === 'anulado'
+                          ? 'border-[#EF4444]/40 bg-[#EF4444]/5'
+                          : 'border-[rgba(244,247,250,0.06)]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="text-[#F4F7FA]">
+                          {dest.operador_destinacao || dest.tipo_residuo || 'Destinação Final'}
+                        </strong>
+                        <span
+                          className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                            dest.status === 'anulado'
+                              ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40'
+                              : 'text-[#D9B36C] bg-[#D9B36C]/10'
+                          }`}
+                        >
+                          {dest.status || 'ativo'}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#93A3B5] font-mono">
+                        Manifesto: {dest.numero_manifesto_mtr || dest.id} • Peso:{' '}
+                        {dest.peso_total_kg || 0} kg
+                      </div>
+                      {dest.hash_canonical && (
+                        <div className="text-[9px] text-[#93A3B5]/70 font-mono truncate">
+                          Hash: {dest.hash_canonical}
+                        </div>
+                      )}
+
+                      {dest.status === 'anulado' ? (
+                        <div className="text-[9px] text-[#EF4444] pt-0.5">
+                          Anulado em{' '}
+                          {new Date(dest.anulado_em || dest.updated).toLocaleDateString('pt-BR')}:{' '}
+                          {dest.motivo_anulacao}
+                        </div>
+                      ) : (
+                        !isReadOnly && (
+                          <div className="pt-1 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setModalAnulacao({
+                                  aberto: true,
+                                  tipo: 'destinacao',
+                                  id: dest.id,
+                                  identificadorVisual: `Destinação ${dest.numero_manifesto_mtr || dest.id}`,
+                                  motivo: '',
+                                  submetendo: false,
+                                })
+                              }
+                              className="px-2 py-0.5 rounded bg-[#EF4444]/15 hover:bg-[#EF4444]/30 text-[#EF4444] text-[10px] font-semibold border border-[#EF4444]/30 transition-colors"
+                            >
+                              Anular documento
+                            </button>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ))}
+                  {destinacoesFinais.length === 0 && (
+                    <span className="text-xs text-[#93A3B5]">Nenhuma destinação registrada.</span>
                   )}
                 </div>
               </div>
@@ -1449,23 +1950,25 @@ export default function AdminConsolePage() {
                 </p>
               </div>
 
-              <button
-                onClick={() =>
-                  setEditandoProduto({
-                    nome: '',
-                    servico_id: '',
-                    descricao: '',
-                    preco: 0,
-                    tipo: 'avulso',
-                    ativo: true,
-                    ordem: catalogo.length + 1,
-                  })
-                }
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Novo Produto</span>
-              </button>
+              {!isReadOnly && (
+                <button
+                  onClick={() =>
+                    setEditandoProduto({
+                      nome: '',
+                      servico_id: '',
+                      descricao: '',
+                      preco: 0,
+                      tipo: 'avulso',
+                      ativo: true,
+                      ordem: catalogo.length + 1,
+                    })
+                  }
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Novo Produto</span>
+                </button>
+              )}
             </div>
 
             {/* Formulário de Edição (se aberto) */}
@@ -1603,22 +2106,26 @@ export default function AdminConsolePage() {
 
                   <div className="pt-6 mt-4 border-t border-[rgba(244,247,250,0.08)] flex items-center justify-between">
                     <span className="text-[10px] text-[#93A3B5]">Ordem: {prod.ordem}</span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditandoProduto(prod)}
-                        className="p-2 rounded-lg bg-[#16202B] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
-                        title="Editar"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleExcluirProduto(prod.id)}
-                        className="p-2 rounded-lg bg-[#16202B] text-[#F03E54] hover:bg-[#F03E54] hover:text-white transition-colors"
-                        title="Excluir"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {!isReadOnly ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditandoProduto(prod)}
+                          className="p-2 rounded-lg bg-[#16202B] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+                          title="Editar"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleExcluirProduto(prod.id)}
+                          className="p-2 rounded-lg bg-[#16202B] text-[#F03E54] hover:bg-[#F03E54] hover:text-white transition-colors"
+                          title="Excluir"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-[#93A3B5]/50 italic">Somente leitura</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1752,20 +2259,26 @@ export default function AdminConsolePage() {
                           </span>
                         </td>
                         <td className="p-3.5 text-right space-x-2">
-                          {cli.assinatura_status === 'suspensa' || isInadimplente ? (
-                            <button
-                              onClick={() => handleAlterarStatusAssinatura(cli.id, 'ativa')}
-                              className="px-3 py-1 rounded bg-[#12B886]/20 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px]"
-                            >
-                              Reativar / Quitar
-                            </button>
+                          {!isReadOnly ? (
+                            cli.assinatura_status === 'suspensa' || isInadimplente ? (
+                              <button
+                                onClick={() => handleAlterarStatusAssinatura(cli.id, 'ativa')}
+                                className="px-3 py-1 rounded bg-[#12B886]/20 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] font-semibold text-[11px]"
+                              >
+                                Reativar / Quitar
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleAlterarStatusAssinatura(cli.id, 'suspensa')}
+                                className="px-3 py-1 rounded bg-[#F03E54]/20 text-[#F03E54] hover:bg-[#F03E54] hover:text-white font-semibold text-[11px]"
+                              >
+                                Suspender
+                              </button>
+                            )
                           ) : (
-                            <button
-                              onClick={() => handleAlterarStatusAssinatura(cli.id, 'suspensa')}
-                              className="px-3 py-1 rounded bg-[#F03E54]/20 text-[#F03E54] hover:bg-[#F03E54] hover:text-white font-semibold text-[11px]"
-                            >
-                              Suspender
-                            </button>
+                            <span className="text-[11px] text-[#93A3B5]/50 italic">
+                              Visualização apenas
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -1791,25 +2304,27 @@ export default function AdminConsolePage() {
                 </p>
               </div>
 
-              <button
-                onClick={() =>
-                  setEditandoParceiro({
-                    nome: '',
-                    cpf_cnpj: '',
-                    contato: '',
-                    percentual_comissao: 10,
-                    banco: '',
-                    agencia: '',
-                    conta: '',
-                    chave_pix: '',
-                    status: 'ativo',
-                  })
-                }
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Novo Parceiro</span>
-              </button>
+              {!isReadOnly && (
+                <button
+                  onClick={() =>
+                    setEditandoParceiro({
+                      nome: '',
+                      cpf_cnpj: '',
+                      contato: '',
+                      percentual_comissao: 10,
+                      banco: '',
+                      agencia: '',
+                      conta: '',
+                      chave_pix: '',
+                      status: 'ativo',
+                    })
+                  }
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Novo Parceiro</span>
+                </button>
+              )}
             </div>
 
             {/* Formulário Parceiro */}
@@ -2150,35 +2665,41 @@ export default function AdminConsolePage() {
                         </td>
                         <td className="p-3.5 text-right">
                           {com.status !== 'paga' ? (
-                            (() => {
-                              const pRef = parceiros.find((p) => p.id === com.parceiro_id)
-                              const liberado = Boolean(
-                                pRef?.documento_fiscal_validado && pRef?.documento_fiscal_url,
-                              )
-                              return liberado ? (
-                                <button
-                                  onClick={() => handlePagarComissao(com)}
-                                  className="px-3 py-1 rounded bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow hover:bg-[#0fa376] transition-all"
-                                  title="Documentação fiscal conferida. Registrar liquidação."
-                                >
-                                  Registrar Pagamento
-                                </button>
-                              ) : (
-                                <div className="inline-block text-right">
+                            isReadOnly ? (
+                              <span className="text-[11px] text-[#93A3B5]/50 italic">
+                                Somente leitura
+                              </span>
+                            ) : (
+                              (() => {
+                                const pRef = parceiros.find((p) => p.id === com.parceiro_id)
+                                const liberado = Boolean(
+                                  pRef?.documento_fiscal_validado && pRef?.documento_fiscal_url,
+                                )
+                                return liberado ? (
                                   <button
-                                    disabled
-                                    className="px-3 py-1 rounded bg-[#16202B] text-[#93A3B5] cursor-not-allowed text-xs font-semibold border border-[rgba(244,247,250,0.1)] opacity-60"
-                                    title="Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o pagamento"
+                                    onClick={() => handlePagarComissao(com)}
+                                    className="px-3 py-1 rounded bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow hover:bg-[#0fa376] transition-all"
+                                    title="Documentação fiscal conferida. Registrar liquidação."
                                   >
                                     Registrar Pagamento
                                   </button>
-                                  <span className="block text-[9px] text-[#EF4444] mt-0.5 max-w-[150px] leading-tight text-right">
-                                    Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o
-                                    pagamento
-                                  </span>
-                                </div>
-                              )
-                            })()
+                                ) : (
+                                  <div className="inline-block text-right">
+                                    <button
+                                      disabled
+                                      className="px-3 py-1 rounded bg-[#16202B] text-[#93A3B5] cursor-not-allowed text-xs font-semibold border border-[rgba(244,247,250,0.1)] opacity-60"
+                                      title="Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o pagamento"
+                                    >
+                                      Registrar Pagamento
+                                    </button>
+                                    <span className="block text-[9px] text-[#EF4444] mt-0.5 max-w-[150px] leading-tight text-right">
+                                      Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o
+                                      pagamento
+                                    </span>
+                                  </div>
+                                )
+                              })()
+                            )
                           ) : (
                             <span className="text-[10px] text-[#93A3B5] font-mono">
                               Pago em{' '}
@@ -2531,60 +3052,193 @@ export default function AdminConsolePage() {
                         </div>
                       </div>
 
-                      <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          per.status === 'aprovado'
-                            ? 'bg-[#12B886]/20 text-[#12B886]'
-                            : per.status === 'rejeitado'
-                              ? 'bg-[#F03E54]/20 text-[#F03E54]'
-                              : 'bg-[#D9B36C]/20 text-[#D9B36C]'
-                        }`}
-                      >
-                        Status: {per.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            per.status === 'aprovado'
+                              ? 'bg-[#12B886]/20 text-[#12B886]'
+                              : per.status === 'suspenso'
+                                ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 animate-pulse'
+                                : per.status === 'rejeitado'
+                                  ? 'bg-[#F03E54]/20 text-[#F03E54]'
+                                  : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                          }`}
+                        >
+                          Status: {per.status}
+                        </span>
+
+                        {/* Botão de Reativação se o perito estiver suspenso */}
+                        {per.status === 'suspenso' && !isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setModalReativarPerito({
+                                aberto: true,
+                                perito: per,
+                                motivo: '',
+                                novaValidadeArt: per.validade_art || '',
+                                submetendo: false,
+                              })
+                            }
+                            className="px-3 py-1 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow hover:bg-[#0ca678] transition-colors"
+                          >
+                            Reativar Perito
+                          </button>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
+                    {/* Alerta de Perito Suspenso */}
+                    {per.status === 'suspenso' && (
+                      <div className="p-3 rounded-xl bg-[#EF4444]/15 border border-[#EF4444]/40 text-xs text-[#EF4444] space-y-1">
+                        <strong className="font-bold flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4" />
+                          Perito Suspenso — ART Vencida ou Decisão de Auditoria
+                        </strong>
+                        <p className="text-[11px] text-[#F4F7FA]/90">
+                          Motivo:{' '}
+                          {per.motivo_suspensao ||
+                            'Validade da ART expirada no sistema automático.'}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px]">
                       <div>
                         <span className="text-[#93A3B5] block">ART / RRT Vinculada:</span>
                         <strong className="text-[#D9B36C] font-mono">
                           {per.numero_art_rrt || 'Não informada'}
                         </strong>
                       </div>
+
+                      {/* Validade da ART com badge de alerta e edição inline */}
+                      <div>
+                        <span className="text-[#93A3B5] block mb-1">Validade da ART:</span>
+                        {editandoArtId === per.id ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="date"
+                              value={novaValidadeArtInput}
+                              onChange={(e) => setNovaValidadeArtInput(e.target.value)}
+                              className="px-2 py-1 rounded bg-[#111820] border border-[rgba(244,247,250,0.2)] text-xs text-[#F4F7FA] font-mono"
+                            />
+                            <button
+                              type="button"
+                              disabled={salvandoArt}
+                              onClick={() => handleSalvarValidadeArt(per.id)}
+                              className="px-2 py-1 rounded bg-[#12B886] text-[#0A0E12] font-bold text-[10px]"
+                            >
+                              Salvar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditandoArtId(null)
+                                setNovaValidadeArtInput('')
+                              }}
+                              className="px-2 py-1 rounded bg-[#16202B] text-[#93A3B5] text-[10px]"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-[#F4F7FA]">
+                              {per.validade_art
+                                ? new Date(per.validade_art).toLocaleDateString('pt-BR')
+                                : 'Não cadastrada'}
+                            </span>
+
+                            {/* Badges de alerta de ART */}
+                            {(() => {
+                              if (!per.validade_art) return null
+                              const hoje = new Date()
+                              hoje.setHours(0, 0, 0, 0)
+                              const val = new Date(per.validade_art)
+                              const diffDias = Math.ceil(
+                                (val.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24),
+                              )
+
+                              if (diffDias < 0) {
+                                return (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40">
+                                    Vencida ({Math.abs(diffDias)}d atrás)
+                                  </span>
+                                )
+                              }
+                              if (diffDias <= 60) {
+                                return (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#D9B36C]/20 text-[#D9B36C] border border-[#D9B36C]/40">
+                                    Vence em {diffDias} dias
+                                  </span>
+                                )
+                              }
+                              return (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#12B886]/10 text-[#12B886]">
+                                  Regular ({diffDias}d)
+                                </span>
+                              )
+                            })()}
+
+                            {!isReadOnly && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditandoArtId(per.id)
+                                  setNovaValidadeArtInput(
+                                    per.validade_art ? per.validade_art.slice(0, 10) : '',
+                                  )
+                                }}
+                                className="text-[10px] text-[#12B886] hover:underline ml-1"
+                              >
+                                Editar
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
                       <div>
                         <span className="text-[#93A3B5] block">Observação Atual do Auditor:</span>
-                        <span className="text-[#F4F7FA]">
+                        <span className="text-[#F4F7FA] break-words">
                           {per.observacao_auditor || 'Sem observações'}
                         </span>
                       </div>
                     </div>
 
                     {/* Ação de Julgar */}
-                    {per.status === 'pendente' && (
-                      <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <input
-                          type="text"
-                          placeholder="Parecer do auditor (ex: Documentação homologada com sucesso)..."
-                          value={obsPerito[per.id] || ''}
-                          onChange={(e) => setObsPerito({ ...obsPerito, [per.id]: e.target.value })}
-                          className="flex-1 px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
-                        />
-                        <button
-                          onClick={() => handleJulgarPerito(per.id, 'aprovado')}
-                          className="px-4 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow flex items-center justify-center gap-1.5"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Aprovar Perito</span>
-                        </button>
-                        <button
-                          onClick={() => handleJulgarPerito(per.id, 'rejeitado')}
-                          className="px-4 py-2 rounded-lg bg-[#F03E54]/20 text-[#F03E54] hover:bg-[#F03E54] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
-                        >
-                          <XCircle className="w-3.5 h-3.5" />
-                          <span>Rejeitar</span>
-                        </button>
-                      </div>
-                    )}
+                    {per.status === 'pendente' &&
+                      (isReadOnly ? (
+                        <div className="text-[11px] text-[#93A3B5]/50 italic pt-1">
+                          Julgamento pericial restrito ao Administrador.
+                        </div>
+                      ) : (
+                        <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                          <input
+                            type="text"
+                            placeholder="Parecer do auditor (ex: Documentação homologada com sucesso)..."
+                            value={obsPerito[per.id] || ''}
+                            onChange={(e) =>
+                              setObsPerito({ ...obsPerito, [per.id]: e.target.value })
+                            }
+                            className="flex-1 px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
+                          />
+                          <button
+                            onClick={() => handleJulgarPerito(per.id, 'aprovado')}
+                            className="px-4 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs shadow-emerald-glow flex items-center justify-center gap-1.5"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Aprovar Perito</span>
+                          </button>
+                          <button
+                            onClick={() => handleJulgarPerito(per.id, 'rejeitado')}
+                            className="px-4 py-2 rounded-lg bg-[#F03E54]/20 text-[#F03E54] hover:bg-[#F03E54] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>Rejeitar</span>
+                          </button>
+                        </div>
+                      ))}
                   </div>
                 ))}
               </div>
@@ -2637,6 +3291,480 @@ export default function AdminConsolePage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* 9. AUDITORIA & TRILHA IMUTÁVEL (audit_log append-only) */}
+        {activeTab === 'auditoria' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#12B886]" />
+                  <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                    Trilha Central de Auditoria Corporativa (audit_log)
+                  </h2>
+                </div>
+                <p className="text-xs text-[#93A3B5] mt-0.5">
+                  Registros append-only de governança, congelamentos, anulações e liquidações.
+                  Acesso estritamente somente leitura para todos os usuários e administradores.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={carregarAuditLogs}
+                disabled={auditLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111820] border border-[#12B886]/40 text-xs text-[#12B886] font-semibold hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${auditLoading ? 'animate-spin' : ''}`} />
+                <span>Atualizar Trilha</span>
+              </button>
+            </div>
+
+            {/* Barra de Filtros */}
+            <div className="p-4 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                  Entidade
+                </label>
+                <select
+                  value={auditFiltroEntidade}
+                  onChange={(e) => {
+                    setAuditFiltroEntidade(e.target.value)
+                    setAuditPagina(1)
+                  }}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                >
+                  <option value="todas">Todas as Entidades</option>
+                  <option value="cobrancas">cobrancas</option>
+                  <option value="cdv_pecas">cdv_pecas</option>
+                  <option value="cdv_lotes">cdv_lotes</option>
+                  <option value="dpp_destinacao_final">dpp_destinacao_final</option>
+                  <option value="perito_credenciamentos">perito_credenciamentos</option>
+                  <option value="users">users</option>
+                  <option value="auth">auth / credenciais</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                  Ação
+                </label>
+                <select
+                  value={auditFiltroAcao}
+                  onChange={(e) => {
+                    setAuditFiltroAcao(e.target.value)
+                    setAuditPagina(1)
+                  }}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                >
+                  <option value="todas">Todas as Ações</option>
+                  <option value="liquidacao_manual">liquidacao_manual</option>
+                  <option value="anulacao_documento">anulacao_documento</option>
+                  <option value="suspensao_art_vencida">suspensao_art_vencida</option>
+                  <option value="reativacao_perito">reativacao_perito</option>
+                  <option value="alteracao_role">alteracao_role</option>
+                  <option value="password_reset_request">password_reset_request</option>
+                  <option value="password_reset_confirm">password_reset_confirm</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                  Ator (E-mail ou ID)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Filtro de ator..."
+                  value={auditFiltroAtor}
+                  onChange={(e) => {
+                    setAuditFiltroAtor(e.target.value)
+                    setAuditPagina(1)
+                  }}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                  Data Inicial
+                </label>
+                <input
+                  type="date"
+                  value={auditFiltroDataInicio}
+                  onChange={(e) => {
+                    setAuditFiltroDataInicio(e.target.value)
+                    setAuditPagina(1)
+                  }}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-[#93A3B5] mb-1">
+                  Data Final
+                </label>
+                <input
+                  type="date"
+                  value={auditFiltroDataFim}
+                  onChange={(e) => {
+                    setAuditFiltroDataFim(e.target.value)
+                    setAuditPagina(1)
+                  }}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Tabela de Audit Logs */}
+            <div className="rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#0D1217] text-[#93A3B5] uppercase text-[10px] border-b border-[rgba(244,247,250,0.08)]">
+                  <tr>
+                    <th className="p-3.5">Data / Hora</th>
+                    <th className="p-3.5">Entidade</th>
+                    <th className="p-3.5">Registro ID</th>
+                    <th className="p-3.5">Ação Realizada</th>
+                    <th className="p-3.5">Ator Responsável</th>
+                    <th className="p-3.5">IP</th>
+                    <th className="p-3.5 text-right">Detalhes JSON</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[rgba(244,247,250,0.05)]">
+                  {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-[#16202B]/50 transition-colors">
+                      <td className="p-3.5 font-mono text-[11px] text-[#93A3B5] whitespace-nowrap">
+                        {new Date(log.created).toLocaleString('pt-BR')}
+                      </td>
+                      <td className="p-3.5 font-mono font-bold text-[#D9B36C]">{log.entidade}</td>
+                      <td className="p-3.5 font-mono text-[11px] text-[#F4F7FA] truncate max-w-[120px]">
+                        {log.registro_id}
+                      </td>
+                      <td className="p-3.5">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#12B886]/15 text-[#12B886] border border-[#12B886]/30">
+                          {log.acao}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-mono text-[11px] text-[#F4F7FA] truncate max-w-[160px]">
+                        {log.ator_email || log.ator_id || 'sistema'}
+                      </td>
+                      <td className="p-3.5 font-mono text-[10px] text-[#93A3B5]">
+                        {log.ip || '-'}
+                      </td>
+                      <td className="p-3.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setAuditDetalheLog(log)}
+                          className="px-2.5 py-1 rounded bg-[#16202B] hover:bg-[#12B886] hover:text-[#0A0E12] text-[#D9B36C] border border-[rgba(244,247,250,0.12)] text-[11px] font-semibold transition-colors"
+                        >
+                          Ver JSON
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {auditLogs.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-xs text-[#93A3B5]">
+                        {auditLoading
+                          ? 'Carregando trilha de auditoria...'
+                          : 'Nenhum evento auditado encontrado com os filtros selecionados.'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {/* Paginação */}
+              <div className="p-3.5 border-t border-[rgba(244,247,250,0.08)] bg-[#0D1217] flex items-center justify-between text-xs text-[#93A3B5]">
+                <span>
+                  Total de registros auditados:{' '}
+                  <strong className="text-[#F4F7FA]">{totalAuditLogs}</strong>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={auditPagina <= 1}
+                    onClick={() => setAuditPagina((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.1)] disabled:opacity-40"
+                  >
+                    Anterior
+                  </button>
+                  <span className="font-mono text-[#F4F7FA]">Página {auditPagina}</span>
+                  <button
+                    type="button"
+                    disabled={auditLogs.length < 25}
+                    onClick={() => setAuditPagina((p) => p + 1)}
+                    className="px-3 py-1 rounded bg-[#16202B] border border-[rgba(244,247,250,0.1)] disabled:opacity-40"
+                  >
+                    Próxima
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL DETALHE JSON DE AUDIT_LOG */}
+        {auditDetalheLog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-2xl rounded-2xl bg-[#111820] border-2 border-[#12B886] p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
+              <div className="flex items-center justify-between border-b border-[rgba(244,247,250,0.1)] pb-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#12B886]" />
+                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                    Detalhes do Evento de Auditoria ({auditDetalheLog.acao})
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAuditDetalheLog(null)}
+                  className="text-[#93A3B5] hover:text-[#F4F7FA]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-[#0A0E12] p-3 rounded-xl border border-[rgba(244,247,250,0.06)]">
+                <div>
+                  <span className="text-[#93A3B5] block">Entidade:</span>
+                  <strong className="text-[#D9B36C] font-mono">{auditDetalheLog.entidade}</strong>
+                </div>
+                <div>
+                  <span className="text-[#93A3B5] block">Registro ID:</span>
+                  <strong className="text-[#F4F7FA] font-mono">
+                    {auditDetalheLog.registro_id}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-[#93A3B5] block">Ator:</span>
+                  <strong className="text-[#12B886] truncate block">
+                    {auditDetalheLog.ator_email || auditDetalheLog.ator_id}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-[#93A3B5] block">Data/Hora:</span>
+                  <span className="text-[#F4F7FA] font-mono">
+                    {new Date(auditDetalheLog.created).toLocaleString('pt-BR')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#93A3B5]">
+                  Payload / Metadados Imutáveis (JSON)
+                </span>
+                <pre className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] text-[#12B886] font-mono text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                  {JSON.stringify(auditDetalheLog.detalhes || {}, null, 2)}
+                </pre>
+              </div>
+
+              <div className="flex justify-end pt-2 border-t border-[rgba(244,247,250,0.08)]">
+                <button
+                  type="button"
+                  onClick={() => setAuditDetalheLog(null)}
+                  className="px-5 py-2 rounded-xl bg-[#16202B] text-xs font-semibold text-[#F4F7FA]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL ANULAÇÃO FORMAL DE DOCUMENTO DPP */}
+        {modalAnulacao.aberto && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-lg rounded-2xl bg-[#111820] border-2 border-[#EF4444] p-6 space-y-5 shadow-2xl">
+              <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.1)] pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-[#EF4444]" />
+                    <h3 className="font-heading font-extrabold text-lg text-[#F4F7FA]">
+                      Anulação Formal de Documento DPP
+                    </h3>
+                  </div>
+                  <span className="text-xs text-[#93A3B5] mt-1 block">
+                    {modalAnulacao.identificadorVisual}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setModalAnulacao({
+                      aberto: false,
+                      tipo: 'lote',
+                      id: '',
+                      identificadorVisual: '',
+                      motivo: '',
+                      submetendo: false,
+                    })
+                  }
+                  className="text-[#93A3B5] hover:text-[#F4F7FA]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/30 text-xs text-[#F4F7FA] space-y-2">
+                <strong className="text-[#EF4444] block uppercase font-bold">
+                  Atenção: Ação Irreversível e Auditada
+                </strong>
+                <p className="text-[#93A3B5] leading-relaxed">
+                  A anulação congela o documento, atualiza seu status para <strong>anulado</strong>{' '}
+                  e registra o evento na trilha imutável. O registro NÃO é excluído da base e sua
+                  anulação ficará permanentemente visível para conferência pública pelo hash
+                  canônico.
+                </p>
+              </div>
+
+              <form onSubmit={handleExecutarAnulacaoDpp} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-[#93A3B5] font-semibold mb-1">
+                    Justificativa Formal Obrigatória * (mínimo 10 caracteres)
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    minLength={10}
+                    placeholder="Descreva o motivo formal da anulação (ex: Erro no balanço de massa, duplicidade cadastral, laudo retificado)..."
+                    value={modalAnulacao.motivo}
+                    onChange={(e) => setModalAnulacao({ ...modalAnulacao, motivo: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:border-[#EF4444]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(244,247,250,0.08)]">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModalAnulacao({
+                        aberto: false,
+                        tipo: 'lote',
+                        id: '',
+                        identificadorVisual: '',
+                        motivo: '',
+                        submetendo: false,
+                      })
+                    }
+                    className="px-4 py-2 rounded-xl bg-[#16202B] text-xs text-[#93A3B5]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={modalAnulacao.submetendo || modalAnulacao.motivo.length < 10}
+                    className="px-5 py-2 rounded-xl bg-[#EF4444] text-white font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-colors hover:bg-[#dc2626]"
+                  >
+                    {modalAnulacao.submetendo ? 'Anulando Documento...' : 'Confirmar Anulação'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL REATIVAÇÃO DE PERITO SUSPENSO */}
+        {modalReativarPerito.aberto && modalReativarPerito.perito && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-lg rounded-2xl bg-[#111820] border-2 border-[#12B886] p-6 space-y-5 shadow-2xl">
+              <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.1)] pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-[#12B886]" />
+                    <h3 className="font-heading font-extrabold text-lg text-[#F4F7FA]">
+                      Reativação de Perito Credenciado
+                    </h3>
+                  </div>
+                  <span className="text-xs text-[#93A3B5] mt-1 block">
+                    {modalReativarPerito.perito.nome_completo} (
+                    {modalReativarPerito.perito.conselho_tipo}{' '}
+                    {modalReativarPerito.perito.registro_uf})
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setModalReativarPerito({
+                      aberto: false,
+                      perito: null,
+                      motivo: '',
+                      novaValidadeArt: '',
+                      submetendo: false,
+                    })
+                  }
+                  className="text-[#93A3B5] hover:text-[#F4F7FA]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleExecutarReativacaoPerito} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-[#93A3B5] font-semibold mb-1">
+                    Nova Data de Validade da ART
+                  </label>
+                  <input
+                    type="date"
+                    value={modalReativarPerito.novaValidadeArt}
+                    onChange={(e) =>
+                      setModalReativarPerito({
+                        ...modalReativarPerito,
+                        novaValidadeArt: e.target.value,
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#93A3B5] font-semibold mb-1">
+                    Motivo da Reativação / Parecer da Auditoria * (mínimo 5 caracteres)
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    minLength={5}
+                    placeholder="Descreva a comprovação da renovação da ART pericial, certidão de regularidade do conselho..."
+                    value={modalReativarPerito.motivo}
+                    onChange={(e) =>
+                      setModalReativarPerito({
+                        ...modalReativarPerito,
+                        motivo: e.target.value,
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:border-[#12B886]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(244,247,250,0.08)]">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModalReativarPerito({
+                        aberto: false,
+                        perito: null,
+                        motivo: '',
+                        novaValidadeArt: '',
+                        submetendo: false,
+                      })
+                    }
+                    className="px-4 py-2 rounded-xl bg-[#16202B] text-xs text-[#93A3B5]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={
+                      modalReativarPerito.submetendo || modalReativarPerito.motivo.length < 5
+                    }
+                    className="px-5 py-2 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-colors shadow-emerald-glow"
+                  >
+                    {modalReativarPerito.submetendo ? 'Reativando...' : 'Reativar Credenciamento'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

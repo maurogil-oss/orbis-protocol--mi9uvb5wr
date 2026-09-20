@@ -18,10 +18,12 @@ export interface PeritoCredenciamentoRecord {
   termo_versao: string
   consentimento_data_hora: string
   consentimento_ip?: string
-  status: 'pendente' | 'aprovado' | 'rejeitado'
+  status: 'pendente' | 'aprovado' | 'rejeitado' | 'suspenso'
   observacao_auditor?: string
   aprovado_por?: string
   data_decisao?: string
+  validade_art?: string
+  motivo_suspensao?: string
   created: string
   updated: string
 }
@@ -102,10 +104,12 @@ export async function listarCredenciamentosPeritos(
  */
 export async function julgarCredenciamentoPerito(params: {
   id: string
-  status: 'aprovado' | 'rejeitado'
+  status: 'aprovado' | 'rejeitado' | 'suspenso'
   observacao_auditor?: string
   aprovado_por?: string
   usuarioId?: string
+  validade_art?: string
+  motivo_suspensao?: string
 }): Promise<PeritoCredenciamentoRecord> {
   const updateData: Record<string, any> = {
     status: params.status,
@@ -113,26 +117,81 @@ export async function julgarCredenciamentoPerito(params: {
     aprovado_por: params.aprovado_por || pb.authStore.model?.email || 'auditor_orbis',
     data_decisao: new Date().toISOString(),
   }
+  if (params.validade_art !== undefined) {
+    updateData.validade_art = params.validade_art
+  }
+  if (params.motivo_suspensao !== undefined) {
+    updateData.motivo_suspensao = params.motivo_suspensao
+  }
 
   const updatedRecord = await pb
     .collection('perito_credenciamentos')
     .update<PeritoCredenciamentoRecord>(params.id, updateData)
 
   // Se aprovado e temos um usuarioId associado, atualiza a role do usuário para 'perito'
-  if (params.status === 'aprovado') {
-    const targetUserId = params.usuarioId || updatedRecord.usuario
-    if (targetUserId) {
-      try {
-        await pb.collection('users').update(targetUserId, {
-          role: 'perito',
-        })
-      } catch (e) {
-        console.warn('[julgarCredenciamentoPerito] Não foi possível atualizar role do usuário:', e)
+  const targetUserId = params.usuarioId || updatedRecord.usuario
+  if (targetUserId) {
+    try {
+      if (params.status === 'aprovado') {
+        await pb.collection('users').update(targetUserId, { role: 'perito' })
+      } else if (params.status === 'suspenso') {
+        // Se suspenso, rebaixa papel do perito
+        await pb.collection('users').update(targetUserId, { role: 'cliente' })
       }
+    } catch (e) {
+      console.warn('[julgarCredenciamentoPerito] Não foi possível atualizar role do usuário:', e)
     }
   }
 
   return updatedRecord
+}
+
+/**
+ * Atualiza inline a validade da ART de um perito credenciado
+ */
+export async function atualizarValidadeArtPerito(
+  id: string,
+  validadeArt: string,
+): Promise<PeritoCredenciamentoRecord> {
+  return pb
+    .collection('perito_credenciamentos')
+    .update<PeritoCredenciamentoRecord>(id, { validade_art: validadeArt })
+}
+
+/**
+ * Reativa um perito suspenso com registro formal do motivo da reativação
+ */
+export async function reativarPeritoSuspenso(params: {
+  id: string
+  motivoReativacao: string
+  novaValidadeArt?: string
+  auditorEmail?: string
+}): Promise<PeritoCredenciamentoRecord> {
+  const record = await pb
+    .collection('perito_credenciamentos')
+    .getOne<PeritoCredenciamentoRecord>(params.id)
+  const updateData: Record<string, any> = {
+    status: 'aprovado',
+    motivo_suspensao: '',
+    observacao_auditor: `Reativação aprovada: ${params.motivoReativacao} (${params.auditorEmail || 'auditor'})`,
+    data_decisao: new Date().toISOString(),
+  }
+  if (params.novaValidadeArt) {
+    updateData.validade_art = params.novaValidadeArt
+  }
+
+  const updated = await pb
+    .collection('perito_credenciamentos')
+    .update<PeritoCredenciamentoRecord>(params.id, updateData)
+
+  if (record.usuario) {
+    try {
+      await pb.collection('users').update(record.usuario, { role: 'perito' })
+    } catch (e) {
+      console.warn('[reativarPeritoSuspenso] Erro ao restaurar role:', e)
+    }
+  }
+  return updated
 }
 
 /**

@@ -232,6 +232,34 @@ export default function PassaportePublicoPage() {
             {/* CONTEÚDO DA ABA DPP DA PEÇA */}
             {abaAtiva === 'passaporte' && (
               <>
+                {/* AVISO DESTACADO DE DOCUMENTO ANULADO (Item 3) */}
+                {peca.status === 'anulado' && (
+                  <div className="p-5 sm:p-6 rounded-3xl bg-[#EF4444]/15 border-2 border-[#EF4444] text-xs text-[#EF4444] space-y-2 mb-6 shadow-xl animate-fade-in">
+                    <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-sm text-[#EF4444]">
+                      <XCircle className="w-5 h-5 shrink-0" />
+                      <span>Documento Anulado na Trilha de Auditoria</span>
+                    </div>
+                    <p className="text-[#F4F7FA] leading-relaxed text-sm">
+                      Documento anulado em{' '}
+                      <strong>
+                        {new Date((peca as any).anulado_em || peca.updated).toLocaleDateString(
+                          'pt-BR',
+                        )}
+                      </strong>{' '}
+                      — motivo registrado na trilha de auditoria: &ldquo;
+                      <span className="italic text-[#EF4444] font-semibold">
+                        {(peca as any).motivo_anulacao || 'Anulação formal homologada'}
+                      </span>
+                      &rdquo;.
+                    </p>
+                    <p className="text-[11px] text-[#93A3B5]">
+                      Em estrita observância às regras de transparência pública dMRV, este registro
+                      NÃO foi removido da plataforma. Seu identificador e o hash de integridade
+                      abaixo permanecem visíveis para conferência e auditoria.
+                    </p>
+                  </div>
+                )}
+
                 {/* HERO DO PASSAPORTE */}
                 <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886]/50 shadow-emerald-glow relative overflow-hidden">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-[rgba(244,247,250,0.1)]">
@@ -247,6 +275,11 @@ export default function PassaportePublicoPage() {
                         <span className="font-mono text-[#12B886] font-bold text-sm bg-[#12B886]/10 px-2.5 py-0.5 rounded-md border border-[#12B886]/30">
                           {peca.selo_dpp}
                         </span>
+                        {peca.status === 'anulado' && (
+                          <span className="px-2.5 py-0.5 rounded-md bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 font-bold text-xs uppercase">
+                            ANULADO
+                          </span>
+                        )}
                         <span>•</span>
                         <span className="font-mono">SKU: {peca.sku_interno}</span>
                         <span>•</span>
@@ -403,7 +436,13 @@ export default function PassaportePublicoPage() {
                       <div className="mt-6 pt-4 border-t border-[rgba(244,247,250,0.08)] space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-[#93A3B5]">Status do DPP:</span>
-                          <span className="px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
+                          <span
+                            className={`px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
+                              peca.status === 'anulado'
+                                ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40'
+                                : 'bg-[#12B886]/20 text-[#12B886]'
+                            }`}
+                          >
                             {peca.status || 'Ativo'}
                           </span>
                         </div>

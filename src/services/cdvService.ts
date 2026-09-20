@@ -63,7 +63,10 @@ export interface CdvLoteRecord extends RecordModel {
   veiculo_baixa_detran: string
   veiculo_seguradora?: string
   origem_envio: 'erp' | 'ecommerce' | 'manual_api' | 'planilha'
-  status: 'processado' | 'parcial' | 'rejeitado'
+  status: 'processado' | 'parcial' | 'rejeitado' | 'anulado'
+  motivo_anulacao?: string
+  anulado_em?: string
+  anulado_por?: string
   total_pecas: number
   total_peso_kg: number
   total_co2e_evitado_kg: number
@@ -89,7 +92,10 @@ export interface CdvPecaRecord extends RecordModel {
   responsavel_crea?: string
   cdv_origem?: string
   cdv_cnpj?: string
-  status: 'ativo' | 'reutilizado' | 'descartado'
+  status: 'ativo' | 'reutilizado' | 'descartado' | 'anulado'
+  motivo_anulacao?: string
+  anulado_em?: string
+  anulado_por?: string
   veiculo_marca_modelo?: string
   veiculo_chassi_mascarado?: string
   veiculo_baixa_detran?: string
