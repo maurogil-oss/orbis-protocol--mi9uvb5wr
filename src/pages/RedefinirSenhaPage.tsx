@@ -33,11 +33,11 @@ export default function RedefinirSenhaPage() {
       return
     }
 
-    if (password.length < 8) {
-      setError('A nova senha deve ter no mínimo 8 caracteres.')
+    const valSenha = validarSenhaForte(password)
+    if (!valSenha.valida) {
+      setError(valSenha.mensagem)
       return
     }
-
     if (password !== confirmPassword) {
       setError('As senhas digitadas não coincidem.')
       return

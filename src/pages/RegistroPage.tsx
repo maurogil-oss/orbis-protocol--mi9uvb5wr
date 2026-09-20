@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 
 import { useSearchParams } from 'react-router-dom'
+import { validarSenhaForte } from '@/lib/passwordPolicy'
 
 export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp' | 'parceiro'
 
@@ -73,8 +74,9 @@ export default function RegistroPage() {
       return
     }
 
-    if (password.length < 8) {
-      setError('A senha deve conter no mínimo 8 caracteres.')
+    const valSenha = validarSenhaForte(password)
+    if (!valSenha.valida) {
+      setError(valSenha.mensagem)
       return
     }
 
@@ -424,7 +426,7 @@ export default function RegistroPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-                Senha (mín. 8 dígitos) *
+                Senha (mín. 10 caracteres, A-Z, a-z, 0-9) *
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
@@ -432,8 +434,8 @@ export default function RegistroPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={8}
+                  placeholder="Ex: SenhaForte2026"
+                  minLength={10}
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
                   required
                 />
