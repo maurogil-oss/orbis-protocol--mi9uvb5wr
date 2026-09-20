@@ -478,7 +478,7 @@ export function simularGreenCapitalEngine(
     economiaAnualMaxima,
     totalLinhasCompativeis: compativeis.length,
     disclaimer:
-      'Simulação indicativa baseada nas condições médias de mercado e normativos vigentes das instituições financeiras parceiras. Não constitui promessa ou garantia de aprovação de crédito, estando a concessão e a taxa final sujeitas à análise cadastral, garantias, score de crédito e governança ambiental da empresa pelo agente financeiro.',
+      'Simulação indicativa baseada nas condições médias de mercado e normativos vigentes das instituições financeiras. Documentos e laudos verificáveis prontos para envio aos agentes financeiros. Não constitui promessa ou garantia de aprovação de crédito, estando a concessão e a taxa final sujeitas à análise cadastral, garantias, score de crédito e governança ambiental da empresa pelo agente financeiro.',
   }
 }
 

@@ -1047,7 +1047,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         '0,15 a 0,60 kg CO2e / kg de alimento processado; 8 a 15 kg CO2e / hL de cerveja',
       elegibilidadeLinhasVerdes: [
         'BNDES Finem Linhas Verdes Agroindústria',
-        'Crédito com spread reduzido em bancos parceiros para fornecedores homologados',
+        'Dossiê técnico com cálculo de pegada de carbono pronto para envio a instituições financeiras para redução de spread',
       ],
       beneficiosTributarios: [
         'Desoneração ou redução de alíquota na Cesta Básica Nacional (LC 214/2025)',

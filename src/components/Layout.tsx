@@ -683,9 +683,10 @@ export default function Layout() {
                 </div>
               </div>
               <p className="text-sm text-[#93A3B5] leading-relaxed max-w-md">
-                Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para
-                descarbonização, rastreabilidade fiscal e emissão de selos de sustentabilidade
-                reconhecidos pelo sistema financeiro e grandes compradores.
+                Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para cálculo da
+                pegada de carbono, laudos periciais, conformidade tributária e emissão de selos e
+                passaportes digitais verificáveis — prontos para envio aos órgãos de controle e a
+                instituições financeiras.
               </p>
               <div className="flex items-center gap-3 text-xs text-[#D9B36C]">
                 <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />

@@ -170,8 +170,8 @@ export default function RegistroPage() {
             CRIAR SUA CONTA
           </h1>
           <p className="text-xs sm:text-sm text-[#93A3B5] mt-1 max-w-md">
-            Acesso permanente a laudos periciais dMRV, passaportes de descarbonização e painel de
-            governança regulatória.
+            Acesso permanente ao cálculo da pegada de carbono, laudos periciais dMRV, passaportes
+            verificáveis e documentos prontos para envio.
           </p>
         </div>
 

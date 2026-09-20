@@ -165,15 +165,11 @@ export default function Index() {
 
             {/* Descrição em parágrafo */}
             <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed max-w-2xl mb-10">
-              A plataforma que transforma notas fiscais e dados operacionais em{' '}
-              <strong className="text-[#F4F7FA] font-semibold">
-                laudos periciais de descarbonização
-              </strong>
-              , <strong className="text-[#F4F7FA] font-semibold">conformidade tributária</strong> e{' '}
-              <strong className="text-[#F4F7FA] font-semibold">
-                passaportes digitais de produto
-              </strong>{' '}
-              aceitos por grandes compradores e pelo sistema financeiro.
+              A plataforma que transforma notas fiscais e dados operacionais em prova: cálculo da
+              pegada de carbono, laudos periciais de descarbonização, conformidade tributária e
+              passaportes digitais de produto verificáveis — facilitando o controle da sua empresa,
+              com documentos prontos para envio aos órgãos de controle, à sua contabilidade e a
+              instituições financeiras.
             </p>
 
             {/* CTAs do Hero: 1 Primário em destaque + Secundários discretos */}
