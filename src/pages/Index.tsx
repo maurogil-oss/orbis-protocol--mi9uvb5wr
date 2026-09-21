@@ -22,6 +22,7 @@ import {
   Car,
   QrCode,
   Lock,
+  Recycle,
 } from 'lucide-react'
 
 export default function Index() {
@@ -357,6 +358,44 @@ export default function Index() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Bloco Institucional Adicional: Logística Reversa — em estruturação */}
+          <div className="mt-8 p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 transition-all duration-300">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-3 max-w-3xl">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D9B36C]">
+                    INFRAESTRUTURA DE PROVA
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.15)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D9B36C]" />
+                    Em estruturação
+                  </span>
+                </div>
+
+                <h3 className="font-heading font-extrabold text-xl sm:text-2xl text-[#F4F7FA] leading-tight">
+                  Logística Reversa — em estruturação
+                </h3>
+
+                <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
+                  Estendemos nossa infraestrutura de prova documental à logística reversa (PNRS /
+                  Decreto 11.413/2023): rastreabilidade de lotes de material, balanço de massa
+                  auditável e documentos prontos para envio a órgãos de controle e entidades
+                  gestoras.
+                </p>
+              </div>
+
+              <div className="shrink-0 pt-2 md:pt-0">
+                <Link
+                  to="/diagnostico"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#12B886] hover:text-[#0A0E12] hover:border-[#12B886] transition-all"
+                >
+                  <span>Fale com a equipe</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

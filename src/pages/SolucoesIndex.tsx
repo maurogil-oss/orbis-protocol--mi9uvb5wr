@@ -56,6 +56,16 @@ export default function SolucoesIndex() {
       link: '/solucoes/cadeias-produtivas',
       ctaText: 'Conhecer os 15 Protocolos',
     },
+    {
+      tag: 'INFRAESTRUTURA DE PROVA',
+      badgeEstruturacao: 'Em estruturação',
+      titulo: 'Logística Reversa — em estruturação',
+      subtitulo: 'Rastreabilidade documental e conformidade com o Decreto 11.413/2023.',
+      descricao:
+        'Estendemos nossa infraestrutura de prova documental à logística reversa (PNRS / Decreto 11.413/2023): rastreabilidade de lotes de material, balanço de massa auditável e documentos prontos para envio a órgãos de controle e entidades gestoras.',
+      link: '/diagnostico',
+      ctaText: 'Fale com a equipe',
+    },
   ]
 
   return (
@@ -85,9 +95,17 @@ export default function SolucoesIndex() {
               className="flex flex-col justify-between p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group"
             >
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/30 inline-block mb-4">
-                  {bloco.tag}
-                </span>
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/30 inline-block">
+                    {bloco.tag}
+                  </span>
+                  {'badgeEstruturacao' in bloco && bloco.badgeEstruturacao && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.15)]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D9B36C]" />
+                      {bloco.badgeEstruturacao}
+                    </span>
+                  )}
+                </div>
 
                 <h2 className="font-heading font-bold text-2xl text-[#F4F7FA] mb-2 group-hover:text-[#12B886] transition-colors">
                   {bloco.titulo}
