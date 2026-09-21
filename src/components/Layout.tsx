@@ -124,6 +124,13 @@ export default function Layout() {
           path: '/corporativo',
           icon: Building2,
         },
+        {
+          title: 'Logística Reversa (PNRS)',
+          desc: 'Rastreabilidade de lotes de material e balanço de massa auditável — módulo em estruturação.',
+          path: '/solucoes#logistica-reversa',
+          icon: Layers,
+          badge: 'Em estruturação',
+        },
       ],
     },
     {
@@ -343,15 +350,23 @@ export default function Layout() {
                                       <Icon className="w-4 h-4" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                      <span
-                                        className={`text-sm font-semibold tracking-wide transition-colors ${
-                                          isActive
-                                            ? 'text-[#12B886]'
-                                            : 'text-[#F4F7FA] group-hover:text-[#12B886]'
-                                        }`}
-                                      >
-                                        {item.title}
-                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <span
+                                          className={`text-sm font-semibold tracking-wide transition-colors ${
+                                            isActive
+                                              ? 'text-[#12B886]'
+                                              : 'text-[#F4F7FA] group-hover:text-[#12B886]'
+                                          }`}
+                                        >
+                                          {item.title}
+                                        </span>
+                                        {'badge' in item && item.badge && (
+                                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/30 shrink-0">
+                                            <span className="w-1 h-1 rounded-full bg-[#D9B36C]" />
+                                            {item.badge}
+                                          </span>
+                                        )}
+                                      </div>
                                       <span className="text-xs text-[#93A3B5] leading-snug line-clamp-1">
                                         {item.desc}
                                       </span>
@@ -587,7 +602,15 @@ export default function Layout() {
                               <div className="flex items-center gap-2.5 truncate">
                                 <Icon className="w-3.5 h-3.5 opacity-70 flex-shrink-0" />
                                 <div className="truncate">
-                                  <div className="truncate font-medium">{item.title}</div>
+                                  <div className="flex items-center gap-1.5 truncate">
+                                    <span className="truncate font-medium">{item.title}</span>
+                                    {'badge' in item && item.badge && (
+                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-semibold bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/30 shrink-0">
+                                        <span className="w-1 h-1 rounded-full bg-[#D9B36C]" />
+                                        {item.badge}
+                                      </span>
+                                    )}
+                                  </div>
                                   <div className="text-[11px] text-[#93A3B5]/70 truncate">
                                     {item.desc}
                                   </div>

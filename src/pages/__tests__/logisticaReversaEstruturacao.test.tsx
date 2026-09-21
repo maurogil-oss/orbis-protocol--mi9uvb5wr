@@ -4,6 +4,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect } from 'vitest'
 import Index from '@/pages/Index'
 import SolucoesIndex from '@/pages/SolucoesIndex'
+import Layout from '@/components/Layout'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 describe('Bloco Institucional: Logística Reversa — em estruturação', () => {
   const TITULO_EXATO = 'Logística Reversa — em estruturação'
@@ -57,5 +59,42 @@ describe('Bloco Institucional: Logística Reversa — em estruturação', () => 
     const cta = screen.getByRole('link', { name: new RegExp(CTA_EXATO, 'i') })
     expect(cta).toBeDefined()
     expect(cta.getAttribute('href')).toBe('/diagnostico')
+
+    // Âncora id="logistica-reversa" presente no card e scroll-mt configurado para compensar header fixo
+    const cardEl = document.getElementById('logistica-reversa')
+    expect(cardEl).not.toBeNull()
+    expect(cardEl?.classList.contains('scroll-mt-32')).toBe(true)
+  })
+
+  it('exibe o item no menu Soluções (Layout) no dropdown desktop e drawer mobile com âncora /solucoes#logistica-reversa e badge "Em estruturação"', () => {
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <Layout />
+        </MemoryRouter>
+      </AuthProvider>,
+    )
+
+    // O dropdown de soluções é aberto pelo botão "Soluções"
+    // No dropdown e drawer, procuramos pelos links que apontam para /solucoes#logistica-reversa
+    const links = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '/solucoes#logistica-reversa')
+
+    // Esperado ao menos 1 (dropdown desktop e drawer mobile carregam a lista de itens)
+    expect(links.length).toBeGreaterThanOrEqual(1)
+
+    // Verifica que o título "Logística Reversa (PNRS)" e a descrição curta estão presentes
+    const titulos = screen.getAllByText('Logística Reversa (PNRS)')
+    expect(titulos.length).toBeGreaterThanOrEqual(1)
+
+    const descricoes = screen.getAllByText(
+      'Rastreabilidade de lotes de material e balanço de massa auditável — módulo em estruturação.',
+    )
+    expect(descricoes.length).toBeGreaterThanOrEqual(1)
+
+    // Verifica a presença da badge "Em estruturação" nos links
+    const badges = screen.getAllByText('Em estruturação')
+    expect(badges.length).toBeGreaterThanOrEqual(1)
   })
 })

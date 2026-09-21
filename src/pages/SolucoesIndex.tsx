@@ -92,7 +92,8 @@ export default function SolucoesIndex() {
           {blocosPrincipais.map((bloco, idx) => (
             <div
               key={idx}
-              className="flex flex-col justify-between p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group"
+              id={bloco.badgeEstruturacao ? 'logistica-reversa' : undefined}
+              className="flex flex-col justify-between p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group scroll-mt-32"
             >
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-4">
