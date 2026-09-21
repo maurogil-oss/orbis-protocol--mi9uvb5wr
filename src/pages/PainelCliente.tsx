@@ -23,7 +23,12 @@ import {
   Coins,
 } from 'lucide-react'
 import { simularGreenCapitalEngine } from '@/services/greenCapitalEngine'
-import { exportarRelatorioDossiePdf } from '@/services/relatorioLaudoPdf'
+import {
+  exportarRelatorioDossiePdf,
+  DocumentoFonteNFe,
+  calcularHashCanonicalDocumentosFonte,
+  exportarDocumentosFonteCsv,
+} from '@/services/relatorioLaudoPdf'
 import {
   calcularComparativoTributario,
   ResultadoComparativoTributario,
@@ -486,11 +491,34 @@ export default function PainelCliente() {
         emissoesTotaisTCO2e: inventarioEmissoes.emissoesTotaisFosseisTCO2e,
       })
 
+      // Mapeamento de documentos fonte (NF-e) com crédito apurado = PIS + COFINS
+      const docsFonteMapeados: DocumentoFonteNFe[] = nfeList.map((item) => ({
+        id: item.id,
+        chave_acesso: item.chave_acesso,
+        numero_nota: item.numero_nota,
+        serie: item.serie,
+        data_emissao: item.data_emissao,
+        cnpj_emitente: item.cnpj_emitente,
+        nome_emitente: item.nome_emitente,
+        valor_total_nf: item.valor_total_nf,
+        credito_apurado: (item.valor_pis || 0) + (item.valor_cofins || 0),
+        valor_pis: item.valor_pis,
+        valor_cofins: item.valor_cofins,
+        valor_icms: item.valor_icms,
+        modelo: (item as any).modelo_fiscal || item.modelo,
+      }))
+
+      const cnpjAlvo = currentLead?.cnpj || 'CNPJ em Análise'
+      const hashFontes =
+        docsFonteMapeados.length > 0
+          ? await calcularHashCanonicalDocumentosFonte(docsFonteMapeados, cnpjAlvo)
+          : undefined
+
       await exportarRelatorioDossiePdf(
         {
           identificacao: {
             razaoSocial: currentLead?.razao_social || user?.name || 'Empresa Cadastrada',
-            cnpj: currentLead?.cnpj || 'CNPJ em Análise',
+            cnpj: cnpjAlvo,
             responsavel: currentLead?.responsavel || user?.name,
             regimeTributario: currentLead?.regime_tributario,
             vinculoInstitucional: currentLead?.vinculo_institucional,
@@ -518,6 +546,8 @@ export default function PainelCliente() {
           inventario: inventarioEmissoes,
           comparativoTributario: comparativoCalculado,
           greenCapital: simulacaoCap,
+          documentosFonte: docsFonteMapeados.length > 0 ? docsFonteMapeados : undefined,
+          hashDocumentosFonte: hashFontes,
           codigoSelo: currentSelo?.codigo_selo,
         },
         async (hash, codigo) => {
@@ -956,6 +986,44 @@ export default function PainelCliente() {
                 >
                   <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
                   <span>{isFechandoCompetencia ? 'Fechando...' : 'Fechar Competência'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={nfeList.length === 0}
+                  onClick={async () => {
+                    const docsMapeados: DocumentoFonteNFe[] = nfeList.map((item) => ({
+                      id: item.id,
+                      chave_acesso: item.chave_acesso,
+                      numero_nota: item.numero_nota,
+                      serie: item.serie,
+                      data_emissao: item.data_emissao,
+                      cnpj_emitente: item.cnpj_emitente,
+                      nome_emitente: item.nome_emitente,
+                      valor_total_nf: item.valor_total_nf,
+                      credito_apurado: (item.valor_pis || 0) + (item.valor_cofins || 0),
+                      valor_pis: item.valor_pis,
+                      valor_cofins: item.valor_cofins,
+                      valor_icms: item.valor_icms,
+                      modelo: (item as any).modelo_fiscal || item.modelo,
+                    }))
+                    const cnpjAlvo = currentLead?.cnpj || 'CNPJ em Análise'
+                    const hashFontes = await calcularHashCanonicalDocumentosFonte(
+                      docsMapeados,
+                      cnpjAlvo,
+                    )
+                    exportarDocumentosFonteCsv({
+                      razaoSocial: currentLead?.razao_social || 'Empresa Cadastrada',
+                      cnpj: cnpjAlvo,
+                      documentos: docsMapeados,
+                      hashDocumentosFonte: hashFontes,
+                    })
+                  }}
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#16202B] text-[#12B886] border border-[#12B886]/40 hover:bg-[#12B886]/10 transition-all flex items-center gap-2 disabled:opacity-40"
+                  title="Exporta arquivo CSV analítico com BOM e cabeçalho de integridade criptográfica SHA-256"
+                >
+                  <Download className="w-4 h-4 text-[#12B886]" />
+                  <span>Exportar relação completa (CSV)</span>
                 </button>
               </div>
             </div>

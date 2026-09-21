@@ -4,7 +4,13 @@ import {
   simularGreenCapitalEngine,
   formatarFinalidade,
 } from '../greenCapitalEngine'
-import { calcularHashDossie, gerarHtmlRelatorioDossie } from '../relatorioLaudoPdf'
+import {
+  calcularHashDossie,
+  gerarHtmlRelatorioDossie,
+  calcularHashCanonicalDocumentosFonte,
+  exportarDocumentosFonteCsv,
+  DocumentoFonteNFe,
+} from '../relatorioLaudoPdf'
 
 describe('Orbis Green Capital Engine — 8 Linhas de Crédito Verde', () => {
   it('deve conter exatamente as 8 linhas de crédito verde originais catalogadas', () => {
@@ -116,5 +122,129 @@ describe('Relatório Pericial em PDF & Hash Criptográfico', () => {
     expect(html).toContain('ORBIS-SHA256-TESTE-1234')
     expect(html).toContain('Lei Federal nº 15.042/2024')
     expect(html).toContain('AVISO LEGAL REGULATÓRIO & BANCÁRIO')
+  })
+
+  it('deve calcular hash canônico de documentos fonte de forma determinística e independente da ordem de entrada', async () => {
+    const notas: DocumentoFonteNFe[] = [
+      {
+        chave_acesso: '35240112345678000190550010000000011234567890',
+        numero_nota: '1',
+        serie: '1',
+        data_emissao: '2025-01-15',
+        cnpj_emitente: '12.345.678/0001-90',
+        valor_total_nf: 1000.5,
+        credito_apurado: 92.54,
+      },
+      {
+        chave_acesso: '35240198765432000110550010000000021234567891',
+        numero_nota: '2',
+        serie: '1',
+        data_emissao: '2025-02-10',
+        cnpj_emitente: '98.765.432/0001-10',
+        valor_total_nf: 2500,
+        credito_apurado: 231.25,
+      },
+    ]
+
+    const cnpj = '11.222.333/0001-44'
+    const hash1 = await calcularHashCanonicalDocumentosFonte(notas, cnpj)
+    const hash2 = await calcularHashCanonicalDocumentosFonte([...notas].reverse(), cnpj)
+
+    expect(hash1).toBe(hash2)
+    expect(hash1.length).toBeGreaterThan(15)
+
+    // Se alterar um valor, o hash deve mudar
+    const notasAlteradas = [{ ...notas[0], valor_total_nf: 1000.51 }, notas[1]]
+    const hashAlterado = await calcularHashCanonicalDocumentosFonte(notasAlteradas, cnpj)
+    expect(hashAlterado).not.toBe(hash1)
+  })
+
+  it('deve renderizar o anexo de documentos fonte analítico para lotes <= 100 notas fiscais', () => {
+    const notas: DocumentoFonteNFe[] = Array.from({ length: 40 }).map((_, i) => ({
+      numero_nota: String(i + 1),
+      serie: '1',
+      data_emissao: '2025-03-01',
+      cnpj_emitente: '12.345.678/0001-90',
+      valor_total_nf: 100,
+      credito_apurado: 9.25,
+    }))
+
+    const html = gerarHtmlRelatorioDossie(
+      {
+        identificacao: {
+          razaoSocial: 'Empresa Teste Limite 100',
+          cnpj: '12.345.678/0001-90',
+        },
+        diagnostico: {},
+        documentosFonte: notas,
+        hashDocumentosFonte: 'HASH-FONTES-TESTE-40',
+      },
+      'HASH-DOSSIE-123',
+    )
+
+    expect(html).toContain('Anexo — Documentos Fonte (Relação Analítica de Notas Fiscais)')
+    expect(html).toContain('HASH-FONTES-TESTE-40')
+    expect(html).toContain('TOTALIZAÇÃO CONSOLIDADA (40 NOTAS AUDITADAS)')
+    expect(html).toContain('HASH SHA-256 DOS DOCUMENTOS FONTE (ANEXO DE INTEGRIDADE FISCAL)')
+    // Não deve conter a mensagem de sumarização ou consolidação
+    expect(html).not.toContain('Anexo — Documentos Fonte (Consolidado por Mês / Emitente)')
+  })
+
+  it('deve renderizar o anexo consolidado por mês/emitente e aviso de CSV para lotes > 100 notas fiscais', () => {
+    const notas: DocumentoFonteNFe[] = Array.from({ length: 105 }).map((_, i) => ({
+      numero_nota: String(i + 1),
+      serie: '1',
+      data_emissao: i < 50 ? '2025-01-15' : '2025-02-20',
+      cnpj_emitente: i % 2 === 0 ? '11.111.111/0001-11' : '22.222.222/0001-22',
+      nome_emitente: i % 2 === 0 ? 'Fornecedor A' : 'Fornecedor B',
+      valor_total_nf: 200,
+      credito_apurado: 18.5,
+    }))
+
+    const html = gerarHtmlRelatorioDossie(
+      {
+        identificacao: {
+          razaoSocial: 'Grande Empresa 105 Notas',
+          cnpj: '99.888.777/0001-66',
+        },
+        diagnostico: {},
+        documentosFonte: notas,
+        hashDocumentosFonte: 'HASH-FONTES-TESTE-105',
+      },
+      'HASH-DOSSIE-456',
+    )
+
+    expect(html).toContain('Anexo — Documentos Fonte (Consolidado por Mês / Emitente)')
+    expect(html).toContain('HASH-FONTES-TESTE-105')
+    expect(html).toContain('RELAÇÃO COMPLETA INDIVIDUALIZADA DISPONÍVEL EM CSV')
+    expect(html).toContain('TOTALIZAÇÃO GERAL (105 NOTAS AUDITADAS)')
+  })
+
+  it('deve exportar CSV de documentos fonte com BOM UTF-8 e cabeçalho de metadados sem erros em ambiente DOM', () => {
+    const notas: DocumentoFonteNFe[] = [
+      {
+        numero_nota: '100',
+        serie: '1',
+        chave_acesso: '35240100000000000000550010000001001234567890',
+        data_emissao: '2025-03-10',
+        cnpj_emitente: '12.345.678/0001-90',
+        nome_emitente: 'Fornecedor Exemplo Ltda',
+        valor_total_nf: 1500,
+        credito_apurado: 138.75,
+        valor_pis: 24.75,
+        valor_cofins: 114,
+        valor_icms: 270,
+      },
+    ]
+
+    // Valida que exportarDocumentosFonteCsv executa sem exceções
+    expect(() => {
+      exportarDocumentosFonteCsv({
+        razaoSocial: 'Empresa Teste CSV',
+        cnpj: '12.345.678/0001-90',
+        documentos: notas,
+        hashDocumentosFonte: 'HASH-CSV-TESTE-1234',
+      })
+    }).not.toThrow()
   })
 })

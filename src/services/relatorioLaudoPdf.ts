@@ -20,6 +20,22 @@ import { ResultadoComparativoTributario } from './tributosReforma'
 import { ResultadoGreenCapitalEngine, formatarFinalidade } from './greenCapitalEngine'
 import { formatCurrencyBRL } from './nfeParser'
 
+export interface DocumentoFonteNFe {
+  id?: string
+  chave_acesso?: string
+  numero_nota?: string
+  serie?: string
+  data_emissao?: string
+  cnpj_emitente?: string
+  nome_emitente?: string
+  valor_total_nf?: number
+  credito_apurado?: number
+  valor_pis?: number
+  valor_cofins?: number
+  valor_icms?: number
+  modelo?: string
+}
+
 export interface DadosRelatorioDossie {
   identificacao: {
     razaoSocial: string
@@ -65,6 +81,8 @@ export interface DadosRelatorioDossie {
   inventario?: InventarioEmissoesResultado | null
   comparativoTributario?: ResultadoComparativoTributario | null
   greenCapital?: ResultadoGreenCapitalEngine | null
+  documentosFonte?: DocumentoFonteNFe[]
+  hashDocumentosFonte?: string
   hashIntegridade?: string
   codigoSelo?: string
 }
@@ -90,6 +108,167 @@ export async function calcularHashDossie(conteudoTexto: string): Promise<string>
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
     .toUpperCase()
+}
+
+/**
+ * Calcula o hash SHA-256 canônico de um conjunto de Documentos Fonte (NF-e).
+ * Segue o padrão de ordenação lexicográfica estrita similar a calcularHashCanonicalLote.
+ * Canônico por nota: chave_acesso|numero_nota|serie|data_emissao|cnpj_emitente|valor_total_nf|credito_apurado
+ */
+export async function calcularHashCanonicalDocumentosFonte(
+  documentos: DocumentoFonteNFe[],
+  cnpjAuditado?: string,
+): Promise<string> {
+  const cnpjClean = (cnpjAuditado || '').replace(/\D/g, '')
+
+  if (!documentos || documentos.length === 0) {
+    const rawVazio = `FONTES_VAZIO|${cnpjClean}`
+    return await calcularHashDossie(rawVazio)
+  }
+
+  // Mapeamento canônico determinístico com 2 casas decimais e ordenação lexicográfica
+  const stringsOrdenadas = documentos
+    .map((doc) => {
+      const chave = (doc.chave_acesso || '').trim()
+      const numero = (doc.numero_nota || '').trim()
+      const serie = (doc.serie || '').trim()
+      const data = (doc.data_emissao || '').trim().slice(0, 10)
+      const cnpjEmit = (doc.cnpj_emitente || '').replace(/\D/g, '')
+      const vlrTotal = Number(doc.valor_total_nf || 0).toFixed(2)
+      const vlrCred = Number(
+        doc.credito_apurado ?? Number(doc.valor_pis || 0) + Number(doc.valor_cofins || 0),
+      ).toFixed(2)
+      return `${chave}|${numero}|${serie}|${data}|${cnpjEmit}|${vlrTotal}|${vlrCred}`
+    })
+    .sort()
+
+  const concatenacao = `${cnpjClean}|${documentos.length}|${stringsOrdenadas.join('||')}`
+  return await calcularHashDossie(concatenacao)
+}
+
+/**
+ * Exporta a relação completa de documentos fonte em formato CSV estruturado (RFC 4180 / pt-BR):
+ * - Codificação UTF-8 com BOM (0xEF, 0xBB, 0xBF) para compatibilidade nativa com Excel
+ * - Separador ponto e vírgula ';'
+ * - Cabeçalho pericial de metadados com CNPJ, Razão Social, Data, Qtd e Hash SHA-256 do lote
+ * - Download automático via Blob no browser
+ */
+export function exportarDocumentosFonteCsv(params: {
+  razaoSocial: string
+  cnpj: string
+  documentos: DocumentoFonteNFe[]
+  hashDocumentosFonte: string
+  dataGeracao?: string
+}): void {
+  const { razaoSocial, cnpj, documentos, hashDocumentosFonte, dataGeracao } = params
+
+  const dataStr = dataGeracao || new Date().toISOString()
+  const escapeCsv = (val: string | number | undefined | null) => {
+    if (val === undefined || val === null) return ''
+    const str = String(val)
+    if (str.includes(';') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
+  const formatBrlNum = (val: number | undefined | null) => {
+    return Number(val || 0)
+      .toFixed(2)
+      .replace('.', ',')
+  }
+
+  const linhas: string[] = []
+
+  // Metadados periciais no topo
+  linhas.push('# ORBIS PROTOCOL — ANEXO PERICIAL DE DOCUMENTOS FONTE')
+  linhas.push(`# RAZAO_SOCIAL;${escapeCsv(razaoSocial)}`)
+  linhas.push(`# CNPJ_AUDITADO;${escapeCsv(cnpj)}`)
+  linhas.push(`# DATA_GERACAO;${escapeCsv(dataStr)}`)
+  linhas.push(`# TOTAL_DOCUMENTOS;${documentos.length}`)
+  linhas.push(`# HASH_SHA256_DOCUMENTOS_FONTE;${hashDocumentosFonte}`)
+  linhas.push('# PADRAO_COMPATIBILIDADE;RFC 4180 / Excel pt-BR (BOM UTF-8, sep ;) ;')
+  linhas.push('') // Linha em branco
+
+  // Cabeçalho das colunas
+  linhas.push(
+    [
+      'Numero',
+      'Serie',
+      'Modelo',
+      'Data Emissao',
+      'CNPJ Emitente',
+      'Razao Social Emitente',
+      'Chave de Acesso (44 digitos)',
+      'Valor Total (R$)',
+      'Credito Apurado PIS+COFINS (R$)',
+      'PIS (R$)',
+      'COFINS (R$)',
+      'ICMS (R$)',
+    ].join(';'),
+  )
+
+  let somaTotal = 0
+  let somaCredito = 0
+
+  documentos.forEach((d) => {
+    const vTotal = Number(d.valor_total_nf || 0)
+    const vCred = Number(
+      d.credito_apurado ?? Number(d.valor_pis || 0) + Number(d.valor_cofins || 0),
+    )
+    somaTotal += vTotal
+    somaCredito += vCred
+
+    linhas.push(
+      [
+        escapeCsv(d.numero_nota || ''),
+        escapeCsv(d.serie || '1'),
+        escapeCsv(d.modelo || '55'),
+        escapeCsv(d.data_emissao ? d.data_emissao.slice(0, 10) : ''),
+        escapeCsv(d.cnpj_emitente || ''),
+        escapeCsv(d.nome_emitente || ''),
+        escapeCsv(d.chave_acesso || ''),
+        formatBrlNum(vTotal),
+        formatBrlNum(vCred),
+        formatBrlNum(d.valor_pis),
+        formatBrlNum(d.valor_cofins),
+        formatBrlNum(d.valor_icms),
+      ].join(';'),
+    )
+  })
+
+  // Linha de totalização
+  linhas.push(
+    [
+      'TOTAL CONSOLIDADO',
+      '',
+      '',
+      '',
+      '',
+      `${documentos.length} notas`,
+      '',
+      formatBrlNum(somaTotal),
+      formatBrlNum(somaCredito),
+      '',
+      '',
+      '',
+    ].join(';'),
+  )
+
+  const conteudoCsv = '\uFEFF' + linhas.join('\r\n')
+  const blob = new Blob([conteudoCsv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  const cnpjClean = cnpj.replace(/\D/g, '')
+  link.setAttribute('href', url)
+  link.setAttribute(
+    'download',
+    `orbis_documentos_fonte_${cnpjClean || 'empresa'}_${new Date().toISOString().slice(0, 10)}.csv`,
+  )
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 /**
@@ -934,6 +1113,19 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
         HASH SHA-256 DO DOSSIÊ PERICIAL (REGISTRO IMUTÁVEL DMRV):
       </div>
       <div>${hashSha256}</div>
+      ${
+        dados.hashDocumentosFonte
+          ? `
+      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(217, 179, 108, 0.4); font-size: 7.5pt; color: #93A3B5;">
+        <span style="color: #12B886; font-weight: 700;">HASH SHA-256 DOS DOCUMENTOS FONTE (ANEXO DE INTEGRIDADE FISCAL):</span><br/>
+        <span style="color: #F4F7FA; word-break: break-all;">${dados.hashDocumentosFonte}</span>
+        <div style="font-size: 7pt; color: #93A3B5; margin-top: 2px;">
+          Conjunto auditado de ${dados.documentosFonte?.length || 0} documento(s) fiscal(is) — Rastreabilidade ponta a ponta.
+        </div>
+      </div>
+      `
+          : ''
+      }
     </div>
 
     <div class="disclaimer-box" style="margin-top: 15px;">
@@ -948,9 +1140,255 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
 
     <div class="footer-fixed">
       <span>Orbis Protocol • dMRV Criptográfico • Hash: ${hashSha256.slice(0, 16)}...</span>
-      <span>Página 4 de 4</span>
+      <span>Página 4 ${dados.documentosFonte && dados.documentosFonte.length > 0 ? '(Principal)' : 'de 4'}</span>
     </div>
   </div>
+
+  ${(() => {
+    const docs = dados.documentosFonte || []
+    if (docs.length === 0) return ''
+
+    const totalNotas = docs.length
+    const hashDocs = dados.hashDocumentosFonte || 'NÃO_INFORMADO'
+    const formatBrl = (val: number | undefined | null) =>
+      Number(val || 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+
+    if (totalNotas <= 100) {
+      // Caso 1: Até 100 notas fiscais — Tabela analítica paginada (~35 por página)
+      const ITENS_POR_PAGINA = 35
+      const totalPaginas = Math.ceil(totalNotas / ITENS_POR_PAGINA)
+      let somaGeralValor = 0
+      let somaGeralCredito = 0
+
+      docs.forEach((d) => {
+        somaGeralValor += Number(d.valor_total_nf || 0)
+        somaGeralCredito += Number(
+          d.credito_apurado ?? Number(d.valor_pis || 0) + Number(d.valor_cofins || 0),
+        )
+      })
+
+      const paginasHtml: string[] = []
+
+      for (let p = 0; p < totalPaginas; p++) {
+        const inicio = p * ITENS_POR_PAGINA
+        const sliceDocs = docs.slice(inicio, inicio + ITENS_POR_PAGINA)
+        const isUltima = p === totalPaginas - 1
+
+        paginasHtml.push(`
+  <div class="page-break" style="position: relative;">
+    <div class="page-header">
+      <span class="page-header-title">Orbis Protocol • Anexo — Documentos Fonte (NF-e)</span>
+      <span>Página ${p + 1} de ${totalPaginas} do Anexo • ${dados.identificacao.razaoSocial}</span>
+    </div>
+
+    ${
+      p === 0
+        ? `
+    <div class="section-title">Anexo — Documentos Fonte (Relação Analítica de Notas Fiscais)</div>
+    <div class="section-subtitle">
+      Relação individualizada das ${totalNotas} notas fiscais processadas como lastro primário deste dossiê pericial.<br/>
+      <strong>Hash SHA-256 Canônico do Conjunto:</strong> <span class="font-mono" style="font-size: 8pt; color: #12B886;">${hashDocs}</span>
+    </div>
+    `
+        : `
+    <div style="font-weight: 700; font-size: 9pt; color: #374151; margin-bottom: 10px;">
+      Anexo — Documentos Fonte (continuação • página ${p + 1} de ${totalPaginas})
+    </div>
+    `
+    }
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 14%;">Nº / Série</th>
+          <th style="width: 14%;">Data Emissão</th>
+          <th style="width: 24%;">CNPJ Emitente</th>
+          <th style="width: 24%; text-align: right;">Valor Total (R$)</th>
+          <th style="width: 24%; text-align: right;">Crédito Apurado (R$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sliceDocs
+          .map((d) => {
+            const vTotal = Number(d.valor_total_nf || 0)
+            const vCred = Number(
+              d.credito_apurado ?? Number(d.valor_pis || 0) + Number(d.valor_cofins || 0),
+            )
+            const num = (d.numero_nota || 'S/N').trim()
+            const ser = (d.serie || '1').trim()
+            const dataEmissao = d.data_emissao ? d.data_emissao.slice(0, 10) : '-'
+            const cnpjEmit = d.cnpj_emitente || '-'
+
+            return `
+        <tr>
+          <td><strong class="font-mono">${num}</strong> <span style="font-size: 7.5pt; color: #6B7280;">(s.${ser})</span></td>
+          <td>${dataEmissao}</td>
+          <td class="font-mono">${cnpjEmit}</td>
+          <td class="text-right font-mono">${formatBrl(vTotal)}</td>
+          <td class="text-right font-mono font-bold" style="color: #059669;">${formatBrl(vCred)}</td>
+        </tr>
+            `
+          })
+          .join('')}
+        ${
+          isUltima
+            ? `
+        <tr style="background: #0A0E12; color: #FFFFFF; font-weight: 900;">
+          <td colspan="3" style="background: #0A0E12; color: #FFFFFF; font-weight: 900; padding: 8px 10px;">
+            TOTALIZAÇÃO CONSOLIDADA (${totalNotas} NOTAS AUDITADAS)
+          </td>
+          <td class="text-right font-mono" style="background: #0A0E12; color: #FFFFFF; font-weight: 900; padding: 8px 10px;">
+            R$ ${formatBrl(somaGeralValor)}
+          </td>
+          <td class="text-right font-mono" style="background: #0A0E12; color: #12B886; font-weight: 900; padding: 8px 10px;">
+            R$ ${formatBrl(somaGeralCredito)}
+          </td>
+        </tr>
+          `
+            : ''
+        }
+      </tbody>
+    </table>
+
+    <div class="footer-fixed">
+      <span>Orbis Protocol • Anexo Documentos Fonte • Hash: ${hashDocs.slice(0, 16)}...</span>
+      <span>Anexo Pág. ${p + 1} de ${totalPaginas}</span>
+    </div>
+  </div>
+        `)
+      }
+
+      return paginasHtml.join('\n')
+    } else {
+      // Caso 2: Acima de 100 notas fiscais — Tabela consolidada por Mês / Emitente
+      interface GrupoConsolidado {
+        chave: string
+        mes: string
+        cnpjEmitente: string
+        nomeEmitente: string
+        quantidade: number
+        valorTotal: number
+        creditoApurado: number
+      }
+
+      const mapaGrupos = new Map<string, GrupoConsolidado>()
+      let somaTotalGeral = 0
+      let somaCreditoGeral = 0
+
+      docs.forEach((d) => {
+        const mes = d.data_emissao ? d.data_emissao.slice(0, 7) : 'Competência N/I'
+        const cnpj = (d.cnpj_emitente || 'CNPJ N/I').trim()
+        const chaveGrupo = `${mes}|${cnpj}`
+        const vTotal = Number(d.valor_total_nf || 0)
+        const vCred = Number(
+          d.credito_apurado ?? Number(d.valor_pis || 0) + Number(d.valor_cofins || 0),
+        )
+
+        somaTotalGeral += vTotal
+        somaCreditoGeral += vCred
+
+        const atual = mapaGrupos.get(chaveGrupo) || {
+          chave: chaveGrupo,
+          mes,
+          cnpjEmitente: cnpj,
+          nomeEmitente: d.nome_emitente || '',
+          quantidade: 0,
+          valorTotal: 0,
+          creditoApurado: 0,
+        }
+        atual.quantidade += 1
+        atual.valorTotal += vTotal
+        atual.creditoApurado += vCred
+        if (!atual.nomeEmitente && d.nome_emitente) {
+          atual.nomeEmitente = d.nome_emitente
+        }
+        mapaGrupos.set(chaveGrupo, atual)
+      })
+
+      // Ordenar grupos por mês desc e cnpj asc
+      const gruposOrdenados = Array.from(mapaGrupos.values()).sort((a, b) => {
+        if (a.mes !== b.mes) return b.mes.localeCompare(a.mes)
+        return a.cnpjEmitente.localeCompare(b.cnpjEmitente)
+      })
+
+      return `
+  <div class="page-break" style="position: relative;">
+    <div class="page-header">
+      <span class="page-header-title">Orbis Protocol • Anexo — Documentos Fonte (Consolidado)</span>
+      <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
+    </div>
+
+    <div class="section-title">Anexo — Documentos Fonte (Consolidado por Mês / Emitente)</div>
+    <div class="section-subtitle">
+      Demonstrativo consolidado do lote de <strong>${totalNotas} notas fiscais</strong>. Devido ao volume (> 100 notas), a relação analítica completa está sumarizada por competência e emitente abaixo.
+    </div>
+
+    <div class="card card-gold" style="margin-bottom: 15px;">
+      <div style="font-size: 8.5pt; color: #78350F; line-height: 1.5;">
+        <strong>RELAÇÃO COMPLETA INDIVIDUALIZADA DISPONÍVEL EM CSV:</strong><br/>
+        A listagem analítica integral com todas as ${totalNotas} chaves de acesso de 44 dígitos e metadados detalhados está disponível para download em arquivo digital no formato <strong>CSV com hash SHA-256 verificado</strong> diretamente pelo Painel do Cliente.
+      </div>
+      <div style="margin-top: 8px; font-size: 8pt; color: #92400E;">
+        <strong>Hash SHA-256 Canônico do Lote de Documentos Fonte:</strong><br/>
+        <span class="font-mono" style="word-break: break-all; color: #111827; font-weight: 700;">${hashDocs}</span>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Competência</th>
+          <th style="width: 25%;">CNPJ Emitente</th>
+          <th style="width: 12%; text-align: center;">Qtd Notas</th>
+          <th style="width: 24%; text-align: right;">Valor Total (R$)</th>
+          <th style="width: 24%; text-align: right;">Crédito Apurado (R$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${gruposOrdenados
+          .map(
+            (g) => `
+        <tr>
+          <td><strong>${g.mes}</strong></td>
+          <td>
+            <div class="font-mono">${g.cnpjEmitente}</div>
+            ${g.nomeEmitente ? `<div style="font-size: 7.5pt; color: #6B7280; truncate;">${g.nomeEmitente}</div>` : ''}
+          </td>
+          <td class="text-center font-bold">${g.quantidade}</td>
+          <td class="text-right font-mono">${formatBrl(g.valorTotal)}</td>
+          <td class="text-right font-mono font-bold" style="color: #059669;">${formatBrl(g.creditoApurado)}</td>
+        </tr>
+        `,
+          )
+          .join('')}
+        <tr style="background: #0A0E12; color: #FFFFFF; font-weight: 900;">
+          <td colspan="2" style="background: #0A0E12; color: #FFFFFF; font-weight: 900; padding: 8px 10px;">
+            TOTALIZAÇÃO GERAL (${totalNotas} NOTAS AUDITADAS)
+          </td>
+          <td class="text-center" style="background: #0A0E12; color: #FFFFFF; font-weight: 900; padding: 8px 10px;">
+            ${totalNotas}
+          </td>
+          <td class="text-right font-mono" style="background: #0A0E12; color: #FFFFFF; font-weight: 900; padding: 8px 10px;">
+            R$ ${formatBrl(somaTotalGeral)}
+          </td>
+          <td class="text-right font-mono" style="background: #0A0E12; color: #12B886; font-weight: 900; padding: 8px 10px;">
+            R$ ${formatBrl(somaCreditoGeral)}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-fixed">
+      <span>Orbis Protocol • Anexo Documentos Fonte Consolidado • Hash: ${hashDocs.slice(0, 16)}...</span>
+      <span>Anexo Sintético</span>
+    </div>
+  </div>
+      `
+    }
+  })()}
 
 </body>
 </html>`
