@@ -16,6 +16,25 @@ export interface ItemRadarRegulatorio {
 
 export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
   {
+    id: 'verra_scope3_standard_s3s',
+    dataMarco: '15/09/2026',
+    ano: '2026',
+    norma: 'Verra Scope 3 Standard (S3S) Program',
+    status: 'Previsto',
+    titulo: 'Verra Scope 3 Standard (S3S) Program: Ações Climáticas na Cadeia de Valor Corporativa',
+    descricaoCurta:
+      'Padrão global para certificação de ações climáticas dentro da cadeia de valor corporativa (insetting), com Unidades de Escopo 3 (S3Us) e operação digital-first (dMRV). A versão 1.0 contempla metodologias para agricultura e concreto; metodologias para materiais circulares e reciclagem constam como expansão futura, ainda sem metodologia publicada.',
+    quemAfeta: [
+      'Empresas com metas corporativas de redução de emissões de Escopo 3',
+      'Cadeia de valor automotiva, siderúrgica e de manufatura',
+      'Fornecedores industriais inseridos em programas de insetting corporativo',
+    ],
+    acaoRecomendada:
+      'Relevante para empresas com metas de redução de Escopo 3 (ex.: cadeia automotiva e siderúrgica). A rastreabilidade ponta a ponta e a prova documental exigidas pelo programa são compatíveis com a abordagem dMRV que a plataforma já opera.',
+    baseLegal: 'Verra Scope 3 Standard (S3S) v1.0 (Registro Internacional Voluntário)',
+    tagSetorial: 'Carbono/SBCE',
+  },
+  {
     id: 'fase_teste_ibscbs_2026',
     dataMarco: '01/08/2026',
     ano: '2026',
