@@ -416,6 +416,13 @@ export default function Layout() {
                 Iniciar Diagnóstico
               </Link>
 
+              <Link
+                to="/demo"
+                className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820]/60"
+              >
+                Ver Demonstração
+              </Link>
+
               {isAuthenticated ? (
                 <div className="flex items-center gap-2">
                   <Link
@@ -637,6 +644,13 @@ export default function Layout() {
                 className="w-full text-center py-3 rounded-lg text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shadow-emerald-glow"
               >
                 Iniciar Diagnóstico
+              </Link>
+              <Link
+                to="/demo"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] bg-[#111820]/60 transition-all"
+              >
+                Ver Demonstração
               </Link>
               {isAuthenticated ? (
                 <div className="flex flex-col gap-2">
