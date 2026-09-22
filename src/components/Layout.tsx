@@ -156,7 +156,7 @@ export default function Layout() {
       rotuloCurto: 'Consultas abertas a qualquer comprador ou auditor',
       itens: [
         {
-          title: 'Verificador de Selos',
+          title: 'Consultar Selo',
           desc: 'Validação pública de autenticidade criptográfica de laudos e passaportes emitidos.',
           path: '/verificador',
           icon: ShieldCheck,
@@ -236,7 +236,7 @@ export default function Layout() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - Enxuta: Início · Trilhas · Soluções ▾ · Verificador de Selos */}
+            {/* Desktop Navigation - Enxuta: Início · Trilhas · Soluções ▾ · Consultar Selo */}
             <nav className="hidden lg:flex items-center gap-6 xl:gap-7 ml-6 xl:ml-8">
               <Link
                 to="/"
@@ -403,7 +403,7 @@ export default function Layout() {
                     : 'text-[#93A3B5]'
                 }`}
               >
-                Verificador de Selos
+                Consultar Selo
               </Link>
             </nav>
 
@@ -535,7 +535,7 @@ export default function Layout() {
                       : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
                   }`}
                 >
-                  <span>Verificador de Selos</span>
+                  <span>Consultar Selo</span>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 
@@ -907,7 +907,7 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link to="/verificador" className="hover:text-[#12B886] transition-colors">
-                    Verificador Público de Selos
+                    Consultar Selo
                   </Link>
                 </li>
                 <li>
