@@ -61,7 +61,7 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     }
   })
 
-  it('Layout exibe "Criar conta" e "Entrar" no header quando deslogado', () => {
+  it('Layout exibe "Criar conta", "Entrar" e "Iniciar Diagnóstico" no header sem botão "Demo"', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
@@ -76,6 +76,15 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     // Botão Entrar também está visível
     const entrarLinks = screen.getAllByRole('link', { name: /Entrar/i })
     expect(entrarLinks.length).toBeGreaterThanOrEqual(1)
+
+    // Botão Iniciar Diagnóstico está visível no cabeçalho
+    const diagnosticoLinks = screen.getAllByRole('link', { name: /Iniciar Diagnóstico/i })
+    expect(diagnosticoLinks.length).toBeGreaterThanOrEqual(1)
+    expect(diagnosticoLinks.some((l) => l.getAttribute('href') === '/diagnostico')).toBe(true)
+
+    // O botão Demo/Ver Demonstração foi removido do header desktop e do drawer mobile
+    const navHeader = screen.queryByRole('navigation')
+    expect(navHeader?.textContent).not.toMatch(/Ver Demonstração/i)
   })
 
   it('Layout oculta "Criar conta" e "Entrar" e exibe "Painel" quando autenticado', () => {

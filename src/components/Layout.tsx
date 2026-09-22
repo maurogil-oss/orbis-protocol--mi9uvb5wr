@@ -405,18 +405,6 @@ export default function Layout() {
               >
                 Verificador de Selos
               </Link>
-
-              <Link
-                to="/demo"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] flex items-center gap-1.5 ${
-                  location.pathname === '/demo' ? 'text-[#12B886] font-semibold' : 'text-[#93A3B5]'
-                }`}
-              >
-                <span>Ver Demonstração</span>
-                <span className="text-[10px] bg-[#12B886]/20 text-[#12B886] px-1.5 py-0.2 rounded font-mono font-bold">
-                  Demo
-                </span>
-              </Link>
             </nav>
 
             {/* Header Action Buttons */}
@@ -541,24 +529,6 @@ export default function Layout() {
                   }`}
                 >
                   <span>Verificador de Selos</span>
-                  <ChevronRight className="w-4 h-4 opacity-50" />
-                </Link>
-
-                <Link
-                  to="/demo"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === '/demo'
-                      ? 'bg-[#12B886]/10 text-[#12B886]'
-                      : 'text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span>Ver Demonstração</span>
-                    <span className="text-[10px] bg-[#12B886]/20 text-[#12B886] px-1.5 py-0.2 rounded font-mono font-bold">
-                      Tour
-                    </span>
-                  </span>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 
