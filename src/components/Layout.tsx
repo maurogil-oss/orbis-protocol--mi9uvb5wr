@@ -237,7 +237,7 @@ export default function Layout() {
             </Link>
 
             {/* Desktop Navigation - Enxuta: Início · Trilhas · Soluções ▾ · Consultar Selo */}
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-7 ml-6 xl:ml-8">
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-7 ml-6 xl:ml-8 mr-6 xl:mr-8">
               <Link
                 to="/"
                 className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
@@ -408,10 +408,10 @@ export default function Layout() {
             </nav>
 
             {/* Header Action Buttons */}
-            <div className="hidden md:flex items-center gap-3.5">
+            <div className="hidden md:flex items-center gap-3">
               <Link
                 to="/diagnostico"
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
               >
                 Iniciar Diagnóstico
               </Link>
