@@ -66,7 +66,7 @@ export interface CobrancaRecord {
   tomador_cpf_cnpj: string
   tomador_email: string
   tomador_endereco?: string
-  provider: string
+  provider: 'pagbank' | 'mercadopago' | string
   provider_payment_id?: string
   txid: string
   qr_code_payload?: string

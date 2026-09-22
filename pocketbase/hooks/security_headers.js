@@ -26,11 +26,11 @@ routerUse((e) => {
     // 4. Content Security Policy equilibrada para SPA + APIs fiscais e de pagamento
     const cspPolicy = [
       "default-src 'self' https: data: blob:",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://sdk.mercadopago.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://assets.pagseguro.com.br https://sdk.mercadopago.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: blob: https://img.usecurling.com https://http2.mlstatic.com https://*.mercadopago.com",
-      "connect-src 'self' https: wss: http://127.0.0.1:* http://localhost:* https://brasilapi.com.br https://api.infosimples.com https://api.mercadopago.com",
+      "img-src 'self' data: blob: https://img.usecurling.com https://assets.pagseguro.com.br https://*.pagseguro.uol.com.br https://*.pagbank.com.br https://http2.mlstatic.com https://*.mercadopago.com",
+      "connect-src 'self' https: wss: http://127.0.0.1:* http://localhost:* https://brasilapi.com.br https://api.infosimples.com https://api.pagseguro.com https://sandbox.api.pagseguro.com https://api.mercadopago.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

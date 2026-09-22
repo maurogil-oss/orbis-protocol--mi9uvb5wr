@@ -110,7 +110,7 @@ export default function CheckoutPage() {
       setCobranca(rec)
       if (rec.status === 'pendente_simulacao') {
         setAvisoGateway(
-          'Gateway não configurado — cadastre MERCADOPAGO_ACCESS_TOKEN no cofre. Operando em modo simulação controlada.',
+          'Gateway de pagamento em configuração — cadastre PAGBANK_TOKEN no cofre. Operando em modo de simulação controlada.',
         )
       }
     } catch (err: any) {

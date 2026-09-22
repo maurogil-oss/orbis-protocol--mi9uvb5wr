@@ -116,7 +116,7 @@ routerAdd('POST', '/backend/v1/assinaturas/verificar-ciclo', (e) => {
         novaCob.set('tomador_nome', u.getString('name') || 'Assinante Corporativo')
         novaCob.set('tomador_cpf_cnpj', u.getString('cnpj') || '00.000.000/0000-00')
         novaCob.set('tomador_email', u.getString('email'))
-        novaCob.set('provider', 'mercadopago')
+        novaCob.set('provider', 'pagbank')
 
         const txidGerado = 'TXID-REC-' + $security.randomString(14).toUpperCase()
         novaCob.set('txid', txidGerado)
@@ -312,7 +312,7 @@ cronAdd('recorrencia_diaria_orbis', '0 4 * * *', () => {
         novaCob.set('tomador_nome', u.getString('name') || 'Assinante Corporativo')
         novaCob.set('tomador_cpf_cnpj', u.getString('cnpj') || '00.000.000/0000-00')
         novaCob.set('tomador_email', u.getString('email'))
-        novaCob.set('provider', 'mercadopago')
+        novaCob.set('provider', 'pagbank')
 
         const txidGerado = 'TXID-REC-' + $security.randomString(14).toUpperCase()
         novaCob.set('txid', txidGerado)

@@ -28,7 +28,6 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
         valor = catalogoItem.getFloat('preco')
         servicoNome = catalogoItem.getString('nome')
         origemPreco = 'catalogo'
-        // Se houver divergência entre o valor de fallback no código e o catálogo vigente
         if (Number(valor) !== Number(precoFallback)) {
           divergenciaPreco = true
         }
@@ -58,7 +57,6 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     } else if (body.usuario) {
       cobrancaRecord.set('usuario', body.usuario)
     } else {
-      // Se não autenticado, associa ao usuário admin padrão
       try {
         const adminUser = $app.findAuthRecordByEmail('_pb_users_auth_', 'maurog1@hotmail.com')
         cobrancaRecord.set('usuario', adminUser.id)
@@ -74,7 +72,8 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     cobrancaRecord.set('tomador_cpf_cnpj', tomadorCpfCnpj)
     cobrancaRecord.set('tomador_email', tomadorEmail)
     cobrancaRecord.set('tomador_endereco', tomadorEndereco)
-    cobrancaRecord.set('provider', 'mercadopago')
+    // Gateway primário oficial: PagBank (mantém compatibilidade com histórico)
+    cobrancaRecord.set('provider', 'pagbank')
 
     // Suporte a código de indicação de parceiro (?ref=ORB-PAR-XXXX ou body.ref)
     const refCode = body.ref || body.codigo_indicacao || ''
@@ -98,69 +97,107 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     const expiraEm = new Date(Date.now() + 30 * 60 * 1000).toISOString()
     cobrancaRecord.set('data_expiracao', expiraEm)
 
-    const mpToken = $os.getenv('MERCADOPAGO_ACCESS_TOKEN') || ''
+    // Credencial PagBank lida de variável de ambiente / cofre ($os.getenv)
+    // Se não existir, verifica se há token em app_config_secrets ou no fallback legado
+    let pagbankToken = $os.getenv('PAGBANK_TOKEN') || ''
+    if (!pagbankToken) {
+      try {
+        const secretRec = $app.findFirstRecordByData('app_config_secrets', 'chave', 'PAGBANK_TOKEN')
+        if (secretRec) {
+          const v = secretRec.getString('valor')
+          if (v && v !== '[MIGRADO_PARA_ENV_VAR]') {
+            pagbankToken = v
+          }
+        }
+      } catch (_) {}
+    }
+
     let modoDegradacao = false
     let avisoGateway = ''
 
-    if (mpToken && mpToken.trim() !== '') {
-      // Chamada real à API do Mercado Pago
+    if (pagbankToken && pagbankToken.trim() !== '') {
+      // Chamada real à API PagBank v4 (Orders com QR Code PIX)
       try {
         const siteUrl = $os.getenv('SITE_URL') || 'https://orbisprotocol.org'
-        const mpPayload = {
-          transaction_amount: Number(valor),
-          description: `${servicoNome} - Orbis Protocol`,
-          payment_method_id: 'pix',
-          payer: {
+        const isSandbox = ($os.getenv('PAGBANK_ENV') || '').toLowerCase() === 'sandbox'
+        const baseUrlPagBank = isSandbox
+          ? 'https://sandbox.api.pagseguro.com'
+          : 'https://api.pagseguro.com'
+
+        const cleanDoc = tomadorCpfCnpj.replace(/\D/g, '')
+        const centavos = Math.round(Number(valor) * 100)
+
+        const pagbankPayload = {
+          reference_id: txidGerado,
+          customer: {
+            name: tomadorNome,
             email: tomadorEmail,
-            first_name: tomadorNome.split(' ')[0],
-            last_name: tomadorNome.split(' ').slice(1).join(' ') || 'Cliente',
-            identification: {
-              type: tomadorCpfCnpj.replace(/\D/g, '').length > 11 ? 'CNPJ' : 'CPF',
-              number: tomadorCpfCnpj.replace(/\D/g, ''),
-            },
+            tax_id: cleanDoc,
           },
-          notification_url: `${siteUrl}/backend/v1/cobranca/webhook`,
+          items: [
+            {
+              reference_id: servicoId,
+              name: `${servicoNome} - Orbis Protocol`,
+              quantity: 1,
+              unit_amount: centavos,
+            },
+          ],
+          qr_codes: [
+            {
+              amount: {
+                value: centavos,
+              },
+              expiration_date: expiraEm,
+            },
+          ],
+          notification_urls: [`${siteUrl}/backend/v1/cobranca/webhook`],
         }
 
         const res = $http.send({
-          url: 'https://api.mercadopago.com/v1/payments',
+          url: `${baseUrlPagBank}/orders`,
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${mpToken}`,
-            'X-Idempotency-Key': txidGerado,
+            Authorization: `Bearer ${pagbankToken.trim()}`,
+            Accept: 'application/json',
           },
-          body: JSON.stringify(mpPayload),
+          body: JSON.stringify(pagbankPayload),
           timeout: 20,
         })
 
         if (res.statusCode >= 200 && res.statusCode < 300 && res.json) {
-          const mpData = res.json
-          cobrancaRecord.set('provider_payment_id', String(mpData.id))
+          const pbData = res.json
+          cobrancaRecord.set('provider_payment_id', String(pbData.id))
           cobrancaRecord.set('status', 'pendente')
 
-          const poi = mpData.point_of_interaction || {}
-          const txData = poi.transaction_data || {}
-          cobrancaRecord.set('qr_code_payload', txData.qr_code || '')
-          cobrancaRecord.set('qr_code_base64', txData.qr_code_base64 || '')
-          cobrancaRecord.set('url_comprovante', txData.ticket_url || '')
+          const qrs = pbData.qr_codes || []
+          const qr0 = qrs.length > 0 ? qrs[0] : null
+          const qrText = qr0?.text || ''
+          const qrLinks = qr0?.links || []
+          const pngLink = qrLinks.find((l) => l.media === 'image/png' || l.rel === 'QRCODE.PNG')
+
+          cobrancaRecord.set('qr_code_payload', qrText)
+          cobrancaRecord.set('qr_code_base64', '')
+          if (pngLink && pngLink.href) {
+            cobrancaRecord.set('url_comprovante', pngLink.href)
+          }
         } else {
-          // Erro retornado pela API Mercado Pago -> fallback controlado para simulação
           modoDegradacao = true
-          avisoGateway = `Mercado Pago retornou status ${res.statusCode}. Operando em modo de simulação controlada.`
+          avisoGateway = `PagBank retornou status ${res.statusCode}. Operando em modo de simulação controlada.`
         }
       } catch (errApi) {
         modoDegradacao = true
-        avisoGateway = `Falha na conexão com Mercado Pago (${errApi.message}). Operando em simulação controlada.`
+        avisoGateway = `Falha na conexão com PagBank (${errApi.message}). Operando em simulação controlada.`
       }
     } else {
+      // Degradação graciosa sem token no cofre
       modoDegradacao = true
-      avisoGateway = 'Gateway não configurado — cadastre MERCADOPAGO_ACCESS_TOKEN no cofre'
+      avisoGateway = 'Gateway não configurado — cadastre PAGBANK_TOKEN no cofre'
     }
 
     if (modoDegradacao) {
       cobrancaRecord.set('status', 'pendente_simulacao')
-      cobrancaRecord.set('provider_payment_id', 'SIMULADO_' + $security.randomString(12))
+      cobrancaRecord.set('provider_payment_id', 'SIMULADO_PB_' + $security.randomString(12))
 
       // Payload PIX Copia e Cola demonstrativo (EMV QRCPS padrão BR Code)
       const fakePixPayload = `00020126580014br.gov.bcb.pix0136${txidGerado}520400005303986540${valor.toFixed(2).length < 5 ? '0' : ''}${valor.toFixed(2)}5802BR5925MGM CONSULTORIA EMPRESARI6008CURITIBA62070503***6304ABCD`
@@ -180,6 +217,7 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
       valor: cobrancaRecord.getFloat('valor'),
       status: cobrancaRecord.getString('status'),
       txid: cobrancaRecord.getString('txid'),
+      provider: cobrancaRecord.getString('provider'),
       provider_payment_id: cobrancaRecord.getString('provider_payment_id'),
       qr_code_payload: cobrancaRecord.getString('qr_code_payload'),
       qr_code_base64: cobrancaRecord.getString('qr_code_base64'),
@@ -191,6 +229,6 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
       divergencia_preco: cobrancaRecord.getBool('divergencia_preco'),
     })
   } catch (err) {
-    return e.json(500, { error: err.message || 'Erro ao gerar cobrança PIX.' })
+    return e.json(500, { error: err.message || 'Erro ao gerar cobrança PIX via PagBank.' })
   }
 })

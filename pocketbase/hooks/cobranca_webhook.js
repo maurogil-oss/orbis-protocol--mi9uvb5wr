@@ -2,42 +2,105 @@ routerAdd('POST', '/backend/v1/cobranca/webhook', (e) => {
   try {
     const body = e.requestInfo().body || {}
     const query = e.requestInfo().query || {}
-    const paymentId = body.data?.id || query['data.id'] || query.id || body.id
 
-    if (!paymentId) {
+    // Suporte tanto ao webhook PagBank (charges/orders/reference_id/id)
+    // quanto a webhooks legados (body.data.id / query.id)
+    const paymentId =
+      body.id ||
+      body.order_id ||
+      body.data?.id ||
+      query['data.id'] ||
+      query.id ||
+      (body.charges && body.charges[0] ? body.charges[0].id : '')
+    const referenceId =
+      body.reference_id ||
+      body.order?.reference_id ||
+      (body.charges && body.charges[0] ? body.charges[0].reference_id : '')
+
+    if (!paymentId && !referenceId) {
       return e.json(200, { received: true, status: 'ignored_no_id' })
     }
 
     let cobranca = null
-    try {
-      cobranca = $app.findFirstRecordByData('cobrancas', 'provider_payment_id', String(paymentId))
-    } catch (_) {}
+    // 1. Tenta buscar por provider_payment_id
+    if (paymentId) {
+      try {
+        cobranca = $app.findFirstRecordByData('cobrancas', 'provider_payment_id', String(paymentId))
+      } catch (_) {}
+    }
+
+    // 2. Tenta buscar por reference_id / txid
+    if (!cobranca && referenceId) {
+      try {
+        cobranca = $app.findFirstRecordByData('cobrancas', 'txid', String(referenceId))
+      } catch (_) {}
+    }
 
     if (!cobranca) {
       return e.json(200, { received: true, status: 'payment_not_found' })
     }
 
-    const mpToken = $os.getenv('MERCADOPAGO_ACCESS_TOKEN') || ''
-    let isPago = false
-
-    if (mpToken && mpToken.trim() !== '') {
+    let pagbankToken = $os.getenv('PAGBANK_TOKEN') || ''
+    if (!pagbankToken) {
       try {
-        const res = $http.send({
-          url: `https://api.mercadopago.com/v1/payments/${paymentId}`,
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${mpToken}`,
-          },
-          timeout: 15,
-        })
-
-        if (res.statusCode === 200 && res.json && res.json.status === 'approved') {
-          isPago = true
+        const secretRec = $app.findFirstRecordByData('app_config_secrets', 'chave', 'PAGBANK_TOKEN')
+        if (secretRec) {
+          const v = secretRec.getString('valor')
+          if (v && v !== '[MIGRADO_PARA_ENV_VAR]') {
+            pagbankToken = v
+          }
         }
       } catch (_) {}
-    } else {
+    }
+
+    let isPago = false
+
+    // Verificar se no próprio payload já veio status PAID do PagBank
+    const chargeStatus = body.charges && body.charges[0] ? body.charges[0].status : ''
+    const bodyStatus = (body.status || chargeStatus || '').toUpperCase()
+    if (bodyStatus === 'PAID' || bodyStatus === 'PAGO' || bodyStatus === 'APPROVED') {
+      isPago = true
+    }
+
+    // Se temos token oficial e id, podemos consultar a API do PagBank para validar
+    if (!isPago && pagbankToken && pagbankToken.trim() !== '') {
+      try {
+        const isSandbox = ($os.getenv('PAGBANK_ENV') || '').toLowerCase() === 'sandbox'
+        const baseUrlPagBank = isSandbox
+          ? 'https://sandbox.api.pagseguro.com'
+          : 'https://api.pagseguro.com'
+
+        // Pode ser consulta de pedido (/orders/{id}) ou de charge (/charges/{id})
+        const lookupId = cobranca.getString('provider_payment_id') || paymentId
+        if (lookupId && !lookupId.startsWith('SIMULADO_')) {
+          const res = $http.send({
+            url: `${baseUrlPagBank}/orders/${lookupId}`,
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${pagbankToken.trim()}`,
+              Accept: 'application/json',
+            },
+            timeout: 15,
+          })
+
+          if (res.statusCode === 200 && res.json) {
+            const ord = res.json
+            const ch = ord.charges || []
+            const paidCharge = ch.find((c) => c.status === 'PAID')
+            if (paidCharge || ord.status === 'PAID') {
+              isPago = true
+            }
+          }
+        }
+      } catch (_) {}
+    } else if (!isPago) {
       // Em modo de testes / simulação
-      if (body.action === 'payment.created' || body.type === 'payment' || body.simulate_paid) {
+      if (
+        body.action === 'payment.created' ||
+        body.type === 'payment' ||
+        body.simulate_paid ||
+        body.event === 'order.paid'
+      ) {
         isPago = true
       }
     }
@@ -121,6 +184,6 @@ routerAdd('POST', '/backend/v1/cobranca/webhook', (e) => {
       status: cobranca.getString('status'),
     })
   } catch (err) {
-    return e.json(500, { error: err.message || 'Erro ao processar webhook de cobrança.' })
+    return e.json(500, { error: err.message || 'Erro ao processar webhook PagBank de cobrança.' })
   }
 })
