@@ -237,7 +237,7 @@ export default function Layout() {
             </Link>
 
             {/* Desktop Navigation - Enxuta: Início · Trilhas · Soluções ▾ · Verificador de Selos */}
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-7">
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-7 ml-6 xl:ml-8">
               <Link
                 to="/"
                 className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
