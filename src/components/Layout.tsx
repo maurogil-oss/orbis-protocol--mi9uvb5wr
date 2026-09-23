@@ -418,23 +418,23 @@ export default function Layout() {
             <div className="hidden md:flex items-center gap-3">
               <Link
                 to="/diagnostico"
-                className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-gradient-to-r from-[#0F9E74] to-[#12B886] text-[#0A0E12] hover:from-[#12B886] hover:to-[#17C994] hover:shadow-emerald-glow-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 active:scale-[0.99]"
               >
                 Iniciar Diagnóstico
               </Link>
 
               <Link
                 to="/demo"
-                className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820]/60"
+                className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.18)] text-[#D5DFEA] hover:border-[#12B886]/50 hover:text-[#12B886] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 bg-[#111820]/70"
               >
                 Ver Demonstração
               </Link>
 
               {isAuthenticated ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5 pl-1.5 ml-0.5 border-l border-[rgba(244,247,250,0.1)]">
                   <Link
                     to={isParceiro ? '/parceiro-painel' : '/painel'}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all bg-[#111820]"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.18)] text-[#F4F7FA] hover:border-[#12B886]/60 hover:text-[#12B886] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 transition-all duration-200 bg-[#111820]"
                   >
                     <LayoutDashboard className="w-4 h-4 text-[#12B886]" />
                     {isParceiro ? 'Painel do Parceiro' : 'Painel'}
@@ -442,22 +442,22 @@ export default function Layout() {
                   <button
                     onClick={logout}
                     title="Sair"
-                    className="p-2.5 rounded-lg text-[#93A3B5] hover:text-[#F03E54] border border-[rgba(244,247,250,0.12)] hover:border-[#F03E54]/40 transition-all bg-[#111820]"
+                    className="p-2 rounded-lg text-[#93A3B5] hover:text-[#F03E54] border border-[rgba(244,247,250,0.12)] hover:border-[#F03E54]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F03E54]/40 transition-all duration-200 bg-[#111820]"
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 pl-1.5 ml-0.5 border-l border-[rgba(244,247,250,0.1)]">
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all"
+                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.18)] text-[#D5DFEA] hover:border-[#12B886]/60 hover:text-[#12B886] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 bg-[#111820]/40"
                   >
                     Entrar
                   </Link>
                   <Link
                     to="/registro"
-                    className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold bg-[#16202B] border border-[#12B886]/60 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all shadow-sm"
+                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-semibold bg-[#16202B] border border-[#12B886]/50 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 shadow-sm"
                   >
                     Criar conta
                   </Link>
@@ -648,19 +648,20 @@ export default function Layout() {
             <div className="pt-6 border-t border-[rgba(244,247,250,0.1)] flex flex-col gap-3">
               <Link
                 to="/diagnostico"
-                className="w-full text-center py-3 rounded-lg text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shadow-emerald-glow"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#0F9E74] to-[#12B886] text-[#0A0E12] hover:from-[#12B886] hover:to-[#17C994] transition-all duration-200 shadow-sm"
               >
                 Iniciar Diagnóstico
               </Link>
               <Link
                 to="/demo"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] bg-[#111820]/60 transition-all"
+                className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.18)] text-[#D5DFEA] hover:border-[#12B886]/50 hover:text-[#12B886] bg-[#111820]/70 transition-all duration-200"
               >
                 Ver Demonstração
               </Link>
               {isAuthenticated ? (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 pt-1 border-t border-[rgba(244,247,250,0.08)]">
                   <Link
                     to={isParceiro ? '/parceiro-painel' : '/painel'}
                     onClick={() => setMobileMenuOpen(false)}
@@ -679,18 +680,18 @@ export default function Layout() {
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 pt-1 border-t border-[rgba(244,247,250,0.08)]">
                   <Link
                     to="/registro"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-[#16202B] border border-[#12B886] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+                    className="w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-[#16202B] border border-[#12B886]/60 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
                   >
                     Criar conta
                   </Link>
                   <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:border-[#12B886]"
+                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.2)] text-[#D5DFEA] hover:border-[#12B886]"
                   >
                     Entrar na Conta
                   </Link>

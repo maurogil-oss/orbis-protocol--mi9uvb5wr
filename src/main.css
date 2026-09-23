@@ -118,6 +118,11 @@
   .shadow-emerald-glow {
     box-shadow: 0 0 24px rgba(18, 184, 134, 0.35);
   }
+  .shadow-emerald-glow-subtle {
+    box-shadow:
+      0 0 16px rgba(18, 184, 134, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
   .shadow-gold-glow {
     box-shadow: 0 0 24px rgba(217, 179, 108, 0.3);
   }
