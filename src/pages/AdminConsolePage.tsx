@@ -34,6 +34,7 @@ import {
   Leaf,
   FileCheck2,
   SlidersHorizontal,
+  ShieldAlert,
 } from 'lucide-react'
 import {
   obterMoverAmpliadoHabilitado,
