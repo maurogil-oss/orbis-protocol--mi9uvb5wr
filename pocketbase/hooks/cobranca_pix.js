@@ -130,7 +130,7 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     if (pagbankToken && pagbankToken.trim() !== '') {
       // Chamada real à API PagBank v4 (Orders com QR Code PIX)
       try {
-        const siteUrl = $os.getenv('SITE_URL') || 'https://orbisprotocol.org'
+        const siteUrl = $os.getenv('SITE_URL') || 'https://www.orbis-protocol.com'
         const isSandbox = ($os.getenv('PAGBANK_ENV') || '').toLowerCase() === 'sandbox'
         const baseUrlPagBank = isSandbox
           ? 'https://sandbox.api.pagseguro.com'

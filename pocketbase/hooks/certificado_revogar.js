@@ -52,7 +52,7 @@ routerAdd('POST', '/backend/v1/infosimples/revogar-certificado-a1', (e) => {
         'nome_titular',
         certRec.getString('razao_social') || authRecord.getString('name') || 'Titular',
       )
-      solRec.set('email_titular', authRecord.getString('email') || 'titular@orbisprotocol.org')
+      solRec.set('email_titular', authRecord.getString('email') || 'contato@orbis-protocol.com')
       solRec.set('cpf_cnpj_titular', certRec.getString('cnpj_titular'))
       solRec.set(
         'descricao',

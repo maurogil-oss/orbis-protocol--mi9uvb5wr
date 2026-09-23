@@ -100,7 +100,7 @@ export function ConferenciaLastroPublicaPage() {
   const qrUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/conferencia-lastro/${lastro.codigo_lastro}`
-      : `https://orbisprotocol.org/conferencia-lastro/${lastro.codigo_lastro}`
+      : `https://www.orbis-protocol.com/conferencia-lastro/${lastro.codigo_lastro}`
 
   return (
     <div className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">

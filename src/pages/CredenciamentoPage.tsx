@@ -480,7 +480,7 @@ export default function CredenciamentoPeritoPage() {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
               <span className="text-xs text-[#93A3B5]">
                 Dúvidas sobre credenciamento? Contate a auditoria central via
-                peritos@orbisprotocol.org
+                contato@orbis-protocol.com
               </span>
 
               <button

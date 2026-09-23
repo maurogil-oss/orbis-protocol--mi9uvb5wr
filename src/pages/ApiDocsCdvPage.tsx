@@ -89,7 +89,7 @@ function CodeBlock({ title, language = 'json', code }: CodeBlockProps) {
 export default function ApiDocsCdvPage() {
   const [activeTab, setActiveTab] = useState<'payload' | 'curl'>('payload')
 
-  const curlExemplo = `curl -X POST "https://orbisprotocol.org/backend/v1/cdv/lotes" \\
+  const curlExemplo = `curl -X POST "https://www.orbis-protocol.com/backend/v1/cdv/lotes" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: orb_cdv_live_SEU_TOKEN_HEX_32_CHARS" \\
   -d '{

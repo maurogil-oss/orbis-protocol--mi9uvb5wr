@@ -781,7 +781,7 @@ export default function AdminConsolePage() {
         id: modalReativarPerito.perito.id,
         motivoReativacao: modalReativarPerito.motivo,
         novaValidadeArt: modalReativarPerito.novaValidadeArt || undefined,
-        auditorEmail: user?.email || 'admin@orbisprotocol.org',
+        auditorEmail: user?.email || 'contato@orbis-protocol.com',
       })
       mostrarMensagem('Perito reativado com sucesso e status restaurado!')
       setModalReativarPerito({

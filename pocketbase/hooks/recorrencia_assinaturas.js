@@ -187,7 +187,7 @@ routerAdd('POST', '/backend/v1/assinaturas/verificar-ciclo', (e) => {
               log.set('entidade', 'perito_credenciamentos')
               log.set('entidade_id', p.id)
               log.set('ator_id', 'job_cron_04h')
-              log.set('ator_email', 'cron@orbisprotocol.org')
+              log.set('ator_email', 'suporte@orbis-protocol.com')
               log.set('papel', 'sistema')
               log.set('detalhes', {
                 perito_nome: p.getString('nome_completo'),
@@ -375,7 +375,7 @@ cronAdd('recorrencia_diaria_orbis', '0 4 * * *', () => {
               log.set('entidade', 'perito_credenciamentos')
               log.set('entidade_id', p.id)
               log.set('ator_id', 'job_cron_04h')
-              log.set('ator_email', 'cron@orbisprotocol.org')
+              log.set('ator_email', 'suporte@orbis-protocol.com')
               log.set('papel', 'sistema')
               log.set('detalhes', {
                 perito_nome: p.getString('nome_completo'),

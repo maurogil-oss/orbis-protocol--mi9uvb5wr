@@ -133,7 +133,7 @@ onRecordCreate((e) => {
     log.set('entidade', 'servicos_catalogo')
     log.set('entidade_id', rec.id)
     log.set('ator_id', 'admin')
-    log.set('ator_email', 'admin@orbisprotocol.org')
+    log.set('ator_email', 'contato@orbis-protocol.com')
     log.set('papel', 'admin')
     log.set('detalhes', {
       servico_id: rec.getString('servico_id'),
@@ -164,7 +164,7 @@ onRecordUpdate((e) => {
       log.set('entidade', 'servicos_catalogo')
       log.set('entidade_id', rec.id)
       log.set('ator_id', 'admin')
-      log.set('ator_email', 'admin@orbisprotocol.org')
+      log.set('ator_email', 'contato@orbis-protocol.com')
       log.set('papel', 'admin')
       log.set('detalhes', {
         servico_id: rec.getString('servico_id'),
@@ -229,7 +229,7 @@ onRecordUpdate((e) => {
       log.set('entidade', 'comissoes')
       log.set('entidade_id', rec.id)
       log.set('ator_id', 'admin')
-      log.set('ator_email', 'admin@orbisprotocol.org')
+      log.set('ator_email', 'contato@orbis-protocol.com')
       log.set('papel', 'admin')
       log.set('detalhes', {
         valor: rec.getFloat('valor'),
@@ -300,7 +300,7 @@ onRecordUpdate((e) => {
       log.set('entidade', 'mover_vpas')
       log.set('entidade_id', rec.id)
       log.set('ator_id', 'auditor_mover')
-      log.set('ator_email', 'mover@orbisprotocol.org')
+      log.set('ator_email', 'contato@orbis-protocol.com')
       log.set('papel', 'admin/auditor')
       log.set('detalhes', {
         codigo_vpa: rec.getString('codigo_vpa'),
@@ -325,7 +325,7 @@ onRecordCreate((e) => {
     log.set('entidade', 'selos')
     log.set('entidade_id', rec.id)
     log.set('ator_id', 'sistema')
-    log.set('ator_email', 'dmrv@orbisprotocol.org')
+    log.set('ator_email', 'suporte@orbis-protocol.com')
     log.set('papel', 'sistema')
     log.set('detalhes', {
       codigo_selo: rec.getString('codigo_selo'),
@@ -348,7 +348,7 @@ onRecordCreate((e) => {
     log.set('entidade', 'lastro_circularidade')
     log.set('entidade_id', rec.id)
     log.set('ator_id', rec.getString('usuario') || 'sistema')
-    log.set('ator_email', rec.getString('cnpj_emissor') || 'emissor@orbisprotocol.org')
+    log.set('ator_email', rec.getString('cnpj_emissor') || 'suporte@orbis-protocol.com')
     log.set('papel', 'emissor')
     log.set('detalhes', {
       codigo_lastro: rec.getString('codigo_lastro'),

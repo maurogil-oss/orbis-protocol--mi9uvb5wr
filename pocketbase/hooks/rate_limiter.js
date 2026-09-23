@@ -94,7 +94,7 @@ routerUse((e) => {
         log.set('entidade', 'rate_limiter')
         log.set('entidade_id', rotaAlvo)
         log.set('ator_id', 'sistema_firewall')
-        log.set('ator_email', 'security@orbisprotocol.org')
+        log.set('ator_email', 'suporte@orbis-protocol.com')
         log.set('papel', 'firewall')
         log.set('ip', clientIp)
         log.set('detalhes', {
@@ -127,7 +127,7 @@ routerUse((e) => {
       pingLog.set('entidade', 'rate_limiter')
       pingLog.set('entidade_id', rotaAlvo)
       pingLog.set('ator_id', 'sistema_firewall')
-      pingLog.set('ator_email', 'security@orbisprotocol.org')
+      pingLog.set('ator_email', 'suporte@orbis-protocol.com')
       pingLog.set('papel', 'firewall')
       pingLog.set('ip', clientIp)
       pingLog.set('detalhes', {
@@ -197,7 +197,7 @@ onRecordAuthWithPasswordRequest((e) => {
       log.set('entidade', 'rate_limiter')
       log.set('entidade_id', 'login_users')
       log.set('ator_id', 'sistema_firewall')
-      log.set('ator_email', 'security@orbisprotocol.org')
+      log.set('ator_email', 'suporte@orbis-protocol.com')
       log.set('papel', 'firewall')
       log.set('ip', clientIp)
       log.set('detalhes', {
@@ -223,7 +223,7 @@ onRecordAuthWithPasswordRequest((e) => {
     pingLog.set('entidade', 'rate_limiter')
     pingLog.set('entidade_id', 'login_users')
     pingLog.set('ator_id', 'sistema_firewall')
-    pingLog.set('ator_email', 'security@orbisprotocol.org')
+    pingLog.set('ator_email', 'suporte@orbis-protocol.com')
     pingLog.set('papel', 'firewall')
     pingLog.set('ip', clientIp)
     pingLog.set('detalhes', {

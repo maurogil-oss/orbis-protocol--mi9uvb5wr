@@ -95,7 +95,7 @@ onRecordAfterCreateSuccess((e) => {
           timeout: 10,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': 'OrbisProtocol-Webhook/1.0 (+https://orbisprotocol.org)',
+            'User-Agent': 'OrbisProtocol-Webhook/1.0 (+https://www.orbis-protocol.com)',
             'X-Orbis-Event': evento,
             'X-Orbis-Signature': signature,
             'X-Orbis-Timestamp': payloadCompleto.timestamp,
@@ -219,7 +219,7 @@ onRecordAfterCreateSuccess((e) => {
           timeout: 10,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': 'OrbisProtocol-Webhook/1.0 (+https://orbisprotocol.org)',
+            'User-Agent': 'OrbisProtocol-Webhook/1.0 (+https://www.orbis-protocol.com)',
             'X-Orbis-Event': evento,
             'X-Orbis-Signature': signature,
             'X-Orbis-Timestamp': payloadCompleto.timestamp,

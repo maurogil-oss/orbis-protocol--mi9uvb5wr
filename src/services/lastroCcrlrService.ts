@@ -216,7 +216,7 @@ export async function emitirLastroCircularidade(
   })
 
   const baseUrl =
-    typeof window !== 'undefined' ? window.location.origin : 'https://orbisprotocol.org'
+    typeof window !== 'undefined' ? window.location.origin : 'https://www.orbis-protocol.com'
   const qrCodeUrl = `${baseUrl}/conferencia-lastro/${codigo}?via=qr`
 
   const payload = {
