@@ -5,6 +5,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Index from '@/pages/Index'
 import SolucoesIndex from '@/pages/SolucoesIndex'
 import { FormularioOrbisLpf } from '@/components/FormularioOrbisLpf'
+import Layout from '@/components/Layout'
+import { AuthProvider } from '@/contexts/AuthContext'
 import * as orbisLpfService from '@/services/orbisLpfService'
 
 describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
@@ -224,5 +226,41 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
     await waitFor(() => {
       expect(screen.getByText('Solicitação Recebida com Sucesso!')).toBeDefined()
     })
+  })
+
+  // 4. Presença do Orbis LPF na Navegação (Header Dropdown e Rodapé)
+  it('exibe Orbis LPF no menu Soluções do Layout e no rodapé em HUB DE SOLUÇÕES com badge e âncora corretos', () => {
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <Layout />
+        </MemoryRouter>
+      </AuthProvider>,
+    )
+
+    // Verifica presença no grupo 'Para empresas' do dropdown/drawer
+    const linksLpf = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '/solucoes#orbis-lpf')
+
+    // Deve estar presente no menu (desktop + mobile drawer) e no rodapé (coluna HUB DE SOLUÇÕES)
+    expect(linksLpf.length).toBeGreaterThanOrEqual(2)
+
+    // Título e descrição no menu do dropdown
+    expect(
+      screen.getAllByText('Orbis LPF — Leitura Pré-Faturamento').length,
+    ).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getAllByText(
+        'Leitura antecipada da intensidade de carbono antes do faturamento — metodologia exclusiva, oferta piloto.',
+      ).length,
+    ).toBeGreaterThanOrEqual(1)
+
+    // Badges 'Oferta piloto' no menu e 'Novo' no rodapé
+    expect(screen.getAllByText('Oferta piloto').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Novo').length).toBeGreaterThanOrEqual(1)
+
+    // Âncora confere com o card em /solucoes
+    expect(linksLpf[0].getAttribute('href')).toBe('/solucoes#orbis-lpf')
   })
 })

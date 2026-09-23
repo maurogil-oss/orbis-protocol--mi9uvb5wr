@@ -21,6 +21,7 @@ export default function SolucoesIndex() {
 
   const blocosPrincipais = [
     {
+      id: 'orbis-lpf',
       tag: 'METODOLOGIA EXCLUSIVA',
       badgeEstruturacao: 'Oferta piloto',
       titulo: '◆ ORBIS LPF — Leitura Pré-Faturamento | Metodologia Exclusiva',
@@ -105,7 +106,13 @@ export default function SolucoesIndex() {
           {blocosPrincipais.map((bloco, idx) => (
             <div
               key={idx}
-              id={bloco.badgeEstruturacao ? 'logistica-reversa' : undefined}
+              id={
+                'id' in bloco && bloco.id
+                  ? bloco.id
+                  : bloco.badgeEstruturacao === 'Em estruturação'
+                    ? 'logistica-reversa'
+                    : undefined
+              }
               className="flex flex-col justify-between p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group scroll-mt-32"
             >
               <div>

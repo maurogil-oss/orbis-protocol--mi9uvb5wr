@@ -107,6 +107,13 @@ export default function Layout() {
       rotuloCurto: 'Empresas, indústrias e comércio',
       itens: [
         {
+          title: 'Orbis LPF — Leitura Pré-Faturamento',
+          desc: 'Leitura antecipada da intensidade de carbono antes do faturamento — metodologia exclusiva, oferta piloto.',
+          path: '/solucoes#orbis-lpf',
+          icon: ShieldCheck,
+          badge: 'Oferta piloto',
+        },
+        {
           title: 'Diagnóstico & Mercado de Carbono (SBCE)',
           desc: 'Calcule seu enquadramento na Lei 15.042/2024 e o impacto tributário do IVA dual.',
           path: '/diagnostico',
@@ -703,88 +710,63 @@ export default function Layout() {
       <AssistenteOrbisWidget />
 
       {/* 5. Institutional Footer */}
-      <footer className="bg-[#070A0D] border-t border-[rgba(244,247,250,0.12)] pt-14 pb-8">
+      <footer className="bg-[#070A0D] border-t border-[rgba(244,247,250,0.12)] pt-16 sm:pt-20 pb-10 sm:pb-12 text-[#93A3B5]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[rgba(244,247,250,0.08)]">
-            {/* Col 1 & 2: Brand Info */}
-            <div className="lg:col-span-2 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <OrbisGlobe size={40} />
-                <div className="flex flex-col">
-                  <span className="font-heading font-black text-xl tracking-wider text-[#F4F7FA]">
-                    ORBIS PROTOCOL
-                  </span>
-                  <span className="text-[10px] tracking-[0.15em] uppercase text-[#93A3B5] font-semibold -mt-0.5">
-                    Infraestrutura dMRV & Rastreabilidade
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-14 sm:pb-16 border-b border-[rgba(244,247,250,0.06)]">
+            {/* Col 1 & 2: Brand Info (5 colunas no grid de 12 para excelente respiro) */}
+            <div className="lg:col-span-5 flex flex-col justify-between gap-6 pr-0 lg:pr-8">
+              <div className="space-y-4">
+                <Link to="/" className="inline-flex items-center gap-3.5 group">
+                  <OrbisGlobe size={40} />
+                  <div className="flex flex-col">
+                    <span className="font-heading font-black text-xl tracking-[0.08em] text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
+                      ORBIS<span className="text-[#12B886]">.</span>PROTOCOL
+                    </span>
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#93A3B5]/80 font-semibold -mt-0.5">
+                      Infraestrutura dMRV & Rastreabilidade
+                    </span>
+                  </div>
+                </Link>
+                <p className="text-xs sm:text-sm text-[#93A3B5]/90 leading-relaxed max-w-sm">
+                  Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para cálculo da
+                  pegada de carbono, laudos periciais, conformidade tributária e emissão de selos e
+                  passaportes digitais verificáveis — prontos para envio aos órgãos de controle e a
+                  instituições financeiras.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#111820]/70 border border-[rgba(244,247,250,0.08)] text-[11px] text-[#D9B36C]">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#D9B36C] shrink-0" />
+                  <span className="font-mono tracking-tight text-[#93A3B5]">
+                    MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.598.964/0001-01
                   </span>
                 </div>
               </div>
-              <p className="text-sm text-[#93A3B5] leading-relaxed max-w-md">
-                Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para cálculo da
-                pegada de carbono, laudos periciais, conformidade tributária e emissão de selos e
-                passaportes digitais verificáveis — prontos para envio aos órgãos de controle e a
-                instituições financeiras.
-              </p>
-              <div className="flex items-center gap-3 text-xs text-[#D9B36C]">
-                <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
-                <span>MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.598.964/0001-01</span>
-              </div>
             </div>
 
-            {/* Col 3: Trilhas & Regulatório */}
-            <div className="flex flex-col gap-3">
-              <span className="font-heading text-xs text-[#F4F7FA] font-bold tracking-wider">
-                TRILHAS SETORIAIS
-              </span>
-              <ul className="flex flex-col gap-2 text-sm text-[#93A3B5]">
-                <li>
-                  <Link to="/radar-regulatorio" className="hover:text-[#F4F7FA] transition-colors">
-                    Radar Regulatório
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/credenciamento"
-                    className="text-[#12B886] hover:underline transition-colors flex items-center gap-1"
-                  >
-                    <span>Credenciamento de Perito</span>
-                    <span className="text-[10px] bg-[#12B886]/10 px-1 rounded font-mono">ART</span>
-                  </Link>
-                </li>{' '}
-                <li>
-                  <Link
-                    to="/trilhas/sbce-financas-verdes"
-                    className="hover:text-[#12B886] transition-colors"
-                  >
-                    Mercado SBCE & Finanças Verdes
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/trilhas/peritos-tecnicos"
-                    className="hover:text-[#12B886] transition-colors"
-                  >
-                    Peritos Técnicos & Auditores
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/trilhas" className="text-[#12B886] hover:underline text-xs">
-                    Todas as Trilhas →
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Col 4: Soluções & Portais */}
-            <div className="flex flex-col gap-3">
-              <span className="font-heading text-xs text-[#F4F7FA] font-bold tracking-wider">
+            {/* Col 2: HUB DE SOLUÇÕES (3 colunas) */}
+            <div className="lg:col-span-3 flex flex-col gap-4">
+              <span className="font-heading text-[11px] text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
                 HUB DE SOLUÇÕES
               </span>
-              <ul className="flex flex-col gap-2 text-sm text-[#93A3B5]">
+              <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
+                <li>
+                  <Link
+                    to="/solucoes#orbis-lpf"
+                    className="group inline-flex items-center gap-2 text-[#F4F7FA] font-medium hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200"
+                  >
+                    <span>Orbis LPF — Leitura Pré-Faturamento</span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#12B886]/15 text-[#12B886] border border-[#12B886]/35 shrink-0">
+                      <span className="w-1 h-1 rounded-full bg-[#12B886]" />
+                      Novo
+                    </span>
+                  </Link>
+                </li>
                 <li>
                   <Link
                     to="/planos"
-                    className="text-[#93A3B5] hover:text-[#F4F7FA] transition-colors"
+                    className="text-[#93A3B5] hover:text-[#F4F7FA] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Planos & Preços
                   </Link>
@@ -792,15 +774,15 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/checkout"
-                    className="text-[#12B886] hover:text-[#12B886]/80 font-semibold transition-colors flex items-center gap-1"
+                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
-                    Checkout PIX & NFS-e
+                    <span>Checkout PIX & NFS-e</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/bureau"
-                    className="text-[#D9B36C] hover:text-[#D9B36C]/80 font-semibold transition-colors"
+                    className="text-[#93A3B5] hover:text-[#D9B36C] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Cockpit Bureau ACP (Passaporte)
                   </Link>
@@ -808,16 +790,18 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/corporativo"
-                    className="text-[#12B886] font-semibold hover:text-[#12B886]/80 transition-colors flex items-center gap-1.5"
+                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Modo Demonstração Corporativo</span>
-                    <span className="text-[10px] bg-[#12B886]/20 px-1 rounded font-mono">Demo</span>
+                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
+                      Demo
+                    </span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/solucoes/portal-corporativo"
-                    className="hover:text-[#12B886] transition-colors"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Portal Corporativo (IFRS/SPED)
                   </Link>
@@ -825,10 +809,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/mover"
-                    className="text-[#12B886] font-semibold hover:underline transition-colors flex items-center gap-1"
+                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Espaço MOVER (GS 448)</span>
-                    <span className="text-[9px] bg-[#12B886]/20 px-1 py-0.2 rounded font-mono">
+                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
                       Novo
                     </span>
                   </Link>
@@ -836,7 +820,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/solucoes/case-cdverde"
-                    className="hover:text-[#12B886] transition-colors"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Case CDVerde (Desmontagem VFV)
                   </Link>
@@ -844,10 +828,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/api-docs-cdv"
-                    className="text-[#12B886] hover:underline transition-colors flex items-center gap-1.5 font-medium"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
                   >
                     <span>API v1 — Desmontagem Veicular</span>
-                    <span className="text-[9px] bg-[#12B886]/20 px-1 py-0.2 rounded font-mono">
+                    <span className="text-[9px] bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.12)] px-1 py-0.5 rounded font-mono">
                       v1
                     </span>
                   </Link>
@@ -855,10 +839,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/fatores"
-                    className="hover:text-[#12B886] transition-colors flex items-center gap-1.5"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Catálogo de Fatores CO₂e</span>
-                    <span className="text-[9px] bg-[#D9B36C]/20 text-[#D9B36C] px-1 py-0.2 rounded font-mono font-bold">
+                    <span className="text-[9px] bg-[#D9B36C]/10 text-[#D9B36C] border border-[#D9B36C]/30 px-1 py-0.5 rounded font-mono font-medium">
                       Bloco 4
                     </span>
                   </Link>
@@ -866,7 +850,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/solucoes/cadeias-produtivas"
-                    className="hover:text-[#12B886] transition-colors"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Catálogo 15 Cadeias Produtivas
                   </Link>
@@ -874,19 +858,71 @@ export default function Layout() {
               </ul>
             </div>
 
-            {/* Col 5: Acesso Rápido */}
-            <div className="flex flex-col gap-3">
-              <span className="font-heading text-xs text-[#F4F7FA] font-bold tracking-wider">
+            {/* Col 3: TRILHAS SETORIAIS (2 colunas) */}
+            <div className="lg:col-span-2 flex flex-col gap-4">
+              <span className="font-heading text-[11px] text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
+                TRILHAS SETORIAIS
+              </span>
+              <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
+                <li>
+                  <Link
+                    to="/radar-regulatorio"
+                    className="text-[#93A3B5] hover:text-[#F4F7FA] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                  >
+                    Radar Regulatório
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/credenciamento"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                  >
+                    <span>Credenciamento de Perito</span>
+                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
+                      ART
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/trilhas/sbce-financas-verdes"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                  >
+                    Mercado SBCE & Finanças Verdes
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/trilhas/peritos-tecnicos"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                  >
+                    Peritos Técnicos & Auditores
+                  </Link>
+                </li>
+                <li className="pt-1">
+                  <Link
+                    to="/trilhas"
+                    className="text-[#12B886] hover:underline text-xs inline-flex items-center gap-1 font-medium hover:translate-x-0.5 transition-all duration-200"
+                  >
+                    <span>Todas as Trilhas →</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: FERRAMENTAS & CONTATO (2 colunas) */}
+            <div className="lg:col-span-2 flex flex-col gap-4">
+              <span className="font-heading text-[11px] text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
                 FERRAMENTAS
               </span>
-              <ul className="flex flex-col gap-2 text-sm text-[#93A3B5]">
+              <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
                 <li>
                   <Link
                     to="/demo"
-                    className="hover:text-[#12B886] transition-colors text-[#12B886] font-semibold flex items-center gap-1.5"
+                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
-                    Ver Demonstração
-                    <span className="px-1.5 py-0.2 rounded bg-[#12B886]/20 text-[10px] font-mono">
+                    <span>Ver Demonstração</span>
+                    <span className="px-1 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 text-[9px] font-mono">
                       Tour
                     </span>
                   </Link>
@@ -894,26 +930,34 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/radar-regulatorio"
-                    className="hover:text-[#12B886] transition-colors text-[#12B886] font-semibold flex items-center gap-1.5"
+                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
-                    Radar Regulatório 2026
-                    <span className="px-1.5 py-0.2 rounded bg-[#12B886]/20 text-[10px]">Novo</span>
+                    <span>Radar Regulatório 2026</span>
+                    <span className="px-1 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 text-[9px] font-mono">
+                      Novo
+                    </span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/diagnostico" className="hover:text-[#12B886] transition-colors">
+                  <Link
+                    to="/diagnostico"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                  >
                     Diagnóstico por CNPJ
                   </Link>
                 </li>
                 <li>
-                  <Link to="/verificador" className="hover:text-[#12B886] transition-colors">
+                  <Link
+                    to="/verificador"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                  >
                     Consultar Selo
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/fatores"
-                    className="hover:text-[#12B886] transition-colors text-[#12B886] font-medium"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Fatores CO₂e & Metodologia
                   </Link>
@@ -921,24 +965,27 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/capital"
-                    className="hover:text-[#12B886] transition-colors text-[#12B886] font-semibold"
+                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
-                    Green Capital Engine (8 Linhas)
+                    Green Capital Engine
                   </Link>
                 </li>
                 {isAdminOrPerito && (
                   <li>
                     <Link
                       to="/console-do-auditor"
-                      className="hover:text-[#12B886] transition-colors flex items-center gap-1.5"
+                      className="text-[#D9B36C] hover:text-[#D9B36C]/80 transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
                     >
-                      Console do Auditor
+                      <span>Console do Auditor</span>
                       <Lock className="w-3 h-3 text-[#D9B36C]" />
                     </Link>
                   </li>
                 )}
                 <li>
-                  <Link to="/teste" className="text-xs text-[#93A3B5]/60 hover:text-[#93A3B5]">
+                  <Link
+                    to="/teste"
+                    className="text-[11px] text-[#93A3B5]/50 hover:text-[#93A3B5] transition-colors"
+                  >
                     Catálogo de Teste
                   </Link>
                 </li>
@@ -946,27 +993,30 @@ export default function Layout() {
             </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#93A3B5]">
-            <p>
+          {/* Bottom Bar — Copyright & Regulatório / LGPD */}
+          <div className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#93A3B5]/80">
+            <p className="text-center sm:text-left">
               © {new Date().getFullYear()} Orbis Protocol • Auditoria & Rastreabilidade dMRV. Todos
               os direitos reservados.
             </p>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-6">
               <Link
                 to="/titular-dados"
-                className="text-[11px] text-[#12B886] hover:underline font-semibold"
+                className="text-[11px] text-[#12B886] hover:underline font-semibold transition-colors"
               >
                 Canal do Titular LGPD (Art. 18)
               </Link>
               <Link
                 to="/privacidade"
-                className="text-[11px] text-[#93A3B5]/80 hover:text-[#12B886] underline"
+                className="text-[11px] text-[#93A3B5]/80 hover:text-[#12B886] underline transition-colors"
               >
                 Política de Privacidade
               </Link>
-              <span className="text-[#12B886] font-semibold">Selo Oficial Registrado</span>
-            </div>{' '}
+              <span className="text-[#12B886] font-semibold text-[11px] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
+                Selo Oficial Registrado
+              </span>
+            </div>
           </div>
         </div>
       </footer>
