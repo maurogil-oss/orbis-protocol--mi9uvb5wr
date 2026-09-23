@@ -29,9 +29,25 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
       }
     }
 
-    // Cobranças acima de R$ 5.000 exigem dupla confirmação explícita
-    if (valorNum > 5000 && !confirmacaoDupla && body.is_manual) {
-      return e.badRequestError('Cobranças com valor acima de R$ 5.000 exigem dupla confirmação.')
+    // Obter limite de four-eyes da coleção business_settings (com fallback para 5000)
+    let limiteFourEyes = 5000
+    try {
+      const bRecords = $app.findRecordsByFilter('business_settings', 'id != ""', '-created', 1, 0)
+      if (bRecords && bRecords.length > 0) {
+        const lim = bRecords[0].getFloat('limite_four_eyes')
+        if (typeof lim === 'number' && !isNaN(lim) && lim >= 0) {
+          limiteFourEyes = lim
+        }
+      }
+    } catch (_) {}
+
+    // Cobranças acima do limite four-eyes configurado exigem dupla confirmação explícita
+    if (valorNum > limiteFourEyes && !confirmacaoDupla && body.is_manual) {
+      return e.badRequestError(
+        'Cobranças com valor acima de R$ ' +
+          limiteFourEyes.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) +
+          ' exigem dupla confirmação (Regra de Quatro Olhos).',
+      )
     }
 
     let adminId = ''
@@ -99,7 +115,24 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
         if (!comissaoExistente) {
           const parceiroRec = $app.findFirstRecordByData('parceiros', 'id', parceiroId)
           if (parceiroRec && parceiroRec.getString('status') === 'ativo') {
-            const pct = parceiroRec.getFloat('percentual_comissao') || 0
+            // Busca percentual de comissão: se o parceiro tiver valor específico cadastrado, usa; senão usa business_settings
+            let pct = parceiroRec.getFloat('percentual_comissao') || 0
+            if (pct <= 0) {
+              try {
+                const bRecs = $app.findRecordsByFilter(
+                  'business_settings',
+                  'id != ""',
+                  '-created',
+                  1,
+                  0,
+                )
+                if (bRecs && bRecs.length > 0) {
+                  const pConfig = bRecs[0].getFloat('comissao_parceiro_percent')
+                  if (typeof pConfig === 'number' && pConfig > 0) pct = pConfig
+                }
+              } catch (_) {}
+            }
+            if (pct <= 0) pct = 10
             const base = rec.getFloat('valor') || 0
             const valComissao = Number(((base * pct) / 100).toFixed(2))
 
@@ -158,7 +191,8 @@ routerAdd('POST', '/backend/v1/cobranca/confirmar-simulacao', (e) => {
         justificativa: justificativa,
         comprovante_ref: comprovanteRef,
         confirmacao_dupla: confirmacaoDupla,
-        quatro_olhos_aplicado: valorNum > 5000,
+        quatro_olhos_aplicado: valorNum > limiteFourEyes,
+        limite_four_eyes_aplicado: limiteFourEyes,
         divergente: isDivergente,
         nfse_status: rec.getString('nfse_status'),
       })

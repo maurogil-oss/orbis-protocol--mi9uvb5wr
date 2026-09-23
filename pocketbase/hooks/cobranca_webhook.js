@@ -152,7 +152,23 @@ routerAdd('POST', '/backend/v1/cobranca/webhook', (e) => {
           if (!comissaoExistente) {
             const parceiroRec = $app.findFirstRecordByData('parceiros', 'id', parceiroId)
             if (parceiroRec && parceiroRec.getString('status') === 'ativo') {
-              const pct = parceiroRec.getFloat('percentual_comissao') || 0
+              let pct = parceiroRec.getFloat('percentual_comissao') || 0
+              if (pct <= 0) {
+                try {
+                  const bRecs = $app.findRecordsByFilter(
+                    'business_settings',
+                    'id != ""',
+                    '-created',
+                    1,
+                    0,
+                  )
+                  if (bRecs && bRecs.length > 0) {
+                    const pConfig = bRecs[0].getFloat('comissao_parceiro_percent')
+                    if (typeof pConfig === 'number' && pConfig > 0) pct = pConfig
+                  }
+                } catch (_) {}
+              }
+              if (pct <= 0) pct = 10
               const base = cobranca.getFloat('valor') || 0
               const valComissao = Number(((base * pct) / 100).toFixed(2))
 

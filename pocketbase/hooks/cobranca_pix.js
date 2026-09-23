@@ -17,10 +17,22 @@ routerAdd('POST', '/backend/v1/cobranca/pix', (e) => {
     let origemPreco = 'catalogo'
     let divergenciaPreco = false
 
-    // Preços oficiais de fallback tabelados no código
+    // Preços oficiais de fallback tabelados no código (com prioridade para business_settings se disponível)
     let precoFallback = 490
     if (servicoId === 'laudo_pericial') precoFallback = 2850
     else if (servicoId === 'assinatura_bureau') precoFallback = 7800
+
+    try {
+      const bRecs = $app.findRecordsByFilter('business_settings', 'id != ""', '-created', 1, 0)
+      if (bRecs && bRecs.length > 0) {
+        const planosJson = bRecs[0].get('precos_planos')
+        if (planosJson && typeof planosJson === 'object') {
+          if (planosJson[servicoId] !== undefined) {
+            precoFallback = Number(planosJson[servicoId])
+          }
+        }
+      }
+    } catch (_) {}
 
     try {
       const catalogoItem = $app.findFirstRecordByData('servicos_catalogo', 'servico_id', servicoId)

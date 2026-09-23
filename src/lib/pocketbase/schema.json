@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-23T10:07:32.917Z",
+  "generatedAt": "2026-09-23T10:42:12.012Z",
   "collections": [
     {
       "name": "users",
@@ -4493,6 +4493,71 @@
         "CREATE INDEX idx_demo_audit_sessao ON demo_audit_trail (sessao_id)",
         "CREATE INDEX idx_demo_audit_created ON demo_audit_trail (created DESC)"
       ]
+    },
+    {
+      "name": "business_settings",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'controller')",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'controller')",
+        "create": "@request.auth.id != '' && @request.auth.role = 'master'",
+        "update": "@request.auth.id != '' && @request.auth.role = 'master'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'master'"
+      },
+      "fields": [
+        {
+          "name": "limite_four_eyes",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "comissao_acp_percent",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "comissao_parceiro_percent",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "precos_planos",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "atualizado_por",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "atualizado_em",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
     }
   ]
 }

@@ -90,6 +90,12 @@ import {
   verificarCiclosAssinatura,
 } from '@/services/cobrancaService'
 import { ConsoleGovernancaMasterTab } from '@/components/ConsoleGovernancaMasterTab'
+import { ConsoleParametrosNegocioTab } from '@/components/ConsoleParametrosNegocioTab'
+import {
+  obterBusinessSettings,
+  BusinessSettingsRecord,
+  BUSINESS_SETTINGS_FALLBACK,
+} from '@/services/businessSettingsService'
 import { useSearchParams } from 'react-router-dom'
 
 type AdminTab =
@@ -107,6 +113,7 @@ type AdminTab =
   | 'dmrv_todas_empresas'
   | 'configuracoes'
   | 'governanca'
+  | 'parametros_negocio'
 
 export default function AdminConsolePage() {
   const [searchParams] = useSearchParams()
@@ -119,12 +126,16 @@ export default function AdminConsolePage() {
   const initialTab = ((): AdminTab => {
     const qTab = searchParams.get('tab')
     if (qTab === 'governanca' && isMaster) return 'governanca'
+    if (qTab === 'parametros_negocio') return 'parametros_negocio'
     if (qTab === 'receita') return 'receita'
     if (qTab === 'auditoria') return 'auditoria'
     if (qTab === 'clientes') return 'clientes'
     return isMaster ? 'governanca' : 'receita'
   })()
   const [activeTab, setActiveTab] = useState<AdminTab>(initialTab)
+  const [businessSettings, setBusinessSettings] = useState<BusinessSettingsRecord>(
+    BUSINESS_SETTINGS_FALLBACK,
+  )
   const [loading, setLoading] = useState(true)
   const [kpis, setKpis] = useState<AdminKpis | null>(null)
 
@@ -247,6 +258,7 @@ export default function AdminConsolePage() {
         peritosData,
         pecasData,
         destData,
+        bSettings,
       ] = await Promise.all([
         carregarAdminKpis(),
         listarCobrancasAdmin(),
@@ -262,7 +274,12 @@ export default function AdminConsolePage() {
         listarCredenciamentosPeritos(),
         listarPecasCdvAdmin().catch(() => []),
         listarDestinacoesFinaisAdmin().catch(() => []),
+        obterBusinessSettings().catch(() => BUSINESS_SETTINGS_FALLBACK),
       ])
+
+      if (bSettings) {
+        setBusinessSettings(bSettings)
+      }
 
       setKpis(kpisData)
       setCobrancas(cobsData)
@@ -377,9 +394,12 @@ export default function AdminConsolePage() {
     }
   }
 
+  const limiteFourEyesAtual = businessSettings?.limite_four_eyes ?? 5000
+
   const abrirModalLiquidacao = (cob: any) => {
     const isDivergente = Boolean(cob.divergencia_preco || cob.origem_preco === 'contingencia')
-    const acima5k = Number(cob.valor) > 5000
+    const valorCob = Number(cob.valor) || 0
+    const exigeQuatroOlhos = valorCob > limiteFourEyesAtual
     setModalLiquidacao({
       aberto: true,
       cobranca: cob,
@@ -388,7 +408,7 @@ export default function AdminConsolePage() {
         : '',
       comprovanteRef: cob.txid ? `PIX-${cob.txid.slice(0, 10)}` : '',
       confirmacaoDuplaCheck: false,
-      etapaDupla: acima5k,
+      etapaDupla: exigeQuatroOlhos,
       divergenteAviso: isDivergente,
       submetendo: false,
     })
@@ -408,8 +428,10 @@ export default function AdminConsolePage() {
     }
 
     const valorCob = Number(modalLiquidacao.cobranca.valor) || 0
-    if (valorCob > 5000 && !modalLiquidacao.confirmacaoDuplaCheck) {
-      alert('Para cobranças acima de R$ 5.000,00, a segunda confirmação é obrigatória.')
+    if (valorCob > limiteFourEyesAtual && !modalLiquidacao.confirmacaoDuplaCheck) {
+      alert(
+        `Para cobranças acima de R$ ${limiteFourEyesAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, a segunda confirmação é obrigatória (Regra de Quatro Olhos).`,
+      )
       return
     }
 
@@ -922,6 +944,11 @@ export default function AdminConsolePage() {
             id: 'governanca' as AdminTab,
             label: '14. Governança Master (Acessos & Papéis)',
             icon: ShieldAlert,
+          },
+          {
+            id: 'parametros_negocio' as AdminTab,
+            label: '15. Parâmetros do Negócio',
+            icon: SlidersHorizontal,
           },
         ]
       : []),
@@ -2997,15 +3024,18 @@ export default function AdminConsolePage() {
                 </div>
               )}
 
-              {/* Alerta de Valor Acima de R$ 5.000 (Item 2 do CFO: Dupla Confirmação) */}
-              {Number(modalLiquidacao.cobranca.valor) > 5000 && (
+              {/* Alerta de Valor Acima do Limite Four-Eyes (Regra de Quatro Olhos Dinâmica) */}
+              {Number(modalLiquidacao.cobranca.valor) > limiteFourEyesAtual && (
                 <div className="p-4 rounded-xl bg-[#3B82F6]/10 border-2 border-[#3B82F6] text-xs text-[#3B82F6] space-y-1">
                   <strong className="block font-bold text-sm uppercase tracking-wide">
-                    ⚠️ Valor acima de R$ 5.000 exige dupla confirmação (Regra de Quatro Olhos)
+                    ⚠️ Valor acima de R${' '}
+                    {limiteFourEyesAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}{' '}
+                    exige dupla confirmação (Regra de Quatro Olhos)
                   </strong>
                   <p className="text-[#93A3B5] text-[11px]">
-                    Transações de alto valor exigem validação cadastral e aprovação em duas etapas
-                    pelo auditor ou gestor financeiro antes do repasse e ativação pericial.
+                    Transações acima do limite configurado em Parâmetros do Negócio exigem validação
+                    cadastral e aprovação em duas etapas pelo auditor ou gestor financeiro antes do
+                    repasse e ativação pericial.
                   </p>
                 </div>
               )}
@@ -3043,8 +3073,8 @@ export default function AdminConsolePage() {
                   />
                 </div>
 
-                {/* Checkbox de Segunda Confirmação para > R$ 5.000 */}
-                {Number(modalLiquidacao.cobranca.valor) > 5000 && (
+                {/* Checkbox de Segunda Confirmação para > limiteFourEyesAtual */}
+                {Number(modalLiquidacao.cobranca.valor) > limiteFourEyesAtual && (
                   <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#0A0E12] border border-[#3B82F6]/40 cursor-pointer">
                     <input
                       type="checkbox"
@@ -3721,6 +3751,11 @@ export default function AdminConsolePage() {
         {/* 14. GOVERNANÇA MASTER (VISÍVEL SOMENTE AO PAPEL MASTER) */}
         {activeTab === 'governanca' && isMaster && (
           <ConsoleGovernancaMasterTab usuarios={clientes} onAtualizar={carregarTodosDados} />
+        )}
+
+        {/* 15. PARÂMETROS DO NEGÓCIO (VISÍVEL SOMENTE AO PAPEL MASTER) */}
+        {activeTab === 'parametros_negocio' && (
+          <ConsoleParametrosNegocioTab onParametrosAtualizados={carregarTodosDados} />
         )}
 
         {/* 13. GOVERNANÇA DA PLATAFORMA & PARÂMETROS REGULATÓRIOS (MOVER) */}

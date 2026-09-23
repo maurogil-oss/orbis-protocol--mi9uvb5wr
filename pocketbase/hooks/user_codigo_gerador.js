@@ -61,7 +61,17 @@ onRecordAfterCreateSuccess((e) => {
         novoParceiro.set('nome', userName)
         novoParceiro.set('cpf_cnpj', userCnpj)
         novoParceiro.set('contato', userEmail)
-        novoParceiro.set('percentual_comissao', 10) // 10% padrão inicial contratual
+
+        let comissaoInicial = 10
+        try {
+          const bRecs = $app.findRecordsByFilter('business_settings', 'id != ""', '-created', 1, 0)
+          if (bRecs && bRecs.length > 0) {
+            const pVal = bRecs[0].getFloat('comissao_parceiro_percent')
+            if (typeof pVal === 'number' && pVal > 0) comissaoInicial = pVal
+          }
+        } catch (_) {}
+
+        novoParceiro.set('percentual_comissao', comissaoInicial)
         novoParceiro.set('banco', '')
         novoParceiro.set('agencia', '')
         novoParceiro.set('conta', '')
