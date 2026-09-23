@@ -243,7 +243,7 @@ export default function Index() {
               </div>
 
               {/* Título e Subtítulo */}
-              <h2 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-wide mb-2 leading-tight">
+              <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-2 leading-tight">
                 ORBIS LPF — Leitura Pré-Faturamento
               </h2>
               <p className="text-base sm:text-xl font-semibold text-[#12B886] mb-5">
