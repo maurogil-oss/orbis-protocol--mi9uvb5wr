@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CADEIAS_PRODUTIVAS, CadeiaProdutiva } from '@/data/cadeias'
+import { ModalFormularioOrbisLpf } from '@/components/FormularioOrbisLpf'
 import {
   ShieldCheck,
   Building2,
@@ -16,8 +17,20 @@ import {
 
 export default function SolucoesIndex() {
   const [selectedCadeia, setSelectedCadeia] = useState<CadeiaProdutiva | null>(null)
+  const [modalLpfAberto, setModalLpfAberto] = useState(false)
 
   const blocosPrincipais = [
+    {
+      tag: 'METODOLOGIA EXCLUSIVA',
+      badgeEstruturacao: 'Oferta piloto',
+      titulo: '◆ ORBIS LPF — Leitura Pré-Faturamento | Metodologia Exclusiva',
+      subtitulo: 'Auditoria Fiscal de Carbono Pré-Faturamento.',
+      descricao:
+        'Leitura antecipada da intensidade de carbono do lote antes do faturamento, com cálculo da pegada de carbono e âncora probatória em registro criptográfico. Entregável verificável, pronto para envio ao importador.',
+      link: '/#formulario-leitura-gratuita',
+      ctaText: 'Primeira leitura gratuita →',
+      isLpf: true,
+    },
     {
       tag: 'ACP + IBESG',
       titulo: 'Bureau ACP Paraná',
@@ -120,17 +133,15 @@ export default function SolucoesIndex() {
               </div>
 
               <div className="pt-5 border-t border-[rgba(244,247,250,0.08)]">
-                {idx === 0 ? (
-                  /* Única CTA verde primária no primeiro card (Bureau ACP) */
-                  <Link
-                    to={bloco.link}
+                {'isLpf' in bloco && bloco.isLpf ? (
+                  <button
+                    type="button"
+                    onClick={() => setModalLpfAberto(true)}
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow text-sm"
                   >
                     <span>{bloco.ctaText}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  </button>
                 ) : (
-                  /* Ações secundárias neutras */
                   <Link
                     to={bloco.link}
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] transition-all text-sm"
@@ -187,6 +198,9 @@ export default function SolucoesIndex() {
             ))}
           </div>
         </div>
+
+        {/* Modal da Leitura Gratuita Orbis LPF */}
+        <ModalFormularioOrbisLpf isOpen={modalLpfAberto} onClose={() => setModalLpfAberto(false)} />
 
         {/* Modal for Sector Description */}
         {selectedCadeia && (

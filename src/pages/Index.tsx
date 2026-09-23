@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
 import { NumerosVerificaveisSection } from '@/components/NumerosVerificaveisSection'
+import { FormularioOrbisLpf, ModalFormularioOrbisLpf } from '@/components/FormularioOrbisLpf'
 import {
   ShieldCheck,
   ArrowRight,
@@ -26,6 +27,17 @@ import {
 } from 'lucide-react'
 
 export default function Index() {
+  const [modalLpfAberto, setModalLpfAberto] = useState(false)
+
+  const scrollToLpfForm = () => {
+    const el = document.getElementById('formulario-leitura-gratuita')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      setModalLpfAberto(true)
+    }
+  }
+
   // Bloco de entrada por papel (Item 3)
   // Rótulos exatos: 'Sou empresa', 'Sou comprador', 'Sou perito', 'Sou cliente ACP'
   const papeisEntrada = [
@@ -214,6 +226,103 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* 1.1 SEÇÃO DE DESTAQUE: ORBIS LPF — Leitura Pré-Faturamento */}
+      {/* Posicionada logo após a Hero Section, com selo/eyebrow '◆ METODOLOGIA EXCLUSIVA ORBIS' */}
+      <section
+        id="orbis-lpf-destaque"
+        className="py-16 md:py-24 bg-[#0D1217] border-b border-[rgba(244,247,250,0.1)] relative overflow-hidden scroll-mt-24"
+      >
+        <div className="absolute top-0 right-1/4 w-[600px] h-[300px] bg-[#12B886]/10 blur-[130px] pointer-events-none" />
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
+          <div className="p-8 sm:p-12 md:p-14 rounded-3xl bg-gradient-to-br from-[#111820] via-[#16202B] to-[#111820] border border-[#12B886]/40 shadow-2xl relative">
+            <div className="max-w-4xl">
+              {/* Selo / Eyebrow */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#16202B] border border-[#12B886]/50 text-[#12B886] text-xs font-mono font-bold tracking-wider uppercase mb-5">
+                <span>◆ METODOLOGIA EXCLUSIVA ORBIS</span>
+              </div>
+
+              {/* Título e Subtítulo */}
+              <h2 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-wide mb-2 leading-tight">
+                ORBIS LPF — Leitura Pré-Faturamento
+              </h2>
+              <p className="text-base sm:text-xl font-semibold text-[#12B886] mb-5">
+                Auditoria Fiscal de Carbono Pré-Faturamento
+              </p>
+
+              {/* Frase de impacto */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0A0E12]/80 border-l-4 border-[#12B886] border-[rgba(244,247,250,0.08)] mb-6">
+                <p className="font-heading text-lg sm:text-2xl font-bold text-[#F4F7FA] tracking-wide">
+                  &ldquo;Sua exportação, precificada em carbono antes de faturar.&rdquo;
+                </p>
+              </div>
+
+              {/* Corpo (parágrafos aprovados pelo usuário) */}
+              <div className="space-y-4 text-sm sm:text-base text-[#93A3B5] leading-relaxed mb-6">
+                <p>
+                  Hoje, a indústria descobre a intensidade de carbono do seu produto meses depois do
+                  embarque — quando a consultoria entrega o inventário, a receita já faturou e o
+                  custo aduaneiro já está definido pela pior hipótese: o valor-padrão aplicado na
+                  ausência de prova.
+                </p>
+                <p>
+                  O Orbis inverte a ordem. No momento do pedido de venda, calculamos a intensidade
+                  de carbono estimada do lote, com o cálculo da pegada de carbono e a âncora
+                  probatória em registro criptográfico — entregando um documento verificável, pronto
+                  para envio ao importador.
+                </p>
+                <p className="font-semibold text-[#F4F7FA]">
+                  Você negocia com o número na mão. Não meses depois.
+                </p>
+              </div>
+
+              {/* Linha de público */}
+              <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] mb-4 text-xs sm:text-sm text-[#93A3B5]">
+                <strong className="text-[#D9B36C] font-semibold block sm:inline mr-2">
+                  Público-alvo:
+                </strong>
+                <span>
+                  Para siderúrgicas, fundições, agroindústrias, desmanches e montadoras com
+                  exportação ou exposição a critérios de intensidade de carbono.
+                </span>
+              </div>
+
+              {/* Estado declarado */}
+              <div className="mb-8">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.12)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D9B36C]" />
+                  <span>[Estado: metodologia em estruturação — oferta piloto]</span>
+                </span>
+              </div>
+
+              {/* CTA primário e microcopy */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex flex-col items-start gap-2">
+                  <button
+                    type="button"
+                    onClick={scrollToLpfForm}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-base font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.02] transition-all shadow-emerald-glow"
+                  >
+                    <span>Solicitar primeira leitura gratuita</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                  <span className="text-xs text-[#93A3B5] pl-1 font-mono">
+                    1 leitura por CNPJ. Sem compromisso.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Formulário integrado da Leitura Gratuita */}
+          <div className="mt-10">
+            <FormularioOrbisLpf id="formulario-leitura-gratuita" />
+          </div>
+        </div>
+      </section>
+
+      {/* Modal de contingência para formulário */}
+      <ModalFormularioOrbisLpf isOpen={modalLpfAberto} onClose={() => setModalLpfAberto(false)} />
 
       {/* 2. NOVA SEÇÃO: NÚMEROS VERIFICÁVEIS */}
       {/* Contagens REAIS do PocketBase: selos emitidos, lastros, manifestos MTR-SINIR, peças rastreadas, dpp_consultas */}

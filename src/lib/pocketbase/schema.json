@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-23T10:42:12.012Z",
+  "generatedAt": "2026-09-23T11:40:13.000Z",
   "collections": [
     {
       "name": "users",
@@ -291,7 +291,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["funil", "agente_ia", "portal"]
+          "selectValues": ["funil", "agente_ia", "portal", "orbis_lpf"]
         },
         {
           "name": "visto_auditor",
@@ -320,6 +320,12 @@
         {
           "name": "demonstracao",
           "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "volume_exportacao",
+          "type": "text",
           "required": false,
           "system": false
         }
