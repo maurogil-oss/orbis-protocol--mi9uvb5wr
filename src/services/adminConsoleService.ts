@@ -120,6 +120,50 @@ export async function atualizarClienteAdmin(userId: string, data: Record<string,
   return pb.collection('users').update(userId, data)
 }
 
+/**
+ * Funções de Governança exclusivas do Gestor Master
+ */
+export async function aprovarRecusarContaGestaoMaster(params: {
+  userId: string
+  decisao: 'aprovar' | 'recusar'
+  novoPapel?: 'admin' | 'controller' | 'financeiro' | 'financeiro_leitor' | string
+  justificativa?: string
+}) {
+  return pb.send('/backend/v1/master/aprovar-gestao', {
+    method: 'POST',
+    body: {
+      user_id: params.userId,
+      decisao: params.decisao,
+      novo_papel: params.novoPapel,
+      justificativa: params.justificativa,
+    },
+  })
+}
+
+export async function alterarPapelUsuarioMaster(params: {
+  userId: string
+  novoPapel:
+    | 'admin'
+    | 'controller'
+    | 'perito'
+    | 'cliente'
+    | 'financeiro'
+    | 'financeiro_leitor'
+    | 'cliente_acp'
+    | 'parceiro'
+    | string
+  justificativa?: string
+}) {
+  return pb.send('/backend/v1/master/alterar-papel', {
+    method: 'POST',
+    body: {
+      user_id: params.userId,
+      novo_papel: params.novoPapel,
+      justificativa: params.justificativa,
+    },
+  })
+}
+
 export async function listarCobrancasAdmin(filtroStatus?: string) {
   const filter = filtroStatus && filtroStatus !== 'todos' ? `status = '${filtroStatus}'` : ''
   return pb.collection('cobrancas').getFullList({

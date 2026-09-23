@@ -20,11 +20,11 @@ routerAdd(
       }
 
       const role = auth.getString('role')
-      // financeiro_leitor não pode liberar/suspender acessos; somente admin ou gestor financeiro
-      if (role !== 'admin' && role !== 'financeiro') {
+      // financeiro_leitor não pode liberar/suspender acessos; somente master, admin ou gestor financeiro
+      if (role !== 'master' && role !== 'admin' && role !== 'financeiro') {
         return e.json(403, {
           error:
-            'Acesso negado. A liberação/suspensão de acessos de parceiros é exclusiva de administradores e gestores financeiros. Leitores financeiros possuem acesso apenas para visualização.',
+            'Acesso negado. A liberação/suspensão de acessos de parceiros é exclusiva de administradores, gestores master e gestores financeiros. Leitores financeiros possuem acesso apenas para visualização.',
         })
       }
 

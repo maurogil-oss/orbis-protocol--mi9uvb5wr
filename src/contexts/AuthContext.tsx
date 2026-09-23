@@ -7,12 +7,26 @@ interface AuthContextType {
   token: string
   isAuthenticated: boolean
   isLoading: boolean
-  role: 'admin' | 'perito' | 'cliente' | 'financeiro_leitor' | 'cliente_acp' | 'parceiro' | string
+  role:
+    | 'master'
+    | 'admin'
+    | 'controller'
+    | 'perito'
+    | 'cliente'
+    | 'financeiro'
+    | 'financeiro_leitor'
+    | 'cliente_acp'
+    | 'parceiro'
+    | string
+  isMaster: boolean
   isAdminOrPerito: boolean
   isFinanceiroLeitor: boolean
+  isFinanceiro: boolean
+  isController: boolean
   isClienteAcp: boolean
   isParceiro: boolean
   isAdmin: boolean
+  isGestaoPendente: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   refreshAuth: () => void
@@ -90,11 +104,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const role = (user as any)?.role || 'cliente'
-  const isAdmin = role === 'admin'
+  const isMaster = role === 'master'
+  const isAdmin = role === 'admin' || role === 'master'
+  const isFinanceiro = role === 'financeiro'
   const isFinanceiroLeitor = role === 'financeiro_leitor'
+  const isController = role === 'controller'
   const isClienteAcp = role === 'cliente_acp'
   const isParceiro = role === 'parceiro'
-  const isAdminOrPerito = role === 'admin' || role === 'perito'
+  const isAdminOrPerito = isMaster || role === 'admin' || role === 'perito'
+  const statusAprovacao = (user as any)?.status_aprovacao
+  const isGestaoPendente =
+    statusAprovacao === 'pendente' &&
+    (role === 'admin' || role === 'controller' || role === 'financeiro')
 
   return (
     <AuthContext.Provider
@@ -104,11 +125,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!token && !!user,
         isLoading,
         role,
+        isMaster,
         isAdmin,
+        isFinanceiro,
         isFinanceiroLeitor,
+        isController,
         isClienteAcp,
         isParceiro,
         isAdminOrPerito,
+        isGestaoPendente,
         login,
         logout,
         refreshAuth,

@@ -13,7 +13,7 @@ export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as any)?.from?.pathname || '/painel'
+  const fromState = (location.state as any)?.from?.pathname
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,7 +24,39 @@ export default function Login() {
     setIsLoading(false)
 
     if (res.success) {
-      navigate(from, { replace: true })
+      // Obter o usuário recém-autenticado no client PocketBase para direcionamento estrito por papel
+      const userRecord = (await import('@/lib/pocketbase/client')).default.authStore.record as any
+      const userRole = userRecord?.role || 'cliente'
+      const statusAprovacao = userRecord?.status_aprovacao
+
+      // Se veio com redirect explícito seguro
+      if (fromState && fromState !== '/login') {
+        navigate(fromState, { replace: true })
+        return
+      }
+
+      // Redirecionamento por papel pós-login:
+      // - master: Console com aba de governança (/admin?tab=governanca)
+      // - admin / controller: Console (/admin)
+      // - perito: credenciamento e lotes designados (/credenciamento ou /console-do-auditor)
+      // - financeiro / financeiro_leitor: painel financeiro (/admin?tab=receita)
+      // - parceiro: painel parceiro (/parceiro-painel)
+      // - cliente / cliente_acp: painel do cliente (/painel)
+      if (userRole === 'master') {
+        navigate('/admin?tab=governanca', { replace: true })
+      } else if (userRole === 'admin') {
+        navigate('/admin', { replace: true })
+      } else if (userRole === 'controller') {
+        navigate('/admin?tab=auditoria', { replace: true })
+      } else if (userRole === 'financeiro' || userRole === 'financeiro_leitor') {
+        navigate('/admin?tab=receita', { replace: true })
+      } else if (userRole === 'perito') {
+        navigate('/credenciamento', { replace: true })
+      } else if (userRole === 'parceiro') {
+        navigate('/parceiro-painel', { replace: true })
+      } else {
+        navigate('/painel', { replace: true })
+      }
     } else {
       setError(res.error || 'Credenciais inválidas. Verifique seu e-mail e senha.')
     }

@@ -60,8 +60,11 @@ routerAdd(
   (e) => {
     try {
       const auth = e.auth
-      if (!auth || auth.getString('role') !== 'admin') {
-        return e.json(403, { error: 'Apenas administradores podem disparar link de redefinição.' })
+      const operadorPapel = auth ? auth.getString('role') : ''
+      if (!auth || (operadorPapel !== 'admin' && operadorPapel !== 'master')) {
+        return e.json(403, {
+          error: 'Apenas administradores ou gestor master podem disparar link de redefinição.',
+        })
       }
 
       const body = e.requestInfo().body || {}
@@ -94,7 +97,7 @@ routerAdd(
       log.set('entidade_id', targetUserId)
       log.set('ator_id', auth.id)
       log.set('ator_email', auth.getString('email'))
-      log.set('papel', 'admin')
+      log.set('papel', operadorPapel)
       log.set('detalhes', {
         alvo_email: targetEmail,
         motivo: 'Solicitação administrativa pelo Painel de Clientes',

@@ -20,7 +20,7 @@ import {
 import { useSearchParams } from 'react-router-dom'
 import { validarSenhaForte } from '@/lib/passwordPolicy'
 
-export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp' | 'parceiro'
+export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp' | 'parceiro' | 'gestao'
 
 export default function RegistroPage() {
   const [searchParams] = useSearchParams()
@@ -40,6 +40,7 @@ export default function RegistroPage() {
     if (lower === 'acp' || lower === 'cliente_acp' || lower === 'cliente-acp') return 'cliente_acp'
     if (lower === 'perito') return 'perito'
     if (lower === 'parceiro' || lower === 'afiliado') return 'parceiro'
+    if (lower === 'gestao' || lower === 'admin' || lower === 'gestor') return 'gestao'
     return 'cliente'
   }
 
@@ -94,13 +95,19 @@ export default function RegistroPage() {
 
     try {
       // 1. Cria usuário na collection users com role selecionado
+      // Se for perfil 'gestao', é criado como role 'admin' porém com status_aprovacao = 'pendente'
+      // O papel 'master' NUNCA pode ser solicitado ou atribuído aqui
+      const dbRole = role === 'gestao' ? 'admin' : role
+      const isGestaoPerfil = role === 'gestao'
+
       await pb.collection('users').create({
         email: cleanEmail,
         password,
         passwordConfirm,
         name: cleanNome,
-        role: role,
+        role: dbRole,
         parceiro_acesso_status: role === 'parceiro' ? 'pendente' : undefined,
+        status_aprovacao: isGestaoPerfil ? 'pendente' : 'aprovado',
       })
 
       // 2. Autentica automaticamente
@@ -116,7 +123,10 @@ export default function RegistroPage() {
 
       // 3. Redirecionamento condicional ao perfil
       setTimeout(() => {
-        if (from) {
+        if (isGestaoPerfil) {
+          // Usuário de gestão pendente de aprovação: vai para a rota protegida que exibe o bloqueio formal
+          navigate('/admin', { replace: true })
+        } else if (from) {
           navigate(from, { replace: true })
         } else if (role === 'parceiro') {
           // Parceiro vai direto ao seu painel financeiro (/parceiro-painel)
@@ -194,13 +204,15 @@ export default function RegistroPage() {
               <p className="font-semibold">Conta criada e autenticada com sucesso!</p>
               <p className="text-[11px] text-[#93A3B5] mt-0.5">
                 Redirecionando para{' '}
-                {role === 'perito'
-                  ? 'o Credenciamento Pericial'
-                  : role === 'cliente_acp'
-                    ? 'seu Painel ACP / dMRV'
-                    : role === 'parceiro'
-                      ? 'o Painel Financeiro do Parceiro'
-                      : 'seu Painel'}
+                {role === 'gestao'
+                  ? 'validação formal pelo Gestor Master'
+                  : role === 'perito'
+                    ? 'o Credenciamento Pericial'
+                    : role === 'cliente_acp'
+                      ? 'seu Painel ACP / dMRV'
+                      : role === 'parceiro'
+                        ? 'o Painel Financeiro do Parceiro'
+                        : 'seu Painel'}
                 ...
               </p>
             </div>
@@ -213,7 +225,7 @@ export default function RegistroPage() {
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-2">
               Escolha seu Perfil de Acesso *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {/* Opção Cliente */}
               <button
                 type="button"
@@ -359,19 +371,60 @@ export default function RegistroPage() {
                   </p>
                 </div>
               </button>
+
+              {/* Opção Gestão (Pendente de Aprovação pelo Master) */}
+              <button
+                type="button"
+                onClick={() => setRole('gestao')}
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                  role === 'gestao'
+                    ? 'bg-[#3B82F6]/20 border-[#3B82F6] shadow-lg shadow-[#3B82F6]/15'
+                    : 'bg-[#0A0E12] border-[rgba(244,247,250,0.1)] hover:border-[rgba(244,247,250,0.25)]'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div
+                    className={`p-2 rounded-lg shrink-0 ${
+                      role === 'gestao'
+                        ? 'bg-[#3B82F6] text-[#0A0E12]'
+                        : 'bg-[#16202B] text-[#93A3B5]'
+                    }`}
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  {role === 'gestao' && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-heading font-bold text-xs sm:text-sm text-[#F4F7FA]">
+                      Gestão
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#D9B36C]/20 text-[#D9B36C] font-mono font-bold">
+                      REQUER VALIDAÇÃO
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#93A3B5] leading-snug mt-1">
+                    Equipe interna. Fica pendente até aprovação formal pelo Gestor Master.
+                  </p>
+                </div>
+              </button>
             </div>
 
             {/* Explicação contextual sobre o perfil escolhido */}
             <div className="mt-2.5 p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] flex items-start gap-2 text-[11px] text-[#93A3B5]">
               <Info className="w-3.5 h-3.5 text-[#12B886] shrink-0 mt-0.5" />
-              <span>
-                {role === 'parceiro'
-                  ? 'Como Parceiro, sua conta receberá identificador exclusivo com prefixo ORB-PAR-XXXX e vínculo automático ao módulo fiscal/financeiro. Enquanto o cadastro aguarda liberação pela controladoria, seu painel exibirá o status de homologação.'
-                  : role === 'perito'
-                    ? 'Como Perito Técnico, após criar sua conta você completará o credenciamento com número de ART/RRT e conselho regional para emitir laudos chancelados.'
-                    : role === 'cliente_acp'
-                      ? 'Como Cliente ACP, sua conta receberá identificador exclusivo com prefixo ORB-ACP-XXXX e acesso direto ao Painel Corporativo e dMRV, sem necessidade de passar pelo funil prévio.'
-                      : 'Como Cliente, você terá acesso imediato ao painel, importação de NF-e/SPED, diagnóstico SBCE e contratação de serviços.'}
+              <span className="leading-relaxed">
+                {role === 'gestao'
+                  ? 'Como Gestão, sua conta é cadastrada com status "pendente de aprovação" e não possui acesso à área interna até validação formal. APENAS o Gestor Master pode homologar seu acesso e definir seu papel específico no Console (Admin, Controller, Financeiro ou Leitor). O papel Master nunca é concedido por cadastro ou interface.'
+                  : role === 'parceiro'
+                    ? 'Como Parceiro, sua conta receberá identificador exclusivo com prefixo ORB-PAR-XXXX e vínculo automático ao módulo fiscal/financeiro. Enquanto o cadastro aguarda liberação pela controladoria, seu painel exibirá o status de homologação.'
+                    : role === 'perito'
+                      ? 'Como Perito Técnico, após criar sua conta você completará o credenciamento com número de ART/RRT e conselho regional para emitir laudos chancelados.'
+                      : role === 'cliente_acp'
+                        ? 'Como Cliente ACP, sua conta receberá identificador exclusivo com prefixo ORB-ACP-XXXX e acesso direto ao Painel Corporativo e dMRV, sem necessidade de passar pelo funil prévio.'
+                        : 'Como Cliente, você terá acesso imediato ao painel, importação de NF-e/SPED, diagnóstico SBCE e contratação de serviços.'}
               </span>
             </div>
           </div>
@@ -490,13 +543,15 @@ export default function RegistroPage() {
               <>
                 <span>
                   Criar Conta de{' '}
-                  {role === 'perito'
-                    ? 'Perito'
-                    : role === 'parceiro'
-                      ? 'Parceiro'
-                      : role === 'cliente_acp'
-                        ? 'Cliente ACP'
-                        : 'Cliente'}
+                  {role === 'gestao'
+                    ? 'Gestão (Pendente de Validação)'
+                    : role === 'perito'
+                      ? 'Perito'
+                      : role === 'parceiro'
+                        ? 'Parceiro'
+                        : role === 'cliente_acp'
+                          ? 'Cliente ACP'
+                          : 'Cliente'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </>

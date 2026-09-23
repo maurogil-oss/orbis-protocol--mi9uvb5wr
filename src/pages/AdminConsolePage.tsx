@@ -88,6 +88,8 @@ import {
   emitirNfse,
   verificarCiclosAssinatura,
 } from '@/services/cobrancaService'
+import { ConsoleGovernancaMasterTab } from '@/components/ConsoleGovernancaMasterTab'
+import { useSearchParams } from 'react-router-dom'
 
 type AdminTab =
   | 'receita'
@@ -103,15 +105,25 @@ type AdminTab =
   | 'ccrlr_sinir'
   | 'dmrv_todas_empresas'
   | 'configuracoes'
+  | 'governanca'
 
 export default function AdminConsolePage() {
-  const { user, isFinanceiroLeitor, isAdmin, requestPasswordReset } = useAuth()
+  const [searchParams] = useSearchParams()
+  const { user, isFinanceiroLeitor, isAdmin, isMaster, requestPasswordReset } = useAuth()
   // Matriz de papéis (Requisito 5):
   // admin edita, financeiro edita e libera acessos, financeiro_leitor só visualiza, parceiro só o próprio painel
   const isFinanceiroEditor = (user as any)?.role === 'financeiro'
   const canEditAndRelease = isAdmin || isFinanceiroEditor
   const isReadOnly = isFinanceiroLeitor && !canEditAndRelease
-  const [activeTab, setActiveTab] = useState<AdminTab>('receita')
+  const initialTab = ((): AdminTab => {
+    const qTab = searchParams.get('tab')
+    if (qTab === 'governanca' && isMaster) return 'governanca'
+    if (qTab === 'receita') return 'receita'
+    if (qTab === 'auditoria') return 'auditoria'
+    if (qTab === 'clientes') return 'clientes'
+    return isMaster ? 'governanca' : 'receita'
+  })()
+  const [activeTab, setActiveTab] = useState<AdminTab>(initialTab)
   const [loading, setLoading] = useState(true)
   const [kpis, setKpis] = useState<AdminKpis | null>(null)
 
@@ -615,21 +627,31 @@ export default function AdminConsolePage() {
     }
   }
 
-  // Concessão / Revogação do Papel financeiro_leitor (Item 2)
+  // Concessão / Revogação de papéis: Restrito EXCLUSIVAMENTE ao Gestor Master
   const handleAlternarPapelFinanceiroLeitor = async (cli: any) => {
-    if (isReadOnly) return
+    if (!isMaster) {
+      alert(
+        'Acesso negado: Administradores comuns operam o Console mas NÃO podem aprovar acessos, promover ou alterar papéis de ninguém. Ação privativa do Gestor Master na aba Governança.',
+      )
+      return
+    }
     const novoPapel = cli.role === 'financeiro_leitor' ? 'cliente' : 'financeiro_leitor'
     const confirmMsg =
       novoPapel === 'financeiro_leitor'
-        ? `Deseja conceder o papel 'financeiro_leitor' para ${cli.email}? O usuário terá acesso de apenas leitura a todo o console de gestão financeira.`
-        : `Deseja revogar o papel 'financeiro_leitor' de ${cli.email}, retornando-o a 'cliente'?`
+        ? `Confirmar alteração de papel para 'financeiro_leitor' para ${cli.email}? Trilha de auditoria será gravada com operador Master.`
+        : `Confirmar revogação do papel 'financeiro_leitor' de ${cli.email}, retornando-o a 'cliente'?`
 
     if (!confirm(confirmMsg)) return
 
     try {
-      await atualizarClienteAdmin(cli.id, { role: novoPapel })
+      const { alterarPapelUsuarioMaster } = await import('@/services/adminConsoleService')
+      await alterarPapelUsuarioMaster({
+        userId: cli.id,
+        novoPapel,
+        justificativa: 'Alteração rápida de papel financeiro_leitor pelo Gestor Master',
+      })
       mostrarMensagem(
-        `Papel de ${cli.email} atualizado para '${novoPapel}'! Mudança registrada na trilha de auditoria.`,
+        `Papel de ${cli.email} atualizado para '${novoPapel}' pelo Master! Mudança registrada na trilha.`,
       )
       carregarTodosDados()
     } catch (err: any) {
@@ -893,6 +915,15 @@ export default function AdminConsolePage() {
     { id: 'ccrlr_sinir', label: '11. CCRLR & Interoperabilidade SINIR', icon: Layers },
     { id: 'dmrv_todas_empresas', label: '12. dMRV Emissões Evitadas (SBCE)', icon: Leaf },
     { id: 'configuracoes', label: '13. Governança & MOVER', icon: SlidersHorizontal },
+    ...(isMaster
+      ? [
+          {
+            id: 'governanca' as AdminTab,
+            label: '14. Governança Master (Acessos & Papéis)',
+            icon: ShieldAlert,
+          },
+        ]
+      : []),
   ]
 
   const cobrancasFiltradas = cobrancas.filter((c) => {
@@ -1409,20 +1440,23 @@ export default function AdminConsolePage() {
                                   Enviar link de redefinição
                                 </button>
 
-                                <button
-                                  type="button"
-                                  onClick={() => handleAlternarPapelFinanceiroLeitor(cli)}
-                                  className={`px-2 py-1 rounded border text-[11px] font-medium transition-colors ${
-                                    cli.role === 'financeiro_leitor'
-                                      ? 'bg-[#D9B36C]/20 border-[#D9B36C] text-[#D9B36C] hover:bg-[#D9B36C]/30'
-                                      : 'bg-[#16202B] border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#D9B36C]'
-                                  }`}
-                                  title="Conceder ou revogar papel financeiro_leitor (somente leitura financeira)"
-                                >
-                                  {cli.role === 'financeiro_leitor'
-                                    ? 'Revogar Financeiro Leitor'
-                                    : 'Tornar Financeiro Leitor'}
-                                </button>
+                                {/* Concessão de papéis visível somente ao Master (Regra 2) */}
+                                {isMaster && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAlternarPapelFinanceiroLeitor(cli)}
+                                    className={`px-2 py-1 rounded border text-[11px] font-medium transition-colors ${
+                                      cli.role === 'financeiro_leitor'
+                                        ? 'bg-[#D9B36C]/20 border-[#D9B36C] text-[#D9B36C] hover:bg-[#D9B36C]/30'
+                                        : 'bg-[#16202B] border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#D9B36C]'
+                                    }`}
+                                    title="Exclusivo Master: Conceder ou revogar papel financeiro_leitor"
+                                  >
+                                    {cli.role === 'financeiro_leitor'
+                                      ? 'Revogar Financeiro Leitor'
+                                      : 'Tornar Financeiro Leitor'}
+                                  </button>
+                                )}
 
                                 {!estaEditando && (
                                   <button
@@ -3681,6 +3715,11 @@ export default function AdminConsolePage() {
           <div className="space-y-6">
             <PainelDmrvEmissoesEvitadas />
           </div>
+        )}
+
+        {/* 14. GOVERNANÇA MASTER (VISÍVEL SOMENTE AO PAPEL MASTER) */}
+        {activeTab === 'governanca' && isMaster && (
+          <ConsoleGovernancaMasterTab usuarios={clientes} onAtualizar={carregarTodosDados} />
         )}
 
         {/* 13. GOVERNANÇA DA PLATAFORMA & PARÂMETROS REGULATÓRIOS (MOVER) */}

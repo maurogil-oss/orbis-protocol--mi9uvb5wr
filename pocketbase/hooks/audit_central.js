@@ -27,7 +27,7 @@ onRecordUpdate((e) => {
     log.set('acao', 'usuario_mudanca_papel')
     log.set('entidade', 'users')
     log.set('entidade_id', rec.id)
-    log.set('ator_id', 'sistema_admin')
+    log.set('ator_id', 'governanca_master')
     log.set('ator_email', rec.getString('email'))
     log.set('papel', rec.getString('role'))
     log.set('detalhes', {
@@ -35,6 +35,29 @@ onRecordUpdate((e) => {
       novo_papel: rec.getString('role'),
       user_email: rec.getString('email'),
       user_nome: rec.getString('name'),
+      timestamp: new Date().toISOString(),
+    })
+    $app.save(log)
+  }
+
+  // Mudança de status de aprovação de contas Gestão
+  if (rec.getString('status_aprovacao') !== orig.getString('status_aprovacao')) {
+    const log = new Record(auditCol)
+    const novoStatusAprov = rec.getString('status_aprovacao') || 'pendente'
+    const statusAntAprov = orig.getString('status_aprovacao') || 'pendente'
+    log.set('acao', 'gestao_status_aprovacao_alterado')
+    log.set('entidade', 'users')
+    log.set('entidade_id', rec.id)
+    log.set('ator_id', 'governanca_master')
+    log.set('ator_email', rec.getString('email'))
+    log.set('papel', rec.getString('role'))
+    log.set('detalhes', {
+      status_aprovacao_anterior: statusAntAprov,
+      novo_status_aprovacao: novoStatusAprov,
+      user_email: rec.getString('email'),
+      user_nome: rec.getString('name'),
+      user_role: rec.getString('role'),
+      timestamp: new Date().toISOString(),
     })
     $app.save(log)
   }

@@ -234,6 +234,7 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
         passwordConfirm: 'Perito#Seguro2026',
         name: 'Dr. Roberto Carlos CREA',
         role: 'perito',
+        status_aprovacao: 'aprovado',
       })
       expect(mockAuthState.login).toHaveBeenCalledWith(
         'roberto@periciatecnica.com.br',
@@ -278,6 +279,7 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
         passwordConfirm: 'SenhaForteACP2026',
         name: 'Associada ACP Curitiba S.A.',
         role: 'cliente_acp',
+        status_aprovacao: 'aprovado',
       })
       expect(mockAuthState.login).toHaveBeenCalledWith('acp@associada.com.br', 'SenhaForteACP2026')
     })

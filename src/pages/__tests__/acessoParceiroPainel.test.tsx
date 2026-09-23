@@ -109,6 +109,7 @@ describe('Pacote: Acesso do parceiro ao próprio painel financeiro', () => {
         name: 'EcoParceiro Consultoria',
         role: 'parceiro',
         parceiro_acesso_status: 'pendente',
+        status_aprovacao: 'aprovado',
       })
       expect(mockAuthState.login).toHaveBeenCalledWith(
         'contato@ecoparceiro.com.br',
