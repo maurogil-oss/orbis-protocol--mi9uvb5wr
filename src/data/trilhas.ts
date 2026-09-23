@@ -190,4 +190,62 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     ],
     linkAuditor: true,
   },
+  mineracao: {
+    slug: 'mineracao',
+    lei: 'Lei 12.305/2010 (PNRS) / CONAMA / ANM',
+    titulo: 'Mineração Urbana & Materiais Críticos Recuperados',
+    subtitulo:
+      'Infraestrutura probatória e custódia pericial de origem urbana para terras raras (NdFeB), metais nobres (Au/Pd/Ag) e cobre de alta pureza.',
+    descricao:
+      'Protocolo técnico para recicladores industriais, beneficiadores e processadores de resíduos eletrônicos (REEE) e veículos em fim de vida (VFV). Estruturação de prova documental de origem estritamente urbana, compliance fiscal de entrada e saída (NF-e, DANFE, transportador), prevenção contra receptação e emissão do Passaporte Digital de Produto (DCP) por lote segregado com hash SHA-256 e QR Code público.',
+    publico:
+      'Recicladores de Eletroeletrônicos (REEE), Refinarias e Processadores de Sucata Nobre, CDVs com Segregação Especializada e Gestores de Logística Reversa PNRS.',
+    destaques: [
+      'Prova documental de origem urbana e não-extrativa (PNRS / CONAMA)',
+      'Cadeia de custódia fiscal e física anti-receptação (chave NF-e 44 dígitos)',
+      'Emissão do DCP por lote com hash SHA-256 e QR Code verificável',
+      'Metodologia berço-ao-portão para cálculo da pegada de carbono com dados verificáveis',
+      'Dossiê pronto para envio a refinarias e indústrias compradoras de materiais críticos',
+    ],
+    objetivos: [
+      'Estabelecer a cadeia de custódia documental inviolável desde a sucata urbana até a fração pura concentrada',
+      'Emitir o Passaporte Digital de Produto (DCP) de cada lote com frações de NdFeB, metais preciosos e cobre',
+      'Garantir conformidade integral com a Lei 12.305/2010 (PNRS) e diretrizes da ANM/CONAMA',
+      'Consolidar o cálculo da pegada de carbono berço-ao-portão com dados verificáveis para compradores industriais',
+    ],
+    modulos: [
+      {
+        numero: 'Módulo 01',
+        titulo: 'Fundamentos da Mineração Urbana e Marco Regulatório',
+        duracao: '45 min',
+        conteudo:
+          'Conceituação de mineração urbana versus extração primária. Marco regulatório da Política Nacional de Resíduos Sólidos (Lei 12.305/2010), resoluções CONAMA e diretrizes da Agência Nacional de Mineração (ANM) para aproveitamento de frações estratégicas.',
+        requerLogin: false,
+      },
+      {
+        numero: 'Módulo 02',
+        titulo: 'Segurança Jurídica, Cadeia de Custódia e Compliance Fiscal (NF-e)',
+        duracao: '60 min',
+        conteudo:
+          'Blindagem contra receptação: conferência de 44 dígitos de NF-e de aquisição, DANFE, manifesto de transporte, qualificação do fornecedor e segregação física no pátio de processamento.',
+        requerLogin: true,
+      },
+      {
+        numero: 'Módulo 03',
+        titulo: 'Emissão do DCP de Lote e Hashing Criptográfico SHA-256',
+        duracao: '75 min',
+        conteudo:
+          'Procedimento operacional de consolidação de lote segregado (terras raras NdFeB, ouro/paládio/prata em PCBs e cobre de alta pureza), registro de balanço de massa, cálculo do hash canônico e geração do QR Code público de conferência.',
+        requerLogin: true,
+      },
+      {
+        numero: 'Módulo 04',
+        titulo: 'Cálculo da Pegada de Carbono Verificável e Relação com Compradores',
+        duracao: '60 min',
+        conteudo:
+          'Metodologia de pegada de carbono berço-ao-portão (cradle-to-gate) com dados verificáveis, parâmetros de transporte e energia de processamento; montagem do dossiê técnico pronto para envio a refinarias e indústrias compradoras de materiais críticos.',
+        requerLogin: true,
+      },
+    ],
+  },
 }

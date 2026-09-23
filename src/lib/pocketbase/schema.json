@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-23T18:11:14.341Z",
+  "generatedAt": "2026-09-23T22:57:15.320Z",
   "collections": [
     {
       "name": "users",
@@ -4053,6 +4053,37 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "massa_materiais_criticos_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "teor_terras_raras_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "teor_metais_nobres_g",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "teor_cobre_recuperado_kg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tipo_lastro_segregado",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["lr_decreto_11413", "segregado_materiais_criticos_recuperados", "misto"]
         }
       ],
       "indexes": [

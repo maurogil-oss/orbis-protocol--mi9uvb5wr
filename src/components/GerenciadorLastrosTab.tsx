@@ -52,19 +52,30 @@ export function GerenciadorLastrosTab() {
   const [emitindo, setEmitindo] = useState(false)
 
   // Formulário de novo Lastro
+  const [tipoLastroSegregado, setTipoLastroSegregado] = useState<
+    'lr_decreto_11413' | 'segregado_materiais_criticos_recuperados' | 'misto'
+  >('segregado_materiais_criticos_recuperados')
   const [entidadeGestora, setEntidadeGestora] = useState(
-    'Entidade Gestora Nacional de Logística Reversa',
+    'Entidade Gestora / Refinarias e Indústrias Compradoras',
   )
   const [cnpjEntidadeGestora, setCnpjEntidadeGestora] = useState('12.345.678/0001-90')
   const [periodoInicio, setPeriodoInicio] = useState('01/01/2026')
   const [periodoFim, setPeriodoFim] = useState('31/12/2026')
-  const [massaOluc, setMassaOluc] = useState('480.5')
-  const [massaBaterias, setMassaBaterias] = useState('1250.0')
-  const [massaPneus, setMassaPneus] = useState('2100.0')
-  const [massaFluidos, setMassaFluidos] = useState('320.0')
-  const [massaMetaisConvencionais, setMassaMetaisConvencionais] = useState('18450.0')
-  const [totalManifestos, setTotalManifestos] = useState('14')
-  const [co2eEvitado, setCo2eEvitado] = useState('8640.0')
+  const [massaOluc, setMassaOluc] = useState('0.0')
+  const [massaBaterias, setMassaBaterias] = useState('0.0')
+  const [massaPneus, setMassaPneus] = useState('0.0')
+  const [massaFluidos, setMassaFluidos] = useState('0.0')
+  const [massaMetaisConvencionais, setMassaMetaisConvencionais] = useState('0.0')
+  // Materiais Críticos Recuperados
+  const [massaMateriaisCriticos, setMassaMateriaisCriticos] = useState('1250.0')
+  const [teorTerrasRaras, setTeorTerrasRaras] = useState('45.8')
+  const [teorMetaisNobres, setTeorMetaisNobres] = useState('380.0')
+  const [teorCobre, setTeorCobre] = useState('820.0')
+  const [chavesNfeTexto, setChavesNfeTexto] = useState(
+    '35260100000000000191550010000001231000001234',
+  )
+  const [totalManifestos, setTotalManifestos] = useState('8')
+  const [co2eEvitado, setCo2eEvitado] = useState('0.0')
 
   const carregar = async () => {
     setCarregando(true)
@@ -94,6 +105,11 @@ export function GerenciadorLastrosTab() {
       const razaoSocialEmissor =
         user?.nome_empresa || user?.name || 'Orbis Soluções Circulares S.A.'
 
+      const chavesNfeArray = chavesNfeTexto
+        .split('\n')
+        .map((k) => k.trim())
+        .filter((k) => k.length > 0)
+
       const novo = await emitirLastroCircularidade(
         {
           cnpj_emissor: cnpjEmissor,
@@ -109,6 +125,13 @@ export function GerenciadorLastrosTab() {
           massa_oleos_lubrificantes_kg: parseFloat(massaFluidos) || 0,
           massa_embalagens_kg: 0,
           massa_metais_convencionais_kg: parseFloat(massaMetaisConvencionais) || 0,
+          massa_materiais_criticos_kg: parseFloat(massaMateriaisCriticos) || 0,
+          teor_terras_raras_kg: parseFloat(teorTerrasRaras) || 0,
+          teor_metais_nobres_g: parseFloat(teorMetaisNobres) || 0,
+          teor_cobre_recuperado_kg: parseFloat(teorCobre) || 0,
+          tipo_lastro_segregado: tipoLastroSegregado,
+          chaves_nfe: chavesNfeArray,
+          identificador_processador: cnpjEmissor,
           total_manifestos_mtr: parseInt(totalManifestos, 10) || 0,
           co2e_evitado_total_kg: parseFloat(co2eEvitado) || 0,
         },
@@ -313,11 +336,53 @@ export function GerenciadorLastrosTab() {
 
                   {/* Massas Segregadas */}
                   <div className="grid grid-cols-2 gap-2">
+                    {l.massa_materiais_criticos_kg && l.massa_materiais_criticos_kg > 0 ? (
+                      <div className="p-2 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 col-span-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-[#12B886] font-bold block">
+                            Materiais Críticos Recuperados (DCP):
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] border-[#12B886]/40 text-[#12B886]"
+                          >
+                            Mineração Urbana
+                          </Badge>
+                        </div>
+                        <div className="text-base font-black font-mono text-[#12B886]">
+                          {Number(l.massa_materiais_criticos_kg || 0).toLocaleString('pt-BR', {
+                            minimumFractionDigits: 1,
+                          })}{' '}
+                          kg
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 pt-1.5 mt-1 border-t border-[#12B886]/20 text-[10px]">
+                          <div>
+                            <span className="text-muted-foreground block">NdFeB:</span>
+                            <span className="font-mono font-bold">
+                              {Number(l.teor_terras_raras_kg || 0).toFixed(2)} kg
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block">Au/Pd/Ag:</span>
+                            <span className="font-mono font-bold text-[#D9B36C]">
+                              {Number(l.teor_metais_nobres_g || 0).toFixed(1)} g
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block">Cobre Puro:</span>
+                            <span className="font-mono font-bold">
+                              {Number(l.teor_cobre_recuperado_kg || 0).toFixed(1)} kg
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
                       <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold block">
                         LR Dec. 11.413 (Obrigatória):
                       </span>
-                      <div className="text-base font-black font-mono text-amber-700 dark:text-amber-300">
+                      <div className="text-sm font-bold font-mono text-amber-700 dark:text-amber-300">
                         {Number(l.massa_total_lr_obrigatoria_kg || 0).toLocaleString('pt-BR', {
                           minimumFractionDigits: 1,
                         })}{' '}
@@ -328,7 +393,7 @@ export function GerenciadorLastrosTab() {
                       <span className="text-[10px] text-muted-foreground font-semibold block">
                         Metais Convencionais:
                       </span>
-                      <div className="text-base font-black font-mono text-foreground">
+                      <div className="text-sm font-bold font-mono text-foreground">
                         {Number(l.massa_metais_convencionais_kg || 0).toLocaleString('pt-BR', {
                           minimumFractionDigits: 1,
                         })}{' '}
@@ -394,18 +459,64 @@ export function GerenciadorLastrosTab() {
           </DialogHeader>
 
           <form onSubmit={handleEmitirLastro} className="space-y-4 text-xs pt-2">
+            <div>
+              <Label className="text-xs font-semibold">
+                Tipologia do Lastro / Prova Documental
+              </Label>
+              <div className="grid grid-cols-3 gap-2 mt-1.5">
+                <button
+                  type="button"
+                  onClick={() => setTipoLastroSegregado('segregado_materiais_criticos_recuperados')}
+                  className={`p-2.5 rounded-lg border text-left text-xs transition-colors ${
+                    tipoLastroSegregado === 'segregado_materiais_criticos_recuperados'
+                      ? 'border-[#12B886] bg-[#12B886]/10 text-[#12B886] font-bold'
+                      : 'border-border bg-muted/40 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  <div className="font-semibold">Materiais Críticos (DCP)</div>
+                  <div className="text-[10px] font-normal opacity-80">
+                    Mineração urbana segregada
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTipoLastroSegregado('lr_decreto_11413')}
+                  className={`p-2.5 rounded-lg border text-left text-xs transition-colors ${
+                    tipoLastroSegregado === 'lr_decreto_11413'
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-600 font-bold'
+                      : 'border-border bg-muted/40 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  <div className="font-semibold">LR Decreto 11.413</div>
+                  <div className="text-[10px] font-normal opacity-80">OLUC, baterias, pneus</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTipoLastroSegregado('misto')}
+                  className={`p-2.5 rounded-lg border text-left text-xs transition-colors ${
+                    tipoLastroSegregado === 'misto'
+                      ? 'border-primary bg-primary/10 text-primary font-bold'
+                      : 'border-border bg-muted/40 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  <div className="font-semibold">Misto</div>
+                  <div className="text-[10px] font-normal opacity-80">Conexão integrada</div>
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Entidade Gestora-Alvo</Label>
+                <Label className="text-xs">Entidade Gestora-Alvo / Comprador Industrial</Label>
                 <Input
                   value={entidadeGestora}
                   onChange={(e) => setEntidadeGestora(e.target.value)}
-                  placeholder="Ex: Entidade Gestora de Reciclagem"
+                  placeholder="Ex: Refinarias e indústrias compradoras de materiais críticos"
                   required
                 />
               </div>
               <div>
-                <Label className="text-xs">CNPJ da Entidade Gestora</Label>
+                <Label className="text-xs">CNPJ da Entidade Gestora / Comprador</Label>
                 <Input
                   value={cnpjEntidadeGestora}
                   onChange={(e) => setCnpjEntidadeGestora(e.target.value)}
@@ -435,49 +546,124 @@ export function GerenciadorLastrosTab() {
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-3">
-              <span className="font-bold text-amber-800 dark:text-amber-300 block text-xs">
-                Frações Sujeitas à LR Obrigatória (Decreto 11.413/2023)
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                <div>
-                  <Label className="text-[11px]">OLUC (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={massaOluc}
-                    onChange={(e) => setMassaOluc(e.target.value)}
-                  />
+            {/* Bloco Materiais Críticos Recuperados */}
+            {(tipoLastroSegregado === 'segregado_materiais_criticos_recuperados' ||
+              tipoLastroSegregado === 'misto') && (
+              <div className="p-3 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[#12B886] block text-xs">
+                    Materiais Críticos Recuperados (Mineração Urbana)
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] border-[#12B886]/40 text-[#12B886]"
+                  >
+                    Passaporte Digital de Produto (DCP)
+                  </Badge>
                 </div>
-                <div>
-                  <Label className="text-[11px]">Baterias (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={massaBaterias}
-                    onChange={(e) => setMassaBaterias(e.target.value)}
-                  />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div>
+                    <Label className="text-[11px]">Massa Total Lote (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={massaMateriaisCriticos}
+                      onChange={(e) => setMassaMateriaisCriticos(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px]">NdFeB Terras Raras (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={teorTerrasRaras}
+                      onChange={(e) => setTeorTerrasRaras(e.target.value)}
+                      placeholder="Discos/motores"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px]">Metais Nobres (g - Au/Pd/Ag)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={teorMetaisNobres}
+                      onChange={(e) => setTeorMetaisNobres(e.target.value)}
+                      placeholder="PCBs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px]">Cobre Puro (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={teorCobre}
+                      onChange={(e) => setTeorCobre(e.target.value)}
+                      placeholder="Chicotes/bobinados"
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <Label className="text-[11px]">Pneus (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={massaPneus}
-                    onChange={(e) => setMassaPneus(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label className="text-[11px]">Fluidos (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={massaFluidos}
-                    onChange={(e) => setMassaFluidos(e.target.value)}
+                  <Label className="text-[11px]">
+                    Chaves NF-e de Aquisição de Sucata Urbana (44 dígitos • uma por linha)
+                  </Label>
+                  <textarea
+                    rows={2}
+                    className="w-full mt-1 p-2 rounded-md bg-background border border-border text-[11px] font-mono"
+                    value={chavesNfeTexto}
+                    onChange={(e) => setChavesNfeTexto(e.target.value)}
+                    placeholder="35260100000000000191550010000001231000001234"
                   />
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Bloco Decreto 11.413 */}
+            {(tipoLastroSegregado === 'lr_decreto_11413' || tipoLastroSegregado === 'misto') && (
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-3">
+                <span className="font-bold text-amber-800 dark:text-amber-300 block text-xs">
+                  Frações Sujeitas à LR Obrigatória (Decreto 11.413/2023)
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div>
+                    <Label className="text-[11px]">OLUC (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={massaOluc}
+                      onChange={(e) => setMassaOluc(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px]">Baterias (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={massaBaterias}
+                      onChange={(e) => setMassaBaterias(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px]">Pneus (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={massaPneus}
+                      onChange={(e) => setMassaPneus(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px]">Fluidos (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={massaFluidos}
+                      onChange={(e) => setMassaFluidos(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>

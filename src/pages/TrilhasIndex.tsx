@@ -23,6 +23,8 @@ export default function TrilhasIndex() {
         return TrendingDown
       case 'peritos-tecnicos':
         return FileCheck2
+      case 'mineracao':
+        return ShieldCheck
       default:
         return BookOpen
     }

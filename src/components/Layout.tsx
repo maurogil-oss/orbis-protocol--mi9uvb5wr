@@ -138,6 +138,13 @@ export default function Layout() {
           icon: Layers,
           badge: 'Em estruturação',
         },
+        {
+          title: 'Mineração Urbana & Materiais Críticos',
+          desc: 'Origem urbana de terras raras, metais nobres e cobre com Passaporte Digital de Produto.',
+          path: '/materiais-criticos',
+          icon: ShieldCheck,
+          badge: 'DCP',
+        },
       ],
     },
     {
@@ -766,12 +773,23 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link
-                    to="/planos"
+                    to="/trilhas/peritos-tecnicos"
                     className="text-[#93A3B5] hover:text-[#F4F7FA] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
-                    Planos & Preços
+                    Peritos Técnicos & Auditores
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/materiais-criticos"
+                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                  >
+                    <span>Materiais Críticos Recuperados</span>
+                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
+                      DCP
+                    </span>
+                  </Link>
+                </li>{' '}
                 <li>
                   <Link
                     to="/checkout"

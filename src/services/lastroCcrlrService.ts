@@ -15,7 +15,12 @@ import pb from '@/lib/pocketbase/client'
 import type { RecordModel } from 'pocketbase'
 
 export const AVISO_LEGAL_LASTRO =
-  'Aviso Legal Regulatório (Decreto Federal nº 11.413/2023): O presente documento constitui estritamente Certificação de LASTRO DE CIRCULARIDADE (comprovação e custódia pericial de destinação e balanço de massa). Este documento NÃO substitui e não se confunde com o Certificado de Crédito de Reciclagem de Logística Reversa (CCRLR), cuja emissão oficial constitui ato privativo da Entidade Gestora legalmente credenciada perante o órgão ambiental competente. O credenciamento e a adesão ao sistema oficial constituem atos privativos da empresa titular perante o órgão ambiental.'
+  'Aviso Legal Regulatório (Decreto Federal nº 11.413/2023 & Lei 12.305/2010): O presente documento constitui estritamente INFRAESTRUTURA PROBATÓRIA de LASTRO DE CIRCULARIDADE e Passaporte Digital de Produto (DCP) por lote (comprovação, custódia pericial documental de origem urbana, balanço de massa e compliance fiscal). Este documento NÃO constitui crédito de carbono, NÃO substitui e não se confunde com o Certificado de Crédito de Reciclagem de Logística Reversa (CCRLR), cuja emissão oficial constitui ato privativo da Entidade Gestora legalmente credenciada perante o órgão ambiental competente. O cálculo de pegada de carbono utiliza dados verificáveis prontos para envio a parceiro metodológico a ser contratado e refinarias/indústrias compradoras de materiais críticos.'
+
+export type TipoLastroSegregado =
+  | 'lr_decreto_11413'
+  | 'segregado_materiais_criticos_recuperados'
+  | 'misto'
 
 export interface LastroCircularidadeRecord extends RecordModel {
   codigo_lastro: string
@@ -35,6 +40,11 @@ export interface LastroCircularidadeRecord extends RecordModel {
   massa_embalagens_kg: number
   massa_total_lr_obrigatoria_kg: number
   massa_metais_convencionais_kg: number
+  massa_materiais_criticos_kg?: number
+  teor_terras_raras_kg?: number
+  teor_metais_nobres_g?: number
+  teor_cobre_recuperado_kg?: number
+  tipo_lastro_segregado?: TipoLastroSegregado
   total_manifestos_mtr: number
   co2e_evitado_total_kg: number
   hash_sha256: string
@@ -98,13 +108,21 @@ export interface EmitirLastroInput {
   massa_oleos_lubrificantes_kg: number
   massa_embalagens_kg: number
   massa_metais_convencionais_kg: number
+  massa_materiais_criticos_kg?: number
+  teor_terras_raras_kg?: number
+  teor_metais_nobres_g?: number
+  teor_cobre_recuperado_kg?: number
+  tipo_lastro_segregado?: TipoLastroSegregado
+  chaves_nfe?: string[]
+  identificador_processador?: string
   total_manifestos_mtr: number
   co2e_evitado_total_kg: number
   manifestos_mtr_ids?: string[]
 }
 
 /**
- * Calcula o hash SHA-256 canônico e lexicográfico do documento de Lastro de Circularidade
+ * Calcula o hash SHA-256 canônico e determinístico do Lastro de Circularidade / DCP
+ * Para lotes segregados de materiais críticos, inclui: código do lote + chaves NF-e + massas + identificador do processador
  */
 export async function calcularHashCanonicalLastro(dados: {
   codigo_lastro: string
@@ -114,17 +132,40 @@ export async function calcularHashCanonicalLastro(dados: {
   periodo_fim: string
   massa_total_lr_obrigatoria_kg: number
   massa_metais_convencionais_kg: number
+  massa_materiais_criticos_kg?: number
+  teor_terras_raras_kg?: number
+  teor_metais_nobres_g?: number
+  teor_cobre_recuperado_kg?: number
+  tipo_lastro_segregado?: TipoLastroSegregado
+  chaves_nfe?: string[]
+  identificador_processador?: string
 }): Promise<string> {
+  const chavesNfeSorted = (dados.chaves_nfe || [])
+    .map((k) => k.trim())
+    .filter(Boolean)
+    .sort()
+    .join(',')
+  const idProcessador = (dados.identificador_processador || dados.cnpj_emissor || '')
+    .trim()
+    .toUpperCase()
+
   const canonicalStr = [
     dados.codigo_lastro.trim().toUpperCase(),
     dados.cnpj_emissor.trim(),
     dados.entidade_gestora_alvo.trim().toUpperCase(),
     dados.periodo_inicio.trim(),
     dados.periodo_fim.trim(),
-    Number(dados.massa_total_lr_obrigatoria_kg).toFixed(2),
-    Number(dados.massa_metais_convencionais_kg).toFixed(2),
-    'DECRETO_11413_2023',
-    'ORBIS_LASTRO_CIRCULARIDADE',
+    Number(dados.massa_total_lr_obrigatoria_kg || 0).toFixed(2),
+    Number(dados.massa_metais_convencionais_kg || 0).toFixed(2),
+    Number(dados.massa_materiais_criticos_kg || 0).toFixed(2),
+    Number(dados.teor_terras_raras_kg || 0).toFixed(3),
+    Number(dados.teor_metais_nobres_g || 0).toFixed(2),
+    Number(dados.teor_cobre_recuperado_kg || 0).toFixed(2),
+    dados.tipo_lastro_segregado || 'lr_decreto_11413',
+    chavesNfeSorted,
+    idProcessador,
+    'DECRETO_11413_2023_LEI_12305_2010',
+    'ORBIS_LASTRO_CIRCULARIDADE_DCP',
   ].join('|')
 
   const encoder = new TextEncoder()
@@ -205,6 +246,14 @@ export async function emitirLastroCircularidade(
     (input.massa_oleos_lubrificantes_kg || 0) +
     (input.massa_embalagens_kg || 0)
 
+  const tipoSegregado: TipoLastroSegregado =
+    input.tipo_lastro_segregado ||
+    (input.massa_materiais_criticos_kg && input.massa_materiais_criticos_kg > 0
+      ? massaTotalLr > 0
+        ? 'misto'
+        : 'segregado_materiais_criticos_recuperados'
+      : 'lr_decreto_11413')
+
   const hashSha256 = await calcularHashCanonicalLastro({
     codigo_lastro: codigo,
     cnpj_emissor: input.cnpj_emissor,
@@ -213,15 +262,29 @@ export async function emitirLastroCircularidade(
     periodo_fim: input.periodo_fim,
     massa_total_lr_obrigatoria_kg: massaTotalLr,
     massa_metais_convencionais_kg: input.massa_metais_convencionais_kg || 0,
+    massa_materiais_criticos_kg: input.massa_materiais_criticos_kg || 0,
+    teor_terras_raras_kg: input.teor_terras_raras_kg || 0,
+    teor_metais_nobres_g: input.teor_metais_nobres_g || 0,
+    teor_cobre_recuperado_kg: input.teor_cobre_recuperado_kg || 0,
+    tipo_lastro_segregado: tipoSegregado,
+    chaves_nfe: input.chaves_nfe || [],
+    identificador_processador: input.identificador_processador || input.cnpj_emissor,
   })
 
   const baseUrl =
     typeof window !== 'undefined' ? window.location.origin : 'https://www.orbis-protocol.com'
   const qrCodeUrl = `${baseUrl}/conferencia-lastro/${codigo}?via=qr`
 
+  const tituloDocumento =
+    tipoSegregado === 'segregado_materiais_criticos_recuperados'
+      ? `DCP Materiais Críticos Recuperados • Lote ${codigo} (${ano})`
+      : tipoSegregado === 'misto'
+        ? `Lastro Misto • LR 11.413 e Materiais Críticos (${ano})`
+        : `Lastro de Circularidade LR 11.413/2023 • ${input.entidade_gestora_alvo} (${ano})`
+
   const payload = {
     codigo_lastro: codigo,
-    titulo: `Lastro de Circularidade LR 11.413/2023 • ${input.entidade_gestora_alvo} (${ano})`,
+    titulo: tituloDocumento,
     usuario: usuarioId || null,
     cnpj_emissor: input.cnpj_emissor,
     razao_social_emissor: input.razao_social_emissor,
@@ -237,6 +300,11 @@ export async function emitirLastroCircularidade(
     massa_embalagens_kg: Number(input.massa_embalagens_kg) || 0,
     massa_total_lr_obrigatoria_kg: Number(massaTotalLr),
     massa_metais_convencionais_kg: Number(input.massa_metais_convencionais_kg) || 0,
+    massa_materiais_criticos_kg: Number(input.massa_materiais_criticos_kg) || 0,
+    teor_terras_raras_kg: Number(input.teor_terras_raras_kg) || 0,
+    teor_metais_nobres_g: Number(input.teor_metais_nobres_g) || 0,
+    teor_cobre_recuperado_kg: Number(input.teor_cobre_recuperado_kg) || 0,
+    tipo_lastro_segregado: tipoSegregado,
     total_manifestos_mtr: Number(input.total_manifestos_mtr) || 0,
     co2e_evitado_total_kg: Number(input.co2e_evitado_total_kg) || 0,
     hash_sha256: hashSha256,
@@ -244,8 +312,11 @@ export async function emitirLastroCircularidade(
     status: 'emitido',
     aviso_legal: AVISO_LEGAL_LASTRO,
     detalhes_json: {
-      versao_decreto: 'Decreto Federal nº 11.413/2023',
+      versao_decreto: 'Decreto Federal nº 11.413/2023 & Lei 12.305/2010',
       manifestos_inclusos: input.manifestos_mtr_ids || [],
+      chaves_nfe: input.chaves_nfe || [],
+      identificador_processador: input.identificador_processador || input.cnpj_emissor,
+      tipo_lastro_segregado: tipoSegregado,
       sistema_origem: 'Orbis Protocol dMRV',
       data_geracao: new Date().toISOString(),
     },

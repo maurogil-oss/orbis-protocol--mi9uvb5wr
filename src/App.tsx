@@ -48,6 +48,7 @@ import ApiDocsCdvPage from './pages/ApiDocsCdvPage'
 import FatoresEmissaoPublicoPage from './pages/FatoresEmissaoPublicoPage'
 import MoverPublicPage from './pages/MoverPublicPage'
 import DossieMoverPage from './pages/DossieMoverPage'
+import MateriaisCriticosPublicPage from './pages/MateriaisCriticosPublicPage'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -106,6 +107,7 @@ const App = () => (
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />
             <Route path="/fatores" element={<FatoresEmissaoPublicoPage />} />
             <Route path="/mover" element={<MoverPublicPage />} />
+            <Route path="/materiais-criticos" element={<MateriaisCriticosPublicPage />} />
 
             {/* Protected Routes (Require Authentication) */}
             <Route

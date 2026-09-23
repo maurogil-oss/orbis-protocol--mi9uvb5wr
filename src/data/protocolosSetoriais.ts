@@ -1459,6 +1459,139 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       },
     ],
   },
+
+  'materiais-criticos-recuperados': {
+    id: 'materiais-criticos-recuperados',
+    slug: 'materiais-criticos-recuperados',
+    nome: 'Materiais Críticos Recuperados & Mineração Urbana',
+    icone: 'Layers',
+    tagline:
+      'Origem urbana comprovada, cadeia de custódia anti-receptação, DCP por lote com hash SHA-256 e conformidade PNRS',
+    fatorEmissao: 'Eletricidade de segregação/trituração e logística de captação urbana',
+    regulamentacao:
+      'Lei 12.305/2010 (PNRS), Decreto 11.413/2023, Resoluções CONAMA, Diretrizes ANM e ABNT ISO 14067',
+    descricao:
+      'Protocolo técnico probatório para comprovação de origem urbana, rastreabilidade fiscal e pericial de lotes segregados de materiais críticos recuperados (terras raras NdFeB de discos rígidos e motores elétricos, concentrados de ouro, paládio e prata de placas de circuito impresso - PCBs, e cobre de alta pureza de fios, bobinados e chicotes). Emissão de Passaporte Digital de Produto (DCP) por lote com prova criptográfica SHA-256, QR Code público e cálculo da pegada de carbono berço-ao-portão com dados verificáveis.',
+    principaisIndicadores: [
+      'Massa total do lote segregado (kg) e teores por fração crítica',
+      'Teor estimado de terras raras NdFeB (kg) em componentes magnéticos',
+      'Teor estimado de metais nobres (Au, Pd, Ag em gramas) em frações de PCBs',
+      'Massa de cobre de alta pureza recuperado (kg) de chicotes e bobinados',
+      'Chaves de NF-e (44 dígitos) e DANFE de aquisição de sucata urbana auditadas',
+      'Hash SHA-256 canônico e QR Code do DCP público por lote',
+    ],
+    tipoLaudo: 'Passaporte Digital de Produto (DCP) — Lote de Materiais Críticos Recuperados',
+    enquadramentoLegal: [
+      {
+        norma: 'Lei Federal nº 12.305/2010 (PNRS)',
+        titulo: 'Política Nacional de Resíduos Sólidos & Logística Reversa',
+        abrangencia: 'Obrigatório',
+        dataChave: 'Vigente',
+        detalhe:
+          'Fundamenta a obrigatoriedade da destinação ambientalmente adequada de eletroeletrônicos e peças pós-consumo, priorizando a valorização e a reintrodução em ciclos produtivos industriais.',
+      },
+      {
+        norma: 'Decreto Federal nº 11.413/2023',
+        titulo: 'Marco dos Certificados de Estruturação e Logística Reversa',
+        abrangencia: 'Setorial',
+        dataChave: 'Vigente',
+        detalhe:
+          'Estabelece parâmetros de comprovação de destinação de frações de materiais recicláveis e lastro de circularidade segregado.',
+      },
+      {
+        norma: 'Resoluções CONAMA & Diretrizes ANM',
+        titulo: 'Aproveitamento de Frações Estratégicas e Mineração Urbana',
+        abrangencia: 'Setorial',
+        dataChave: 'Vigente',
+        detalhe:
+          'Classificação de resíduos não-perigosos/perigosos, controle de manuseio e salvaguarda contra atividades extrativas ilegais via comprovação de procedência urbana.',
+      },
+      {
+        norma: 'Legislação Fiscal Federal / SEFAZ (Ajuste SINIEF)',
+        titulo: 'Conformidade Fiscal de Sucatas e Cadeia de Custódia Anti-Receptação',
+        abrangencia: 'Obrigatório',
+        dataChave: 'Vigente',
+        detalhe:
+          'Exigência de rastreamento estrito de NF-e com CFOP específico de sucatas/resíduos, DANFE e transportador para blindar a cadeia contra ilícitos e receptação.',
+      },
+    ],
+    evidenciasCaptura: [
+      {
+        categoria: 'Origem Urbana & Cadeia de Custódia Fiscal',
+        obrigatorio: true,
+        documentos: [
+          'Chave de acesso da NF-e de entrada (44 dígitos) com CFOP de sucata/descarte urbano',
+          'Documento Auxiliar da Nota Fiscal Eletrônica (DANFE) e identificação do fornecedor urbano',
+          'Dados do transportador licenciado e manifesto de transporte vinculado ao lote',
+          'Declaração pericial de origem exclusivamente urbana e não-extrativa',
+        ],
+      },
+      {
+        categoria: 'Balancete Operacional & Segregação por Lote',
+        obrigatorio: true,
+        documentos: [
+          'Boletim de pesagem calibrada de entrada e saída por fração do lote',
+          'Registro de descaracterização e segregação física de componentes (PCBs, discos, motores, chicotes)',
+          'Laudo pericial de composição ou espectrometria/densitometria do concentrado',
+        ],
+      },
+      {
+        categoria: 'Pegada de Carbono Berço-ao-Portão',
+        obrigatorio: false,
+        documentos: [
+          'Faturas de energia elétrica da unidade de processamento (kWh consumidos no lote)',
+          'Registro de consumo de combustível ou distância no transporte da sucata urbana (t.km)',
+          'Relatório de cálculo da pegada de carbono com dados verificáveis para compradores',
+        ],
+      },
+    ],
+    resultadoPericial: {
+      entregas: [
+        'Passaporte Digital de Produto (DCP) com hash SHA-256 e QR Code público por lote',
+        'Atestado de origem estritamente urbana e conformidade com a Lei 12.305/2010 (PNRS)',
+        'Cadeia de custódia fiscal auditada de ponta a ponta (chave NF-e 44 dígitos e DANFE)',
+        'Cálculo da pegada de carbono berço-ao-portão com dados verificáveis',
+        'Dossiê técnico em formato PDF/JSON estruturado, pronto para envio a refinarias e indústrias compradoras de materiais críticos',
+      ],
+      tco2ePorUnidade:
+        'Dados calculados conforme metodologia berço-ao-portão por parceiro metodológico a ser contratado, com dados verificáveis para cada lote processado',
+      elegibilidadeLinhasVerdes: [
+        'Linhas de Financiamento de Economia Circular e Mineração Urbana (BNDES / FINEP)',
+        'Acesso a refinarias e indústrias compradoras de materiais críticos com prêmio de procedência verificável',
+      ],
+      beneficiosTributarios: [
+        'Segurança jurídica e não-cumulatividade plena de IBS/CBS na cadeia de reciclagem',
+        'Mitigação total de riscos de autuação por receptação de sucata metálica e eletrônica',
+        'Dossiê comprobatório idôneo perante a fiscalização fazendária e órgãos ambientais',
+      ],
+    },
+    fatoresPeculiares: [
+      {
+        parametro: 'Pegada de Carbono Berço-ao-Portão de Fração de Terras Raras (NdFeB)',
+        fator: 'Cálculo com dados verificáveis de rota urbana',
+        unidade: 'kg CO2e / kg NdFeB',
+        fonte: 'Parceiro metodológico a ser contratado / ABNT ISO 14067',
+        observacao:
+          'Estimativa berço-ao-portão com parâmetros de processo verificáveis, sem emissão de créditos de carbono.',
+      },
+      {
+        parametro: 'Pegada de Carbono Berço-ao-Portão de Concentrado de Metais Nobres (Au/Pd/Ag)',
+        fator: 'Cálculo com dados verificáveis de rota urbana',
+        unidade: 'kg CO2e / g metal precioso',
+        fonte: 'Parceiro metodológico a ser contratado / ABNT ISO 14067',
+        observacao:
+          'Balanço de energia de cominuição e separação física da sucata de placas de circuito impresso.',
+      },
+      {
+        parametro: 'Pegada de Carbono Berço-ao-Portão de Cobre Recuperado de Alta Pureza',
+        fator: 'Cálculo com dados verificáveis de rota urbana',
+        unidade: 'kg CO2e / kg Cu',
+        fonte: 'Parceiro metodológico a ser contratado / ABNT ISO 14067',
+        observacao:
+          'Apurado por dados de eletricidade da unidade e transporte da sucata até o portão da fábrica.',
+      },
+    ],
+  },
 }
 
 /**
