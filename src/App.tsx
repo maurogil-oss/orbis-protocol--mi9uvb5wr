@@ -40,6 +40,7 @@ import PassaportePublicoPage from './pages/PassaportePublicoPage'
 import PassaporteLotePublicoPage from './pages/PassaporteLotePublicoPage'
 import PassaporteFornecedorPublicoPage from './pages/PassaporteFornecedorPublicoPage'
 import { ConferenciaLastroPublicaPage } from './pages/ConferenciaLastroPublicaPage'
+import { DcpDemonstracaoPublicaPage } from './pages/DcpDemonstracaoPublicaPage'
 import DcpCorporativoDemoPage from './pages/DcpCorporativoDemoPage'
 import DcpProdutoPublicoPage from './pages/DcpProdutoPublicoPage'
 import CanalTitularPage from './pages/CanalTitularPage'
@@ -92,6 +93,12 @@ const App = () => (
               element={<ConferenciaLastroPublicaPage />}
             />
             <Route path="/lastro/:codigoOuId" element={<ConferenciaLastroPublicaPage />} />
+            {/* Rota pública do Espelho do DCP de Demonstração (Simulação Dinâmica Materiais Críticos) */}
+            <Route path="/conferencia-lastro-demo" element={<DcpDemonstracaoPublicaPage />} />
+            <Route
+              path="/conferencia-lastro-demo/:codigoLote"
+              element={<DcpDemonstracaoPublicaPage />}
+            />
             <Route path="/titular-dados" element={<CanalTitularPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/checkout/:cobrancaId" element={<CheckoutPage />} />

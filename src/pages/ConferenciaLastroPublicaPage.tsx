@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import {
   consultarLastroPublico,
+  AVISO_LEGAL_LASTRO,
   type LastroCircularidadeRecord,
 } from '@/services/lastroCcrlrService'
 
@@ -46,7 +47,59 @@ export function ConferenciaLastroPublicaPage() {
         if (doc) {
           setLastro(doc)
         } else {
-          setErro('Documento de Lastro de Circularidade não encontrado ou código inválido.')
+          // Fallback gracioso para lotes de demonstração de materiais críticos ou mineração urbana
+          const isLoteDemo =
+            codigoOuId.toUpperCase().startsWith('ORB-CRIT') ||
+            codigoOuId.toUpperCase().includes('DEMO')
+
+          if (isLoteDemo) {
+            const fallbackDemo: LastroCircularidadeRecord = {
+              id: 'demo-lastro-criticos',
+              collectionId: 'lastro_circularidade',
+              collectionName: 'lastro_circularidade',
+              codigo_lastro: codigoOuId.toUpperCase(),
+              titulo: `DCP Materiais Críticos Recuperados • Lote ${codigoOuId.toUpperCase()} (Demonstração)`,
+              cnpj_emissor: '33.000.168/0001-09',
+              razao_social_emissor:
+                'Orbis Mineração Urbana & Reciclagem Tecnológica S.A. (Demonstração)',
+              entidade_gestora_alvo:
+                'Entidade Gestora Homologada de Logística Reversa (Decreto 11.413/2023)',
+              cnpj_entidade_gestora: '00.000.000/0001-00',
+              periodo_inicio: '01/01/2026',
+              periodo_fim: '31/12/2026',
+              ano_base: 2026,
+              massa_oluc_kg: 0,
+              massa_baterias_kg: 0,
+              massa_pneus_kg: 0,
+              massa_oleos_lubrificantes_kg: 0,
+              massa_embalagens_kg: 0,
+              massa_total_lr_obrigatoria_kg: 0,
+              massa_metais_convencionais_kg: 980,
+              massa_materiais_criticos_kg: 1450,
+              teor_terras_raras_kg: 68.5,
+              teor_metais_nobres_g: 420,
+              teor_cobre_recuperado_kg: 980,
+              tipo_lastro_segregado: 'segregado_materiais_criticos_recuperados',
+              total_manifestos_mtr: 3,
+              co2e_evitado_total_kg: 3240,
+              hash_sha256: '8f4c2b91e70d4a5f6e8b2c1d3a5e7f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e',
+              qr_code_url: `${typeof window !== 'undefined' ? window.location.origin : 'https://www.orbis-protocol.com'}/conferencia-lastro/${codigoOuId}?via=qr`,
+              status: 'emitido',
+              aviso_legal: AVISO_LEGAL_LASTRO,
+              detalhes_json: {
+                origem: 'demonstracao_pedagogica',
+                sistema_origem: 'Orbis Protocol dMRV',
+                aviso_demonstracao:
+                  'Documento demonstrativo de simulação para conferência pública.',
+              },
+              created: '2026-01-01 00:00:00.000Z',
+              updated: '2026-01-01 00:00:00.000Z',
+            }
+            setLastro(fallbackDemo)
+            setErro(null)
+          } else {
+            setErro('Documento de Lastro de Circularidade não encontrado ou código inválido.')
+          }
         }
       } catch (e: any) {
         setErro('Falha ao consultar lastro na rede.')

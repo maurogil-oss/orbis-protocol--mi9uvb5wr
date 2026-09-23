@@ -39,8 +39,21 @@ export default function MateriaisCriticosPublicPage() {
 
   const baseUrl =
     typeof window !== 'undefined' ? window.location.origin : 'https://www.orbis-protocol.com'
-  const demoUrl = `${baseUrl}/conferencia-lastro/${loteCodigo}?via=qr`
   const mockSha256 = '8f4c2b91e70d4a5f6e8b2c1d3a5e7f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e'
+
+  // URL dinâmica para a visualização pública funcional do DCP de demonstração
+  // Atualiza em tempo real com lote, massas, teores e chave fiscal
+  const demoUrlParams = new URLSearchParams({
+    lote: loteCodigo || 'ORB-CRIT-2026-X9B2',
+    massa: massaTotal || '1450',
+    nd: teorNdFeB || '68.5',
+    au: teorMetaisNobres || '420',
+    cu: teorCobre || '980',
+    nfe: chaveNfeExemplo.replace(/\s+/g, ''),
+    hash: mockSha256,
+    via: 'qr',
+  })
+  const demoUrl = `${baseUrl}/conferencia-lastro-demo?${demoUrlParams.toString()}`
 
   return (
     <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30">
@@ -53,7 +66,7 @@ export default function MateriaisCriticosPublicPage() {
             MINERAÇÃO URBANA & MATERIAIS CRÍTICOS RECUPERADOS
           </div>
 
-          <h1 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl tracking-tight text-[#F4F7FA] max-w-4xl mb-6 leading-tight">
+          <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-tight max-w-4xl mb-6 leading-tight">
             Valor = Prêmio de Origem Urbana + Rastreabilidade Criptográfica + Compliance Fiscal e
             PNRS
           </h1>
@@ -344,9 +357,17 @@ export default function MateriaisCriticosPublicPage() {
             <div className="lg:col-span-6 p-6 rounded-2xl bg-[#111820] border-2 border-[#12B886]/40 shadow-xl space-y-4 text-xs relative">
               <div className="flex items-start justify-between gap-3 pb-3 border-b border-[rgba(244,247,250,0.08)]">
                 <div>
-                  <Badge className="bg-[#12B886] text-[#0A0E12] font-mono text-[10px] font-bold">
-                    DCP • PASSAPORTE DIGITAL DE PRODUTO
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge className="bg-[#12B886] text-[#0A0E12] font-mono text-[10px] font-bold">
+                      DCP • PASSAPORTE DIGITAL DE PRODUTO
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500/40 text-amber-400 font-mono text-[9px]"
+                    >
+                      DEMO
+                    </Badge>
+                  </div>
                   <h3 className="font-mono font-bold text-base text-[#F4F7FA] mt-1">
                     {loteCodigo}
                   </h3>
@@ -354,9 +375,34 @@ export default function MateriaisCriticosPublicPage() {
                     Lote de Materiais Críticos Recuperados • Mineração Urbana
                   </span>
                 </div>
-                <div className="p-2 rounded-lg bg-white shrink-0">
+                <div className="p-2 rounded-lg bg-white shrink-0 flex flex-col items-center">
                   <QRCodeSVG value={demoUrl} size={64} />
+                  <span className="text-[8px] font-mono font-bold text-neutral-800 mt-0.5 uppercase tracking-tighter">
+                    QR Demo
+                  </span>
                 </div>
+              </div>
+
+              {/* Botão de Acesso Direto à Demonstração Pública */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#0A0E12] border border-[#12B886]/30">
+                <span className="text-[11px] text-[#93A3B5]">
+                  Escaneie o QR Code ao lado ou abra a verificação pública da simulação:
+                </span>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2.5 text-[11px] border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886]/10 shrink-0 ml-2"
+                >
+                  <Link
+                    to={`/conferencia-lastro-demo?${demoUrlParams.toString()}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span>Abrir Espelho</span>
+                    <ArrowRight className="w-3 h-3 ml-1" />
+                  </Link>
+                </Button>
               </div>
 
               {/* Grid de frações no DCP */}
