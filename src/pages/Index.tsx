@@ -162,7 +162,6 @@ export default function Index() {
               <ShieldCheck className="w-4 h-4 text-[#12B886]" />
               <span>ORBIS PROTOCOL • AUDIT GRADE dMRV</span>
             </div>
-
             {/* Headline Principal */}
             <h1 className="font-heading font-extrabold text-3xl sm:text-5xl md:text-6xl text-[#F4F7FA] tracking-[0.03em] leading-[1.1] mb-6">
               INFRAESTRUTURA DE COMPROVAÇÃO E{' '}
@@ -170,12 +169,10 @@ export default function Index() {
                 RASTREABILIDADE
               </span>
             </h1>
-
             {/* Sub-headline */}
             <p className="font-heading text-lg sm:text-xl md:text-2xl text-[#93A3B5] font-semibold tracking-wide mb-6">
               para Descarbonização, Governança Tributária e Circularidade
             </p>
-
             {/* Descrição em parágrafo */}
             <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed max-w-2xl mb-10">
               A plataforma que transforma notas fiscais e dados operacionais em prova: cálculo da
@@ -184,7 +181,6 @@ export default function Index() {
               com documentos prontos para envio aos órgãos de controle, à sua contabilidade e a
               instituições financeiras.
             </p>
-
             {/* CTAs do Hero: 1 Primário em destaque + Secundários discretos */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
               {/* CTA Primário Único */}
@@ -211,8 +207,18 @@ export default function Index() {
                 <span>Criar conta</span>
               </Link>
             </div>
-
-            {/* Globo Orbis rotativo no Hero */}
+            {/* Opção C: Linha discreta "Novo:" logo abaixo dos CTAs do Hero sem alongar a página */}
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs sm:text-sm text-[#93A3B5]">
+              <span className="text-[#D9B36C] font-semibold">Novo:</span>
+              <Link
+                to="/materiais-criticos"
+                className="inline-flex items-center gap-1 text-[#12B886] hover:underline transition-colors"
+              >
+                <span>Passaporte Digital de Materiais Críticos Recuperados</span>
+                <ArrowRight className="w-3.5 h-3.5 inline" />
+              </Link>
+            </div>
+            {/* Globo Orbis rotativo no Hero */}{' '}
             <div className="mt-16 flex flex-col items-center gap-3">
               <div className="p-3.5 rounded-full bg-[#111820]/90 border border-[#12B886]/40 shadow-2xl relative group">
                 <div className="absolute inset-0 rounded-full bg-[#12B886]/20 blur-md group-hover:scale-125 transition-transform" />
@@ -630,6 +636,42 @@ export default function Index() {
                       Auditar hash →
                     </Link>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Opção A: Card de Materiais Críticos Recuperados acoplado à grade de soluções de circularidade */}
+            <div className="mt-8 pt-8 border-t border-[rgba(244,247,250,0.1)]">
+              <div className="p-6 sm:p-7 rounded-2xl bg-[#0A0E12] border border-[#D9B36C]/40 hover:border-[#12B886] transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-2 max-w-3xl">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/30">
+                      MINERAÇÃO URBANA & REEE
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#16202B] text-[#12B886] border border-[#12B886]/30">
+                      <Sparkles className="w-3 h-3 text-[#12B886]" />
+                      Passaporte DCP
+                    </span>
+                  </div>
+
+                  <h3 className="font-heading font-bold text-xl text-[#F4F7FA]">
+                    Materiais Críticos Recuperados
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
+                    Prova de origem urbana para terras raras, metais nobres e cobre recuperados de
+                    e-waste e veículos.
+                  </p>
+                </div>
+
+                <div className="shrink-0">
+                  <Link
+                    to="/materiais-criticos"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold bg-[#16202B] border border-[#D9B36C]/50 text-[#D9B36C] hover:bg-[#D9B36C] hover:text-[#0A0E12] transition-all"
+                  >
+                    <span>Acessar Passaporte DCP</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
             </div>

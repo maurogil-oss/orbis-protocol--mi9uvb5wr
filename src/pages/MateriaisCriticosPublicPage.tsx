@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ShieldCheck,
@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Database,
   Hash,
+  Mail,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { AVISO_LEGAL_LASTRO } from '@/services/lastroCcrlrService'
+import { calcularHashCanonicoMateriais } from '@/services/materiaisCriticosCanonicoService'
 
 export default function MateriaisCriticosPublicPage() {
   // Simulador rápido de DCP por lote para demonstração pública
@@ -36,13 +38,45 @@ export default function MateriaisCriticosPublicPage() {
   const [chaveNfeExemplo, setChaveNfeExemplo] = useState(
     '3526 0133 0001 6800 0109 5500 1000 0048 1210 9876 5432',
   )
+  const [hashSha256, setHashSha256] = useState<string>('')
+  const [calculandoHash, setCalculandoHash] = useState(false)
 
   const baseUrl =
     typeof window !== 'undefined' ? window.location.origin : 'https://www.orbis-protocol.com'
-  const mockSha256 = '8f4c2b91e70d4a5f6e8b2c1d3a5e7f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e'
+
+  // Recalcula o hash SHA-256 canônico a cada edição no simulador
+  useEffect(() => {
+    let cancelado = false
+    setCalculandoHash(true)
+
+    calcularHashCanonicoMateriais({
+      codigoLote: loteCodigo,
+      massaTotalKg: massaTotal,
+      teorNdFeB,
+      teorMetaisNobres,
+      teorCobre,
+      chaveNfe: chaveNfeExemplo,
+    })
+      .then((h) => {
+        if (!cancelado) {
+          setHashSha256(h)
+          setCalculandoHash(false)
+        }
+      })
+      .catch((err) => {
+        console.error('Erro ao calcular hash canônico de materiais:', err)
+        if (!cancelado) {
+          setCalculandoHash(false)
+        }
+      })
+
+    return () => {
+      cancelado = true
+    }
+  }, [loteCodigo, massaTotal, teorNdFeB, teorMetaisNobres, teorCobre, chaveNfeExemplo])
 
   // URL dinâmica para a visualização pública funcional do DCP de demonstração
-  // Atualiza em tempo real com lote, massas, teores e chave fiscal
+  // Atualiza em tempo real com lote, massas, teores, chave fiscal e hash dinâmico
   const demoUrlParams = new URLSearchParams({
     lote: loteCodigo || 'ORB-CRIT-2026-X9B2',
     massa: massaTotal || '1450',
@@ -50,7 +84,7 @@ export default function MateriaisCriticosPublicPage() {
     au: teorMetaisNobres || '420',
     cu: teorCobre || '980',
     nfe: chaveNfeExemplo.replace(/\s+/g, ''),
-    hash: mockSha256,
+    hash: hashSha256 || 'calculando...',
     via: 'qr',
   })
   const demoUrl = `${baseUrl}/conferencia-lastro-demo?${demoUrlParams.toString()}`
@@ -443,10 +477,20 @@ export default function MateriaisCriticosPublicPage() {
                 </div>
               </div>
 
-              {/* Hash canônico */}
+              {/* Hash canônico dinâmico */}
               <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] font-mono text-[10px] space-y-1">
-                <span className="text-muted-foreground block">Hash SHA-256 Canônico:</span>
-                <div className="truncate text-[#12B886] select-all font-bold">{mockSha256}</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground block">Hash SHA-256 Canônico:</span>
+                  {calculandoHash && (
+                    <span className="text-[9px] text-[#D9B36C] animate-pulse">recalculando...</span>
+                  )}
+                </div>
+                <div
+                  data-testid="hash-sha256-display"
+                  className="truncate text-[#12B886] select-all font-bold"
+                >
+                  {hashSha256 || 'Calculando hash...'}
+                </div>
               </div>
 
               {/* Compliance fiscal */}
@@ -540,27 +584,46 @@ export default function MateriaisCriticosPublicPage() {
         </div>
       </section>
 
-      {/* 6. CTA FINAL */}
-      <section className="py-14 md:py-20 text-center">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-5">
-          <h2 className="font-heading font-black text-2xl sm:text-4xl text-[#F4F7FA]">
+      {/* 6. CTA FINAL COM BOTÃO "FALAR COM O TIME" EM DESTAQUE DOURADO E ESPAÇAMENTO GENEROSO */}
+      <section className="py-16 md:py-24 text-center border-t border-[rgba(244,247,250,0.08)] bg-gradient-to-b from-[#0A0E12] via-[#0D1217] to-[#0A0E12]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111820] border border-[#D9B36C]/40 text-[#D9B36C] text-xs font-semibold tracking-wider uppercase">
+            <Sparkles className="w-3.5 h-3.5 text-[#D9B36C]" />
+            ENGENHARIA & COMPLIANCE DE MATERIAIS CRÍTICOS
+          </div>
+
+          <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-tight">
             Inicie a Estruturação do Seu Lote de Mineração Urbana
           </h2>
-          <p className="text-sm text-[#93A3B5]">
-            Acesse a capacitação técnica dedicada ou entre em contato com nosso time de engenharia e
-            compliance.
+          <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed max-w-2xl mx-auto">
+            Acesse a capacitação técnica dedicada, execute o diagnóstico por CNPJ ou converse
+            diretamente com nosso time técnico de rastreabilidade e compliance.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-4">
+            {/* Botão Falar com o time (Dourado #D9B36C, gap-4 sm:gap-6, espaçamento generoso) */}
+            <a
+              href="mailto:contato@orbis-protocol.com?subject=Interesse%20em%20Materiais%20Cr%C3%ADticos%20Recuperados"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold bg-[#D9B36C] text-[#0A0E12] hover:bg-[#C9A25B] hover:scale-[1.02] transition-all shadow-md text-sm"
+            >
+              <Mail className="w-4 h-4 text-[#0A0E12]" />
+              <span>Falar com o time</span>
+            </a>
+
             <Button
               asChild
-              className="bg-[#12B886] hover:bg-[#0CA678] text-[#0A0E12] font-bold px-6 py-3 rounded-xl shadow-emerald-glow"
+              className="bg-[#12B886] hover:bg-[#0CA678] text-[#0A0E12] font-bold px-6 py-3.5 rounded-xl shadow-emerald-glow text-sm"
             >
-              <Link to="/trilhas/mineracao">Capacitação Trilha Mineração Urbana</Link>
+              <Link to="/trilhas/mineracao" className="flex items-center gap-2">
+                <span>Capacitação Trilha Mineração Urbana</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </Button>
+
             <Button
               asChild
               variant="outline"
-              className="border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#16202B] px-6 py-3 rounded-xl"
+              className="border-[rgba(244,247,250,0.25)] text-[#F4F7FA] hover:bg-[#16202B] hover:border-[#12B886]/50 px-6 py-3.5 rounded-xl text-sm"
             >
               <Link to="/diagnostico">Diagnóstico por CNPJ</Link>
             </Button>

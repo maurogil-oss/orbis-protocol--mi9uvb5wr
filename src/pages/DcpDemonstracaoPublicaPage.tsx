@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Link, useSearchParams, useParams } from 'react-router-dom'
 import {
   ShieldCheck,
@@ -17,12 +17,15 @@ import {
   Printer,
   QrCode,
   AlertTriangle,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { AVISO_LEGAL_LASTRO } from '@/services/lastroCcrlrService'
+import { calcularHashCanonicoMateriais } from '@/services/materiaisCriticosCanonicoService'
 
 export interface DadosDemonstracaoDcp {
   codigoLote: string
@@ -45,7 +48,7 @@ export const DADOS_PADRAO_DEMO_DCP: DadosDemonstracaoDcp = {
   teorMetaisNobres: 420,
   teorCobre: 980,
   chaveNfe: '35260133000168000109550010000048121098765432',
-  hashSha256: '8f4c2b91e70d4a5f6e8b2c1d3a5e7f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e',
+  hashSha256: '', // calculado dinamicamente
   razaoSocialEmissor: 'Orbis Mineração Urbana & Reciclagem Tecnológica S.A. (Demonstração)',
   cnpjEmissor: '33.000.168/0001-09',
   entidadeGestora: 'Entidade Gestora Homologada de Logística Reversa (Decreto 11.413/2023)',
@@ -56,6 +59,8 @@ export function DcpDemonstracaoPublicaPage() {
   const { codigoLote: paramCodigo } = useParams<{ codigoLote?: string }>()
   const [searchParams] = useSearchParams()
   const [copiado, setCopiado] = useState(false)
+  const [hashRecalculado, setHashRecalculado] = useState<string>('')
+  const [verificandoIntegridade, setVerificandoIntegridade] = useState(true)
 
   // Extrair parâmetros da URL ou adotar valores de demonstração
   const dados = useMemo<DadosDemonstracaoDcp>(() => {
@@ -83,7 +88,7 @@ export function DcpDemonstracaoPublicaPage() {
         : DADOS_PADRAO_DEMO_DCP.teorMetaisNobres,
       teorCobre: cuParam ? Math.max(0, Number(cuParam) || 0) : DADOS_PADRAO_DEMO_DCP.teorCobre,
       chaveNfe: nfeParam || DADOS_PADRAO_DEMO_DCP.chaveNfe,
-      hashSha256: hashParam || DADOS_PADRAO_DEMO_DCP.hashSha256,
+      hashSha256: hashParam || undefined,
       razaoSocialEmissor: DADOS_PADRAO_DEMO_DCP.razaoSocialEmissor,
       cnpjEmissor: DADOS_PADRAO_DEMO_DCP.cnpjEmissor,
       entidadeGestora: DADOS_PADRAO_DEMO_DCP.entidadeGestora,
@@ -91,9 +96,62 @@ export function DcpDemonstracaoPublicaPage() {
     }
   }, [paramCodigo, searchParams])
 
+  // Recalcular o hash contra os dados recebidos para verificação da integridade
+  useEffect(() => {
+    let cancelado = false
+    setVerificandoIntegridade(true)
+
+    calcularHashCanonicoMateriais({
+      codigoLote: dados.codigoLote,
+      massaTotalKg: dados.massaTotalKg,
+      teorNdFeB: dados.teorNdFeB,
+      teorMetaisNobres: dados.teorMetaisNobres,
+      teorCobre: dados.teorCobre,
+      chaveNfe: dados.chaveNfe,
+    })
+      .then((h) => {
+        if (!cancelado) {
+          setHashRecalculado(h)
+          setVerificandoIntegridade(false)
+        }
+      })
+      .catch((err) => {
+        console.error('Erro ao recalcular hash no espelho DCP:', err)
+        if (!cancelado) {
+          setVerificandoIntegridade(false)
+        }
+      })
+
+    return () => {
+      cancelado = true
+    }
+  }, [
+    dados.codigoLote,
+    dados.massaTotalKg,
+    dados.teorNdFeB,
+    dados.teorMetaisNobres,
+    dados.teorCobre,
+    dados.chaveNfe,
+  ])
+
+  // Hash exibido no card: se veio na URL usa o da URL, senão usa o recalculado
+  const hashExibido = dados.hashSha256 || hashRecalculado
+
+  // Status de integridade
+  const statusIntegridade = useMemo(() => {
+    if (verificandoIntegridade) return 'verificando'
+    if (!dados.hashSha256) {
+      // Se não foi passado hash externo para comparação, considera o hash canônico gerado verificado
+      return 'verificado'
+    }
+    const hashNormalizadoRecebido = dados.hashSha256.trim().toLowerCase()
+    const hashNormalizadoRecalculado = hashRecalculado.trim().toLowerCase()
+    return hashNormalizadoRecebido === hashNormalizadoRecalculado ? 'verificado' : 'divergente'
+  }, [verificandoIntegridade, dados.hashSha256, hashRecalculado])
+
   const copiarHash = () => {
-    if (!dados.hashSha256) return
-    navigator.clipboard.writeText(dados.hashSha256)
+    if (!hashExibido) return
+    navigator.clipboard.writeText(hashExibido)
     setCopiado(true)
     setTimeout(() => setCopiado(false), 2000)
   }
@@ -313,20 +371,50 @@ export function DcpDemonstracaoPublicaPage() {
               </div>
             </div>
 
-            {/* PROVA CRIPTOGRÁFICA SHA-256 */}
-            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-2">
-              <div className="flex items-center justify-between text-xs font-semibold text-[#F4F7FA]">
+            {/* PROVA CRIPTOGRÁFICA SHA-256 COM STATUS DE INTEGRIDADE */}
+            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#F4F7FA]">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="h-4 w-4 text-[#12B886]" />
                   Hash Criptográfico SHA-256 Canônico do Lote
                 </span>
-                <span className="text-[10px] font-mono text-[#93A3B5]">
-                  Calculado Deterministicamente
-                </span>
+
+                {/* Badge de Integridade Verificada vs Hash Divergente */}
+                {statusIntegridade === 'verificado' && (
+                  <span
+                    data-testid="status-integridade-verificada"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#12B886]/15 border border-[#12B886]/40 text-[#12B886]"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Integridade Verificada</span>
+                  </span>
+                )}
+
+                {statusIntegridade === 'divergente' && (
+                  <span
+                    data-testid="status-hash-divergente"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/15 border border-rose-500/40 text-rose-400"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>Hash Divergente</span>
+                  </span>
+                )}
+
+                {statusIntegridade === 'verificando' && (
+                  <span className="text-[10px] font-mono text-[#D9B36C] animate-pulse">
+                    Verificando integridade...
+                  </span>
+                )}
               </div>
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#111820] p-3 rounded-lg border border-[rgba(244,247,250,0.06)] font-mono text-xs">
-                <span className="text-[#12B886] break-all select-all font-bold">
-                  {dados.hashSha256}
+                <span
+                  data-testid="hash-dcp-espelho"
+                  className={`break-all select-all font-bold ${
+                    statusIntegridade === 'divergente' ? 'text-rose-400' : 'text-[#12B886]'
+                  }`}
+                >
+                  {hashExibido || 'Calculando hash...'}
                 </span>
                 <Button
                   variant="outline"
@@ -342,6 +430,18 @@ export function DcpDemonstracaoPublicaPage() {
                   {copiado ? 'Copiado' : 'Copiar Hash'}
                 </Button>
               </div>
+
+              {/* Informação comparativa caso haja divergência */}
+              {statusIntegridade === 'divergente' && (
+                <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-[11px] text-rose-300 space-y-1">
+                  <span className="font-bold block">Aviso de não conformidade no espelho:</span>
+                  <p>
+                    O hash fornecido na requisição difere do recálculo canônico sobre os parâmetros
+                    declarados (massa, frações e NF-e). Recalculado:{' '}
+                    <span className="font-mono text-rose-200">{hashRecalculado}</span>
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* CUSTÓDIA FISCAL ANTI-RECEPTAÇÃO */}

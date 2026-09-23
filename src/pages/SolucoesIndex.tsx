@@ -71,6 +71,15 @@ export default function SolucoesIndex() {
       ctaText: 'Conhecer os 15 Protocolos',
     },
     {
+      tag: 'MINERAÇÃO URBANA & REEE',
+      titulo: 'Materiais Críticos Recuperados',
+      subtitulo: 'Passaporte Digital de Produto (DCP) por lote com rastreabilidade criptográfica.',
+      descricao:
+        'Prova de origem urbana para terras raras, metais nobres e cobre recuperados de e-waste e veículos.',
+      link: '/materiais-criticos',
+      ctaText: 'Ver Materiais Críticos',
+    },
+    {
       tag: 'INFRAESTRUTURA DE PROVA',
       badgeEstruturacao: 'Em estruturação',
       titulo: 'Logística Reversa — em estruturação',

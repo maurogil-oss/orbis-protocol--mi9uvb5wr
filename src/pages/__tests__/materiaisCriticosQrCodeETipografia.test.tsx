@@ -56,6 +56,48 @@ describe('Página de Materiais Críticos • Correções de QR Code e Tipografia
     expect(svgQr).toBeDefined()
   })
 
+  it('recalcula o hash SHA-256 dinamicamente ao editar massa e parâmetros do simulador', async () => {
+    render(
+      <MemoryRouter>
+        <MateriaisCriticosPublicPage />
+      </MemoryRouter>,
+    )
+
+    const hashElement = screen.getByTestId('hash-sha256-display')
+    expect(hashElement).toBeDefined()
+
+    // Aguarda o hash inicial ser calculado (64 hexadecimais)
+    await waitFor(() => {
+      expect(hashElement.textContent).toMatch(/^[a-f0-9]{64}$/)
+    })
+    const hashOriginal = hashElement.textContent
+
+    // Altera a massa do simulador
+    const inputMassa = screen.getByDisplayValue('1450')
+    fireEvent.change(inputMassa, { target: { value: '3200' } })
+
+    // Deve recalcular e gerar um novo hash determinístico diferente
+    await waitFor(() => {
+      expect(hashElement.textContent).not.toBe(hashOriginal)
+      expect(hashElement.textContent).toMatch(/^[a-f0-9]{64}$/)
+    })
+  })
+
+  it('renderiza o botão "Falar com o time" com link mailto, assunto correto e estilo coerente', () => {
+    render(
+      <MemoryRouter>
+        <MateriaisCriticosPublicPage />
+      </MemoryRouter>,
+    )
+
+    const btnFalar = screen.getByRole('link', { name: /falar com o time/i })
+    expect(btnFalar).toBeDefined()
+    expect(btnFalar.getAttribute('href')).toBe(
+      'mailto:contato@orbis-protocol.com?subject=Interesse%20em%20Materiais%20Cr%C3%ADticos%20Recuperados',
+    )
+    expect(btnFalar.className).toContain('bg-[#D9B36C]')
+  })
+
   it('renderiza a página DcpDemonstracaoPublicaPage com identificação clara de DEMONSTRAÇÃO e métricas recebidas', () => {
     render(
       <MemoryRouter
@@ -88,6 +130,45 @@ describe('Página de Materiais Críticos • Correções de QR Code e Tipografia
 
     // Deve conter botão para voltar a materiais críticos
     expect(screen.getByRole('link', { name: /voltar a materiais críticos/i })).toBeDefined()
+  })
+
+  it('DcpDemonstracaoPublicaPage exibe Integridade Verificada quando o hash coincide e Hash Divergente quando adulterado', async () => {
+    // 1. Caso com hash válido recalculado (ou sem hash prévio na URL)
+    const { unmount } = render(
+      <MemoryRouter
+        initialEntries={[
+          '/conferencia-lastro-demo?lote=ORB-CRIT-TEST&massa=1000&nd=50&au=200&cu=700&nfe=35260133000168000109550010000048121098765432',
+        ]}
+      >
+        <Routes>
+          <Route path="/conferencia-lastro-demo" element={<DcpDemonstracaoPublicaPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status-integridade-verificada')).toBeDefined()
+    })
+    expect(screen.getByText(/Integridade Verificada/i)).toBeDefined()
+    unmount()
+
+    // 2. Caso com hash fornecido divergente do recálculo
+    render(
+      <MemoryRouter
+        initialEntries={[
+          '/conferencia-lastro-demo?lote=ORB-CRIT-TEST&massa=1000&nd=50&au=200&cu=700&nfe=35260133000168000109550010000048121098765432&hash=0000000000000000000000000000000000000000000000000000000000000000',
+        ]}
+      >
+        <Routes>
+          <Route path="/conferencia-lastro-demo" element={<DcpDemonstracaoPublicaPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status-hash-divergente')).toBeDefined()
+    })
+    expect(screen.getByText(/Hash Divergente/i)).toBeDefined()
   })
 
   it('compatibilidade ConferenciaLastroPublicaPage: exibe demonstração funcional para ORB-CRIT sem erro de lote não encontrado', async () => {
