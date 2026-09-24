@@ -497,7 +497,9 @@ export default function Index() {
                   Estendemos nossa infraestrutura de prova documental à logística reversa (PNRS /
                   Decreto 11.413/2023): rastreabilidade de lotes de material, balanço de massa
                   auditável e documentos prontos para envio a órgãos de controle e entidades
-                  gestoras.
+                  gestoras. Na mesma lógica, a infraestrutura Orbis está preparada para dados
+                  verificáveis de natureza e biodiversidade, à medida que os padrões IFRS incorporam
+                  o tema nas divulgações corporativas.
                 </p>
               </div>
 

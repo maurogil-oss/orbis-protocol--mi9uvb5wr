@@ -11,9 +11,11 @@ describe('Bloco Institucional: Logística Reversa — em estruturação', () => 
   const TITULO_EXATO = 'Logística Reversa — em estruturação'
   const CORPO_EXATO =
     'Estendemos nossa infraestrutura de prova documental à logística reversa (PNRS / Decreto 11.413/2023): rastreabilidade de lotes de material, balanço de massa auditável e documentos prontos para envio a órgãos de controle e entidades gestoras.'
+  const CORPO_HOME_EXATO =
+    'Estendemos nossa infraestrutura de prova documental à logística reversa (PNRS / Decreto 11.413/2023): rastreabilidade de lotes de material, balanço de massa auditável e documentos prontos para envio a órgãos de controle e entidades gestoras. Na mesma lógica, a infraestrutura Orbis está preparada para dados verificáveis de natureza e biodiversidade, à medida que os padrões IFRS incorporam o tema nas divulgações corporativas.'
   const CTA_EXATO = 'Fale com a equipe'
 
-  it('exibe o bloco institucional na Home (Index) com textos exatos, badge discreta e CTA para /diagnostico', () => {
+  it('exibe o bloco institucional na Home (Index) com textos exatos, badge discreta, teaser de biodiversidade/natureza e CTA para /diagnostico', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Index />
@@ -24,8 +26,8 @@ describe('Bloco Institucional: Logística Reversa — em estruturação', () => 
     const titulo = screen.getByRole('heading', { level: 3, name: TITULO_EXATO })
     expect(titulo).toBeDefined()
 
-    // Corpo exato
-    expect(screen.getByText(CORPO_EXATO)).toBeDefined()
+    // Corpo exato com o teaser de biodiversidade/natureza
+    expect(screen.getByText(CORPO_HOME_EXATO)).toBeDefined()
 
     // Badge discreta "Em estruturação"
     const badges = screen.getAllByText('Em estruturação')
