@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRealtime } from '@/hooks/use-realtime'
@@ -21,7 +21,10 @@ import {
   FileCheck,
   Download,
   Coins,
+  KeyRound,
+  Sliders,
 } from 'lucide-react'
+import { ModalAlterarSenha } from '@/components/ModalAlterarSenha'
 import { simularGreenCapitalEngine } from '@/services/greenCapitalEngine'
 import {
   exportarRelatorioDossiePdf,
@@ -64,7 +67,6 @@ import { Terminal, Car, Network, Radio, Leaf } from 'lucide-react'
 import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
 import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
 import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
-import { Navigate } from 'react-router-dom'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -113,8 +115,9 @@ interface SeloRecord extends RecordModel {
 }
 
 export default function PainelCliente() {
-  const { user } = useAuth()
+  const { user, isMaster, isAdmin } = useAuth()
   const isParceiro = user?.role === 'parceiro'
+  const [modalAlterarSenhaAberto, setModalAlterarSenhaAberto] = useState(false)
 
   const [leads, setLeads] = useState<LeadDiagnostico[]>([])
   const [selos, setSelos] = useState<SeloRecord[]>([])
@@ -703,6 +706,25 @@ export default function PainelCliente() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
+            {(isMaster || isAdmin) && (
+              <Link
+                to="/admin"
+                className="px-4 py-2.5 rounded-lg text-xs font-bold bg-[#16202B] border border-[#D9B36C] text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 shadow-sm"
+                title="Acesso direto ao Console Administrativo e Governança"
+              >
+                <Sliders className="w-3.5 h-3.5 text-[#D9B36C]" />
+                <span>Console Admin</span>
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => setModalAlterarSenhaAberto(true)}
+              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all flex items-center gap-2"
+              title="Alterar a senha da minha conta"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>Alterar senha</span>
+            </button>
             <button
               type="button"
               onClick={handleExportarDossieCompleto}
@@ -728,6 +750,12 @@ export default function PainelCliente() {
             </Link>
           </div>
         </div>
+
+        {/* Modal de Alteração da Própria Senha */}
+        <ModalAlterarSenha
+          aberto={modalAlterarSenhaAberto}
+          onClose={() => setModalAlterarSenhaAberto(false)}
+        />
 
         {/* SELETOR DE ABAS DO MÓDULO FISCAL & MOTOR PERICIAL */}
         <div className="flex border-b border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">

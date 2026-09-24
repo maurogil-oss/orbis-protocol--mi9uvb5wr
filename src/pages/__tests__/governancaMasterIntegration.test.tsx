@@ -617,5 +617,29 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
       expect(res.sucesso).toBe(true)
       expect(res.novo_papel).toBe('financeiro')
     })
+
+    it('redefinirSenhaUsuarioMaster chama endpoint de redefinição de senha com retorno temporário único', async () => {
+      vi.mocked(pb.send).mockResolvedValueOnce({
+        sucesso: true,
+        user_id: 'usr-alvo-3',
+        email: 'alvo@orbis-protocol.com',
+        senha_temporaria: 'TempPass@2025!',
+        mensagem: 'Senha temporária gerada com sucesso.',
+      })
+
+      const actualAdminService = await vi.importActual<any>('@/services/adminConsoleService')
+      const res = await actualAdminService.redefinirSenhaUsuarioMaster({
+        userId: 'usr-alvo-3',
+      })
+
+      expect(pb.send).toHaveBeenCalledWith('/backend/v1/master/redefinir-senha-usuario', {
+        method: 'POST',
+        body: {
+          user_id: 'usr-alvo-3',
+        },
+      })
+      expect(res.sucesso).toBe(true)
+      expect(res.senha_temporaria).toBe('TempPass@2025!')
+    })
   })
 })

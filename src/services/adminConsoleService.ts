@@ -152,7 +152,7 @@ export async function alterarPapelUsuarioMaster(params: {
     | 'cliente_acp'
     | 'parceiro'
     | string
-  justificativa?: string
+  justificativa: string
 }) {
   return pb.send('/backend/v1/master/alterar-papel', {
     method: 'POST',
@@ -160,6 +160,21 @@ export async function alterarPapelUsuarioMaster(params: {
       user_id: params.userId,
       novo_papel: params.novoPapel,
       justificativa: params.justificativa,
+    },
+  })
+}
+
+export async function redefinirSenhaUsuarioMaster(params: { userId: string }): Promise<{
+  sucesso: boolean
+  user_id: string
+  email: string
+  senha_temporaria: string
+  mensagem: string
+}> {
+  return pb.send('/backend/v1/master/redefinir-senha-usuario', {
+    method: 'POST',
+    body: {
+      user_id: params.userId,
     },
   })
 }

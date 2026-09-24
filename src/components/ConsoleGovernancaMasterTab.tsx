@@ -14,8 +14,10 @@ import {
 import {
   aprovarRecusarContaGestaoMaster,
   alterarPapelUsuarioMaster,
+  redefinirSenhaUsuarioMaster,
 } from '@/services/adminConsoleService'
 import { useAuth } from '@/contexts/AuthContext'
+import { Check, Copy } from 'lucide-react'
 
 interface ConsoleGovernancaMasterTabProps {
   usuarios: any[]
@@ -60,7 +62,7 @@ export const PAPEIS_PERMITIDOS_GOVERNANCA = [
   },
   {
     id: 'cliente',
-    nome: 'Cliente / Empresa',
+    nome: 'Cliente / Empresa (ou Remover Admin)',
     desc: 'Diagnóstico, lotes, dossiês, selos, planos e cobranças próprias',
   },
 ]
@@ -101,6 +103,19 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
     usuario: null,
     novoPapel: 'cliente',
     justificativa: '',
+  })
+
+  // Estado para Modal de Redefinição de Senha de Usuário pelo Master
+  const [modalRedefinirSenha, setModalRedefinirSenha] = useState<{
+    aberto: boolean
+    usuario: any | null
+    senhaTemporaria: string | null
+    copiado: boolean
+  }>({
+    aberto: false,
+    usuario: null,
+    senhaTemporaria: null,
+    copiado: false,
   })
 
   const exibirFeedback = (tipo: 'ok' | 'erro', texto: string) => {
@@ -177,12 +192,55 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
       alert('O usuário com papel Master não pode ter seu papel alterado por esta interface.')
       return
     }
+    if (targetUser.id === user?.id) {
+      alert('Proteção anti-travamento: o Gestor Master não pode alterar o próprio papel.')
+      return
+    }
     setModalAlterarPapel({
       aberto: true,
       usuario: targetUser,
       novoPapel: targetUser.role || 'cliente',
       justificativa: 'Alteração de atribuição funcional deliberada pela governança Master.',
     })
+  }
+
+  const abrirModalRedefinirSenha = (targetUser: any) => {
+    setModalRedefinirSenha({
+      aberto: true,
+      usuario: targetUser,
+      senhaTemporaria: null,
+      copiado: false,
+    })
+  }
+
+  const executarRedefinicaoSenhaMaster = async () => {
+    if (!modalRedefinirSenha.usuario) return
+    setProcessandoId(modalRedefinirSenha.usuario.id)
+
+    try {
+      const res = await redefinirSenhaUsuarioMaster({
+        userId: modalRedefinirSenha.usuario.id,
+      })
+      setModalRedefinirSenha((prev) => ({
+        ...prev,
+        senhaTemporaria: res.senha_temporaria,
+        copiado: false,
+      }))
+      exibirFeedback('ok', 'Senha temporária gerada e auditada com sucesso.')
+    } catch (err: any) {
+      exibirFeedback('erro', err?.message || 'Falha ao gerar nova senha para o usuário.')
+    } finally {
+      setProcessandoId(null)
+    }
+  }
+
+  const copiarSenhaTemporaria = () => {
+    if (!modalRedefinirSenha.senhaTemporaria) return
+    navigator.clipboard.writeText(modalRedefinirSenha.senhaTemporaria)
+    setModalRedefinirSenha((prev) => ({ ...prev, copiado: true }))
+    setTimeout(() => {
+      setModalRedefinirSenha((prev) => ({ ...prev, copiado: false }))
+    }, 3000)
   }
 
   const confirmarMudancaPapel = async (e: React.FormEvent) => {
@@ -469,15 +527,27 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
                       👑 Gestor Master Raiz
                     </span>
                   ) : (
-                    <button
-                      type="button"
-                      disabled={processandoId === u.id}
-                      onClick={() => abrirModalMudarPapel(u)}
-                      className="px-3 py-1.5 rounded-lg bg-[#16202B] hover:bg-[#12B886] hover:text-[#0A0E12] text-xs font-bold text-[#12B886] border border-[#12B886]/30 transition-all flex items-center gap-1.5"
-                    >
-                      <Sliders className="w-3.5 h-3.5" />
-                      <span>Alterar Papel</span>
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        disabled={processandoId === u.id}
+                        onClick={() => abrirModalRedefinirSenha(u)}
+                        className="px-3 py-1.5 rounded-lg bg-[#16202B] hover:bg-[#D9B36C] hover:text-[#0A0E12] text-xs font-bold text-[#D9B36C] border border-[#D9B36C]/40 transition-all flex items-center gap-1.5"
+                        title="Gerar senha temporária forte para este usuário"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                        <span>Redefinir Senha</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={processandoId === u.id}
+                        onClick={() => abrirModalMudarPapel(u)}
+                        className="px-3 py-1.5 rounded-lg bg-[#16202B] hover:bg-[#12B886] hover:text-[#0A0E12] text-xs font-bold text-[#12B886] border border-[#12B886]/30 transition-all flex items-center gap-1.5"
+                      >
+                        <Sliders className="w-3.5 h-3.5" />
+                        <span>Alterar Papel</span>
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -811,6 +881,167 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL REDEFINIR SENHA DE USUÁRIO PELO MASTER */}
+      {modalRedefinirSenha.aberto && modalRedefinirSenha.usuario && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-lg rounded-2xl bg-[#111820] border-2 border-[#D9B36C] p-6 space-y-4 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.1)] pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-[#D9B36C]/10 text-[#D9B36C] border border-[#D9B36C]/30">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-extrabold text-base text-[#F4F7FA]">
+                    Redefinir Senha de Usuário
+                  </h3>
+                  <span className="text-xs text-[#93A3B5] mt-0.5 block">
+                    {modalRedefinirSenha.usuario.name || modalRedefinirSenha.usuario.email} (
+                    {modalRedefinirSenha.usuario.email})
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setModalRedefinirSenha({
+                    aberto: false,
+                    usuario: null,
+                    senhaTemporaria: null,
+                    copiado: false,
+                  })
+                }
+                className="text-[#93A3B5] hover:text-[#F4F7FA]"
+              >
+                ✕
+              </button>
+            </div>
+
+            {!modalRedefinirSenha.senhaTemporaria ? (
+              <div className="space-y-4 text-xs">
+                <p className="text-[#93A3B5] leading-relaxed">
+                  Esta ação gerará uma <strong>senha temporária forte e aleatória</strong> para o
+                  usuário <strong>{modalRedefinirSenha.usuario.email}</strong>, substituindo a senha
+                  atual de forma segura no banco de dados sem passar por validações de login.
+                </p>
+
+                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/30 space-y-1.5 text-[11px] text-[#93A3B5]">
+                  <div className="text-[#D9B36C] font-semibold flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Aviso de Segurança e Sigilo</span>
+                  </div>
+                  <p>
+                    A senha gerada será <strong>exibida apenas UMA vez</strong> na próxima tela. Ela
+                    não é gravada em logs, auditorias ou consultas posteriores. Copie-a e forneça ao
+                    usuário de forma segura.
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-[rgba(244,247,250,0.08)]">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModalRedefinirSenha({
+                        aberto: false,
+                        usuario: null,
+                        senhaTemporaria: null,
+                        copiado: false,
+                      })
+                    }
+                    className="px-4 py-2 rounded-xl bg-[#16202B] text-xs text-[#93A3B5]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    disabled={processandoId === modalRedefinirSenha.usuario.id}
+                    onClick={executarRedefinicaoSenhaMaster}
+                    className="px-5 py-2 rounded-xl bg-[#D9B36C] text-[#0A0E12] font-bold text-xs uppercase tracking-wider hover:bg-[#D9B36C]/90 transition-all flex items-center gap-1.5"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>
+                      {processandoId === modalRedefinirSenha.usuario.id
+                        ? 'Gerando Senha...'
+                        : 'Gerar Senha Temporária'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                <div className="p-4 rounded-xl bg-[#12B886]/10 border border-[#12B886]/30 text-[#12B886] space-y-1">
+                  <strong className="font-bold block text-sm">Senha Gerada com Sucesso!</strong>
+                  <p className="text-[11px] text-[#F4F7FA]/90">
+                    A senha temporária abaixo já foi aplicada à conta do usuário.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] text-xs font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>
+                    Esta senha temporária será exibida apenas agora. Copie-a e envie de forma segura
+                    ao usuário.
+                  </span>
+                </div>
+
+                {/* Exibição da Senha com Botão Copiar */}
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#D9B36C] flex items-center justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <span className="text-[10px] text-[#93A3B5] uppercase font-mono tracking-wider block">
+                      Senha Temporária Gerada:
+                    </span>
+                    <span className="text-base sm:text-lg font-mono font-bold text-[#D9B36C] select-all break-all">
+                      {modalRedefinirSenha.senhaTemporaria}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copiarSenhaTemporaria}
+                    className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all ${
+                      modalRedefinirSenha.copiado
+                        ? 'bg-[#12B886] text-[#0A0E12]'
+                        : 'bg-[#D9B36C] text-[#0A0E12] hover:bg-[#D9B36C]/90'
+                    }`}
+                  >
+                    {modalRedefinirSenha.copiado ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex justify-end pt-2 border-t border-[rgba(244,247,250,0.08)]">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModalRedefinirSenha({
+                        aberto: false,
+                        usuario: null,
+                        senhaTemporaria: null,
+                        copiado: false,
+                      })
+                    }
+                    className="px-5 py-2 rounded-xl bg-[#16202B] text-xs font-bold text-[#F4F7FA] hover:bg-[#1f2d3d]"
+                  >
+                    Concluído & Fechar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

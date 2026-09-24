@@ -42,7 +42,9 @@ migrate(
         id: '',
         password: '',
       })
-      app.db().newQuery('SELECT id, password FROM users WHERE id = {:id}')
+      app
+        .db()
+        .newQuery('SELECT id, password FROM users WHERE id = {:id}')
         .bind({ id: tempUser.id })
         .one(row)
 
@@ -63,9 +65,13 @@ migrate(
     // 3. Atualizar maurog1@hotmail.com por SQL direto
     let updateOk = false
     try {
-      app.db().newQuery(
-        "UPDATE users SET password = {:hash}, verified = 1, role = 'master', updated = datetime('now') WHERE email = 'maurog1@hotmail.com'"
-      ).bind({ hash: passwordHash }).execute()
+      app
+        .db()
+        .newQuery(
+          "UPDATE users SET password = {:hash}, verified = 1, role = 'master', updated = datetime('now') WHERE email = 'maurog1@hotmail.com'",
+        )
+        .bind({ hash: passwordHash })
+        .execute()
       updateOk = true
       console.log('[Migration 0055] senha restaurada com sucesso via SQL direto')
     } catch (sqlErr) {
@@ -78,7 +84,9 @@ migrate(
     try {
       const mauroRecord = app.findAuthRecordByEmail('users', 'maurog1@hotmail.com')
       if (!mauroRecord) {
-        console.log('[Migration 0055] Registro de maurog1@hotmail.com não localizado após atualização.')
+        console.log(
+          '[Migration 0055] Registro de maurog1@hotmail.com não localizado após atualização.',
+        )
         throw new Error('Registro não localizado pós-atualização.')
       }
 
@@ -109,5 +117,5 @@ migrate(
   (app) => {
     // Reversão no-op
     console.log('[Migration 0055] Reversão executada (no-op).')
-  }
+  },
 )

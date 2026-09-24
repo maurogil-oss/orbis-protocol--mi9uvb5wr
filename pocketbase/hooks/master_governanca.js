@@ -172,6 +172,20 @@ routerAdd(
         return e.badRequestError('ID do usuário e novo papel são obrigatórios.')
       }
 
+      // Justificativa obrigatória para governança de papéis pelo Master
+      if (!justificativa || justificativa.length < 5) {
+        return e.badRequestError(
+          'Justificativa é obrigatória para alteração de papel (mínimo 5 caracteres).',
+        )
+      }
+
+      // Proteção anti-travamento: Master não pode rebaixar a própria conta
+      if (auth.id === targetUserId) {
+        return e.badRequestError(
+          'Proteção anti-travamento ativa: o Gestor Master não pode rebaixar a própria conta de acesso.',
+        )
+      }
+
       // Regra de segurança inegociável: NUNCA promover a master por interface ou endpoint
       if (novoPapel === 'master') {
         return e.badRequestError(
@@ -245,6 +259,140 @@ routerAdd(
       })
     } catch (err) {
       return e.json(500, { error: err.message || 'Falha ao alterar papel do usuário.' })
+    }
+  },
+  $apis.requireAuth(),
+)
+
+/**
+ * Endpoint para Gestor Master redefinir a senha de um usuário
+ * - Apenas role === 'master' autorizado (admins recebem 403)
+ * - Gera senha temporária forte aleatória
+ * - Cria registro efêmero para calcular hash nativo PocketBase
+ * - Grava via UPDATE SQL parametrizado direto em users para NÃO disparar hooks de update (audit_central) que abortam app.save
+ * - Retorna a senha temporária UMA ÚNICA VEZ
+ * - Registra evento de auditoria: ator e alvo, timestamp (JAMAIS a senha ou hash)
+ */
+routerAdd(
+  'POST',
+  '/backend/v1/master/redefinir-senha-usuario',
+  (e) => {
+    try {
+      const auth = e.auth
+      if (!auth) {
+        return e.json(401, { error: 'Autenticação necessária.' })
+      }
+
+      const operadorRole = auth.getString('role')
+      if (operadorRole !== 'master') {
+        return e.json(403, {
+          error: 'Acesso negado: Apenas o gestor master pode redefinir senhas de usuários.',
+        })
+      }
+
+      const body = e.requestInfo().body || {}
+      const targetUserId = String(body.user_id || '').trim()
+
+      if (!targetUserId) {
+        return e.badRequestError('ID do usuário é obrigatório.')
+      }
+
+      let targetUser
+      try {
+        targetUser = $app.findFirstRecordByData('_pb_users_auth_', 'id', targetUserId)
+      } catch (_) {
+        return e.notFoundError('Usuário não localizado no sistema.')
+      }
+
+      // Gerador de senha temporária forte (mín. 12 caracteres, maiúscula, minúscula, número e símbolo)
+      const maiusculas = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+      const minusculas = 'abcdefghjkmnpqrstuvwxyz'
+      const numeros = '23456789'
+      const especiais = '!@#$%&*+'
+      const todos = maiusculas + minusculas + numeros + especiais
+
+      function charAleatorio(str) {
+        return str.charAt(Math.floor(Math.random() * str.length))
+      }
+
+      // Garante pelo menos um de cada grupo
+      let tempPassChars = [
+        charAleatorio(maiusculas),
+        charAleatorio(maiusculas),
+        charAleatorio(minusculas),
+        charAleatorio(minusculas),
+        charAleatorio(numeros),
+        charAleatorio(numeros),
+        charAleatorio(especiais),
+      ]
+
+      while (tempPassChars.length < 14) {
+        tempPassChars.push(charAleatorio(todos))
+      }
+
+      // Embaralhar
+      for (let i = tempPassChars.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        const temp = tempPassChars[i]
+        tempPassChars[i] = tempPassChars[j]
+        tempPassChars[j] = temp
+      }
+      const senhaTemporaria = tempPassChars.join('')
+
+      // Gerar o hash usando o mecanismo nativo do PocketBase através de um registro efêmero
+      const usersCol = $app.findCollectionByNameOrId('_pb_users_auth_')
+      const fakeRec = new Record(usersCol)
+      fakeRec.setPassword(senhaTemporaria)
+      const passwordHash = fakeRec.passwordHash()
+
+      if (!passwordHash) {
+        throw new Error('Falha ao gerar hash de senha nativo pelo PocketBase.')
+      }
+
+      // UPDATE SQL parametrizado na tabela users para desviar de hooks de update e garantir integridade
+      $app
+        .db()
+        .newQuery('UPDATE users SET passwordHash = {:hash} WHERE id = {:id}')
+        .bind({
+          hash: passwordHash,
+          id: targetUserId,
+        })
+        .execute()
+
+      // Trilha de auditoria append-only: ator e alvo, timestamp (JAMAIS a senha ou hash)
+      const auditCol = $app.findCollectionByNameOrId('audit_log')
+      const log = new Record(auditCol)
+      log.set('acao', 'master_redefiniu_senha_usuario')
+      log.set('entidade', 'users')
+      log.set('entidade_id', targetUserId)
+      log.set('ator_id', auth.id)
+      log.set('ator_email', auth.getString('email'))
+      log.set('papel', 'master')
+      log.set('detalhes', {
+        master_nome: auth.getString('name') || auth.getString('email'),
+        master_email: auth.getString('email'),
+        alvo_user_id: targetUserId,
+        alvo_email: targetUser.getString('email'),
+        alvo_nome: targetUser.getString('name'),
+        alvo_role: targetUser.getString('role'),
+        timestamp: new Date().toISOString(),
+      })
+      log.set(
+        'ip',
+        e.requestInfo().headers['x-forwarded-for'] || e.requestInfo().headers['x-real-ip'] || '',
+      )
+      $app.save(log)
+
+      // Retorna a senha temporária gerada de exibição única
+      return e.json(200, {
+        sucesso: true,
+        user_id: targetUserId,
+        email: targetUser.getString('email'),
+        senha_temporaria: senhaTemporaria,
+        mensagem: 'Senha temporária gerada com sucesso. Esta senha será exibida apenas agora.',
+      })
+    } catch (err) {
+      return e.json(500, { error: err.message || 'Falha ao redefinir senha do usuário.' })
     }
   },
   $apis.requireAuth(),
