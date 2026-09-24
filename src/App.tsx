@@ -50,6 +50,7 @@ import FatoresEmissaoPublicoPage from './pages/FatoresEmissaoPublicoPage'
 import MoverPublicPage from './pages/MoverPublicPage'
 import DossieMoverPage from './pages/DossieMoverPage'
 import MateriaisCriticosPublicPage from './pages/MateriaisCriticosPublicPage'
+import PropostaRemineraPage from './pages/PropostaRemineraPage'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -174,8 +175,10 @@ const App = () => (
               }
             />
           </Route>
+          {/* Proposta Comercial Reminera — Rota dedicada independente de Layout/Menu/Rodapé */}
+          <Route path="/proposta-reminera" element={<PropostaRemineraPage />} />
           <Route path="*" element={<NotFound />} />{' '}
-        </Routes>
+        </Routes>{' '}
       </TooltipProvider>
     </AuthProvider>
   </BrowserRouter>

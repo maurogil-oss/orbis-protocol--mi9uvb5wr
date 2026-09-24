@@ -187,3 +187,64 @@
     animation: fade-in-up 0.5s ease-out forwards;
   }
 }
+
+/* Print / PDF Export configuration for Pitch Decks and Slide Presentations */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  /* Oculta barras de navegação, botões interativos e rodapés de tela */
+  .no-print,
+  header.no-print,
+  footer.no-print,
+  button.no-print {
+    display: none !important;
+  }
+
+  body {
+    background-color: #0a0e12 !important;
+    color: #f4f7fa !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .proposta-deck-root {
+    background-color: #0a0e12 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .deck-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  /* Cada slide vira uma página individual sem corte */
+  .slide-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 0 !important;
+    min-height: 96vh !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(244, 247, 250, 0.2) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    background: #0d131a !important;
+    background-color: #0d131a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .slide-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+}
