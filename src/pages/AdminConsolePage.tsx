@@ -35,6 +35,7 @@ import {
   FileCheck2,
   SlidersHorizontal,
   ShieldAlert,
+  Compass,
 } from 'lucide-react'
 import {
   obterMoverAmpliadoHabilitado,
@@ -97,9 +98,11 @@ import {
   BUSINESS_SETTINGS_FALLBACK,
 } from '@/services/businessSettingsService'
 import { useSearchParams } from 'react-router-dom'
+import { ConsoleRadarSemanalTab } from '@/components/ConsoleRadarSemanalTab'
 
 type AdminTab =
   | 'receita'
+  | 'radar_semanal'
   | 'clientes'
   | 'uso'
   | 'custos'
@@ -922,6 +925,7 @@ export default function AdminConsolePage() {
 
   const abas: { id: AdminTab; label: string; icon: any }[] = [
     { id: 'receita', label: '1. Receita & Cobranças', icon: DollarSign },
+    { id: 'radar_semanal', label: 'Radar Semanal (Assinantes & Digest)', icon: Compass },
     { id: 'clientes', label: '2. Clientes', icon: Users },
     { id: 'uso', label: '3. Uso da Plataforma', icon: Activity },
     { id: 'custos', label: '4. Custos Operacionais', icon: TrendingUp },
@@ -1116,6 +1120,13 @@ export default function AdminConsolePage() {
         </div>
 
         {/* CONTEÚDO DOS 8 PAINÉIS */}
+
+        {/* RADAR SEMANAL: GESTÃO DE ASSINANTES, EDIÇÕES E DISPARO DE DIGEST */}
+        {activeTab === 'radar_semanal' && (
+          <div className="space-y-6">
+            <ConsoleRadarSemanalTab />
+          </div>
+        )}
 
         {/* 1. RECEITA & COBRANÇAS */}
         {activeTab === 'receita' && (

@@ -25,6 +25,9 @@ routerAdd('POST', '/backend/v1/lead-diagnostico-submit', (e) => {
     leadRecord.set('cnpj', cnpj)
     leadRecord.set('razao_social', razaoSocial)
     leadRecord.set('demonstracao', Boolean(body.demonstracao))
+    if (body.ref_indicacao || body.ref) {
+      leadRecord.set('ref_indicacao', String(body.ref_indicacao || body.ref).trim())
+    }
     if (body.email) leadRecord.set('email', String(body.email).trim())
     if (body.whatsapp) leadRecord.set('whatsapp', String(body.whatsapp).trim())
     if (body.responsavel) leadRecord.set('responsavel', String(body.responsavel).trim())

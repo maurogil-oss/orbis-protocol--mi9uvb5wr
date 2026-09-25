@@ -36,6 +36,8 @@ import Privacidade from './pages/Privacidade'
 import Planos from './pages/Planos'
 import Capital from './pages/Capital'
 import RadarRegulatorio from './pages/RadarRegulatorio'
+import RadarSemanalPublicPage from './pages/RadarSemanalPublicPage'
+import CentralRadarPage from './pages/CentralRadarPage'
 import PassaportePublicoPage from './pages/PassaportePublicoPage'
 import PassaporteLotePublicoPage from './pages/PassaporteLotePublicoPage'
 import PassaporteFornecedorPublicoPage from './pages/PassaporteFornecedorPublicoPage'
@@ -66,6 +68,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/demo" element={<ModoDemonstracaoOrientadaPage />} />
             <Route path="/radar-regulatorio" element={<RadarRegulatorio />} />
+            <Route path="/radar-semanal" element={<RadarSemanalPublicPage />} />
+            <Route path="/central-radar" element={<CentralRadarPage />} />
             <Route path="/diagnostico" element={<Diagnostico />} />
             <Route path="/trilhas" element={<TrilhasIndex />} />
             <Route path="/trilhas/:slug" element={<TrilhaDetail />} />

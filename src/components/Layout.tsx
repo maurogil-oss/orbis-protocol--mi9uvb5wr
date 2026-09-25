@@ -24,6 +24,7 @@ import {
   Recycle,
   BookOpen,
   Car,
+  Compass,
 } from 'lucide-react'
 
 export default function Layout() {
@@ -180,6 +181,13 @@ export default function Layout() {
           desc: 'Calendário de prazos da reforma tributária, marco do SBCE e exigências climáticas.',
           path: '/radar-regulatorio',
           icon: Scale,
+        },
+        {
+          title: 'Radar Semanal (Assinatura)',
+          desc: 'Serviço semanal de inteligência regulatória executiva por faixa de CNPJs.',
+          path: '/radar-semanal',
+          icon: Compass,
+          badge: 'Novo',
         },
       ],
     },

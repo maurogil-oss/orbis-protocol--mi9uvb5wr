@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { useAuth } from '@/contexts/AuthContext'
@@ -76,6 +76,7 @@ export function calcularEnquadramentoSBCE(
 
 export default function Diagnostico() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { login } = useAuth()
 
   // Tab: 'novo' | 'retomar'
@@ -425,13 +426,18 @@ export default function Diagnostico() {
         authHeaders['Authorization'] = token
       }
 
+      // Captura ref de indicação da URL ou de navegação prévia no Radar Semanal
+      const searchRef =
+        searchParams.get('ref') || localStorage.getItem('orbis_radar_ref') || undefined
+
       const resLead = await fetch(`${pb.baseUrl}/backend/v1/lead-diagnostico-submit`, {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({
           ...leadPayload,
+          ref_indicacao: searchRef,
           termo_versao: 'v2026-01',
-          origem: 'funil',
+          origem: searchRef ? 'radar_semanal_ref' : 'funil',
         }),
       })
 

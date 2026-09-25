@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T12:40:36.554Z",
+  "generatedAt": "2026-09-25T13:18:55.000Z",
   "collections": [
     {
       "name": "users",
@@ -98,6 +98,44 @@
           "required": false,
           "system": false,
           "selectValues": ["pendente", "aprovado", "rejeitado"]
+        },
+        {
+          "name": "radar_acesso_status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["trial", "ativo", "expirado", "cancelado", "nenhum"]
+        },
+        {
+          "name": "radar_plano_faixa",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "1_cnpj",
+            "ate_5_cnpjs",
+            "ate_30_cnpjs",
+            "acima_30_sob_consulta",
+            "nenhum"
+          ]
+        },
+        {
+          "name": "radar_trial_fim",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "radar_assinatura_fim",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "radar_ref_origem",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -325,6 +363,12 @@
         },
         {
           "name": "volume_exportacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ref_indicacao",
           "type": "text",
           "required": false,
           "system": false
@@ -4595,6 +4639,160 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "radar_edicoes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' || aberta_publico = true",
+        "view": "@request.auth.id != '' || aberta_publico = true",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'controller')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'controller')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master')"
+      },
+      "fields": [
+        {
+          "name": "numero_edicao",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "resumo_semana",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_edicao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "aberta_publico",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "mes_ano_referencia",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "itens_normas_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "autor_editorial",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "publicada",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_destinatarios_enviados",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_envio_digest",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_radar_edicoes_numero ON radar_edicoes (numero_edicao)",
+        "CREATE INDEX idx_radar_edicoes_data ON radar_edicoes (data_edicao DESC)",
+        "CREATE INDEX idx_radar_edicoes_aberta ON radar_edicoes (aberta_publico)"
+      ]
+    },
+    {
+      "name": "radar_leituras",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "create": "@request.auth.id != '' && usuario = @request.auth.id",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "edicao",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "radar_edicoes"
+        },
+        {
+          "name": "lida",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_leitura",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_radar_leituras_user_edicao ON radar_leituras (usuario, edicao)"
+      ]
     }
   ]
 }

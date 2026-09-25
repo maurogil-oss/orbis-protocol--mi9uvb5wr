@@ -94,11 +94,25 @@ export default function RegistroPage() {
     setIsLoading(true)
 
     try {
+      // Captura ref de indicação e plano_faixa do radar se houver na URL ou localStorage
+      const refParam =
+        searchParams.get('ref') || localStorage.getItem('orbis_radar_ref') || undefined
+      const planoFaixaParam = searchParams.get('plano_faixa') || undefined
+      const origemParam = searchParams.get('origem') || undefined
+
+      const ehFluxoRadar = origemParam === 'radar_semanal' || Boolean(planoFaixaParam)
+
       // 1. Cria usuário na collection users com role selecionado
       // Se for perfil 'gestao', é criado como role 'admin' porém com status_aprovacao = 'pendente'
       // O papel 'master' NUNCA pode ser solicitado ou atribuído aqui
       const dbRole = role === 'gestao' ? 'admin' : role
       const isGestaoPerfil = role === 'gestao'
+
+      // Se for do fluxo do Radar Semanal, ativa trial de 15 dias sem cartão
+      const agora = new Date()
+      const dataTrialFim = ehFluxoRadar
+        ? new Date(agora.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString()
+        : undefined
 
       await pb.collection('users').create({
         email: cleanEmail,
@@ -108,6 +122,10 @@ export default function RegistroPage() {
         role: dbRole,
         parceiro_acesso_status: role === 'parceiro' ? 'pendente' : undefined,
         status_aprovacao: isGestaoPerfil ? 'pendente' : 'aprovado',
+        radar_acesso_status: ehFluxoRadar ? 'trial' : 'nenhum',
+        radar_plano_faixa: planoFaixaParam || (ehFluxoRadar ? '1_cnpj' : 'nenhum'),
+        radar_trial_fim: dataTrialFim,
+        radar_ref_origem: refParam,
       })
 
       // 2. Autentica automaticamente
@@ -137,6 +155,9 @@ export default function RegistroPage() {
         } else if (role === 'cliente_acp') {
           // Cliente ACP vai direto à área autenticada do painel (sem funil de diagnóstico)
           navigate('/painel', { replace: true })
+        } else if (ehFluxoRadar) {
+          // Se veio do produto Radar Semanal, vai para a Central do Radar
+          navigate('/central-radar', { replace: true })
         } else {
           // Cliente comum vai ao seu painel
           navigate('/painel', { replace: true })
