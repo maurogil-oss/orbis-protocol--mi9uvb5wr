@@ -68,6 +68,38 @@ describe('Radar Regulatório: Verra Scope 3 Standard (S3S) Program', () => {
     ).toBeDefined()
   })
 
+  it('contém as novas entradas do Radar: CVM 244/2026, Bacen 586/2026, Previc 728/2026 e Consulta Susep', () => {
+    // 1. Resolução CVM 244/2026
+    const cvmItem = ITENS_RADAR_REGULATORIO.find((item) => item.id === 'resolucao_cvm_244_2026')
+    expect(cvmItem).toBeDefined()
+    expect(cvmItem?.norma).toContain('CVM nº 244/2026')
+    expect(cvmItem?.descricaoCurta).toContain('pratique-ou-explique')
+    expect(cvmItem?.descricaoCurta).toContain('greenwashing por associação')
+
+    // 2. Resolução CMN/Bacen 586/2026
+    const bacenItem = ITENS_RADAR_REGULATORIO.find((item) => item.id === 'resolucao_bacen_586_2026')
+    expect(bacenItem).toBeDefined()
+    expect(bacenItem?.norma).toContain('586/2026')
+    expect(bacenItem?.descricaoCurta).toContain('GRSAC')
+
+    // 3. Portaria Previc 728/2026
+    const previcItem = ITENS_RADAR_REGULATORIO.find(
+      (item) => item.id === 'portaria_previc_728_2026',
+    )
+    expect(previcItem).toBeDefined()
+    expect(previcItem?.norma).toContain('728/2026')
+    expect(previcItem?.descricaoCurta).toContain('Plano ASG')
+    expect(previcItem?.descricaoCurta).toContain('dupla materialidade')
+
+    // 4. Consulta Pública Susep
+    const susepItem = ITENS_RADAR_REGULATORIO.find(
+      (item) => item.id === 'consulta_publica_susep_issb',
+    )
+    expect(susepItem).toBeDefined()
+    expect(susepItem?.descricaoCurta).toContain('Circular Susep nº 666/2022')
+    expect(susepItem?.descricaoCurta).toContain('ISSB')
+  })
+
   it('garante que textos aprovados de Logística Reversa (Index, SolucoesIndex e Layout) permanecem intactos', () => {
     // 1. Home
     const { unmount: unmountHome } = render(

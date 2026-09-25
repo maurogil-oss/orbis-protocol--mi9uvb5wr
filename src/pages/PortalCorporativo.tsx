@@ -23,8 +23,8 @@ export default function PortalCorporativo() {
       desc: 'Conectores prontos para SAP S/4HANA, Totvs Protheus, Senior e Oracle Cloud via REST API e webhook seguro.',
     },
     {
-      titulo: 'Reporte Voluntário IFRS S1/S2 e Resolução CVM 193',
-      desc: 'Exportação padronizada de demonstrativos climáticos com preparação para asseguração conforme as diretrizes voluntárias da Resolução CVM 193.',
+      titulo: 'Reporte Voluntário IFRS S1/S2 e Resolução CVM 244/2026',
+      desc: 'Exportação padronizada de demonstrativos climáticos com preparação para asseguração conforme as diretrizes de adoção voluntária (pratique-ou-explique) da Resolução CVM 244/2026.',
     },
     {
       titulo: 'Motor Pericial dMRV de Escopos 1, 2 e 3 (MCTI, GHG Protocol & AR6)',

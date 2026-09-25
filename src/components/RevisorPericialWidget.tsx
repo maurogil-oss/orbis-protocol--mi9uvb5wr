@@ -174,8 +174,8 @@ export const RevisorPericialWidget: React.FC<RevisorPericialWidgetProps> = ({
               Laudo Pericial formal com ART (CREA) ou RRT (CAU)
             </strong>{' '}
             assinado por perito técnico credenciado possui fé pública e validade jurídica perante o
-            SBCE (Lei 15.042/2024), CVM (Resolução 193) e auditorias contábeis NBC TO 3000 / ISAE
-            3000.
+            SBCE (Lei 15.042/2024), CVM (Resolução 244/2026) e auditorias contábeis NBC TO 3000 /
+            ISAE 3000.
           </div>
         </div>
 

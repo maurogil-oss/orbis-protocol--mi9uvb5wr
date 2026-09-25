@@ -16,6 +16,83 @@ export interface ItemRadarRegulatorio {
 
 export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
   {
+    id: 'resolucao_cvm_244_2026',
+    dataMarco: '2026',
+    ano: '2026',
+    norma: 'Resolução CVM nº 244/2026 & Ofício-Circular CVM',
+    status: 'Vigente',
+    titulo: 'CVM 244/2026: Fim da Obrigatoriedade IFRS S1/S2 e Veto a Greenwashing por Associação',
+    descricaoCurta:
+      'Revoga a obrigatoriedade do reporte de sustentabilidade nos padrões CBPS/IFRS S1 e S2 no mercado de capitais brasileiro, retornando ao regime voluntário pratique-ou-explique. O ofício-circular complementar veda expressamente o uso de declarações como "alinhado ao" ou "baseado em" padrão ISSB/CBPS sem conformidade integral e verificável.',
+    quemAfeta: [
+      'Companhias abertas, securitizadoras e emissores de valores mobiliários',
+      'Fundos de investimento com mandato ou estratégia ASG/ESG',
+      'Empresas fornecedoras e participantes de cadeias de valor de companhias listadas',
+    ],
+    acaoRecomendada:
+      'Utilizar demonstrações elaboradas segundo as diretrizes de reporte voluntário, substituindo declarações vagas de alinhamento por evidências fiscais e documentais auditáveis com chancela pericial, evitando riscos de autuação por greenwashing por associação.',
+    baseLegal: 'Resolução CVM nº 244/2026 e Ofício-Circular CVM de orientação',
+    tagSetorial: 'Ambiental/ESG',
+  },
+  {
+    id: 'resolucao_bacen_586_2026',
+    dataMarco: '2026',
+    ano: '2026',
+    norma: 'Resolução CMN/Bacen nº 586/2026',
+    status: 'Vigente',
+    titulo: 'Bacen 586/2026: Atualização dos Relatórios GRSAC nas Instituições Financeiras',
+    descricaoCurta:
+      'Atualiza as diretrizes para elaboração e divulgação do Relatório de Gerenciamento de Riscos e Oportunidades Sociais, Ambientais e Climáticas (GRSAC) pelas instituições autorizadas a funcionar pelo Banco Central, intensificando a exigência de dados primários e rastreabilidade na concessão de crédito.',
+    quemAfeta: [
+      'Bancos múltiplos, comerciais, de investimento e cooperativas de crédito',
+      'Empresas tomadoras de crédito bancário e financiamentos verdes (Green Capital)',
+      'Grandes grupos industriais com obrigações de reporte socioambiental perante o SFN',
+    ],
+    acaoRecomendada:
+      'Estruturar inventários com prova documental e rastreabilidade fiscal para apresentar aos bancos credores demonstrativos defensáveis de risco climático e aderência às métricas GRSAC.',
+    baseLegal: 'Resolução CMN/Bacen nº 586/2026 e aprimoramento da Res. BCB 4.945/2021',
+    tagSetorial: 'Carbono/SBCE',
+  },
+  {
+    id: 'portaria_previc_728_2026',
+    dataMarco: '2026',
+    ano: '2026',
+    norma: 'Portaria Previc nº 728/2026',
+    status: 'Vigente',
+    titulo:
+      'Portaria Previc 728/2026: Riscos ASG, Dupla Materialidade e Plano ASG em Fundos de Pensão',
+    descricaoCurta:
+      'Regulamenta a integração e a gestão de riscos e oportunidades de sustentabilidade (fatores ASG) nas Entidades Fechadas de Previdência Complementar (EFPC). Estabelece a obrigatoriedade de Plano ASG estruturado, análise de dupla materialidade e diligência qualificada sobre emissores e ativos investidos.',
+    quemAfeta: [
+      'Entidades Fechadas de Previdência Complementar (EFPCs / fundos de pensão)',
+      'Gestoras e administradoras de fundos de investimento com capital previdenciário',
+      'Companhias emissoras de debêntures, ações e notas comerciais alvos de alocação de fundos',
+    ],
+    acaoRecomendada:
+      'Disponibilizar dossiês técnicos com indicadores de dupla materialidade e conformidade de governança climática para qualificar empresas como ativos elegíveis aos mandatos dos fundos de pensão.',
+    baseLegal: 'Portaria Previc nº 728/2026 e Resolução Previc nº 23/2023',
+    tagSetorial: 'Ambiental/ESG',
+  },
+  {
+    id: 'consulta_publica_susep_issb',
+    dataMarco: '2026',
+    ano: '2026',
+    norma: 'Consulta Pública Susep (Alinhamento ISSB)',
+    status: 'Em fase-teste',
+    titulo: 'Consulta Pública Susep: Revogação da Circular 666/2022 e Alinhamento aos Padrões ISSB',
+    descricaoCurta:
+      'Proposta regulatória da Superintendência de Seguros Privados (Susep) para revogar a Circular Susep nº 666/2022 e atualizar o marco de sustentabilidade do setor segurador e ressegurador brasileiro, convergindo aos padrões globais de divulgação climática do ISSB.',
+    quemAfeta: [
+      'Sociedades seguradoras, resseguradores locais e entidades abertas de previdência complementar',
+      'Corretoras e estipulantes de seguros patrimoniais, de responsabilidade civil e de transportes',
+      'Indústrias seguradas que contratam coberturas para riscos climáticos, ambientais e de infraestrutura',
+    ],
+    acaoRecomendada:
+      'Acompanhar os desdobramentos da consulta pública e preparar a governança de dados climáticos da empresa, facilitando a precificação de prêmios de seguro com base em riscos reais verificáveis.',
+    baseLegal: 'Consulta Pública Susep nº 2026 (substituição da Circular Susep nº 666/2022)',
+    tagSetorial: 'Ambiental/ESG',
+  },
+  {
     id: 'verra_scope3_standard_s3s',
     dataMarco: '15/09/2026',
     ano: '2026',

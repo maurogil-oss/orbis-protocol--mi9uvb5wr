@@ -82,14 +82,14 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     subtitulo:
       'Preparação contábil para o SBCE (Lei 15.042/2024), mitigação tributária CBAM para exportação e atendimento às exigências ESG de credores.',
     descricao:
-      'Guia definitivo para CFOs, gestores de compliance e auditores sobre o Sistema Brasileiro de Comércio de Emissões de GEE (Lei 15.042/2024), reporte voluntário IFRS S1/S2 (Resolução CVM 193) e preparação para exigências socioambientais de instituições financeiras (Resolução BCB 4.945/2021).',
+      'Guia definitivo para CFOs, gestores de compliance e auditores sobre o Sistema Brasileiro de Comércio de Emissões de GEE (Lei 15.042/2024), reporte voluntário IFRS S1/S2 (Resolução CVM 244/2026, regime pratique-ou-explique) e preparação para exigências socioambientais de instituições financeiras (Resolução BCB 4.945/2021).',
     publico:
       'Indústrias com potencial emissor, Exportadores para a União Europeia, Gestores Financeiros e Tesourarias.',
     destaques: [
       'Green Capital Engine: 8 linhas de crédito verde e spread bonificado',
       'Preparação para exigências ESG de credores e redução de spread (Res. BCB 4.945/2021)',
       'Gateway preparatório CBAM União Europeia: comprovação de emissões incorporadas',
-      'Reporte voluntário IFRS S1/S2 (Res. CVM 193) com preparação para asseguração',
+      'Reporte voluntário IFRS S1/S2 (Res. CVM 244/2026) com preparação para asseguração',
       'Estimativa preliminar de Cotas Brasileiras de Emissão (CBE)',
     ],
     objetivos: [
@@ -117,10 +117,10 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
       },
       {
         numero: 'Módulo 03',
-        titulo: 'Reporte Voluntário IFRS S1/S2 e Resolução CVM 193',
+        titulo: 'Reporte Voluntário IFRS S1/S2 e Resolução CVM 244/2026',
         duracao: '60 min',
         conteudo:
-          'Demonstrações financeiras climáticas voluntárias: orientações da Resolução CVM 193 e esclarecimentos da CVM quanto ao cronograma de asseguração e preparação de métricas auditáveis.',
+          'Demonstrações financeiras climáticas voluntárias: regime atual da Resolução CVM 244/2026 (adoção voluntária pratique-ou-explique), orientações quanto ao ofício-circular contra greenwashing por associação e preparação de métricas auditáveis.',
         requerLogin: true,
       },
       {

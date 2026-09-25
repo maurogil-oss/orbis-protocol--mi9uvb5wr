@@ -241,7 +241,7 @@ Responda SOMENTE o bloco JSON estruturado, sem texto antes ou depois.`
           descricao:
             'A empresa adota redução a zero no reporte de mercado do Escopo 2. É indispensável laudo pericial que comprove cancelamento dos certificados no sistema REC Brasil.',
           impacto_risco:
-            'Risco de inconsistência em auditorias externas para linhas Green Capital e CVM 193.',
+            'Risco de inconsistência em auditorias externas para linhas Green Capital e CVM (Resolução 244/2026).',
           plano_recomendado: 'laudo_pericial',
           recomendacao_acao:
             'Vincular certificados I-REC no dossiê pericial oficial com chancela pericial.',

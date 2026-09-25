@@ -1237,7 +1237,7 @@ export const PropostaRemineraPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <OrbisOfficialGlobe size={18} />
               <span className="font-mono text-[11px]">
-                Alinhamento aos padrões globais IFRS S1, IFRS S2 e CVM 193
+                Elaborado segundo os padrões globais IFRS S1, IFRS S2 e CVM 244/2026
               </span>
             </div>
             <span className="font-mono text-[11px] text-[#D9B36C] font-bold">Slide 09 / 10</span>
