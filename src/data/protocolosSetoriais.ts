@@ -413,17 +413,18 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
     nome: 'Energia Renovável & Biogás',
     icone: 'Zap',
     tagline:
-      'Garantias de Origem (I-REC), biometano, deslocamento de emissões e créditos de descarbonização (CBIOs)',
+      'Garantias de Origem (I-REC), biometano, deslocamento de emissões, CBIOs, CGOB e ativos ambientais desvinculados',
     fatorEmissao: 'Fator médio da matriz do SIN / MCTI e deslocamento fóssil',
     regulamentacao:
-      'I-REC Standard, RenovaBio (Lei 13.576/2017), ANEEL Res. 1.059/2023, SBCE Lei 15.042/2024',
+      'I-REC Standard, RenovaBio (Lei 13.576/2017), Combustível do Futuro (Lei 14.993/2024), ProBioQAV (Decreto 13.094/2026), ANEEL Res. 1.059/2023, SBCE Lei 15.042/2024',
     descricao:
-      'Protocolo para geradores solares, eólicos, PCHs, usinas de biogás/biometano e autoprodutores. Rastreabilidade de geração limpa, cálculo de emissões evitadas para consumidores industriais e auditoria de certificados I-REC.',
+      'Protocolo para geradores solares, eólicos, PCHs, usinas de biogás/biometano, produtores de biocombustíveis e autoprodutores. Rastreabilidade de geração limpa, cálculo de emissões evitadas para consumidores industriais e auditoria de lastro documental para certificados ambientais. No setor de biocombustíveis e biometano, a trajetória regulatória brasileira consolidou uma arquitetura contínua de ativos ambientais: desde o pioneiro CBIO (2017, no RenovaBio), passando pelo CGOB (2026, Certificado de Garantia de Origem de Biometano no âmbito da Lei do Combustível do Futuro), até o CS-SAF (2026, no ProBioQAV via Decreto 13.094/2026 sob regime formal de book and claim). Esses três instrumentos compartilham a mesma arquitetura de atributos ambientais autônomos ou desvinculados da entrega física. Nesse ecossistema, a plataforma Orbis atua estritamente como infraestrutura dMRV de prova de integridade e rastreabilidade desses ativos — operando a prevenção pericial de dupla contagem e a custódia documental ponta a ponta dos insumos, sem emitir certificados, registrar títulos financeiros ou atuar como órgão emissor.',
     principaisIndicadores: [
       'MWh de energia renovável gerada e auditada',
       'tCO2e evitadas por deslocamento da matriz fóssil',
-      'Volume de biometano purificado (m³) e CBIOs gerados',
+      'Volume de biometano purificado (m³) e lastro de CBIOs / CGOB',
       'Fator médio de emissão por MWh (Escopo 2 Escolha de Compra)',
+      'Unicidade de lastro documental e prevenção de dupla contagem de atributos',
     ],
     tipoLaudo: 'Atestado de Descarbonização Energética de Escopo 2 & Origem Renovável',
     enquadramentoLegal: [
@@ -433,7 +434,23 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         abrangencia: 'Obrigatório',
         dataChave: 'Vigente com metas anuais ANP',
         detalhe:
-          'Geração de CBIOs na B3 a partir da Nota de Eficiência Energético-Ambiental de biometano e etanol.',
+          'Geração de CBIOs na B3 a partir da Nota de Eficiência Energético-Ambiental de biometano e etanol, inaugurando a arquitetura brasileira de ativos ambientais descarbonizantes.',
+      },
+      {
+        norma: 'Lei Federal nº 14.993/2024 & Resoluções ANP',
+        titulo: 'Combustível do Futuro & Certificado de Garantia de Origem de Biometano (CGOB)',
+        abrangencia: 'Obrigatório',
+        dataChave: 'Vigente / Implementação 2026',
+        detalhe:
+          'Programa de incentivo ao biometano e descarbonização do gás natural com emissão primária do CGOB por agentes certificadores credenciados, atestando a origem e a intensidade de carbono do biometano purificado.',
+      },
+      {
+        norma: 'Decreto Federal nº 13.094/2026 & Lei 14.993/2024',
+        titulo: 'ProBioQAV, CS-SAF e Regime Formal de Book and Claim',
+        abrangencia: 'Obrigatório',
+        dataChave: 'Vigente / Consulta ANAC 2026',
+        detalhe:
+          'Regulamentação do programa de SAF com criação do certificado CS-SAF sob regime de book and claim (ISO 22095-3:2026), separação do atributo ambiental, interoperabilidade CORSIA/SBCE e vedação expressa à dupla contagem com CBIOs.',
       },
       {
         norma: 'I-REC Standard / Instituto Totum',
@@ -466,8 +483,9 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         obrigatorio: false,
         documentos: [
           'NF-e de biometano com especificação ANP de pureza e poder calorífico',
-          'Certificado de Aposentadoria de CBIOs emitido pela B3',
+          'Certificado de Aposentadoria de CBIOs emitido pela B3 ou lastro documental de CGOB',
           'Laudo cromatográfico de teor de CH4 do biogás (> 95% para biometano)',
+          'Documentação de cadeia de custódia e prova de não-duplicação de atributos ambientais',
         ],
       },
     ],
@@ -475,7 +493,8 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       entregas: [
         'Atestado de emissão zero de Escopo 2 para clientes no método de Escolha de Compra (Market-Based)',
         'Cálculo de tCO2e evitadas para instrução de relatórios IFRS S2 e CDP',
-        'Auditoria e rastreabilidade pericial de duplicidade de certificados',
+        'Auditoria e rastreabilidade pericial de integridade e ausência de dupla contagem de certificados',
+        'Dossiê de dMRV e cadeia de custódia documental para verificação independente',
       ],
       tco2ePorUnidade: '0,000 tCO2e/MWh (com I-REC) vs 0,085 tCO2e/MWh (fator médio SIN MCTI 2024)',
       elegibilidadeLinhasVerdes: [

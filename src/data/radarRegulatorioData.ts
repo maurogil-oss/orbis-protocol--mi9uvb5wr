@@ -74,22 +74,43 @@ export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
     tagSetorial: 'Ambiental/ESG',
   },
   {
+    id: 'decreto_13094_probioqav_cssaf',
+    dataMarco: '2026',
+    ano: '2026',
+    norma: 'Decreto nº 13.094/2026 & ProBioQAV (Lei 14.993/2024)',
+    status: 'Vigente',
+    titulo: 'Decreto 13.094/2026: ProBioQAV, CS-SAF e Regime Formal de Book and Claim',
+    descricaoCurta:
+      'Regulamenta o Programa Nacional de Combustível Sustentável de Aviação (ProBioQAV) no âmbito da Lei do Combustível do Futuro, criando o Certificado de Combustível Sustentável de Aviação (CS-SAF). Trata-se do primeiro certificado brasileiro estruturado em regime formal de book and claim, operando com estrita separação do atributo ambiental da entrega física do combustível e vedando terminantemente a dupla contagem (o mesmo litro não pode gerar CBIO e CS-SAF). Estabelece interoperabilidade mandatória com o programa internacional CORSIA (ICAO) e com o Sistema Brasileiro de Comércio de Emissões (SBCE / Lei 15.042/2024), com consulta pública da ANAC em curso. O arcabouço adota como referência a norma ISO 22095-3:2026 (primeira norma internacional de book and claim para cadeia de custódia), fundamentada no conceito de TIEC (Transferrable Instrument with Entitlement to Claim — a menor unidade transferível).',
+    quemAfeta: [
+      'Operadores aéreos regulares e aviação comercial e geral com metas mandatórias de redução de emissões',
+      'Produtores e importadores de combustível sustentável de aviação (SAF) e agentes da cadeia de suprimentos',
+      'Distribuidores de combustíveis de aviação, aeroportos e operadores de infraestrutura logística de abastecimento',
+    ],
+    acaoRecomendada:
+      'Estruturar a custódia documental e a integridade de dados primários da rota de biocombustíveis e insumos renováveis, garantindo que a infraestrutura de dMRV e prova digital assegure a unicidade registral e comprove a ausência de dupla contagem entre CBIO, CGOB e CS-SAF perante a ANAC e o SBCE.',
+    baseLegal:
+      'Decreto Federal nº 13.094/2026, Lei Federal nº 14.993/2024 (Lei do Combustível do Futuro), ISO 22095-3:2026 e Consulta Pública ANAC',
+    tagSetorial: 'Carbono/SBCE',
+  },
+  {
     id: 'consulta_publica_susep_issb',
     dataMarco: '2026',
     ano: '2026',
-    norma: 'Consulta Pública Susep (Alinhamento ISSB)',
+    norma: 'Consulta Pública Susep (Alinhamento ISSB / IFRS S1 e S2)',
     status: 'Em fase-teste',
     titulo: 'Consulta Pública Susep: Revogação da Circular 666/2022 e Alinhamento aos Padrões ISSB',
     descricaoCurta:
-      'Proposta regulatória da Superintendência de Seguros Privados (Susep) para revogar a Circular Susep nº 666/2022 e atualizar o marco de sustentabilidade do setor segurador e ressegurador brasileiro, convergindo aos padrões globais de divulgação climática do ISSB.',
+      'Proposta regulatória da Superintendência de Seguros Privados (Susep) para revogar a Circular Susep nº 666/2022 e atualizar o marco de sustentabilidade do setor segurador e ressegurador brasileiro, convergindo aos padrões globais de divulgação climática do ISSB (IFRS S1 e S2 / CBPS 01 e 02). A estrutura do relatório apoia-se em 4 tabelas padronizadas cobrindo os pilares centrais de governança, estratégia, gestão de riscos e métricas e metas. Adota lógica de proporcionalidade por porte das entidades supervisionadas (segmentação S1 a S4), concede dispensa de relatório separado se a entidade já elaborar reporte IFRS S1/S2 acompanhado de asseguração/auditoria independente, e fixa calendário mandatório: norma em vigor a partir de 31/12/2026, coleta de dados primários ao longo de 2027 e primeira divulgação pública obrigatória em 2028.',
     quemAfeta: [
       'Sociedades seguradoras, resseguradores locais e entidades abertas de previdência complementar',
       'Corretoras e estipulantes de seguros patrimoniais, de responsabilidade civil e de transportes',
       'Indústrias seguradas que contratam coberturas para riscos climáticos, ambientais e de infraestrutura',
     ],
     acaoRecomendada:
-      'Acompanhar os desdobramentos da consulta pública e preparar a governança de dados climáticos da empresa, facilitando a precificação de prêmios de seguro com base em riscos reais verificáveis.',
-    baseLegal: 'Consulta Pública Susep nº 2026 (substituição da Circular Susep nº 666/2022)',
+      'Organizar os dados primários de governança, estratégia climática, matriz de riscos e métricas de emissões segundo a lógica das 4 tabelas padronizadas da Susep e IFRS S1/S2, preparando a cadeia de custódia documental auditável para o ciclo de coleta de 2027 e divulgação em 2028.',
+    baseLegal:
+      'Consulta Pública Susep (substituição da Circular Susep nº 666/2022; vigência 31/12/2026, coleta 2027, divulgação 2028)',
     tagSetorial: 'Ambiental/ESG',
   },
   {

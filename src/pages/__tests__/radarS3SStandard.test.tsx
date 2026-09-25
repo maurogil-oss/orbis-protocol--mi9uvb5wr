@@ -68,7 +68,7 @@ describe('Radar Regulatório: Verra Scope 3 Standard (S3S) Program', () => {
     ).toBeDefined()
   })
 
-  it('contém as novas entradas do Radar: CVM 244/2026, Bacen 586/2026, Previc 728/2026 e Consulta Susep', () => {
+  it('contém as novas entradas do Radar: CVM 244/2026, Bacen 586/2026, Previc 728/2026 e Consulta Susep enriquecida', () => {
     // 1. Resolução CVM 244/2026
     const cvmItem = ITENS_RADAR_REGULATORIO.find((item) => item.id === 'resolucao_cvm_244_2026')
     expect(cvmItem).toBeDefined()
@@ -91,13 +91,54 @@ describe('Radar Regulatório: Verra Scope 3 Standard (S3S) Program', () => {
     expect(previcItem?.descricaoCurta).toContain('Plano ASG')
     expect(previcItem?.descricaoCurta).toContain('dupla materialidade')
 
-    // 4. Consulta Pública Susep
+    // 4. Consulta Pública Susep (enriquecida com detalhes)
     const susepItem = ITENS_RADAR_REGULATORIO.find(
       (item) => item.id === 'consulta_publica_susep_issb',
     )
     expect(susepItem).toBeDefined()
     expect(susepItem?.descricaoCurta).toContain('Circular Susep nº 666/2022')
     expect(susepItem?.descricaoCurta).toContain('ISSB')
+    expect(susepItem?.descricaoCurta).toContain('4 tabelas padronizadas')
+    expect(susepItem?.descricaoCurta).toContain('governança')
+    expect(susepItem?.descricaoCurta).toContain('estratégia')
+    expect(susepItem?.descricaoCurta).toContain('gestão de riscos')
+    expect(susepItem?.descricaoCurta).toContain('métricas e metas')
+    expect(susepItem?.descricaoCurta).toContain('proporcionalidade por porte')
+    expect(susepItem?.descricaoCurta).toContain('dispensa de relatório separado')
+    expect(susepItem?.descricaoCurta).toContain('IFRS S1/S2')
+    expect(susepItem?.descricaoCurta).toContain('31/12/2026')
+    expect(susepItem?.descricaoCurta).toContain('2027')
+    expect(susepItem?.descricaoCurta).toContain('2028')
+  })
+
+  it('contém a entrada do Decreto 13.094/2026 (ProBioQAV, CS-SAF, book and claim e ISO 22095-3)', () => {
+    const safItem = ITENS_RADAR_REGULATORIO.find(
+      (item) => item.id === 'decreto_13094_probioqav_cssaf',
+    )
+    expect(safItem).toBeDefined()
+    expect(safItem?.norma).toContain('Decreto nº 13.094/2026')
+    expect(safItem?.status).toBe('Vigente')
+    expect(safItem?.tagSetorial).toBe('Carbono/SBCE')
+
+    // Verificações conceituais e regulatórias do SAF
+    expect(safItem?.descricaoCurta).toContain('ProBioQAV')
+    expect(safItem?.descricaoCurta).toContain('CS-SAF')
+    expect(safItem?.descricaoCurta).toContain('book and claim')
+    expect(safItem?.descricaoCurta).toContain('separação do atributo ambiental da entrega física')
+    expect(safItem?.descricaoCurta).toContain('dupla contagem')
+    expect(safItem?.descricaoCurta).toContain('o mesmo litro não pode gerar CBIO e CS-SAF')
+    expect(safItem?.descricaoCurta).toContain('CORSIA')
+    expect(safItem?.descricaoCurta).toContain('SBCE')
+    expect(safItem?.descricaoCurta).toContain('consulta pública da ANAC')
+    expect(safItem?.descricaoCurta).toContain('ISO 22095-3:2026')
+    expect(safItem?.descricaoCurta).toContain('TIEC')
+
+    // Trava de não-emissor na ação recomendada
+    expect(safItem?.acaoRecomendada).toContain('dMRV')
+    expect(safItem?.acaoRecomendada).toContain('prova digital')
+    const safTexto = JSON.stringify(safItem).toLowerCase()
+    expect(safTexto).not.toContain('emitiremos cs-saf')
+    expect(safTexto).not.toContain('somos emissores')
   })
 
   it('garante que textos aprovados de Logística Reversa (Index, SolucoesIndex e Layout) permanecem intactos', () => {
