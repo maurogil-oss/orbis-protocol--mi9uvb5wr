@@ -103,9 +103,9 @@ export function NumerosVerificaveisSection() {
   ]
 
   return (
-    <section className="py-16 md:py-24 bg-[#0D1217] border-y border-[rgba(244,247,250,0.08)] relative overflow-hidden">
-      {/* Glow suave */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-[#12B886]/5 blur-[120px] pointer-events-none" />
+    <section className="py-16 md:py-24 bg-gradient-to-b from-[#0A0E12] via-[#0C1015] to-[#0A0E12] border-y border-[rgba(244,247,250,0.05)] relative overflow-hidden">
+      {/* Glow suave integrado */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-[#12B886]/5 blur-[120px] pointer-events-none opacity-70" />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">

@@ -280,7 +280,7 @@ export default function MateriaisCriticosPublicPage() {
       </section>
 
       {/* 3. SIMULADOR DO DCP POR LOTE COM QR CODE PÚBLICO */}
-      <section className="py-14 md:py-20 border-b border-[rgba(244,247,250,0.08)] bg-[#0D1217]">
+      <section className="py-14 md:py-20 border-b border-[rgba(244,247,250,0.06)] bg-gradient-to-b from-[#0A0E12] via-[#0C1016] to-[#0A0E12]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="max-w-2xl mb-8">
             <span className="text-xs font-mono font-bold text-[#12B886] uppercase tracking-wider block mb-2">
@@ -570,7 +570,7 @@ export default function MateriaisCriticosPublicPage() {
       </section>
 
       {/* 5. AVISO LEGAL PERMANENTE VINCULANTE */}
-      <section className="py-10 bg-[#070A0D]">
+      <section className="py-10 bg-gradient-to-b from-[#0A0E12] via-[#080B0F] to-[#070A0D]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />

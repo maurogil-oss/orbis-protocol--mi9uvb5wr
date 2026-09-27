@@ -153,14 +153,14 @@ export const OrbisSectionDivider: React.FC<{
   label?: string
 }> = ({ className = '', label }) => {
   return (
-    <div className={`relative w-full flex items-center justify-center my-12 sm:my-16 ${className}`}>
-      {/* Linha fina com gradiente para as bordas */}
-      <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[rgba(244,247,250,0.12)] to-transparent" />
+    <div className={`relative w-full flex items-center justify-center my-10 sm:my-14 ${className}`}>
+      {/* Linha fina com gradiente suave nas pontas para fusão imperceptível */}
+      <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[rgba(244,247,250,0.08)] to-transparent" />
 
-      {/* Elemento central com anel orbital e badge discreta opcional */}
-      <div className="relative z-10 flex items-center gap-3 px-4 bg-[#0A0E12]">
+      {/* Elemento central com anel orbital e badge discreta opcional em fundo contínuo */}
+      <div className="relative z-10 flex items-center gap-3 px-4 bg-[#0A0E12]/90 backdrop-blur-sm rounded-full">
         <div className="relative flex items-center justify-center w-8 h-8">
-          <div className="absolute inset-0 rounded-full bg-[#12B886]/10 blur-sm" />
+          <div className="absolute inset-0 rounded-full bg-[#12B886]/8 blur-sm" />
           <OrbisOrbitalRing size={32} showCore={false} glow={false} strokeWidth={0.8} />
         </div>
         {label && (

@@ -221,8 +221,8 @@ export default function Layout() {
     <div className="flex flex-col min-h-screen w-full overflow-x-clip bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30 selection:text-white">
       {/* Cabeçalho Unificado Sticky com z-index alto e largura contida */}
       <div className="sticky top-0 z-40 w-full">
-        {/* 1. Regulatory Marquee Top Bar */}
-        <div className="w-full bg-[#070A0D] border-b border-[rgba(244,247,250,0.08)] py-2 text-xs overflow-hidden">
+        {/* 1. Regulatory Marquee Top Bar — Harmonizado ao tom base #0A0E12 com divisória sutil */}
+        <div className="w-full bg-[#0A0E12]/90 backdrop-blur-md border-b border-[rgba(244,247,250,0.06)] py-2 text-xs overflow-hidden transition-colors duration-300">
           <div className="animate-marquee items-center gap-6 whitespace-nowrap text-[#93A3B5] font-medium tracking-wider">
             {[...regulations, ...regulations].map((reg, idx) => (
               <span key={idx} className="inline-flex items-center gap-4">
@@ -236,12 +236,12 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* 2. Sticky Header */}
+        {/* 2. Sticky Header — Tom idêntico ao fundo subjacente (#0A0E12) com blur refinado e divisória fina */}
         <header
           className={`w-full transition-all duration-300 ${
             isScrolled
-              ? 'bg-[#0A0E12]/95 backdrop-blur-md border-b border-[rgba(244,247,250,0.12)] shadow-xl'
-              : 'bg-[#0A0E12]/90 backdrop-blur-sm border-b border-[rgba(244,247,250,0.05)]'
+              ? 'bg-[#0A0E12]/85 backdrop-blur-xl border-b border-[rgba(244,247,250,0.08)] shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
+              : 'bg-[#0A0E12]/75 backdrop-blur-lg border-b border-[rgba(244,247,250,0.04)]'
           }`}
         >
           <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
@@ -725,8 +725,8 @@ export default function Layout() {
       {/* Widget Flutuante do Assistente Orbis IA (Landing / e /diagnostico e todo o site) */}
       <AssistenteOrbisWidget />
 
-      {/* 5. Institutional Footer — Estilo Linear dark-first com glow suave e respiro generoso */}
-      <footer className="bg-[#070A0D] border-t border-[rgba(244,247,250,0.08)] pt-20 sm:pt-24 pb-12 sm:pb-16 text-[#93A3B5] relative overflow-hidden">
+      {/* 5. Institutional Footer — Estilo Linear dark-first com glow suave e transição fluida a partir de #0A0E12 */}
+      <footer className="bg-gradient-to-b from-[#0A0E12] via-[#080B0F] to-[#070A0D] border-t border-[rgba(244,247,250,0.08)] pt-20 sm:pt-24 pb-12 sm:pb-16 text-[#93A3B5] relative overflow-hidden">
         {/* Glow sutil de fundo no rodapé */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[250px] linear-glow-emerald pointer-events-none opacity-40" />
 

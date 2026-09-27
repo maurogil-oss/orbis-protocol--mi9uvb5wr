@@ -144,11 +144,11 @@ export default function Index() {
   return (
     <div className="flex flex-col w-full overflow-x-hidden bg-[#0A0E12] text-[#F4F7FA]">
       {/* 1. HERO SECTION NO ESTILO LINEAR (Minimalismo com acento, dark-first, glow esmeralda/dourado e anel orbital) */}
-      <section className="relative overflow-hidden pt-16 pb-24 md:pt-28 md:pb-36 border-b border-[rgba(244,247,250,0.06)]">
+      <section className="relative overflow-hidden pt-16 pb-24 md:pt-28 md:pb-36 bg-[#0A0E12] border-b border-[rgba(244,247,250,0.05)]">
         {/* Glow suave e sutil em gradiente verde-esmeralda e dourado champagne sem fotos */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] max-w-full h-[520px] linear-glow-combined pointer-events-none" />
-        <div className="absolute top-20 right-10 w-[420px] h-[420px] linear-glow-emerald pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-[400px] h-[300px] linear-glow-gold pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] max-w-full h-[520px] linear-glow-combined pointer-events-none opacity-85" />
+        <div className="absolute top-20 right-10 w-[420px] h-[420px] linear-glow-emerald pointer-events-none opacity-70" />
+        <div className="absolute bottom-0 left-10 w-[400px] h-[300px] linear-glow-gold pointer-events-none opacity-60" />
 
         {/* Anel orbital sutil de fundo girando suavemente no centro-direita */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-40">
@@ -266,9 +266,9 @@ export default function Index() {
       {/* 4. SEÇÃO DE DESTAQUE: ORBIS LPF — Leitura Pré-Faturamento */}
       <section
         id="orbis-lpf-destaque"
-        className="py-20 md:py-28 bg-[#0D1217] border-y border-[rgba(244,247,250,0.06)] relative overflow-hidden scroll-mt-24"
+        className="py-20 md:py-28 bg-gradient-to-b from-[#0A0E12] via-[#0B1015] to-[#0A0E12] border-y border-[rgba(244,247,250,0.05)] relative overflow-hidden scroll-mt-24"
       >
-        <div className="absolute top-0 right-1/4 w-[600px] h-[300px] linear-glow-emerald pointer-events-none" />
+        <div className="absolute top-0 right-1/4 w-[600px] h-[300px] linear-glow-emerald pointer-events-none opacity-70" />
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
           <div className="p-8 sm:p-12 md:p-14 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-2xl relative hover:border-[#12B886]/40 transition-all">
             <div className="max-w-4xl">
@@ -438,7 +438,7 @@ export default function Index() {
       {/* 6. OS 3 EIXOS NARRATIVOS (Linear Hierarchy: Descarbonização, Tributária, Circularidade) */}
       <section
         id="eixos-narrativos"
-        className="py-20 md:py-28 bg-[#0D1217] border-y border-[rgba(244,247,250,0.06)] scroll-mt-24"
+        className="py-20 md:py-28 bg-gradient-to-b from-[#0A0E12] via-[#0C1016] to-[#0A0E12] border-y border-[rgba(244,247,250,0.05)] scroll-mt-24"
       >
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -710,7 +710,7 @@ export default function Index() {
       </section>
 
       {/* 8. SECTION: CTA FINAL COM ANEL ORBITAL NO ESTILO LINEAR */}
-      <section className="py-20 md:py-28 relative overflow-hidden bg-[#070A0D] border-t border-[rgba(244,247,250,0.08)]">
+      <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#0A0E12] via-[#080C10] to-[#070A0D] border-t border-[rgba(244,247,250,0.06)]">
         {/* Glow suave e anel orbital no CTA final (Item 3) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-30">
           <OrbisOrbitalRing size={520} showCore={false} glow={true} strokeWidth={0.8} />

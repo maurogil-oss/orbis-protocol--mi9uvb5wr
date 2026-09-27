@@ -389,7 +389,7 @@ export default function RadarSemanalPublicPage() {
       {/* Seção 4: Edição do Mês Aberta ao Público (Prova de Qualidade & Lead Gen) */}
       <section
         id="edicao-do-mes"
-        className="py-16 md:py-24 border-b border-[rgba(244,247,250,0.08)] bg-[#070A0D]"
+        className="py-16 md:py-24 border-b border-[rgba(244,247,250,0.08)] bg-gradient-to-b from-[#0A0E12] via-[#080B0F] to-[#070A0D]"
       >
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
@@ -578,7 +578,7 @@ export default function RadarSemanalPublicPage() {
       </section>
 
       {/* Rodapé de Posicionamento Mandatório */}
-      <footer className="py-10 bg-[#070A0D] text-center border-t border-[rgba(244,247,250,0.06)]">
+      <footer className="py-10 bg-gradient-to-b from-[#0A0E12] via-[#080B0F] to-[#070A0D] text-center border-t border-[rgba(244,247,250,0.06)]">
         <div className="max-w-[900px] mx-auto px-4 space-y-3">
           <p className="text-xs sm:text-sm text-[#93A3B5] font-medium leading-relaxed">
             {AVISO_LEGAL_RADAR}

@@ -34,10 +34,12 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
   const [activeTab, setActiveTab] = useState<'radar' | 'verificador' | 'passaporte'>('radar')
 
   return (
-    <section className={`relative py-20 md:py-28 overflow-hidden bg-[#0A0E12] ${className}`}>
-      {/* Background glow suave em gradiente Linear verde-esmeralda e dourado */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] max-w-full h-[450px] linear-glow-combined pointer-events-none" />
-      <div className="absolute -bottom-10 right-10 w-[500px] h-[300px] linear-glow-emerald pointer-events-none" />
+    <section
+      className={`relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-[#0A0E12] via-[#0B0F14] to-[#0A0E12] ${className}`}
+    >
+      {/* Background glow suave em gradiente Linear verde-esmeralda e dourado com transição contínua */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] max-w-full h-[450px] linear-glow-combined pointer-events-none opacity-80" />
+      <div className="absolute -bottom-10 right-10 w-[500px] h-[300px] linear-glow-emerald pointer-events-none opacity-60" />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
         {/* Cabeçalho da seção com tipografia Linear: título curto e pesado, subtítulo espaçado */}
