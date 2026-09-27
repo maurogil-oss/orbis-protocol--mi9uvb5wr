@@ -279,7 +279,8 @@ export function converterModeloParaDadosCNPJ(modelo: EmpresaModeloDemonstrativa)
     natureza_juridica: modelo.natureza_juridica,
     porte: modelo.porte,
     regime_tributario_sugerido: modelo.regime_tributario,
-    fonte: 'brasilapi',
+    fonte: 'demonstracao',
+    ativa: true,
   }
 }
 

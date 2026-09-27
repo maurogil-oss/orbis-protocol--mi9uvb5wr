@@ -4,6 +4,7 @@ import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import { consultarCNPJ, cleanCNPJ, isValidCNPJ, DadosEmpresaCNPJ } from '@/services/cnpj'
+import { sugerirTrilhaPorCNAE, SugestaoTrilhaCNAE } from '@/services/cnaeTrilhasMapping'
 import {
   EMPRESAS_MODELO_DEMONSTRACAO,
   EmpresaModeloDemonstrativa,
@@ -88,9 +89,11 @@ export default function Diagnostico() {
   // CNPJ Consultation State
   const [isConsultingCNPJ, setIsConsultingCNPJ] = useState(false)
   const [cnpjLookupError, setCnpjLookupError] = useState<string>('')
+  const [cnpjWarningInativo, setCnpjWarningInativo] = useState<string>('')
   const [sugestaoModeloRaiz, setSugestaoModeloRaiz] = useState<EmpresaModeloDemonstrativa | null>(
     null,
   )
+  const [sugestaoCnaeTrilha, setSugestaoCnaeTrilha] = useState<SugestaoTrilhaCNAE | null>(null)
   const [cnpjSuccessData, setCnpjSuccessData] = useState<DadosEmpresaCNPJ | null>(null)
   const [isModelMode, setIsModelMode] = useState<boolean>(false)
   const [modeloAtivo, setModeloAtivo] = useState<EmpresaModeloDemonstrativa | null>(null)
@@ -169,7 +172,7 @@ export default function Diagnostico() {
     comparativo?: ResultadoComparativoTributario
   } | null>(null)
 
-  // Consulta de CNPJ (Modelos de teste ou APIs Públicas)
+  // Consulta de CNPJ (Modelos de teste ou APIs Públicas com OpenCNPJ)
   const handleConsultarCNPJ = async (cnpjToSearch?: string) => {
     const rawCNPJ = cnpjToSearch || formData.cnpj
     const digits = cleanCNPJ(rawCNPJ)
@@ -179,30 +182,33 @@ export default function Diagnostico() {
       return
     }
 
+    // Validação estrita de dígitos verificadores
+    if (!isValidCNPJ(digits)) {
+      const modeloPorRaiz = obterModeloDemonstracaoPorRaiz(digits)
+      if (modeloPorRaiz) {
+        setSugestaoModeloRaiz(modeloPorRaiz)
+      }
+      setCnpjLookupError(
+        'CNPJ inválido (dígitos verificadores incorretos). Você pode corrigir ou preencher manualmente.',
+      )
+      return
+    }
+
     setCnpjLookupError('')
+    setCnpjWarningInativo('')
     setCnpjSuccessData(null)
+    setSugestaoCnaeTrilha(null)
     setIsModelMode(false)
     setSugestaoModeloRaiz(null)
 
-    // 1. Base Demonstrativa Local Pedagógica: Pula consulta externa (BrasilAPI / Minha Receita)
+    // 1. Base Demonstrativa Local Pedagógica: Pula consulta externa
     const matchingModel = obterModeloDemonstracao(digits)
     if (matchingModel) {
       applyModel(matchingModel)
       return
     }
 
-    // 2. Se não for modelo direto, mas os DVs forem matematicamente inválidos
-    // e a raiz bater com um modelo demo pedagógico (ex.: o usuário digitou o DV antigo 76.123.456/0001-12)
-    if (!isValidCNPJ(digits)) {
-      const modeloPorRaiz = obterModeloDemonstracaoPorRaiz(digits)
-      if (modeloPorRaiz) {
-        setSugestaoModeloRaiz(modeloPorRaiz)
-        setCnpjLookupError('CNPJ inválido (dígitos verificadores incorretos).')
-        return
-      }
-    }
-
-    // 3. Se não for modelo pedagógico, busca na API pública (BrasilAPI / Minha Receita)
+    // 2. Busca na API pública (OpenCNPJ com fallback tolerante)
     setModeloAtivo(null)
     setIsModelMode(false)
     setIsConsultingCNPJ(true)
@@ -211,13 +217,44 @@ export default function Diagnostico() {
       setCnpjSuccessData(data)
       setIsModelMode(false)
 
+      // Verifica situação cadastral da empresa (alerta amigável e não bloqueante)
+      if (!data.ativa) {
+        setCnpjWarningInativo(
+          `Situação cadastral na Receita Federal: ${data.descricao_situacao_cadastral || data.situacao_cadastral || 'INATIVA/BAIXADA'}. Você pode prosseguir normalmente com o diagnóstico se for uma simulação preparatória ou processo de reativação.`,
+        )
+      } else {
+        setCnpjWarningInativo('')
+      }
+
+      // Mapeamento inteligente de CNAE para trilha regulatória & protocolo
+      const sugestao = sugerirTrilhaPorCNAE(
+        data.cnae_fiscal,
+        data.cnaes_lista || data.cnaes_secundarios,
+      )
+      if (sugestao) {
+        setSugestaoCnaeTrilha(sugestao)
+      }
+
       setFormData((prev) => ({
         ...prev,
         cnpj: maskCNPJ(digits),
         razao_social: data.razao_social || prev.razao_social,
         email: data.email || prev.email,
         whatsapp: data.ddd_telefone ? maskPhone(data.ddd_telefone) : prev.whatsapp,
-        regime_tributario: data.regime_tributario_sugerido || 'A confirmar',
+        regime_tributario:
+          data.regime_tributario_sugerido && data.regime_tributario_sugerido !== 'A confirmar'
+            ? data.regime_tributario_sugerido
+            : prev.regime_tributario,
+        vinculo_institucional:
+          sugestao?.vinculoInstitucionalSugerido &&
+          prev.vinculo_institucional === 'Mercado Nacional (Bahia, SP, Brasil)'
+            ? sugestao.vinculoInstitucionalSugerido
+            : prev.vinculo_institucional,
+        categoria_profissional:
+          sugestao?.categoriaProfissionalSugerida &&
+          prev.categoria_profissional === 'Empresário / Diretor / Gestor da Empresa'
+            ? sugestao.categoriaProfissionalSugerida
+            : prev.categoria_profissional,
       }))
 
       // Limpa eventuais erros de campo antigos
@@ -231,7 +268,7 @@ export default function Diagnostico() {
       const msg =
         err instanceof Error
           ? err.message
-          : 'Não foi possível consultar os dados na Receita Federal.'
+          : 'Não foi possível consultar os dados na Receita Federal. O preenchimento manual está liberado.'
       setCnpjLookupError(msg)
     } finally {
       setIsConsultingCNPJ(false)
@@ -776,9 +813,17 @@ export default function Diagnostico() {
                             const formatted = maskCNPJ(e.target.value)
                             setFormData({ ...formData, cnpj: formatted })
                             setCnpjLookupError('')
+                            setCnpjWarningInativo('')
                             const digits = cleanCNPJ(formatted)
                             if (digits.length === 14) {
-                              handleConsultarCNPJ(formatted)
+                              if (isValidCNPJ(digits)) {
+                                handleConsultarCNPJ(formatted)
+                              } else {
+                                const modeloPorRaiz = obterModeloDemonstracaoPorRaiz(digits)
+                                if (modeloPorRaiz) {
+                                  setSugestaoModeloRaiz(modeloPorRaiz)
+                                }
+                              }
                             } else {
                               setSugestaoModeloRaiz(null)
                             }
@@ -798,7 +843,7 @@ export default function Diagnostico() {
                         onClick={() => handleConsultarCNPJ()}
                         disabled={isConsultingCNPJ}
                         className="px-5 py-3 rounded-lg bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all font-semibold text-xs flex items-center gap-2 shrink-0 disabled:opacity-50"
-                        title="Consultar dados cadastrais na Receita"
+                        title="Consultar dados cadastrais na Receita via OpenCNPJ"
                       >
                         {isConsultingCNPJ ? (
                           <>
@@ -852,32 +897,83 @@ export default function Diagnostico() {
                     )}
                   </div>
 
-                  {/* Feedback de Consulta: Loading */}
+                  {/* Feedback de Consulta: Loading (Linear dark-first) */}
                   {isConsultingCNPJ && (
-                    <div className="p-3.5 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.12)] flex items-center gap-3 animate-pulse">
+                    <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(18,184,134,0.3)] flex items-center gap-3 animate-pulse shadow-sm">
                       <Loader2 className="w-4 h-4 text-[#12B886] animate-spin shrink-0" />
-                      <span className="text-xs text-[#93A3B5]">
-                        Varrendo bases públicas da Receita Federal (BrasilAPI & Minha Receita)...
-                      </span>
+                      <div className="text-xs">
+                        <span className="text-[#F4F7FA] font-medium block">
+                          Consultando dados cadastrais oficiais...
+                        </span>
+                        <span className="text-[#93A3B5] text-[11px]">
+                          Buscando via OpenCNPJ (Receita Federal) com enriquecimento automático.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Feedback de Consulta: CNPJ Inativo / Situação não ativa (Aviso amigável não-bloqueante) */}
+                  {cnpjWarningInativo && (
+                    <div className="p-4 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/40 space-y-2 animate-fade-in">
+                      <div className="flex items-start gap-2.5 text-xs text-[#D9B36C]">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="block font-semibold">
+                            Atenção à Situação Cadastral
+                          </strong>
+                          <span className="text-[#F4F7FA]/90">{cnpjWarningInativo}</span>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {/* Feedback de Consulta: Erro com opção de preenchimento manual */}
                   {cnpjLookupError && (
-                    <div className="p-4 rounded-xl bg-[#F03E54]/10 border border-[#F03E54]/30 space-y-2">
+                    <div className="p-4 rounded-xl bg-[#F03E54]/10 border border-[#F03E54]/30 space-y-2 animate-fade-in">
                       <div className="flex items-start gap-2.5 text-xs text-[#F03E54]">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                         <div>
                           <strong className="block font-semibold">
-                            Consulta automática indisponível
+                            Consulta automática não concluída
                           </strong>
                           <span>{cnpjLookupError}</span>
                         </div>
                       </div>
                       <p className="text-[11px] text-[#93A3B5] pl-6">
-                        Você pode verificar o CNPJ digitado ou prosseguir preenchendo a{' '}
-                        <strong>Razão Social</strong> manualmente nos campos abaixo.
+                        O formulário segue liberado para digitação manual: confira a digitação ou
+                        preencha a <strong>Razão Social</strong> e demais dados abaixo para
+                        continuar.
                       </p>
+                    </div>
+                  )}
+
+                  {/* Sugestão Inteligente de Trilha Regulatória por CNAE */}
+                  {sugestaoCnaeTrilha && (
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-[#12B886]/15 via-[#111820] to-[#0A0E12] border border-[#12B886]/40 space-y-2.5 shadow-emerald-glow animate-fade-in">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-[#12B886] shrink-0" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#12B886]">
+                            Trilha Regulatória Sugerida para seu CNAE
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] text-[10px] font-mono font-semibold uppercase">
+                          {sugestaoCnaeTrilha.nomeSegmento}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#F4F7FA] leading-relaxed">
+                        {sugestaoCnaeTrilha.descricaoSugestao}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {sugestaoCnaeTrilha.destaquesRegulatorios.map((destaque) => (
+                          <span
+                            key={destaque}
+                            className="px-2 py-0.5 rounded bg-[#16202B] border border-[rgba(244,247,250,0.12)] text-[#93A3B5] text-[10px] font-medium"
+                          >
+                            ✓ {destaque}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -890,29 +986,47 @@ export default function Diagnostico() {
                           <span className="text-xs font-bold uppercase tracking-wider text-[#12B886] flex items-center gap-1.5">
                             <Globe className="w-3.5 h-3.5" />
                             Dados Oficiais Obtidos via{' '}
-                            {cnpjSuccessData.fonte === 'brasilapi' ? 'BrasilAPI' : 'Minha Receita'}
+                            {cnpjSuccessData.fonte === 'opencnpj'
+                              ? 'OpenCNPJ (Receita Federal)'
+                              : cnpjSuccessData.fonte === 'brasilapi'
+                                ? 'BrasilAPI'
+                                : 'Minha Receita'}
                           </span>
                         </div>
-                        <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-semibold text-[10px] uppercase">
-                          Situação: {cnpjSuccessData.descricao_situacao_cadastral || 'ATIVA'}
+                        <span
+                          className={`px-2 py-0.5 rounded font-semibold text-[10px] uppercase ${
+                            cnpjSuccessData.ativa
+                              ? 'bg-[#12B886]/20 text-[#12B886]'
+                              : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                          }`}
+                        >
+                          Situação:{' '}
+                          {cnpjSuccessData.descricao_situacao_cadastral ||
+                            (cnpjSuccessData.ativa ? 'ATIVA' : 'A CONFIRMAR')}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs border-t border-[rgba(18,184,134,0.15)] pt-2.5">
-                        {cnpjSuccessData.cnae_fiscal_descricao && (
+                        {cnpjSuccessData.cnae_fiscal && (
                           <div className="sm:col-span-2">
                             <span className="text-[#93A3B5] block text-[11px]">
                               CNAE Principal:
                             </span>
                             <span className="text-[#F4F7FA] font-medium">
-                              {cnpjSuccessData.cnae_fiscal} —{' '}
-                              {cnpjSuccessData.cnae_fiscal_descricao}
+                              {cnpjSuccessData.cnae_fiscal}
+                              {cnpjSuccessData.cnae_fiscal_descricao
+                                ? ` — ${cnpjSuccessData.cnae_fiscal_descricao}`
+                                : ''}
                             </span>
                           </div>
                         )}
-                        {(cnpjSuccessData.municipio || cnpjSuccessData.uf) && (
+                        {(cnpjSuccessData.municipio ||
+                          cnpjSuccessData.uf ||
+                          cnpjSuccessData.logradouro) && (
                           <div>
-                            <span className="text-[#93A3B5] block text-[11px]">Localidade:</span>
+                            <span className="text-[#93A3B5] block text-[11px]">
+                              Localidade / Endereço:
+                            </span>
                             <span className="text-[#F4F7FA]">
                               {[
                                 cnpjSuccessData.logradouro,
