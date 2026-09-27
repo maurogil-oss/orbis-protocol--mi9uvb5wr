@@ -157,17 +157,17 @@ export default function Index() {
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-            {/* Top Pill de Segurança / Eyebrow discreto */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111820]/90 border border-[rgba(244,247,250,0.12)] text-[#12B886] text-xs font-mono font-semibold tracking-wider uppercase mb-8 shadow-sm backdrop-blur-md">
+            {/* Eyebrow rebaixado na hierarquia com pill de segurança */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111820]/90 border border-[rgba(244,247,250,0.12)] text-[#12B886] text-xs font-mono font-semibold tracking-wider uppercase mb-6 shadow-sm backdrop-blur-md">
               <ShieldCheck className="w-3.5 h-3.5 text-[#12B886]" />
-              <span>ORBIS PROTOCOL • AUDIT GRADE dMRV</span>
+              <span>INFRAESTRUTURA DE COMPROVAÇÃO E RASTREABILIDADE</span>
             </div>
 
-            {/* Headline Principal - Hierarquia Linear: curta, pesada, impacto tipográfico */}
-            <h1 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl text-[#F4F7FA] tracking-tight leading-[1.08] mb-6">
-              INFRAESTRUTURA DE COMPROVAÇÃO E{' '}
+            {/* Headline Principal */}
+            <h1 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl text-[#F4F7FA] tracking-tight leading-[1.08] mb-6 max-w-4xl">
+              Lemos as notas fiscais da sua cadeia e geramos a{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#12B886] via-[#27C08C] to-[#D9B36C]">
-                RASTREABILIDADE
+                prova de descarbonização
               </span>
             </h1>
 
