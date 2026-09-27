@@ -187,9 +187,13 @@ export default function CentralRadarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA]">
-      {/* Top Banner de Status da Assinatura / Trial */}
-      <div className="bg-[#111820] border-b border-[rgba(244,247,250,0.08)] py-3 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA] relative overflow-hidden">
+      {/* Background glow suave Linear em gradiente verde-esmeralda e dourado */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] linear-glow-combined pointer-events-none" />
+
+      {/* Top Banner de Status do Assinante */}
+      <div className="bg-[#111820] border-b border-[rgba(244,247,250,0.08)] py-3 px-4 sm:px-6 relative z-10">
+        {' '}
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#12B886]/10 text-[#12B886] font-mono font-bold text-[10px] uppercase border border-[#12B886]/30">

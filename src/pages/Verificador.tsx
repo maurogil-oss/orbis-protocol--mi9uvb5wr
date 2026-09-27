@@ -257,24 +257,26 @@ export default function Verificador() {
   }
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="max-w-3xl mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-4">
-            <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-            PORTAL PÚBLICO DE TRANSPARÊNCIA dMRV
+    <div className="min-h-screen py-14 md:py-20 bg-[#0A0E12] relative overflow-hidden">
+      {/* Background glow suave em gradiente Linear verde-esmeralda e dourado */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] linear-glow-combined pointer-events-none" />
+
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
+        {/* Header no padrão Linear */}
+        <div className="max-w-3xl mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#12B886] text-xs font-mono font-semibold tracking-wider uppercase mb-4">
+            <ShieldCheck className="w-4 h-4 text-[#12B886] stroke-[1.5]" />
+            Auditoria Digital Aberta
           </div>
-          <h1 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-wide mb-4">
-            VERIFICADOR PÚBLICO DE SELOS
+          <h1 className="font-heading font-black text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-tight mb-3">
+            VERIFICADOR PÚBLICO DE SELOS E LAUDOS
           </h1>
-          <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed">
-            Consulte a autenticidade, vigência real e integridade criptográfica SHA-256 de qualquer
-            Selo Oficial emitido pela plataforma Orbis Protocol para indicação de prontidão ao SBCE
-            (Lei 15.042/2024) e créditos do Programa MOVER.
+          <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
+            Consulte a autenticidade e validade pericial de qualquer documento, laudo ou selo
+            emitido sob a governança do Orbis Protocol. As informações são verificadas por hashes
+            criptográficos SHA-256 e assinatura pericial de engenheiros ou contadores credenciados.
           </p>
         </div>
-
         {/* Verification Form Card */}
         <div className="p-8 sm:p-10 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-12 shadow-2xl max-w-3xl">
           <form onSubmit={handleSearch} className="space-y-4">

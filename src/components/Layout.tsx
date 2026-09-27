@@ -429,50 +429,50 @@ export default function Layout() {
               </Link>
             </nav>
 
-            {/* Header Action Buttons */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Header Action Buttons — Respiro generoso garantido (0.0.74 e 0.0.76) */}
+            <div className="hidden md:flex items-center gap-3.5 pl-4 xl:pl-6">
               <Link
                 to="/diagnostico"
-                className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-gradient-to-r from-[#0F9E74] to-[#12B886] text-[#0A0E12] hover:from-[#12B886] hover:to-[#17C994] hover:shadow-emerald-glow-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 active:scale-[0.99]"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:shadow-emerald-glow-subtle hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/50 transition-all duration-200 shadow-sm"
               >
                 Iniciar Diagnóstico
               </Link>
 
               <Link
                 to="/demo"
-                className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.18)] text-[#D5DFEA] hover:border-[#12B886]/50 hover:text-[#12B886] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 bg-[#111820]/70"
+                className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-[rgba(244,247,250,0.14)] text-[#93A3B5] hover:border-[#12B886]/50 hover:text-[#F4F7FA] hover:bg-[#111820] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 transition-all duration-200 bg-[#0A0E12]"
               >
                 Ver Demonstração
               </Link>
 
               {isAuthenticated ? (
-                <div className="flex items-center gap-2.5 pl-1.5 ml-0.5 border-l border-[rgba(244,247,250,0.1)]">
+                <div className="flex items-center gap-2.5 pl-3 border-l border-[rgba(244,247,250,0.12)]">
                   <Link
                     to={isParceiro ? '/parceiro-painel' : '/painel'}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.18)] text-[#F4F7FA] hover:border-[#12B886]/60 hover:text-[#12B886] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 transition-all duration-200 bg-[#111820]"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886]/60 hover:text-[#12B886] hover:-translate-y-0.5 transition-all duration-200 bg-[#111820]"
                   >
-                    <LayoutDashboard className="w-4 h-4 text-[#12B886]" />
+                    <LayoutDashboard className="w-4 h-4 text-[#12B886] stroke-[1.5]" />
                     {isParceiro ? 'Painel do Parceiro' : 'Painel'}
                   </Link>
                   <button
                     onClick={logout}
                     title="Sair"
-                    className="p-2 rounded-lg text-[#93A3B5] hover:text-[#F03E54] border border-[rgba(244,247,250,0.12)] hover:border-[#F03E54]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F03E54]/40 transition-all duration-200 bg-[#111820]"
+                    className="p-2 rounded-xl text-[#93A3B5] hover:text-[#F03E54] border border-[rgba(244,247,250,0.12)] hover:border-[#F03E54]/40 transition-all duration-200 bg-[#111820]"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4 h-4 stroke-[1.5]" />
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2.5 pl-1.5 ml-0.5 border-l border-[rgba(244,247,250,0.1)]">
+                <div className="flex items-center gap-2.5 pl-3 border-l border-[rgba(244,247,250,0.12)]">
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium border border-[rgba(244,247,250,0.18)] text-[#D5DFEA] hover:border-[#12B886]/60 hover:text-[#12B886] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 bg-[#111820]/40"
+                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-[rgba(244,247,250,0.14)] text-[#93A3B5] hover:border-[#12B886]/60 hover:text-[#F4F7FA] hover:-translate-y-0.5 transition-all duration-200 bg-[#0A0E12]"
                   >
                     Entrar
                   </Link>
                   <Link
                     to="/registro"
-                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-semibold bg-[#16202B] border border-[#12B886]/50 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E12] transition-all duration-200 shadow-sm"
+                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
                   >
                     Criar conta
                   </Link>
@@ -725,24 +725,29 @@ export default function Layout() {
       {/* Widget Flutuante do Assistente Orbis IA (Landing / e /diagnostico e todo o site) */}
       <AssistenteOrbisWidget />
 
-      {/* 5. Institutional Footer */}
-      <footer className="bg-[#070A0D] border-t border-[rgba(244,247,250,0.12)] pt-16 sm:pt-20 pb-10 sm:pb-12 text-[#93A3B5]">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+      {/* 5. Institutional Footer — Estilo Linear dark-first com glow suave e respiro generoso */}
+      <footer className="bg-[#070A0D] border-t border-[rgba(244,247,250,0.08)] pt-20 sm:pt-24 pb-12 sm:pb-16 text-[#93A3B5] relative overflow-hidden">
+        {/* Glow sutil de fundo no rodapé */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[250px] linear-glow-emerald pointer-events-none opacity-40" />
+
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-14 sm:pb-16 border-b border-[rgba(244,247,250,0.06)]">
             {/* Col 1 & 2: Brand Info (5 colunas no grid de 12 para excelente respiro) */}
             <div className="lg:col-span-5 flex flex-col justify-between gap-6 pr-0 lg:pr-8">
               <div className="space-y-4">
                 <Link to="/" className="inline-flex items-center gap-3.5 group">
-                  <OrbisGlobe size={40} />
+                  <div className="relative flex items-center justify-center">
+                    <OrbisGlobe size={40} />
+                  </div>
                   <div className="flex flex-col">
                     <span className="font-heading font-black text-xl tracking-[0.08em] text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
-                      ORBIS<span className="text-[#12B886]">.</span>PROTOCOL
+                      ORBIS PROTOCOL
                     </span>
-                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#93A3B5]/80 font-semibold -mt-0.5">
-                      Infraestrutura dMRV & Rastreabilidade
+                    <span className="text-[10px] tracking-[0.25em] text-[#D9B36C] font-mono uppercase font-bold">
+                      Carbono & Circularidade
                     </span>
                   </div>
-                </Link>
+                </Link>{' '}
                 <p className="text-xs sm:text-sm text-[#93A3B5]/90 leading-relaxed max-w-sm">
                   Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para cálculo da
                   pegada de carbono, laudos periciais, conformidade tributária e emissão de selos e

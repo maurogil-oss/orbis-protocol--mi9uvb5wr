@@ -186,6 +186,85 @@
   .animate-fade-in-up {
     animation: fade-in-up 0.5s ease-out forwards;
   }
+
+  /* Linear-style slow subtle orbital rotation */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin-reverse-slow {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 40s linear infinite;
+  }
+
+  .animate-spin-reverse-slow {
+    animation: spin-reverse-slow 55s linear infinite;
+  }
+
+  /* Linear-style subtle glow overlays */
+  .linear-glow-emerald {
+    background: radial-gradient(
+      60% 60% at 50% 30%,
+      rgba(18, 184, 134, 0.16) 0%,
+      rgba(18, 184, 134, 0.04) 50%,
+      transparent 100%
+    );
+  }
+
+  .linear-glow-gold {
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      rgba(217, 179, 108, 0.12) 0%,
+      rgba(217, 179, 108, 0.02) 60%,
+      transparent 100%
+    );
+  }
+
+  .linear-glow-combined {
+    background: radial-gradient(
+      70% 50% at 50% 0%,
+      rgba(18, 184, 134, 0.15) 0%,
+      rgba(217, 179, 108, 0.08) 45%,
+      transparent 80%
+    );
+  }
+
+  /* Linear-style frame perspective and shadow */
+  .linear-frame-perspective {
+    perspective: 1200px;
+  }
+
+  .linear-card-mockup {
+    transform: rotateX(2deg) translateY(-2px);
+    transition:
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.4s ease;
+    box-shadow:
+      0 20px 40px -15px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(244, 247, 250, 0.08),
+      0 0 30px -10px rgba(18, 184, 134, 0.15);
+  }
+
+  .linear-card-mockup:hover {
+    transform: rotateX(0deg) translateY(-6px);
+    box-shadow:
+      0 30px 60px -20px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(18, 184, 134, 0.35),
+      0 0 45px -10px rgba(18, 184, 134, 0.28);
+  }
 }
 
 /* Print / PDF Export configuration for Pitch Decks and Slide Presentations */

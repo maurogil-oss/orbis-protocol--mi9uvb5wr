@@ -13,6 +13,7 @@ import {
   X,
   CheckCircle2,
   ExternalLink,
+  Compass,
 } from 'lucide-react'
 
 export default function SolucoesIndex() {
@@ -92,15 +93,18 @@ export default function SolucoesIndex() {
   ]
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="max-w-3xl mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-4">
-            <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+    <div className="min-h-screen py-16 md:py-24 bg-[#0A0E12] relative overflow-hidden">
+      {/* Glow suave Linear de fundo */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] linear-glow-combined pointer-events-none" />
+
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
+        {/* Cabeçalho */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#12B886] text-xs font-mono font-semibold uppercase tracking-wider mb-4">
+            <Compass className="w-3.5 h-3.5 stroke-[1.5]" />
             APLICAÇÕES CONSOLIDADAS NO MERCADO
           </div>
-          <h1 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-wide mb-4">
+          <h1 className="font-heading font-black text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-tight mb-4">
             HUB DE SOLUÇÕES & PORTAIS DO ECOSSISTEMA
           </h1>
           <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed">
@@ -109,7 +113,6 @@ export default function SolucoesIndex() {
             reguladas.
           </p>
         </div>
-
         {/* 4 Main Solution Blocks Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
           {blocosPrincipais.map((bloco, idx) => (
