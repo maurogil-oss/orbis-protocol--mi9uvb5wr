@@ -9,20 +9,28 @@ export default function RecuperarSenhaPage() {
   const [submetido, setSubmetido] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isEmailNotFound, setIsEmailNotFound] = useState(false)
 
   const { requestPasswordReset } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsEmailNotFound(false)
     setIsLoading(true)
 
     try {
-      await requestPasswordReset(email.trim().toLowerCase())
-      // Mensagem neutra de segurança: sempre exibe mensagem de sucesso independente se o e-mail existe
-      setSubmetido(true)
+      const res = await requestPasswordReset(email.trim().toLowerCase())
+      if (res?.isEmailNotFound) {
+        setIsEmailNotFound(true)
+        setError(
+          res.error ||
+            'Não encontramos uma conta com este e-mail. Confira se o endereço foi digitado corretamente (atenção a letras e números parecidos, como "gil" e "g1").',
+        )
+      } else {
+        setSubmetido(true)
+      }
     } catch {
-      // Mesmo em erro não crítico, mensagem defensiva para não enumerar contas
       setSubmetido(true)
     } finally {
       setIsLoading(false)
@@ -78,9 +86,25 @@ export default function RecuperarSenhaPage() {
             </p>
 
             {error && (
-              <div className="p-3.5 mb-4 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div
+                role="alert"
+                className={`p-3.5 mb-4 rounded-lg text-xs space-y-1 ${
+                  isEmailNotFound
+                    ? 'bg-[#F59F00]/10 border border-[#F59F00]/40 text-[#F59F00]'
+                    : 'bg-[#F03E54]/10 border border-[#F03E54]/30 text-[#F03E54]'
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    {isEmailNotFound && (
+                      <p className="font-bold text-[#F4F7FA] mb-0.5">
+                        E-mail não encontrado no sistema
+                      </p>
+                    )}
+                    <span>{error}</span>
+                  </div>
+                </div>
               </div>
             )}
 

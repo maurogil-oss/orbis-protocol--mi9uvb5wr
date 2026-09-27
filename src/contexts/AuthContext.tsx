@@ -27,10 +27,23 @@ interface AuthContextType {
   isParceiro: boolean
   isAdmin: boolean
   isGestaoPendente: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{
+    success: boolean
+    error?: string
+    isEmailNotFound?: boolean
+    status?: number
+  }>
   logout: () => void
   refreshAuth: () => void
-  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>
+  requestPasswordReset: (email: string) => Promise<{
+    success: boolean
+    error?: string
+    isEmailNotFound?: boolean
+    status?: number
+  }>
   confirmPasswordReset: (
     token: string,
     password: string,
@@ -65,11 +78,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(authData.record)
       setToken(authData.token)
       return { success: true }
-    } catch (_err: unknown) {
-      // Mensagem SEMPRE genérica para proteção contra enumeração e força bruta
+    } catch (err: any) {
+      const status = err?.status || err?.response?.status || err?.data?.code || 0
+      const isEmailNotFound = status === 404
+
+      // Se for 404 (conta/identidade não encontrada no PocketBase),
+      // retornamos o aviso específico e amigável solicitado pelo usuário, com a flag isEmailNotFound: true
+      if (isEmailNotFound) {
+        return {
+          success: false,
+          isEmailNotFound: true,
+          status: 404,
+          error:
+            'Não encontramos uma conta com este e-mail. Confira se o endereço foi digitado corretamente (atenção a letras e números parecidos, como "gil" e "g1").',
+        }
+      }
+
+      // Se o backend retornou mensagem específica (ex.: bloqueio ou rate-limit), preserva se relevante, senão usa mensagem de credenciais
       const message =
+        err?.response?.message ||
+        err?.message ||
         'Credenciais inválidas ou limite temporário de tentativas excedido. Por favor, tente novamente mais tarde.'
-      return { success: false, error: message }
+
+      return {
+        success: false,
+        isEmailNotFound: false,
+        status: status || 400,
+        error: message.includes('Failed to authenticate')
+          ? 'Credenciais inválidas ou limite temporário de tentativas excedido. Por favor, tente novamente mais tarde.'
+          : message,
+      }
     }
   }
 
@@ -87,11 +125,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const requestPasswordReset = async (email: string) => {
     try {
       await pb.collection('users').requestPasswordReset(email)
-      return { success: true }
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Falha ao solicitar redefinição de senha.'
-      return { success: false, error: message }
+      return { success: true, isEmailNotFound: false }
+    } catch (err: any) {
+      const status = err?.status || err?.response?.status || err?.data?.code || 0
+      const isEmailNotFound = status === 404
+      const message = isEmailNotFound
+        ? 'Não encontramos uma conta com este e-mail. Confira se o endereço foi digitado corretamente (atenção a letras e números parecidos, como "gil" e "g1").'
+        : err instanceof Error
+          ? err.message
+          : 'Falha ao solicitar redefinição de senha.'
+      return { success: false, error: message, isEmailNotFound, status }
     }
   }
 

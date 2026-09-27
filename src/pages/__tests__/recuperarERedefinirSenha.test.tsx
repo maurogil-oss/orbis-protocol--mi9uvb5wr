@@ -56,6 +56,36 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
     })
   })
 
+  it('RecuperarSenhaPage deve exibir aviso específico quando o backend responder que o e-mail não existe (404)', async () => {
+    const error404: any = new Error("The requested resource wasn't found.")
+    error404.status = 404
+    const mockRequestPasswordReset = vi.fn().mockRejectedValue(error404)
+    vi.mocked(pb.collection).mockReturnValue({
+      requestPasswordReset: mockRequestPasswordReset,
+    } as any)
+
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <RecuperarSenhaPage />
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+
+    const inputEmail = screen.getByPlaceholderText('seu.email@empresa.com.br')
+    const btnSubmit = screen.getByRole('button', { name: /Enviar Link de Redefinição/i })
+
+    fireEvent.change(inputEmail, { target: { value: 'maurogil@hotmail.com' } })
+    fireEvent.click(btnSubmit)
+
+    await waitFor(() => {
+      const alert = screen.getByRole('alert')
+      expect(alert.textContent).toContain('E-mail não encontrado no sistema')
+      expect(alert.textContent).toContain('Não encontramos uma conta com este e-mail')
+      expect(alert.textContent).toContain('letras e números parecidos, como "gil" e "g1"')
+    })
+  })
+
   it('RedefinirSenhaPage deve ler ?token= da URL e alertar se o token estiver ausente', () => {
     render(
       <MemoryRouter initialEntries={['/redefinir-senha']}>

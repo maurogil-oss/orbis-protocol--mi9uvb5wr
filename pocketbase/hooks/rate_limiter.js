@@ -402,7 +402,14 @@ onRecordAuthWithPasswordRequest((e) => {
       console.log('[rate_limiter] Erro ao registrar falha de autenticação:', errRec)
     }
 
-    // Lança erro SEMPRE genérico
+    // Se o erro original tiver status específico (ex.: 404 quando o e-mail não existe no PocketBase),
+    // preserva o erro original para permitir que o cliente identifique "e-mail não encontrado" vs "senha incorreta"
+    const statusErro = (authErro && (authErro.status || (authErro.data && authErro.data.code))) || 0
+    if (statusErro === 404 || (authErro && authErro.status === 404)) {
+      throw authErro
+    }
+
+    // Para outros erros (400 senha inválida, etc.), mantém o lançamento com mensagem controlada
     throw new BadRequestError(MENSAGEM_GENERICA)
   }
 }, 'users')

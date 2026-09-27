@@ -50,7 +50,9 @@ describe('Login - Padrão de Confiança Visível e Link Esqueci Minha Senha', ()
 
     const emailInput = screen.getByPlaceholderText(/seu\.email@empresa\.com\.br/i)
     const passInput = screen.getByPlaceholderText('••••••••')
-    const submitBtn = screen.getByRole('button', { name: /Entrar na Plataforma/i })
+    const submitBtn = screen.getByRole('button', {
+      name: /(Entrar no Sistema|Entrar na Plataforma)/i,
+    })
 
     fireEvent.change(emailInput, { target: { value: 'maurog1@hotmail.com' } })
     fireEvent.change(passInput, { target: { value: 'SenhaErrada123!' } })
@@ -65,6 +67,68 @@ describe('Login - Padrão de Confiança Visível e Link Esqueci Minha Senha', ()
       const linkEsqueci = screen.getByRole('link', { name: /Esqueci minha senha/i })
       expect(linkEsqueci).toBeDefined()
       expect(linkEsqueci.getAttribute('href')).toBe('/recuperar-senha')
+    })
+  })
+
+  it('ao tentar logar com e-mail inexistente (404), deve exibir aviso específico e amigável orientando conferência de letras/números', async () => {
+    const mockLogin = vi.fn().mockResolvedValue({
+      success: false,
+      isEmailNotFound: true,
+      status: 404,
+      error:
+        'Não encontramos uma conta com este e-mail. Confira se o endereço foi digitado corretamente (atenção a letras e números parecidos, como "gil" e "g1").',
+    })
+
+    vi.mocked(AuthContext.useAuth).mockReturnValue({
+      login: mockLogin,
+      user: null,
+      token: '',
+      isAuthenticated: false,
+      isLoading: false,
+      role: 'cliente',
+      isMaster: false,
+      isAdmin: false,
+      isFinanceiro: false,
+      isFinanceiroLeitor: false,
+      isController: false,
+      isClienteAcp: false,
+      isParceiro: false,
+      isAdminOrPerito: false,
+      isGestaoPendente: false,
+      logout: vi.fn(),
+      refreshAuth: vi.fn(),
+      requestPasswordReset: vi.fn(),
+      confirmPasswordReset: vi.fn(),
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <Login />
+      </MemoryRouter>,
+    )
+
+    const emailInput = screen.getByPlaceholderText(/seu\.email@empresa\.com\.br/i)
+    const passInput = screen.getByPlaceholderText('••••••••')
+    const submitBtn = screen.getByRole('button', {
+      name: /(Entrar no Sistema|Entrar na Plataforma)/i,
+    })
+
+    // Simula tentativa com e-mail contendo erro de digitação comum (ex: maurogil vs maurog1)
+    fireEvent.change(emailInput, { target: { value: 'maurogil@hotmail.com' } })
+    fireEvent.change(passInput, { target: { value: 'QualquerSenha123!' } })
+    fireEvent.click(submitBtn)
+
+    await waitFor(() => {
+      const alert = screen.getByRole('alert')
+      expect(alert.textContent).toContain('E-mail não encontrado no sistema')
+      expect(alert.textContent).toContain('Não encontramos uma conta com este e-mail')
+      expect(alert.textContent).toContain('atenção a letras e números parecidos')
+      expect(alert.textContent).toContain('como "gil" e "g1"')
+
+      // Deve incluir link de criação de conta
+      const linkRegistro = screen.getByRole('link', { name: /Criar uma conta/i })
+      expect(linkRegistro).toBeDefined()
+      expect(linkRegistro.getAttribute('href')).toBe('/registro')
     })
   })
 })

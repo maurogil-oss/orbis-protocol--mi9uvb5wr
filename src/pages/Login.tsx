@@ -8,6 +8,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isEmailNotFound, setIsEmailNotFound] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const { login } = useAuth()
@@ -18,9 +19,11 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsEmailNotFound(false)
     setIsLoading(true)
 
-    const res = await login(email, password)
+    const cleanEmail = email.trim().toLowerCase()
+    const res = await login(cleanEmail, password)
     setIsLoading(false)
 
     if (res.success) {
@@ -58,6 +61,7 @@ export default function Login() {
         navigate('/painel', { replace: true })
       }
     } else {
+      setIsEmailNotFound(!!res.isEmailNotFound)
       setError(
         res.error ||
           'Credenciais inválidas ou limite temporário de tentativas excedido. Por favor, tente novamente mais tarde.',
@@ -82,21 +86,51 @@ export default function Login() {
         {error && (
           <div
             role="alert"
-            className="p-4 mb-6 rounded-xl bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] space-y-2.5"
+            className={`p-4 mb-6 rounded-xl text-xs space-y-2.5 ${
+              isEmailNotFound
+                ? 'bg-[#F59F00]/10 border border-[#F59F00]/40 text-[#F59F00]'
+                : 'bg-[#F03E54]/10 border border-[#F03E54]/30 text-[#F03E54]'
+            }`}
           >
             <div className="flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span className="leading-relaxed">{error}</span>
+              <div className="leading-relaxed space-y-1">
+                {isEmailNotFound && (
+                  <p className="font-bold text-[#F4F7FA]">E-mail não encontrado no sistema</p>
+                )}
+                <p>{error}</p>
+              </div>
             </div>
-            <div className="pt-2 border-t border-[#F03E54]/20 flex items-center justify-between flex-wrap gap-2 text-[11px]">
-              <span className="text-[#93A3B5]">Esqueceu ou precisa redefinir sua credencial?</span>
-              <Link
-                to="/recuperar-senha"
-                className="font-bold text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
-              >
-                <span>Esqueci minha senha</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
+            <div
+              className={`pt-2 border-t flex items-center justify-between flex-wrap gap-2 text-[11px] ${
+                isEmailNotFound ? 'border-[#F59F00]/20' : 'border-[#F03E54]/20'
+              }`}
+            >
+              {isEmailNotFound ? (
+                <>
+                  <span className="text-[#93A3B5]">Ainda não possui cadastro na plataforma?</span>
+                  <Link
+                    to="/registro"
+                    className="font-bold text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
+                  >
+                    <span>Criar uma conta</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <span className="text-[#93A3B5]">
+                    Esqueceu ou precisa redefinir sua credencial?
+                  </span>
+                  <Link
+                    to="/recuperar-senha"
+                    className="font-bold text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
+                  >
+                    <span>Esqueci minha senha</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
