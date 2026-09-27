@@ -405,11 +405,11 @@ export default function Index() {
                       {papel.rotulo}
                     </h3>
                     <p className="text-xs font-medium text-[#D9B36C] mb-3">{papel.subtitulo}</p>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed mb-5 font-normal">
+                    <p className="text-sm text-[#93A3B5] leading-relaxed mb-5 font-normal">
                       {papel.descricao}
                     </p>
 
-                    <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] text-[11px] text-[#93A3B5] mb-6">
+                    <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] text-xs text-[#93A3B5] mb-6">
                       <span className="text-[#F4F7FA] font-semibold block mb-0.5">
                         Diferencial:
                       </span>
