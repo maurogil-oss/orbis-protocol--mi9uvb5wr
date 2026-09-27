@@ -28,6 +28,9 @@ export interface CertificadoA1ConfigInput {
   senha: string
   termo_lgpd_aceito: boolean
   termo_versao?: string
+  arquivo_base64?: string
+  arquivo_nome?: string
+  validade_certificado?: string
 }
 
 export interface CertificadoA1Status {
@@ -43,6 +46,8 @@ export interface CertificadoA1Status {
   consentimento_data_hora?: string
   data_revogacao?: string
   motivo_revogacao?: string
+  arquivo_pfx?: string
+  validade_certificado?: string
 }
 
 /**
@@ -82,6 +87,10 @@ export async function salvarConfigCertificadoA1(input: CertificadoA1ConfigInput)
   sucesso: boolean
   mensagem: string
   certificado_id?: string
+  cnpj_titular?: string
+  razao_social?: string
+  arquivo_pfx?: string
+  validade_certificado?: string
   consentimento_ip?: string
   consentimento_data_hora?: string
   termo_versao?: string
@@ -157,6 +166,8 @@ export async function obterStatusCertificadoA1(
       consentimento_data_hora: rec.getString('consentimento_data_hora'),
       data_revogacao: rec.getString('data_revogacao'),
       motivo_revogacao: rec.getString('motivo_revogacao'),
+      arquivo_pfx: rec.getString('arquivo_pfx'),
+      validade_certificado: rec.getString('validade_certificado'),
     }
   } catch {
     return null

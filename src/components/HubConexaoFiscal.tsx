@@ -65,9 +65,13 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
   const [razaoA1, setRazaoA1] = useState(razaoSocial || '')
   const [senhaA1, setSenhaA1] = useState('')
   const [arquivoPfxNome, setArquivoPfxNome] = useState<string | null>(null)
+  const [arquivoPfxBase64, setArquivoPfxBase64] = useState<string | null>(null)
+  const [arquivoPfxTamanho, setArquivoPfxTamanho] = useState<number | null>(null)
+  const [termoAceitoDireto, setTermoAceitoDireto] = useState(false)
   const [salvandoA1, setSalvandoA1] = useState(false)
   const [revogandoA1, setRevogandoA1] = useState(false)
   const [mensagemA1, setMensagemA1] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null)
+  const pfxInputRef = useRef<HTMLInputElement | null>(null)
 
   // Estado da Importação SPED (Modelo 2)
   const [arquivoSpedSelecionado, setArquivoSpedSelecionado] = useState<File | null>(null)
@@ -88,6 +92,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
       setStatusA1(st)
       if (st?.cnpj_titular) setCnpjA1(st.cnpj_titular)
       if (st?.razao_social) setRazaoA1(st.razao_social)
+      if (st?.termo_lgpd_aceito) setTermoAceitoDireto(true)
 
       const speds = await listarImportacoesSped(usuarioId)
       setHistoricoSped(speds)
@@ -96,6 +101,58 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
     } finally {
       setIsCarregandoA1(false)
     }
+  }
+
+  // Tratamento de seleção de arquivo .pfx / .p12
+  const handleArquivoPfxSelecionado = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setMensagemA1(null)
+
+    const nome = file.name.toLowerCase()
+    if (!nome.endsWith('.pfx') && !nome.endsWith('.p12')) {
+      setMensagemA1({
+        tipo: 'erro',
+        texto:
+          'Formato inválido. O arquivo do certificado ICP-Brasil deve ter extensão .pfx ou .p12.',
+      })
+      if (pfxInputRef.current) pfxInputRef.current.value = ''
+      return
+    }
+
+    // Limite de 5 MB
+    const limiteBytes = 5 * 1024 * 1024
+    if (file.size > limiteBytes) {
+      setMensagemA1({
+        tipo: 'erro',
+        texto: `O arquivo selecionado (${(file.size / 1024 / 1024).toFixed(2)} MB) excede o limite máximo permitido de 5 MB.`,
+      })
+      if (pfxInputRef.current) pfxInputRef.current.value = ''
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const b64 = reader.result as string
+      setArquivoPfxBase64(b64)
+      setArquivoPfxNome(file.name)
+      setArquivoPfxTamanho(file.size)
+    }
+    reader.onerror = () => {
+      setMensagemA1({
+        tipo: 'erro',
+        texto: 'Erro ao ler arquivo selecionado.',
+      })
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoverArquivoPfx = () => {
+    setArquivoPfxBase64(null)
+    setArquivoPfxNome(null)
+    setArquivoPfxTamanho(null)
+    if (pfxInputRef.current) pfxInputRef.current.value = ''
   }
 
   useEffect(() => {
@@ -117,9 +174,14 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
       return
     }
 
-    // Se o termo ainda não foi aceito, abre o modal obrigatório
-    if (!statusA1?.termo_lgpd_aceito) {
-      setModalTermoAberto(true)
+    // Aceite pode vir do modal prévio OU da marcação direta no checkbox
+    const termoEfetivoAceito = Boolean(statusA1?.termo_lgpd_aceito || termoAceitoDireto)
+    if (!termoEfetivoAceito) {
+      setMensagemA1({
+        tipo: 'erro',
+        texto:
+          'É obrigatório marcar o aceite do Termo de Custódia e Responsabilidade antes de prosseguir.',
+      })
       return
     }
 
@@ -131,9 +193,15 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
         senha: senhaA1,
         termo_lgpd_aceito: true,
         termo_versao: statusA1?.termo_versao || TERMO_CUSTODIA_VERSAO_ATUAL,
+        arquivo_base64: arquivoPfxBase64 || undefined,
+        arquivo_nome: arquivoPfxNome || undefined,
       })
       setMensagemA1({ tipo: 'ok', texto: res.mensagem })
       setSenhaA1('')
+      setArquivoPfxBase64(null)
+      setArquivoPfxNome(null)
+      setArquivoPfxTamanho(null)
+      if (pfxInputRef.current) pfxInputRef.current.value = ''
       await recarregarDados()
     } catch (err: any) {
       setMensagemA1({ tipo: 'erro', texto: err.message || 'Erro ao registrar credencial A1.' })
@@ -782,6 +850,92 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
                 </div>
               </div>
 
+              {/* Card de Metadados do Certificado: Validade e Arquivo */}
+              <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                {/* Validade do Certificado */}
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-1">
+                    Validade do Certificado ICP-Brasil
+                  </span>
+                  {(() => {
+                    const validadeStr = statusA1.validade_certificado
+                    if (!validadeStr) {
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[#D9B36C] font-semibold">
+                            Data de validade a confirmar
+                          </span>
+                        </div>
+                      )
+                    }
+
+                    const dataValidade = new Date(validadeStr)
+                    const hoje = new Date()
+                    const diffMs = dataValidade.getTime() - hoje.getTime()
+                    const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+                    const expirado = diffDias < 0
+                    const critico90d = !expirado && diffDias <= 90
+
+                    // Formata data DD/MM/AAAA
+                    const dia = String(dataValidade.getUTCDate()).padStart(2, '0')
+                    const mes = String(dataValidade.getUTCMonth() + 1).padStart(2, '0')
+                    const ano = dataValidade.getUTCFullYear()
+                    const dataFormatada = `${dia}/${mes}/${ano}`
+
+                    return (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-mono font-bold text-sm ${
+                              expirado
+                                ? 'text-[#F03E54]'
+                                : critico90d
+                                  ? 'text-[#D9B36C]'
+                                  : 'text-[#12B886]'
+                            }`}
+                          >
+                            Válido até {dataFormatada}
+                          </span>
+                          {critico90d && (
+                            <span className="px-2 py-0.5 rounded-full bg-[#D9B36C]/20 border border-[#D9B36C]/40 text-[#D9B36C] text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />
+                              Vence em {diffDias} dias
+                            </span>
+                          )}
+                          {expirado && (
+                            <span className="px-2 py-0.5 rounded-full bg-[#F03E54]/20 border border-[#F03E54]/40 text-[#F03E54] text-[10px] font-bold uppercase tracking-wide">
+                              Expirado
+                            </span>
+                          )}
+                        </div>
+                        {critico90d && (
+                          <span className="text-[11px] text-[#D9B36C] block leading-relaxed">
+                            ⚠️ Atenção: Certificado próximo do vencimento (menos de 90 dias).
+                            Providencie a renovação junto à sua Autoridade Certificadora.
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })()}
+                </div>
+
+                {/* Arquivo .pfx Custodiado */}
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-1">
+                    Arquivo .pfx em Custódia
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <FileCheck2 className="w-4 h-4 text-[#12B886]" />
+                    <span className="font-mono text-xs text-[#F4F7FA] truncate">
+                      {statusA1.arquivo_pfx || 'Arquivo .pfx custodiado e protegido'}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-[#93A3B5] mt-1 block">
+                    Cofre seguro com criptografia AES-256 e acesso restrito Read-Only.
+                  </span>
+                </div>
+              </div>
+
               {/* Botão de Revogação Instantânea com Zeramento de Chave */}
               <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-[rgba(244,247,250,0.08)]">
                 <div className="text-[11px] text-[#93A3B5]">
@@ -856,11 +1010,75 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
                   value={senhaA1}
                   onChange={(e) => setSenhaA1(e.target.value)}
                   placeholder="••••••••••••"
+                  autoComplete="new-password"
                   className="w-full px-3 py-2 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
                 />
                 <span className="text-[11px] text-[#93A3B5] mt-1 block">
                   A senha é cifrada pelo servidor com algoritmo AES-256 no momento do recebimento e
                   nunca é gravada em texto plano.
+                </span>
+              </div>
+
+              {/* Upload do Arquivo .pfx / .p12 */}
+              <div className="space-y-2">
+                <label className="block text-xs uppercase font-bold text-[#93A3B5]">
+                  Arquivo do Certificado Digital A1 (.pfx ou .p12)
+                </label>
+
+                <input
+                  type="file"
+                  ref={pfxInputRef}
+                  onChange={handleArquivoPfxSelecionado}
+                  accept=".pfx,.p12,application/x-pkcs12"
+                  className="hidden"
+                />
+
+                {!arquivoPfxNome ? (
+                  <div
+                    onClick={() => pfxInputRef.current?.click()}
+                    className="p-5 rounded-xl bg-[#0A0E12] border-2 border-dashed border-[rgba(244,247,250,0.15)] hover:border-[#D9B36C]/60 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <UploadCloud className="w-5 h-5 text-[#D9B36C]" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-[#F4F7FA] block">
+                        Clique para selecionar o arquivo .pfx ou .p12
+                      </span>
+                      <span className="text-[11px] text-[#93A3B5] mt-0.5 block">
+                        Padrão ICP-Brasil (e-CNPJ ou e-PJ) • Limite máximo de 5 MB
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-lg bg-[#12B886]/10 border border-[#12B886]/40 flex items-center justify-center shrink-0">
+                        <FileCheck2 className="w-5 h-5 text-[#12B886]" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-mono text-xs font-bold text-[#F4F7FA] truncate block">
+                          {arquivoPfxNome}
+                        </span>
+                        <span className="text-[11px] text-[#12B886] block">
+                          ✓ Arquivo carregado (
+                          {arquivoPfxTamanho ? (arquivoPfxTamanho / 1024).toFixed(1) + ' KB' : 'OK'}
+                          ) • Pronto para envio seguro
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoverArquivoPfx}
+                      className="px-2.5 py-1 text-[11px] font-bold text-[#F03E54] hover:bg-[#F03E54]/10 rounded border border-[#F03E54]/30 shrink-0"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                )}
+                <span className="text-[11px] text-[#93A3B5] block">
+                  O arquivo será gravado no campo seguro <code>arquivo_pfx</code> do cofre da sua
+                  conta sob guarda estrita.
                 </span>
               </div>
 
@@ -877,21 +1095,19 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
                     className="text-xs text-[#12B886] underline font-semibold hover:text-[#0CA678] flex items-center gap-1"
                   >
                     <BookOpen className="w-3.5 h-3.5" />
-                    <span>Ler e Assinar Termo Formal (Obrigatório)</span>
+                    <span>Ler Termo Completo no Modal</span>
                   </button>
                 </div>
                 <label className="flex items-start gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={Boolean(statusA1?.termo_lgpd_aceito)}
+                    checked={Boolean(statusA1?.termo_lgpd_aceito || termoAceitoDireto)}
                     onChange={(e) => {
-                      if (!statusA1?.termo_lgpd_aceito) {
-                        setModalTermoAberto(true)
-                      }
+                      setTermoAceitoDireto(e.target.checked)
                     }}
-                    className="mt-0.5 rounded border-[rgba(244,247,250,0.2)] text-[#12B886] focus:ring-[#12B886]"
+                    className="mt-0.5 rounded border-[rgba(244,247,250,0.2)] text-[#12B886] focus:ring-[#12B886] cursor-pointer"
                   />
-                  <span className="text-[11px] text-[#93A3B5] leading-relaxed">
+                  <span className="text-[11px] text-[#93A3B5] leading-relaxed select-none">
                     Declaro ciência e concordância integral com as cláusulas de{' '}
                     <strong className="text-[#F4F7FA]">Objeto Exclusivo</strong>,{' '}
                     <strong className="text-[#12B886]">Modo Estrito Read-Only</strong>, cofre
@@ -943,6 +1159,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
         razaoSocial={razaoA1 || razaoSocial}
         onAceitar={async (versao) => {
           setModalTermoAberto(false)
+          setTermoAceitoDireto(true)
           // Se já houver senha preenchida, salva automaticamente
           if (senhaA1 && cnpjA1) {
             setSalvandoA1(true)
@@ -953,9 +1170,15 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
                 senha: senhaA1,
                 termo_lgpd_aceito: true,
                 termo_versao: versao,
+                arquivo_base64: arquivoPfxBase64 || undefined,
+                arquivo_nome: arquivoPfxNome || undefined,
               })
               setMensagemA1({ tipo: 'ok', texto: res.mensagem })
               setSenhaA1('')
+              setArquivoPfxBase64(null)
+              setArquivoPfxNome(null)
+              setArquivoPfxTamanho(null)
+              if (pfxInputRef.current) pfxInputRef.current.value = ''
               await recarregarDados()
             } catch (err: any) {
               setMensagemA1({ tipo: 'erro', texto: err.message || 'Erro ao registrar credencial.' })
@@ -976,7 +1199,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
             })
             setMensagemA1({
               tipo: 'ok',
-              texto: `Termo de Custódia (${versao}) aceito com sucesso! Preencha a senha e clique em Iniciar Custódia.`,
+              texto: `Termo de Custódia (${versao}) aceito com sucesso! Preencha a senha e selecione o arquivo .pfx caso ainda não o tenha feito.`,
             })
           }
         }}
