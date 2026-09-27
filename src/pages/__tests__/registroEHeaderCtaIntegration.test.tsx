@@ -172,25 +172,25 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     const alert1 = await screen.findByRole('alert')
     expect(alert1.textContent).toMatch(/informe seu nome completo ou razão social/i)
 
-    // 2. Preenche nome mas senha curta
+    // 2. Preenche nome mas senha fraca/curta (< 10 caracteres ou faltando símbolos)
     fireEvent.change(nomeInput, { target: { value: 'Engenharia Alfa' } })
     fireEvent.change(emailInput, { target: { value: 'alfa@eng.com.br' } })
-    const senhas = screen.getAllByPlaceholderText(/••••••••/i)
-    fireEvent.change(senhas[0], { target: { value: '123' } })
-    fireEvent.change(senhas[1], { target: { value: '123' } })
+    const senhaInputs = screen.getAllByPlaceholderText(/••••••••|Ex: SenhaForte2026/i)
+    fireEvent.change(senhaInputs[0], { target: { value: '123' } })
+    fireEvent.change(senhaInputs[1], { target: { value: '123' } })
     fireEvent.click(submitBtn)
     const alert2 = await screen.findByRole('alert')
-    expect(alert2.textContent).toMatch(/no mínimo 8 caracteres/i)
+    expect(alert2.textContent).toMatch(/mínimo de 10 caracteres/i)
 
-    // 3. Senhas divergentes
-    fireEvent.change(senhas[0], { target: { value: 'SenhaForte123' } })
-    fireEvent.change(senhas[1], { target: { value: 'OutraSenha123' } })
+    // 3. Senhas divergentes (com senha forte válida no campo de senha)
+    fireEvent.change(senhaInputs[0], { target: { value: 'SenhaForte@2026' } })
+    fireEvent.change(senhaInputs[1], { target: { value: 'OutraSenha@2026' } })
     fireEvent.click(submitBtn)
     const alert3 = await screen.findByRole('alert')
     expect(alert3.textContent).toMatch(/confirmação de senha não confere/i)
 
     // 4. Termo de aceite não marcado
-    fireEvent.change(senhas[1], { target: { value: 'SenhaForte123' } })
+    fireEvent.change(senhaInputs[1], { target: { value: 'SenhaForte@2026' } })
     fireEvent.click(submitBtn)
     const alert4 = await screen.findByRole('alert')
     expect(alert4.textContent).toMatch(/concordar com os Termos de Uso/i)
@@ -215,15 +215,14 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     // Preenche campos
     const nomeInput = screen.getByPlaceholderText(/Dr\. Eng\. Carlos Mendonça/i)
     const emailInput = screen.getByPlaceholderText(/seu\.email@empresa\.com\.br/i)
-    const senhas = screen.getAllByPlaceholderText(/••••••••/i)
+    const senhaInputs = screen.getAllByPlaceholderText(/••••••••|Ex: SenhaForte2026/i)
     const checkboxTermo = screen.getByRole('checkbox')
 
     fireEvent.change(nomeInput, { target: { value: 'Dr. Roberto Carlos CREA' } })
     fireEvent.change(emailInput, { target: { value: 'roberto@periciatecnica.com.br' } })
-    fireEvent.change(senhas[0], { target: { value: 'Perito#Seguro2026' } })
-    fireEvent.change(senhas[1], { target: { value: 'Perito#Seguro2026' } })
+    fireEvent.change(senhaInputs[0], { target: { value: 'Perito#Seguro2026' } })
+    fireEvent.change(senhaInputs[1], { target: { value: 'Perito#Seguro2026' } })
     fireEvent.click(checkboxTermo)
-
     const submitBtn = screen.getByRole('button', { name: /Criar Conta de Perito/i })
     fireEvent.click(submitBtn)
 
@@ -260,28 +259,27 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     // Preenche campos
     const nomeInput = screen.getByPlaceholderText(/Maria Silva ou Indústria Alfa Ltda/i)
     const emailInput = screen.getByPlaceholderText(/seu\.email@empresa\.com\.br/i)
-    const senhas = screen.getAllByPlaceholderText(/••••••••/i)
+    const senhaInputs = screen.getAllByPlaceholderText(/••••••••|Ex: SenhaForte2026/i)
     const checkboxTermo = screen.getByRole('checkbox')
 
     fireEvent.change(nomeInput, { target: { value: 'Associada ACP Curitiba S.A.' } })
     fireEvent.change(emailInput, { target: { value: 'acp@associada.com.br' } })
-    fireEvent.change(senhas[0], { target: { value: 'SenhaForteACP2026' } })
-    fireEvent.change(senhas[1], { target: { value: 'SenhaForteACP2026' } })
+    fireEvent.change(senhaInputs[0], { target: { value: 'SenhaForteACP@2026' } })
+    fireEvent.change(senhaInputs[1], { target: { value: 'SenhaForteACP@2026' } })
     fireEvent.click(checkboxTermo)
-
     const submitBtn = screen.getByRole('button', { name: /Criar Conta de Cliente ACP/i })
     fireEvent.click(submitBtn)
 
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalledWith({
         email: 'acp@associada.com.br',
-        password: 'SenhaForteACP2026',
-        passwordConfirm: 'SenhaForteACP2026',
+        password: 'SenhaForteACP@2026',
+        passwordConfirm: 'SenhaForteACP@2026',
         name: 'Associada ACP Curitiba S.A.',
         role: 'cliente_acp',
         status_aprovacao: 'aprovado',
       })
-      expect(mockAuthState.login).toHaveBeenCalledWith('acp@associada.com.br', 'SenhaForteACP2026')
+      expect(mockAuthState.login).toHaveBeenCalledWith('acp@associada.com.br', 'SenhaForteACP@2026')
     })
   })
 

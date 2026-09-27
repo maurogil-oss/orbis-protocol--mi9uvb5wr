@@ -496,43 +496,184 @@ export default function RegistroPage() {
             </div>
           </div>
 
-          {/* Senha e Confirmação de Senha */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-                Senha (mín. 10 caracteres, A-Z, a-z, 0-9) *
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Ex: SenhaForte2026"
-                  minLength={10}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
-                  required
-                />
+          {/* Senha e Confirmação de Senha com Padrão de Confiança Visível */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                  Senha Forte *
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Ex: SenhaForte@2026"
+                    minLength={10}
+                    className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                  Confirmar Senha *
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
+                  <input
+                    type="password"
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    placeholder="••••••••"
+                    minLength={8}
+                    className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
-                Confirmar Senha *
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
-                <input
-                  type="password"
-                  value={passwordConfirm}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={8}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
-                  required
-                />
-              </div>
-            </div>
+            {/* Barra de Força em Tempo Real e Regra Explícita (Confiança Visível) */}
+            {(() => {
+              const resValidacao = validarSenhaForte(password)
+              const { regras, pontos, forca } = resValidacao
+              const percentualForca = (pontos / 5) * 100
+              const senhasIguais = Boolean(
+                password && passwordConfirm && password === passwordConfirm,
+              )
+
+              // Cor da barra de progresso de força
+              const barraCor =
+                forca === 'forte'
+                  ? 'bg-[#12B886]'
+                  : forca === 'media'
+                    ? 'bg-[#D9B36C]'
+                    : pontos > 0
+                      ? 'bg-[#F03E54]'
+                      : 'bg-transparent'
+
+              const textoForca =
+                forca === 'forte'
+                  ? 'Forte (Atende aos requisitos de segurança)'
+                  : forca === 'media'
+                    ? 'Média (Faltam requisitos para liberação)'
+                    : password.length > 0
+                      ? 'Fraca'
+                      : 'Aguardando digitação'
+
+              return (
+                <div
+                  data-testid="barra-forca-senha"
+                  className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-3"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[#93A3B5] flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+                      Regra de Senha Forte (Confiança Visível)
+                    </span>
+                    <span
+                      className={`text-[11px] font-bold ${
+                        forca === 'forte'
+                          ? 'text-[#12B886]'
+                          : forca === 'media'
+                            ? 'text-[#D9B36C]'
+                            : 'text-[#93A3B5]'
+                      }`}
+                    >
+                      {textoForca}
+                    </span>
+                  </div>
+
+                  {/* Barra de progresso contínua */}
+                  <div className="w-full h-1.5 rounded-full bg-[#16202B] overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${barraCor}`}
+                      style={{ width: `${percentualForca}%` }}
+                    />
+                  </div>
+
+                  {/* Checklist explícito de regras: Letras maiúsculas/minúsculas, números e símbolo */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1 text-[11px]">
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        regras.min10 ? 'text-[#12B886]' : 'text-[#93A3B5]'
+                      }`}
+                    >
+                      <CheckCircle2
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          regras.min10 ? 'text-[#12B886]' : 'text-[#93A3B5]/40'
+                        }`}
+                      />
+                      <span>Mínimo 10 caracteres</span>
+                    </div>
+
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        regras.maiuscula && regras.minuscula ? 'text-[#12B886]' : 'text-[#93A3B5]'
+                      }`}
+                    >
+                      <CheckCircle2
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          regras.maiuscula && regras.minuscula
+                            ? 'text-[#12B886]'
+                            : 'text-[#93A3B5]/40'
+                        }`}
+                      />
+                      <span>Letras (maiúscula e minúscula)</span>
+                    </div>
+
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        regras.numero ? 'text-[#12B886]' : 'text-[#93A3B5]'
+                      }`}
+                    >
+                      <CheckCircle2
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          regras.numero ? 'text-[#12B886]' : 'text-[#93A3B5]/40'
+                        }`}
+                      />
+                      <span>Números (0 a 9)</span>
+                    </div>
+
+                    <div
+                      className={`flex items-center gap-1.5 transition-colors ${
+                        regras.simbolo ? 'text-[#12B886]' : 'text-[#93A3B5]'
+                      }`}
+                    >
+                      <CheckCircle2
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          regras.simbolo ? 'text-[#12B886]' : 'text-[#93A3B5]/40'
+                        }`}
+                      />
+                      <span>Símbolo (!@#$%^&*...)</span>
+                    </div>
+                  </div>
+
+                  {/* Confirmação de coincidência das senhas */}
+                  {password && passwordConfirm && (
+                    <div
+                      className={`text-[11px] pt-1 border-t border-[rgba(244,247,250,0.06)] flex items-center gap-1.5 ${
+                        senhasIguais ? 'text-[#12B886]' : 'text-[#F03E54]'
+                      }`}
+                    >
+                      <CheckCircle2
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          senhasIguais ? 'text-[#12B886]' : 'text-[#F03E54]'
+                        }`}
+                      />
+                      <span>
+                        {senhasIguais
+                          ? 'As senhas conferem perfeitamente'
+                          : 'A confirmação não coincide com a senha'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
 
           {/* Aceite dos Termos */}

@@ -80,9 +80,24 @@ export default function Login() {
         </div>
 
         {error && (
-          <div className="p-3.5 mb-6 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
+          <div
+            role="alert"
+            className="p-4 mb-6 rounded-xl bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] space-y-2.5"
+          >
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{error}</span>
+            </div>
+            <div className="pt-2 border-t border-[#F03E54]/20 flex items-center justify-between flex-wrap gap-2 text-[11px]">
+              <span className="text-[#93A3B5]">Esqueceu ou precisa redefinir sua credencial?</span>
+              <Link
+                to="/recuperar-senha"
+                className="font-bold text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
+              >
+                <span>Esqueci minha senha</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
         )}
 

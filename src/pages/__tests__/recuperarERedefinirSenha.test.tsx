@@ -91,15 +91,24 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
     const btnSalvar = screen.getByRole('button', { name: /Salvar Nova Senha/i })
 
     // Testar validação de senha fraca (<10 chars)
-    fireEvent.change(novaSenhaInput, { target: { value: 'Curta1' } })
-    fireEvent.change(confirmarSenhaInput, { target: { value: 'Curta1' } })
+    fireEvent.change(novaSenhaInput, { target: { value: 'Curta1!' } })
+    fireEvent.change(confirmarSenhaInput, { target: { value: 'Curta1!' } })
     fireEvent.click(btnSalvar)
 
     await waitFor(() => {
       expect(screen.getByText(/mínimo de 10 caracteres/i)).toBeDefined()
     })
 
-    // Testar senha forte atendendo todos os requisitos
+    // Testar senha forte sem símbolo
+    fireEvent.change(novaSenhaInput, { target: { value: 'OrbisProtocol2026' } })
+    fireEvent.change(confirmarSenhaInput, { target: { value: 'OrbisProtocol2026' } })
+    fireEvent.click(btnSalvar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/pelo menos 1 caractere especial ou símbolo/i)).toBeDefined()
+    })
+
+    // Testar senha forte atendendo todos os requisitos (letras, números e símbolo)
     fireEvent.change(novaSenhaInput, { target: { value: 'OrbisProtocol@2026' } })
     fireEvent.change(confirmarSenhaInput, { target: { value: 'OrbisProtocol@2026' } })
     fireEvent.click(btnSalvar)
@@ -111,6 +120,39 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
         'OrbisProtocol@2026',
       )
       expect(screen.getByText(/Senha Redefinida com Sucesso!/i)).toBeDefined()
+    })
+  })
+
+  it('RedefinirSenhaPage JAMAIS deve exibir sucesso falso se o backend rejeitar a redefinição', async () => {
+    const mockConfirmPasswordReset = vi
+      .fn()
+      .mockRejectedValue(new Error('Token inválido ou expirado.'))
+    vi.mocked(pb.collection).mockReturnValue({
+      confirmPasswordReset: mockConfirmPasswordReset,
+    } as any)
+
+    render(
+      <MemoryRouter initialEntries={['/redefinir-senha?token=TOKEN_EXPIRADO']}>
+        <AuthProvider>
+          <RedefinirSenhaPage />
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+
+    const inputs = screen.getAllByPlaceholderText('••••••••••')
+    const novaSenhaInput = inputs[0]
+    const confirmarSenhaInput = inputs[1]
+    const btnSalvar = screen.getByRole('button', { name: /Salvar Nova Senha/i })
+
+    fireEvent.change(novaSenhaInput, { target: { value: 'OrbisProtocol@2026' } })
+    fireEvent.change(confirmarSenhaInput, { target: { value: 'OrbisProtocol@2026' } })
+    fireEvent.click(btnSalvar)
+
+    await waitFor(() => {
+      // Deve exibir erro explícito retornado pelo backend
+      expect(screen.getByText(/Token inválido ou expirado/i)).toBeDefined()
+      // NUNCA deve exibir tela de sucesso falso
+      expect(screen.queryByText(/Senha Redefinida com Sucesso!/i)).toBeNull()
     })
   })
 })

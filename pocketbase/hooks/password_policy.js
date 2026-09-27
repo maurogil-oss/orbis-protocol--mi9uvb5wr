@@ -30,6 +30,9 @@ onRecordCreate((e) => {
     if (!/[0-9]/.test(pass)) {
       erros.push('pelo menos 1 número')
     }
+    if (!/[^A-Za-z0-9]/.test(pass)) {
+      erros.push('pelo menos 1 caractere especial ou símbolo')
+    }
 
     if (erros.length > 0) {
       throw new BadRequestError(
@@ -61,6 +64,9 @@ onRecordUpdate((e) => {
     }
     if (!/[0-9]/.test(pass)) {
       erros.push('pelo menos 1 número')
+    }
+    if (!/[^A-Za-z0-9]/.test(pass)) {
+      erros.push('pelo menos 1 caractere especial ou símbolo')
     }
 
     if (erros.length > 0) {
@@ -201,6 +207,9 @@ onRecordConfirmPasswordResetRequest((e) => {
     }
     if (!/[0-9]/.test(pass)) {
       erros.push('pelo menos 1 número')
+    }
+    if (!/[^A-Za-z0-9]/.test(pass)) {
+      erros.push('pelo menos 1 caractere especial ou símbolo')
     }
 
     if (erros.length > 0) {

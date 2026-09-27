@@ -80,13 +80,13 @@ describe('ModalAlterarSenha', () => {
     render(<ModalAlterarSenha aberto={true} onClose={() => {}} />)
 
     fireEvent.change(screen.getByPlaceholderText('Informe sua senha atual'), {
-      target: { value: 'SenhaAtual123' },
+      target: { value: 'SenhaAtual123!' },
     })
     fireEvent.change(screen.getByPlaceholderText('Crie uma nova senha forte'), {
-      target: { value: 'NovaSenhaForte123' },
+      target: { value: 'NovaSenhaForte123!' },
     })
     fireEvent.change(screen.getByPlaceholderText('Repita a nova senha'), {
-      target: { value: 'OutraSenha456' },
+      target: { value: 'OutraSenha456!' },
     })
 
     fireEvent.click(screen.getByRole('button', { name: /Atualizar Senha/i }))
@@ -104,22 +104,22 @@ describe('ModalAlterarSenha', () => {
     render(<ModalAlterarSenha aberto={true} onClose={() => {}} />)
 
     fireEvent.change(screen.getByPlaceholderText('Informe sua senha atual'), {
-      target: { value: 'SenhaAntiga123' },
+      target: { value: 'SenhaAntiga123!' },
     })
     fireEvent.change(screen.getByPlaceholderText('Crie uma nova senha forte'), {
-      target: { value: 'NovaSenhaSegura2025' },
+      target: { value: 'NovaSenhaSegura2025!' },
     })
     fireEvent.change(screen.getByPlaceholderText('Repita a nova senha'), {
-      target: { value: 'NovaSenhaSegura2025' },
+      target: { value: 'NovaSenhaSegura2025!' },
     })
 
     fireEvent.click(screen.getByRole('button', { name: /Atualizar Senha/i }))
 
     await waitFor(() => {
       expect(updateMock).toHaveBeenCalledWith(mockUser.id, {
-        oldPassword: 'SenhaAntiga123',
-        password: 'NovaSenhaSegura2025',
-        passwordConfirm: 'NovaSenhaSegura2025',
+        oldPassword: 'SenhaAntiga123!',
+        password: 'NovaSenhaSegura2025!',
+        passwordConfirm: 'NovaSenhaSegura2025!',
       })
     })
 

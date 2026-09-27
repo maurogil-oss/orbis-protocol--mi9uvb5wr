@@ -40,6 +40,7 @@ export const ModalAlterarSenha: React.FC<ModalAlterarSenhaProps> = ({ aberto, on
   const temMaiuscula = /[A-Z]/.test(novaSenha)
   const temMinuscula = /[a-z]/.test(novaSenha)
   const temNumero = /[0-9]/.test(novaSenha)
+  const temSimbolo = /[^A-Za-z0-9]/.test(novaSenha)
   const senhasConferem = Boolean(novaSenha && confirmarSenha && novaSenha === confirmarSenha)
 
   const handleFechar = () => {
@@ -299,6 +300,14 @@ export const ModalAlterarSenha: React.FC<ModalAlterarSenhaProps> = ({ aberto, on
                   className={`w-1.5 h-1.5 rounded-full ${temNumero ? 'bg-[#12B886]' : 'bg-[#93A3B5]/40'}`}
                 />
                 <span>1 número [0-9]</span>
+              </div>
+              <div
+                className={`flex items-center gap-1.5 col-span-2 ${temSimbolo ? 'text-[#12B886]' : 'text-[#93A3B5]'}`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${temSimbolo ? 'bg-[#12B886]' : 'bg-[#93A3B5]/40'}`}
+                />
+                <span>1 caractere especial ou símbolo (!@#$%^&*...)</span>
               </div>
             </div>
             {novaSenha && confirmarSenha && (

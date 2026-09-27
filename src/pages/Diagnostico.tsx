@@ -813,6 +813,10 @@ export default function Diagnostico() {
                         )}
                       </button>
                     </div>
+                    <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                      Usaremos seu CNPJ para identificar sua empresa e sugerir sua trilha
+                      regulatória e tributária a partir dos dados públicos oficiais.
+                    </p>
                     {fieldErrors.cnpj && (
                       <span className="text-xs text-[#F03E54] mt-1 block">{fieldErrors.cnpj}</span>
                     )}
@@ -970,6 +974,10 @@ export default function Diagnostico() {
                       placeholder="Ex.: Indústria e Comércio Brasil S.A."
                       className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                     />
+                    <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                      Identifica a pessoa jurídica na emissão do laudo técnico e no protocolo
+                      pericial preliminar.
+                    </p>
                     {fieldErrors.razao_social && (
                       <span className="text-xs text-[#F03E54] mt-1 block">
                         {fieldErrors.razao_social}
@@ -988,6 +996,10 @@ export default function Diagnostico() {
                         placeholder="contato@empresa.com.br"
                         className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                       />
+                      <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                        Para criar seu acesso seguro e enviar o diagnóstico completo e o relatório
+                        comparativo.
+                      </p>
                       {fieldErrors.email && (
                         <span className="text-xs text-[#F03E54] mt-1 block">
                           {fieldErrors.email}
@@ -1008,6 +1020,10 @@ export default function Diagnostico() {
                         placeholder="(00) 00000-0000"
                         className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                       />
+                      <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                        Canal direto para envio do protocolo e contato operacional do auditor
+                        pericial.
+                      </p>
                       {fieldErrors.whatsapp && (
                         <span className="text-xs text-[#F03E54] mt-1 block">
                           {fieldErrors.whatsapp}
@@ -1052,6 +1068,10 @@ export default function Diagnostico() {
                       placeholder="Nome completo do diretor ou responsável técnico"
                       className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                     />
+                    <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                      Identifica o signatário legal e responsável técnico pela abertura do
+                      protocolo.
+                    </p>
                     {fieldErrors.responsavel && (
                       <span className="text-xs text-[#F03E54] mt-1 block">
                         {fieldErrors.responsavel}
@@ -1090,6 +1110,9 @@ export default function Diagnostico() {
                           Consultor de Sustentabilidade & Compliance
                         </option>
                       </select>
+                      <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                        Define os termos de responsabilidade técnica e o tipo de chancela requerida.
+                      </p>
                     </div>
 
                     <div>
@@ -1103,6 +1126,9 @@ export default function Diagnostico() {
                         placeholder="Ex.: CRC-PR 12345, CREA-SP 6789"
                         className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                       />
+                      <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                        Para vinculação formal de ART/RRT ou parecer de auditoria CRC no laudo dMRV.
+                      </p>
                     </div>
                   </div>
 
@@ -1118,6 +1144,9 @@ export default function Diagnostico() {
                         placeholder="Senha segura"
                         className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                       />
+                      <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                        Protege o acesso à consulta e permite retomar o comparativo quando quiser.
+                      </p>
                       {fieldErrors.senha && (
                         <span className="text-xs text-[#F03E54] mt-1 block">
                           {fieldErrors.senha}
@@ -1138,6 +1167,9 @@ export default function Diagnostico() {
                         placeholder="Repita a senha"
                         className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                       />
+                      <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                        Garante que sua credencial foi digitada sem erros tipográficos.
+                      </p>
                       {fieldErrors.confirmaSenha && (
                         <span className="text-xs text-[#F03E54] mt-1 block">
                           {fieldErrors.confirmaSenha}
@@ -1242,10 +1274,11 @@ export default function Diagnostico() {
                       <option value="Lucro Presumido">Lucro Presumido</option>
                       <option value="Lucro Real">Lucro Real</option>
                     </select>
-                    <span className="text-[11px] text-[#93A3B5] mt-1 block">
-                      O regime é informado pelo contribuinte e verificado na auditoria documental —
-                      nunca inferido do capital social.
-                    </span>
+                    <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                      Necessário para simular a carga comparativa da Reforma Tributária (PIS/COFINS
+                      vs. IBS/CBS). O regime é informado pelo contribuinte e verificado na auditoria
+                      documental.
+                    </p>
                   </div>
 
                   <div className="pt-4 flex justify-between">
@@ -1299,6 +1332,10 @@ export default function Diagnostico() {
                       placeholder="Ex.: Baixa tensão comercial / Alta tensão industrial (MWh/ano)"
                       className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                     />
+                    <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                      Alimenta o cálculo de emissões indiretas por consumo de eletricidade do SIN
+                      (Escopo 2).
+                    </p>
                   </div>
 
                   {/* Frota própria e Certificações */}
@@ -1385,6 +1422,10 @@ export default function Diagnostico() {
                         Não sei calcular (avaliação pendente)
                       </option>
                     </select>
+                    <p className="text-[11px] text-[#93A3B5]/80 mt-1">
+                      Determina se sua organização estará sujeita ao plano de monitoramento
+                      compulsório ou teto da Lei 15.042/2024.
+                    </p>
 
                     {/* Feedback preliminar SBCE */}
                     <div className="mt-2.5 p-3 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/30 text-xs flex items-center justify-between">

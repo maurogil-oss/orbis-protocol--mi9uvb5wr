@@ -97,11 +97,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const confirmPasswordReset = async (token: string, password: string) => {
     try {
-      await pb.collection('users').confirmPasswordReset(token, password, password)
+      const res = await pb.collection('users').confirmPasswordReset(token, password, password)
+      // PocketBase retorna true ou status 204/200; se falhar ou se não for true (em SDK PocketBase v0.36 confirmPasswordReset retorna boolean)
+      if (res === false) {
+        return {
+          success: false,
+          error:
+            'O servidor recusou a redefinição de senha. O link pode ter expirado ou a senha não cumpre a política.',
+        }
+      }
       return { success: true }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Token inválido ou expirado.'
-      return { success: false, error: message }
+    } catch (err: any) {
+      // Extrair mensagem detalhada caso venha de erro de validação do hook/backend
+      const backendMsg =
+        err?.data?.data?.password?.message ||
+        err?.data?.data?.passwordConfirm?.message ||
+        err?.data?.message ||
+        err?.message ||
+        'Não foi possível redefinir a senha. O link pode ter expirado ou a senha foi recusada pelo servidor.'
+      return { success: false, error: backendMsg }
     }
   }
 
