@@ -65,8 +65,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(authData.record)
       setToken(authData.token)
       return { success: true }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'E-mail ou senha inválidos'
+    } catch (_err: unknown) {
+      // Mensagem SEMPRE genérica para proteção contra enumeração e força bruta
+      const message =
+        'Credenciais inválidas ou limite temporário de tentativas excedido. Por favor, tente novamente mais tarde.'
       return { success: false, error: message }
     }
   }

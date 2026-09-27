@@ -12,6 +12,38 @@
 // Execução on-demand chamada pelo painel ou cron
 routerAdd('POST', '/backend/v1/assinaturas/verificar-ciclo', (e) => {
   try {
+    // Exigir token de autorização interno (variável de ambiente INTERNAL_CRON_TOKEN ou PB_SUPERUSER_TOKEN)
+    // OU autenticação de administrador/master
+    const info = e.requestInfo()
+    const headers = info ? info.headers || {} : {}
+    const internalTokenEnv = (
+      $os.getenv('INTERNAL_CRON_TOKEN') ||
+      $os.getenv('PB_SUPERUSER_TOKEN') ||
+      ''
+    ).trim()
+    const headerToken = (headers['x-internal-token'] || headers['x-cron-token'] || '').trim()
+
+    let autorizado = false
+
+    // 1. Autorização via token de ambiente interno
+    if (internalTokenEnv && headerToken && headerToken === internalTokenEnv) {
+      autorizado = true
+    }
+
+    // 2. Autorização via usuário logado com papel admin ou master
+    if (!autorizado && e.auth) {
+      const role = e.auth.getString('role')
+      if (role === 'admin' || role === 'master' || (e.hasSuperuserAuth && e.hasSuperuserAuth())) {
+        autorizado = true
+      }
+    }
+
+    if (!autorizado) {
+      return e.json(403, {
+        error:
+          'Acesso não autorizado. Endpoint reservado para rotina de cron interna ou administradores.',
+      })
+    }
     const hoje = new Date()
     const hojeIso = hoje.toISOString().split('T')[0]
     let cobrancasGeradas = 0

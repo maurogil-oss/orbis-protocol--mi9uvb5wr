@@ -58,7 +58,10 @@ export default function Login() {
         navigate('/painel', { replace: true })
       }
     } else {
-      setError(res.error || 'Credenciais inválidas. Verifique seu e-mail e senha.')
+      setError(
+        res.error ||
+          'Credenciais inválidas ou limite temporário de tentativas excedido. Por favor, tente novamente mais tarde.',
+      )
     }
   }
 

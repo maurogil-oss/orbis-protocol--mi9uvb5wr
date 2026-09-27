@@ -141,7 +141,14 @@ routerUse((e) => {
   return e.next()
 })
 
-// 2. Rate limit para Login (users auth-with-password): 10 tentativas por minuto por IP + bloqueio progressivo
+// 2. Rate limit de força bruta no login (users auth-with-password):
+//    - Dois critérios: e-mail normalizado (login_user_<email>) e IP (login_ip_<ip>)
+//    - Janela: 5 tentativas inválidas em 15 minutos dispara bloqueio progressivo:
+//      5 falhas -> 30s; 6 falhas -> 2min; 7+ falhas -> 10min.
+//    - Mensagem de erro SEMPRE genérica:
+//      "Credenciais inválidas ou limite temporário de tentativas excedido. Por favor, tente novamente mais tarde."
+//    - Registro no audit_log: acao 'AUTH_BRUTE_FORCE_BLOCKED', entidade 'rate_limiter',
+//      detalhes com email mascarado, contagem de falhas, duração e chain_hash.
 onRecordAuthWithPasswordRequest((e) => {
   let clientIp = '127.0.0.1'
   try {
@@ -155,31 +162,99 @@ onRecordAuthWithPasswordRequest((e) => {
     clientIp = '127.0.0.1'
   }
 
-  const agoraMs = Date.now()
-  const umMinutoAtrasIso = new Date(agoraMs - 60000).toISOString().replace('T', ' ').slice(0, 19)
-  const maxLoginPermitido = 10
+  const rawIdentity = (e.identity || '').toString().trim().toLowerCase()
+  const emailKey = rawIdentity ? 'login_user_' + rawIdentity : ''
+  const ipKey = 'login_ip_' + clientIp
 
-  let contagemLogin = 0
-  try {
-    const logsRecentes = $app.findRecordsByFilter(
-      'audit_log',
-      `entidade = 'rate_limiter' && entidade_id = 'login_users' && ip = '${clientIp}' && created >= '${umMinutoAtrasIso}'`,
-      '-created',
-      maxLoginPermitido + 2,
-      0,
-    )
-    contagemLogin = logsRecentes ? logsRecentes.length : 0
-  } catch (_) {
-    contagemLogin = 0
+  const agoraMs = Date.now()
+  const quinzeMinutosAtrasMs = agoraMs - 15 * 60 * 1000
+  const quinzeMinutosAtrasIso = new Date(quinzeMinutosAtrasMs)
+    .toISOString()
+    .replace('T', ' ')
+    .slice(0, 19)
+
+  // Função inline para mascarar e-mail: jo***e@empresa.com
+  let emailMascarado = 'desconhecido'
+  if (rawIdentity) {
+    const partesEmail = rawIdentity.split('@')
+    const usuarioParte = partesEmail[0] || ''
+    const dominioParte = partesEmail[1] || ''
+    if (usuarioParte.length <= 2) {
+      emailMascarado = usuarioParte.charAt(0) + '***@' + dominioParte
+    } else {
+      emailMascarado =
+        usuarioParte.slice(0, 2) + '***' + usuarioParte.slice(-1) + '@' + dominioParte
+    }
   }
 
-  if (contagemLogin >= maxLoginPermitido) {
-    // Registra evento RATE_LIMIT_EXCEEDED no audit_log com hash encadeado
+  const MENSAGEM_GENERICA =
+    'Credenciais inválidas ou limite temporário de tentativas excedido. Por favor, tente novamente mais tarde.'
+
+  // Helper inline para contar falhas e verificar se há bloqueio ativo em uma chave
+  const verificarChave = (chave, ehIp) => {
+    if (!chave) return { contagem: 0, bloqueado: false, duracaoSec: 0, tempoRestanteSec: 0 }
+
+    let logs = []
+    try {
+      const filtro = ehIp
+        ? `entidade = 'rate_limiter' && (entidade_id = '${chave}' || ip = '${clientIp}') && acao = 'AUTH_LOGIN_FAILED' && created >= '${quinzeMinutosAtrasIso}'`
+        : `entidade = 'rate_limiter' && entidade_id = '${chave}' && acao = 'AUTH_LOGIN_FAILED' && created >= '${quinzeMinutosAtrasIso}'`
+
+      logs = $app.findRecordsByFilter('audit_log', filtro, '-created', 50, 0) || []
+    } catch (_) {
+      logs = []
+    }
+
+    const contagem = logs.length
+    if (contagem >= 5) {
+      // Determina duração progressiva da penalidade
+      let duracaoSec = 30
+      if (contagem === 6) {
+        duracaoSec = 120
+      } else if (contagem >= 7) {
+        duracaoSec = 600
+      }
+
+      // Última falha registrada
+      const ultimoLog = logs[0]
+      let ultimoMs = agoraMs
+      try {
+        const createdStr = ultimoLog.getString('created').replace(' ', 'T') + 'Z'
+        ultimoMs = new Date(createdStr).getTime()
+      } catch (_) {
+        ultimoMs = agoraMs
+      }
+
+      const diffSec = Math.floor((agoraMs - ultimoMs) / 1000)
+      if (diffSec < duracaoSec) {
+        return {
+          bloqueado: true,
+          contagem: contagem,
+          duracaoSec: duracaoSec,
+          tempoRestanteSec: duracaoSec - diffSec,
+        }
+      }
+    }
+
+    return { contagem: contagem, bloqueado: false, duracaoSec: 0, tempoRestanteSec: 0 }
+  }
+
+  const stEmail = verificarChave(emailKey, false)
+  const stIp = verificarChave(ipKey, true)
+
+  const estaBloqueado = stEmail.bloqueado || stIp.bloqueado
+  const motivoBloqueio =
+    stEmail.bloqueado && stIp.bloqueado ? 'email_e_ip' : stEmail.bloqueado ? 'email' : 'ip'
+  const contagemAtiva = Math.max(stEmail.contagem, stIp.contagem)
+  const duracaoAtiva = Math.max(stEmail.duracaoSec, stIp.duracaoSec)
+
+  if (estaBloqueado) {
+    // Registrar bloqueio no audit_log com acao 'AUTH_BRUTE_FORCE_BLOCKED'
     try {
       const auditCol = $app.findCollectionByNameOrId('audit_log')
-      const log = new Record(auditCol)
+      const blockLog = new Record(auditCol)
 
-      let previousHash = 'GENESIS_HASH_RATE_LIMIT_ORBIS_2026'
+      let previousHash = 'GENESIS_HASH_AUTH_BRUTE_FORCE_ORBIS_2026'
       try {
         const ultimos = $app.findRecordsByFilter('audit_log', 'id != ""', '-created', 1, 0)
         if (ultimos && ultimos.length > 0) {
@@ -190,48 +265,144 @@ onRecordAuthWithPasswordRequest((e) => {
       } catch (_) {}
 
       const timestampIso = new Date().toISOString()
-      const canonicalStr = `RATE_LIMIT_EXCEEDED|${clientIp}|login_users|${contagemLogin + 1}|${maxLoginPermitido}|${timestampIso}|${previousHash}`
+      const canonicalStr = `AUTH_BRUTE_FORCE_BLOCKED|${clientIp}|${emailMascarado}|${contagemAtiva}|${duracaoAtiva}|${motivoBloqueio}|${timestampIso}|${previousHash}`
       const chainHash = $security.sha256(canonicalStr)
 
-      log.set('acao', 'RATE_LIMIT_EXCEEDED')
-      log.set('entidade', 'rate_limiter')
-      log.set('entidade_id', 'login_users')
-      log.set('ator_id', 'sistema_firewall')
-      log.set('ator_email', 'suporte@orbis-protocol.com')
-      log.set('papel', 'firewall')
-      log.set('ip', clientIp)
-      log.set('detalhes', {
-        rota: 'login_users',
-        limite_por_minuto: maxLoginPermitido,
-        tentativas_acumuladas: contagemLogin + 1,
+      blockLog.set('acao', 'AUTH_BRUTE_FORCE_BLOCKED')
+      blockLog.set('entidade', 'rate_limiter')
+      blockLog.set('entidade_id', emailKey || ipKey)
+      blockLog.set('ator_id', 'sistema_firewall')
+      blockLog.set('ator_email', 'suporte@orbis-protocol.com')
+      blockLog.set('papel', 'firewall')
+      blockLog.set('ip', clientIp)
+      blockLog.set('detalhes', {
+        email_mascarado: emailMascarado,
+        contagem_falhas: contagemAtiva,
+        duracao_bloqueio_segundos: duracaoAtiva,
+        criterio_bloqueio: motivoBloqueio,
         previous_hash: previousHash,
         chain_hash: chainHash,
-        bloqueio: 'Bloqueio progressivo de login',
+        status: '429_TOO_MANY_REQUESTS',
         data_evento: timestampIso,
       })
-      $app.save(log)
-    } catch (_) {}
+      $app.save(blockLog)
+    } catch (errAudit) {
+      console.log('[rate_limiter] Erro ao gravar AUTH_BRUTE_FORCE_BLOCKED:', errAudit)
+    }
 
-    throw new BadRequestError('Muitas tentativas. Aguarde alguns minutos.')
+    throw new BadRequestError(MENSAGEM_GENERICA)
   }
 
-  // Registra tentativa no audit_log
+  // Executa o próximo handler na cadeia (tentativa real de autenticação de senha)
+  let authErro = null
   try {
-    const auditCol = $app.findCollectionByNameOrId('audit_log')
-    const pingLog = new Record(auditCol)
-    pingLog.set('acao', 'RATE_LIMIT_PING')
-    pingLog.set('entidade', 'rate_limiter')
-    pingLog.set('entidade_id', 'login_users')
-    pingLog.set('ator_id', 'sistema_firewall')
-    pingLog.set('ator_email', 'suporte@orbis-protocol.com')
-    pingLog.set('papel', 'firewall')
-    pingLog.set('ip', clientIp)
-    pingLog.set('detalhes', {
-      rota: 'login_users',
-      ordem: contagemLogin + 1,
-    })
-    $app.save(pingLog)
-  } catch (_) {}
+    e.next()
+  } catch (err) {
+    authErro = err
+  }
 
-  e.next()
+  if (authErro) {
+    // Autenticação falhou! Registrar falha para e-mail e IP no audit_log
+    const novaContagem = contagemAtiva + 1
+    try {
+      const auditCol = $app.findCollectionByNameOrId('audit_log')
+
+      let previousHash = 'GENESIS_HASH_AUTH_FAIL_ORBIS_2026'
+      try {
+        const ultimos = $app.findRecordsByFilter('audit_log', 'id != ""', '-created', 1, 0)
+        if (ultimos && ultimos.length > 0) {
+          const u = ultimos[0]
+          const d = u.get('detalhes') || {}
+          previousHash = (d && d.chain_hash) || u.getString('hash_sha256') || u.id
+        }
+      } catch (_) {}
+
+      const timestampIso = new Date().toISOString()
+
+      // Registrar falha associada ao e-mail
+      if (emailKey) {
+        const failUserLog = new Record(auditCol)
+        const canonicalUserStr = `AUTH_LOGIN_FAILED|${emailKey}|${clientIp}|${novaContagem}|${timestampIso}|${previousHash}`
+        const chainHashUser = $security.sha256(canonicalUserStr)
+
+        failUserLog.set('acao', 'AUTH_LOGIN_FAILED')
+        failUserLog.set('entidade', 'rate_limiter')
+        failUserLog.set('entidade_id', emailKey)
+        failUserLog.set('ator_id', 'sistema_firewall')
+        failUserLog.set('ator_email', 'suporte@orbis-protocol.com')
+        failUserLog.set('papel', 'firewall')
+        failUserLog.set('ip', clientIp)
+        failUserLog.set('detalhes', {
+          chave: emailKey,
+          email_mascarado: emailMascarado,
+          tentativa_numero: novaContagem,
+          previous_hash: previousHash,
+          chain_hash: chainHashUser,
+          data_evento: timestampIso,
+        })
+        $app.save(failUserLog)
+        previousHash = chainHashUser
+      }
+
+      // Registrar falha associada ao IP
+      const failIpLog = new Record(auditCol)
+      const canonicalIpStr = `AUTH_LOGIN_FAILED|${ipKey}|${clientIp}|${novaContagem}|${timestampIso}|${previousHash}`
+      const chainHashIp = $security.sha256(canonicalIpStr)
+
+      failIpLog.set('acao', 'AUTH_LOGIN_FAILED')
+      failIpLog.set('entidade', 'rate_limiter')
+      failIpLog.set('entidade_id', ipKey)
+      failIpLog.set('ator_id', 'sistema_firewall')
+      failIpLog.set('ator_email', 'suporte@orbis-protocol.com')
+      failIpLog.set('papel', 'firewall')
+      failIpLog.set('ip', clientIp)
+      failIpLog.set('detalhes', {
+        chave: ipKey,
+        email_mascarado: emailMascarado,
+        tentativa_numero: novaContagem,
+        previous_hash: previousHash,
+        chain_hash: chainHashIp,
+        data_evento: timestampIso,
+      })
+      $app.save(failIpLog)
+
+      // Se ao falhar atingiu 5 ou mais tentativas, registra imediatamente o bloqueio progressivo
+      if (novaContagem >= 5) {
+        let duracaoSec = 30
+        if (novaContagem === 6) {
+          duracaoSec = 120
+        } else if (novaContagem >= 7) {
+          duracaoSec = 600
+        }
+
+        const blockLog = new Record(auditCol)
+        const canonicalBlockStr = `AUTH_BRUTE_FORCE_BLOCKED|${clientIp}|${emailMascarado}|${novaContagem}|${duracaoSec}|threshold_atingido|${timestampIso}|${chainHashIp}`
+        const chainHashBlock = $security.sha256(canonicalBlockStr)
+
+        blockLog.set('acao', 'AUTH_BRUTE_FORCE_BLOCKED')
+        blockLog.set('entidade', 'rate_limiter')
+        blockLog.set('entidade_id', emailKey || ipKey)
+        blockLog.set('ator_id', 'sistema_firewall')
+        blockLog.set('ator_email', 'suporte@orbis-protocol.com')
+        blockLog.set('papel', 'firewall')
+        blockLog.set('ip', clientIp)
+        blockLog.set('detalhes', {
+          email_mascarado: emailMascarado,
+          contagem_falhas: novaContagem,
+          duracao_bloqueio_segundos: duracaoSec,
+          criterio_bloqueio: 'threshold_atingido',
+          previous_hash: chainHashIp,
+          chain_hash: chainHashBlock,
+          status: '429_TOO_MANY_REQUESTS',
+          data_evento: timestampIso,
+        })
+        $app.save(blockLog)
+      }
+    } catch (errRec) {
+      console.log('[rate_limiter] Erro ao registrar falha de autenticação:', errRec)
+    }
+
+    // Lança erro SEMPRE genérico
+    throw new BadRequestError(MENSAGEM_GENERICA)
+  }
 }, 'users')

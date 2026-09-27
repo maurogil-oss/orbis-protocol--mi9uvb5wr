@@ -12,6 +12,58 @@
  */
 
 routerUse((e) => {
+  // 1. Bloqueio de acesso ao painel administrativo PocketBase (rota /_/)
+  // Toda requisição cujo caminho comece com /_/ responde 404 JSON, exceto
+  // se vier de IP expressamente autorizado da equipe técnica
+  const req = e.request
+  const urlPath = (req && req.url ? req.url.path : '') || ''
+  if (urlPath.startsWith('/_/')) {
+    let clientIp = '127.0.0.1'
+    try {
+      const info = e.requestInfo()
+      if (info && info.headers) {
+        const fwd =
+          info.headers['x-forwarded-for'] || info.headers['x-real-ip'] || info.remoteIP || ''
+        clientIp = String(fwd).split(',')[0].trim() || '127.0.0.1'
+      }
+    } catch (_) {
+      clientIp = '127.0.0.1'
+    }
+
+    // Obter lista de IPs autorizados via env / cofre (ADMIN_ALLOWED_IPS)
+    const allowedEnv = ($os.getenv('ADMIN_ALLOWED_IPS') || '').trim()
+    let isAllowed = false
+
+    if (allowedEnv) {
+      const listaIps = allowedEnv
+        .split(',')
+        .map((ip) => ip.trim())
+        .filter(Boolean)
+      if (listaIps.indexOf(clientIp) !== -1) {
+        isAllowed = true
+      }
+    } else {
+      // Se a variável não estiver definida, bloqueia tudo que não seja localhost
+      const isLocalhost =
+        clientIp === '127.0.0.1' ||
+        clientIp === '::1' ||
+        clientIp === 'localhost' ||
+        clientIp === '0.0.0.0'
+      if (isLocalhost) {
+        isAllowed = true
+      }
+    }
+
+    if (!isAllowed) {
+      // Resposta 404 JSON padronizada ocultando existência do painel
+      return e.json(404, {
+        code: 404,
+        message: 'The requested resource was not found.',
+        data: {},
+      })
+    }
+  }
+
   const res = e.response
   if (res && res.header) {
     // 1. Prevenção de MIME Sniffing
