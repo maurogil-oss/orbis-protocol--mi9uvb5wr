@@ -221,8 +221,8 @@ export default function Layout() {
     <div className="flex flex-col min-h-screen w-full overflow-x-clip bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30 selection:text-white">
       {/* Cabeçalho Unificado Sticky com z-index alto e largura contida */}
       <div className="sticky top-0 z-40 w-full">
-        {/* 1. Regulatory Marquee Top Bar — Harmonizado ao tom base #0A0E12 com divisória sutil */}
-        <div className="w-full bg-[#0A0E12]/90 backdrop-blur-md border-b border-[rgba(244,247,250,0.06)] py-2 text-xs overflow-hidden transition-colors duration-300">
+        {/* 1. Regulatory Marquee Top Bar — Sólido opaco #0A0E12 sem transparência e sem backdrop-blur */}
+        <div className="w-full bg-[#0A0E12] border-b border-[rgba(244,247,250,0.06)] py-2 text-xs overflow-hidden transition-colors duration-300">
           <div className="animate-marquee items-center gap-6 whitespace-nowrap text-[#93A3B5] font-medium tracking-wider">
             {[...regulations, ...regulations].map((reg, idx) => (
               <span key={idx} className="inline-flex items-center gap-4">
@@ -236,12 +236,12 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* 2. Sticky Header — Tom idêntico ao fundo subjacente (#0A0E12) com blur refinado e divisória fina */}
+        {/* 2. Sticky Header — Sólido opaco #0A0E12 sem transparência e sem backdrop-blur, com divisória fina e sombra suave ao rolar */}
         <header
-          className={`w-full transition-all duration-300 ${
+          className={`w-full transition-all duration-300 bg-[#0A0E12] ${
             isScrolled
-              ? 'bg-[#0A0E12]/85 backdrop-blur-xl border-b border-[rgba(244,247,250,0.08)] shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
-              : 'bg-[#0A0E12]/75 backdrop-blur-lg border-b border-[rgba(244,247,250,0.04)]'
+              ? 'border-b border-[rgba(244,247,250,0.08)] shadow-[0_4px_24px_rgba(0,0,0,0.6)]'
+              : 'border-b border-[rgba(244,247,250,0.04)]'
           }`}
         >
           <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
@@ -501,8 +501,8 @@ export default function Layout() {
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          {/* Drawer Content */}
-          <div className="relative w-full max-w-xs bg-[#111820] border-l border-[rgba(244,247,250,0.12)] h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-right duration-300">
+          {/* Drawer Content — Sólido opaco com tom-base #0A0E12 */}
+          <div className="relative w-full max-w-xs bg-[#0A0E12] border-l border-[rgba(244,247,250,0.12)] h-full p-6 flex flex-col justify-between shadow-2xl z-10 animate-in slide-in-from-right duration-300">
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-[rgba(244,247,250,0.1)]">
                 <div className="flex items-center gap-3">

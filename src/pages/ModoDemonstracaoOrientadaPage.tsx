@@ -210,7 +210,7 @@ export default function ModoDemonstracaoOrientadaPage() {
   return (
     <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA] pb-24">
       {/* 1. BARRA DE PROGRESSO FIXA NO TOPO */}
-      <div className="sticky top-20 z-30 bg-[#0A0E12]/90 backdrop-blur-xl border-b border-[rgba(244,247,250,0.08)] shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
+      <div className="sticky top-20 z-30 bg-[#0A0E12] border-b border-[rgba(244,247,250,0.08)] shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
         <div className="w-full h-1.5 bg-[#16202B]">
           <div
             className="h-full bg-gradient-to-r from-[#12B886] via-[#20c997] to-[#D9B36C] transition-all duration-300"

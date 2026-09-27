@@ -163,7 +163,7 @@ export const PropostaRemineraPage: React.FC = () => {
       {/* BARRA SUPERIOR FLUTUANTE DE CONTROLE (Oculta na impressão) */}
       <header
         aria-label="Controles da Apresentação"
-        className="no-print sticky top-0 z-50 backdrop-blur-md bg-[#0A0E12]/90 border-b border-[rgba(244,247,250,0.1)] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all"
+        className="no-print sticky top-0 z-50 bg-[#0A0E12] border-b border-[rgba(244,247,250,0.1)] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
       >
         <div className="flex items-center gap-4">
           <OrbisLogo variant="full" height={30} alt="Orbis Protocol" />
