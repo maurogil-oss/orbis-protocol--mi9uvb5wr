@@ -209,12 +209,14 @@ export default function Layout() {
       return location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
     })
 
-  // 4 itens essenciais da faixa regulatória
+  // 6 itens essenciais da faixa regulatória
   const regulations = [
     '01/08/2026: Fase-teste IBS 0,1% / CBS 0,9% na NF-e (Art. 348 LC 214/2025)',
     'Lei 15.042/2024: Mercado Regulado de Carbono (SBCE - limiares 10k e 25k tCO₂e)',
     'Programa MOVER Lei 14.902/2024: Desmontagem veicular e circularidade homologada',
     'Reforma Tributária LC 227/2026 & Decreto 12.955/2026: Novo IVA Dual',
+    'IFRS S1/S2: relato de sustentabilidade e riscos climáticos',
+    'Crédito Bacen 4.945: lastro de depósitos ambientais',
   ]
 
   return (
