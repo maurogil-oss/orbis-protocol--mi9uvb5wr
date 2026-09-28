@@ -7,7 +7,7 @@ import {
   listarLogsLotesNfs,
   enviarLoteNfsApi,
 } from '@/services/nfsApiService'
-import { pb } from '@/lib/pocketbase/client'
+import pb from '@/lib/pocketbase/client'
 
 describe('nfsApiService — Gestão de Chaves e Ingestão de NFs', () => {
   beforeEach(() => {
