@@ -31,6 +31,7 @@ import {
   revogarCertificadoA1,
   CertificadoA1Status,
 } from '@/services/infosimplesService'
+import { extrairMetadadosCertificadoPfx } from '@/services/certificadoA1Extractor'
 import {
   parseSpedTxt,
   salvarImportacaoSped,
@@ -187,6 +188,30 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
 
     setSalvandoA1(true)
     try {
+      // Tarefa 1: Extração client-side da validade do certificado X.509 em memória antes do envio
+      let validadeExtraidaPb: string | undefined = undefined
+      if (arquivoPfxBase64 && senhaA1) {
+        try {
+          const resultadoExtracao = extrairMetadadosCertificadoPfx(arquivoPfxBase64, senhaA1)
+          if (resultadoExtracao.sucesso && resultadoExtracao.validadePocketBase) {
+            validadeExtraidaPb = resultadoExtracao.validadePocketBase
+            console.log(
+              `[HubConexaoFiscal] Validade extraída client-side com sucesso: ${validadeExtraidaPb}`,
+            )
+          } else {
+            console.warn(
+              '[HubConexaoFiscal] Extração client-side de validade não obteve data:',
+              resultadoExtracao.erro,
+            )
+          }
+        } catch (extracaoErr) {
+          console.warn(
+            '[HubConexaoFiscal] Erro na rotina de extração client-side de validade (prosseguindo sem bloquear):',
+            extracaoErr,
+          )
+        }
+      }
+
       const res = await salvarConfigCertificadoA1({
         cnpj_titular: cnpjA1,
         razao_social: razaoA1,
@@ -195,6 +220,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
         termo_versao: statusA1?.termo_versao || TERMO_CUSTODIA_VERSAO_ATUAL,
         arquivo_base64: arquivoPfxBase64 || undefined,
         arquivo_nome: arquivoPfxNome || undefined,
+        validade_certificado: validadeExtraidaPb,
       })
       setMensagemA1({ tipo: 'ok', texto: res.mensagem })
       setSenhaA1('')
@@ -1164,6 +1190,24 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
           if (senhaA1 && cnpjA1) {
             setSalvandoA1(true)
             try {
+              let validadeExtraidaPb: string | undefined = undefined
+              if (arquivoPfxBase64 && senhaA1) {
+                try {
+                  const resultadoExtracao = extrairMetadadosCertificadoPfx(
+                    arquivoPfxBase64,
+                    senhaA1,
+                  )
+                  if (resultadoExtracao.sucesso && resultadoExtracao.validadePocketBase) {
+                    validadeExtraidaPb = resultadoExtracao.validadePocketBase
+                  }
+                } catch (extracaoErr) {
+                  console.warn(
+                    '[HubConexaoFiscal] Erro na extração client-side via modal (prosseguindo):',
+                    extracaoErr,
+                  )
+                }
+              }
+
               const res = await salvarConfigCertificadoA1({
                 cnpj_titular: cnpjA1,
                 razao_social: razaoA1,
@@ -1172,6 +1216,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
                 termo_versao: versao,
                 arquivo_base64: arquivoPfxBase64 || undefined,
                 arquivo_nome: arquivoPfxNome || undefined,
+                validade_certificado: validadeExtraidaPb,
               })
               setMensagemA1({ tipo: 'ok', texto: res.mensagem })
               setSenhaA1('')

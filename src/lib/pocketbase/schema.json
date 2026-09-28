@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-28T11:42:52.601Z",
+  "generatedAt": "2026-09-28T11:51:38.865Z",
   "collections": [
     {
       "name": "users",
@@ -1197,6 +1197,24 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "arquivo_assinado_pdf",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "assinatura_digital_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "assinado_icp_brasil",
+          "type": "bool",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [

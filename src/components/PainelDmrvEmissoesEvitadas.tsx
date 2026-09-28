@@ -16,6 +16,8 @@ import {
   ArrowUpRight,
   RefreshCw,
   Hash,
+  PenLine,
+  Award,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,14 +30,23 @@ import {
   classificarSbce,
   type DadosDmrvEmpresa,
 } from '@/services/dmrvEmissoesService'
-
+import { obterStatusCertificadoA1, type CertificadoA1Status } from '@/services/infosimplesService'
+import { ModalAssinaturaLaudo } from '@/components/ModalAssinaturaLaudo'
 export function PainelDmrvEmissoesEvitadas() {
   const { user } = useAuth()
   const [dados, setDados] = useState<DadosDmrvEmpresa | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [exportando, setExportando] = useState(false)
   const [hashGerado, setHashGerado] = useState<string | null>(null)
-
+  const [statusA1, setStatusA1] = useState<CertificadoA1Status | null>(null)
+  const [modalAssinaturaAberto, setModalAssinaturaAberto] = useState(false)
+  const [laudoSelecionado, setLaudoSelecionado] = useState<{
+    id: string
+    titulo?: string
+    codigo_verificacao?: string
+    hash_sha256?: string
+    tipo_relatorio?: string
+  } | null>(null)
   const carregar = async () => {
     setCarregando(true)
     try {
@@ -56,6 +67,21 @@ export function PainelDmrvEmissoesEvitadas() {
     carregar()
   }, [user])
 
+  // Tarefa 2: Carrega o status da custódia A1 ativa do cliente para habilitar assinatura ICP-Brasil
+  useEffect(() => {
+    const carregarStatusA1 = async () => {
+      try {
+        const st = await obterStatusCertificadoA1(user?.id)
+        setStatusA1(st)
+      } catch {
+        setStatusA1(null)
+      }
+    }
+    if (user?.id) carregarStatusA1()
+  }, [user?.id])
+
+  const custodiaA1Ativa =
+    Boolean(statusA1) && statusA1?.status_custodia === 'ativo' && statusA1?.ativo === true
   const handleExportarCsv = async () => {
     if (!dados) return
     setExportando(true)
@@ -354,20 +380,29 @@ export function PainelDmrvEmissoesEvitadas() {
                   <th className="py-2.5 px-3">Data Emissão</th>
                   <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
                   <th className="py-2.5 px-3 text-right">Hash SHA-256</th>
+                  <th className="py-2.5 px-3 text-right">Assinatura ICP-Brasil</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-foreground">
                 {dados.relatorios_anteriores.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-6 text-center text-muted-foreground text-xs">
+                    <td colSpan={5} className="py-6 text-center text-muted-foreground text-xs">
                       Nenhum relatório dMRV emitido recentemente. Use o botão "Exportar Relatório
                       dMRV" acima.
                     </td>
                   </tr>
                 ) : (
-                  dados.relatorios_anteriores.map((r) => (
+                  dados.relatorios_anteriores.map((r: any) => (
                     <tr key={r.id} className="hover:bg-muted/40 transition-colors">
-                      <td className="py-2.5 px-3 font-semibold text-foreground">{r.titulo}</td>
+                      <td className="py-2.5 px-3 font-semibold text-foreground">
+                        <div>{r.titulo}</div>
+                        {r.assinado_icp_brasil && r.assinatura_digital_json && (
+                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">
+                            Titular: {r.assinatura_digital_json.titular_nome} (
+                            {r.assinatura_digital_json.cnpj_titular})
+                          </div>
+                        )}
+                      </td>
                       <td className="py-2.5 px-3 font-mono text-[11px] text-muted-foreground">
                         {new Date(r.created).toLocaleString('pt-BR')}
                       </td>
@@ -377,6 +412,46 @@ export function PainelDmrvEmissoesEvitadas() {
                       <td className="py-2.5 px-3 text-right font-mono text-[10px] text-primary truncate max-w-[140px]">
                         {r.hash_sha256}
                       </td>
+                      <td className="py-2.5 px-3 text-right">
+                        {custodiaA1Ativa ? (
+                          r.assinado_icp_brasil ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-bold border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 gap-1"
+                              title="Documento com assinatura digital baseada em certificado ICP-Brasil e-CNPJ A1 sob custódia do titular e prova criptográfica SHA-256"
+                            >
+                              <Award className="w-3 h-3" />
+                              Assinatura Digital e-CNPJ A1 ICP-Brasil
+                            </Badge>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setLaudoSelecionado({
+                                  id: r.id,
+                                  titulo: r.titulo,
+                                  codigo_verificacao: r.codigo_verificacao,
+                                  hash_sha256: r.hash_sha256,
+                                  tipo_relatorio: r.tipo_relatorio,
+                                })
+                                setModalAssinaturaAberto(true)
+                              }}
+                              className="h-7 px-2.5 text-[10px] font-bold border-emerald-500/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 gap-1"
+                            >
+                              <PenLine className="w-3 h-3" />
+                              Assinar com ICP-Brasil
+                            </Button>
+                          )
+                        ) : (
+                          <span
+                            className="text-[10px] text-muted-foreground"
+                            title="Custódia A1 não ativa para esta conta"
+                          >
+                            —
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -385,6 +460,18 @@ export function PainelDmrvEmissoesEvitadas() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Assinatura Digital ICP-Brasil (Tarefa 2) */}
+      <ModalAssinaturaLaudo
+        aberto={modalAssinaturaAberto}
+        onClose={() => setModalAssinaturaAberto(false)}
+        relatorio={laudoSelecionado}
+        cnpjCustodia={statusA1?.cnpj_titular}
+        razaoCustodia={statusA1?.razao_social}
+        onAssinaturaConcluida={() => {
+          carregar()
+        }}
+      />
     </div>
   )
 }
