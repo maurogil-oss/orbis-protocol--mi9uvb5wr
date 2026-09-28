@@ -24,7 +24,7 @@ describe('Hero Section - Home (Index)', () => {
     // Subtítulo atualizado sem repetição da palavra descarbonização
     expect(
       screen.getByText(
-        'Conformidade com a Lei 15.042, rastreabilidade da cadeia e circularidade — a prova que bancos, auditorias e reguladores exigem',
+        'Conformidade com a Lei 15.042, rastreabilidade da cadeia e circularidade — a prova que reguladores, auditorias e sistema financeiro exigem',
       ),
     ).toBeDefined()
 

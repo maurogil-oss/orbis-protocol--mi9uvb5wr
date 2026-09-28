@@ -174,7 +174,7 @@ export default function Index() {
             {/* Sub-headline Linear: pequena, espaçada, elegante */}
             <p className="font-heading text-sm sm:text-base md:text-lg text-[#93A3B5] font-semibold tracking-[0.08em] uppercase mb-8">
               Conformidade com a Lei 15.042, rastreabilidade da cadeia e circularidade — a prova que
-              bancos, auditorias e reguladores exigem
+              reguladores, auditorias e sistema financeiro exigem
             </p>
 
             {/* Descrição em parágrafo */}
