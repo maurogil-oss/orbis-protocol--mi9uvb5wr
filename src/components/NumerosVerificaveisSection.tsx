@@ -42,8 +42,8 @@ export function NumerosVerificaveisSection() {
   const itens = [
     {
       id: 'selos',
-      titulo: 'Selos Oficiais Emitidos',
-      subtitulo: 'Atestados digitais dMRV ativos com hash canônico',
+      titulo: 'Selos no Ambiente Demo',
+      subtitulo: 'Atestados Orbis com hash canônico, no ambiente demo',
       valor: metricas.selosEmitidos,
       icon: Award,
       link: '/verificador',
@@ -51,11 +51,12 @@ export function NumerosVerificaveisSection() {
       corDestaque: 'text-[#12B886]',
       bordaCor: 'border-[#12B886]/30',
       badgeCor: 'bg-[#12B886]/10 text-[#12B886]',
+      badgeRotulo: 'Demo',
     },
     {
       id: 'pecas',
-      titulo: 'Peças Rastreáveis',
-      subtitulo: 'Componentes automotivos catalogados com DPP e CO2e evitado',
+      titulo: 'Peças no Ambiente Demo',
+      subtitulo: 'Componentes automotivos catalogados com DPP e CO2e evitado, no ambiente demo',
       valor: metricas.pecasRastreadas,
       icon: Cpu,
       link: '/passaporte-lote/PR-BX-2026-1240105',
@@ -63,11 +64,12 @@ export function NumerosVerificaveisSection() {
       corDestaque: 'text-[#12B886]',
       bordaCor: 'border-[#12B886]/30',
       badgeCor: 'bg-[#12B886]/10 text-[#12B886]',
+      badgeRotulo: 'Demo',
     },
     {
       id: 'consultas',
-      titulo: 'Consultas de Verificação',
-      subtitulo: 'Auditorias públicas e conferências dpp_consultas registradas',
+      titulo: 'Consultas no Ambiente Demo',
+      subtitulo: 'Auditorias públicas e conferências dpp_consultas registradas, no ambiente demo',
       valor: metricas.consultasDpp,
       icon: Search,
       link: '/verificador',
@@ -75,6 +77,7 @@ export function NumerosVerificaveisSection() {
       corDestaque: 'text-[#3B82F6]',
       bordaCor: 'border-[#3B82F6]/30',
       badgeCor: 'bg-[#3B82F6]/10 text-[#3B82F6]',
+      badgeRotulo: 'Demo',
     },
     {
       id: 'lastros',
@@ -118,8 +121,8 @@ export function NumerosVerificaveisSection() {
               NÚMEROS VERIFICÁVEIS
             </h2>
             <p className="text-sm sm:text-base text-[#93A3B5] mt-2 max-w-2xl leading-relaxed">
-              Volumes reais registrados na infraestrutura PocketBase do Orbis Protocol. Sem dados
-              fictícios ou estimativas descoladas de registros operacionais.
+              Números consultáveis em tempo real na infraestrutura PocketBase; registros de
+              demonstração identificados.
             </p>
           </div>
 
@@ -134,6 +137,12 @@ export function NumerosVerificaveisSection() {
           {itens.map((item) => {
             const Icon = item.icon
             const temVolumeReal = item.valor > 0
+            const rotuloBadge = item.badgeRotulo ?? (temVolumeReal ? 'Ativo' : 'Em homologação')
+            const estiloBadge = item.badgeRotulo
+              ? item.badgeCor
+              : temVolumeReal
+                ? item.badgeCor
+                : 'text-[#93A3B5] bg-[#16202B]'
 
             return (
               <div
@@ -149,17 +158,11 @@ export function NumerosVerificaveisSection() {
                     >
                       <Icon className="w-5 h-5" />
                     </div>
-                    {temVolumeReal ? (
-                      <span
-                        className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${item.badgeCor}`}
-                      >
-                        Ativo
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-mono text-[#93A3B5] uppercase px-2 py-0.5 rounded-full bg-[#16202B]">
-                        Em homologação
-                      </span>
-                    )}
+                    <span
+                      className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${estiloBadge}`}
+                    >
+                      {rotuloBadge}
+                    </span>
                   </div>
 
                   {/* REGRA CRÍTICA: Se uma contagem for zero, exibir o módulo SEM o número. Nunca inventar ou exibir zero como se fosse volume. */}
