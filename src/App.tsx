@@ -33,6 +33,7 @@ import AdminConsolePage from './pages/AdminConsolePage'
 import AreaParceiroPage from './pages/AreaParceiroPage'
 import TestCatalog from './pages/TestCatalog'
 import Privacidade from './pages/Privacidade'
+import TermosUsoPage from './pages/TermosUsoPage'
 import Planos from './pages/Planos'
 import Capital from './pages/Capital'
 import RadarRegulatorio from './pages/RadarRegulatorio'
@@ -115,6 +116,8 @@ const App = () => (
             <Route path="/cadastro" element={<Navigate to="/registro" replace />} />
             <Route path="/teste" element={<TestCatalog />} />
             <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/termos" element={<TermosUsoPage />} />
+            <Route path="/termos-de-uso" element={<Navigate to="/termos" replace />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/financeiro" element={<Navigate to="/planos" replace />} />
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />

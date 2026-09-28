@@ -353,6 +353,63 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
       z-index: 9999;
       user-select: none;
     }
+
+    /* MARCA D'ÁGUA DE PROVENIÊNCIA ORBIS PROTOCOL */
+    .watermark-proveniencia-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      overflow: hidden;
+      opacity: 0.085;
+      user-select: none;
+    }
+    .watermark-proveniencia-line {
+      transform: rotate(-24deg);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #0A0E12;
+      letter-spacing: 3px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      line-height: 1.8;
+      text-align: center;
+    }
+    .watermark-proveniencia-faixa {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #F8FAFC;
+      border: 1px dashed #CBD5E1;
+      border-left: 3px solid #12B886;
+      border-radius: 4px;
+      padding: 6px 10px;
+      margin-bottom: 14px;
+      font-size: 7.5pt;
+      color: #475569;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .watermark-proveniencia-faixa strong {
+      color: #0A0E12;
+    }
+    .watermark-proveniencia-faixa .badge-origem {
+      background: rgba(18, 184, 134, 0.15);
+      color: #047857;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 7pt;
+      border: 1px solid rgba(18, 184, 134, 0.35);
+      white-space: nowrap;
+    }
     .badge-demo-top {
       background: #D9B36C;
       color: #0A0E12;
@@ -628,6 +685,22 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
 </head>
 <body>
 
+  <!-- ==================== MARCA D'ÁGUA DE PROVENIÊNCIA (REPETIÇÃO DIAGONAL) ==================== -->
+  <div class="watermark-proveniencia-overlay" aria-hidden="true">
+    <div class="watermark-proveniencia-line">
+      ORBIS PROTOCOL • PROVA DOCUMENTAL • EMISSÃO: ${dataExtenso.toUpperCase()} • HASH: ${hashSha256.slice(0, 16)} • ${dados.identificacao.cnpj}
+    </div>
+    <div class="watermark-proveniencia-line">
+      INFRAESTRUTURA DMRV • ORBIS PROTOCOL • ENTE: ${dados.identificacao.razaoSocial.toUpperCase().slice(0, 32)} • HASH: ${hashSha256.slice(0, 16)}
+    </div>
+    <div class="watermark-proveniencia-line">
+      EMITIDO VIA ORBIS PROTOCOL • PROVA IMUTÁVEL SHA-256 • AUTENTICIDADE EM ORBIS-PROTOCOL.COM/VERIFICADOR
+    </div>
+    <div class="watermark-proveniencia-line">
+      ORBIS PROTOCOL • PROVA DOCUMENTAL • EMISSÃO: ${dataExtenso.toUpperCase()} • HASH: ${hashSha256.slice(0, 16)} • ${dados.identificacao.cnpj}
+    </div>
+  </div>
+
   <!-- ==================== MARCA D'ÁGUA DEMONSTRAÇÃO SE APLICÁVEL ==================== -->
   ${isDemo ? '<div class="watermark-demo">DEMONSTRAÇÃO</div>' : ''}
 
@@ -689,6 +762,17 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
     <div class="page-header">
       <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV ${isDemo ? '• [DEMONSTRAÇÃO]' : ''}</span>
       <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
+    </div>
+
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE ORBIS PROTOCOL -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Ente Responsável: <strong>${dados.identificacao.razaoSocial}</strong> (CNPJ ${dados.identificacao.cnpj})</span>
+      </div>
+      <div>
+        <span>Emissão: <strong>${dataExtenso}</strong> • Hash: <strong style="color: #047857;">${hashSha256.slice(0, 16)}...</strong></span>
+      </div>
     </div>
 
     <!-- SEÇÃO 1: DIAGNÓSTICO REGULATÓRIO SBCE & CBAM -->
@@ -863,6 +947,17 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
       <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
     </div>
 
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE ORBIS PROTOCOL -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Ente Responsável: <strong>${dados.identificacao.razaoSocial}</strong> (CNPJ ${dados.identificacao.cnpj})</span>
+      </div>
+      <div>
+        <span>Emissão: <strong>${dataExtenso}</strong> • Hash: <strong style="color: #047857;">${hashSha256.slice(0, 16)}...</strong></span>
+      </div>
+    </div>
+
     <div class="section-title">3. Diagnóstico Comparativo Tributário: Hoje × Reforma (EC 132/2023)</div>
     <div class="section-subtitle">
       Avaliação pericial do impacto da substituição dos tributos vigentes (PIS, COFINS, ICMS, ISS, IPI) pelo novo modelo dual (CBS federal e IBS estadual/municipal).
@@ -965,6 +1060,17 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
     <div class="page-header">
       <span class="page-header-title">Orbis Protocol • Relatório Pericial dMRV ${isDemo ? '• [DEMONSTRAÇÃO]' : ''}</span>
       <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
+    </div>
+
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE ORBIS PROTOCOL -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Ente Responsável: <strong>${dados.identificacao.razaoSocial}</strong> (CNPJ ${dados.identificacao.cnpj})</span>
+      </div>
+      <div>
+        <span>Emissão: <strong>${dataExtenso}</strong> • Hash: <strong style="color: #047857;">${hashSha256.slice(0, 16)}...</strong></span>
+      </div>
     </div>
 
     <!-- SEÇÃO 4: GREEN CAPITAL ENGINE -->
@@ -1184,6 +1290,17 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
       <span>Página ${p + 1} de ${totalPaginas} do Anexo • ${dados.identificacao.razaoSocial}</span>
     </div>
 
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE ORBIS PROTOCOL -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Ente: <strong>${dados.identificacao.razaoSocial}</strong></span>
+      </div>
+      <div>
+        <span>Emissão: <strong>${dataExtenso}</strong> • Hash Anexo: <strong style="color: #047857;">${hashDocs.slice(0, 16)}...</strong></span>
+      </div>
+    </div>
+
     ${
       p === 0
         ? `
@@ -1319,6 +1436,17 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
     <div class="page-header">
       <span class="page-header-title">Orbis Protocol • Anexo — Documentos Fonte (Consolidado)</span>
       <span>${dados.identificacao.razaoSocial} • ${dados.identificacao.cnpj}</span>
+    </div>
+
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE ORBIS PROTOCOL -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Ente: <strong>${dados.identificacao.razaoSocial}</strong></span>
+      </div>
+      <div>
+        <span>Emissão: <strong>${dataExtenso}</strong> • Hash Anexo: <strong style="color: #047857;">${hashDocs.slice(0, 16)}...</strong></span>
+      </div>
     </div>
 
     <div class="section-title">Anexo — Documentos Fonte (Consolidado por Mês / Emitente)</div>

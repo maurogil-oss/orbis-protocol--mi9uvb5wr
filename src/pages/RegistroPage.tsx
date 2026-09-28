@@ -686,8 +686,12 @@ export default function RegistroPage() {
             />
             <span className="text-xs text-[#93A3B5] leading-relaxed">
               Declaro que li e concordo com os{' '}
+              <Link to="/termos" className="text-[#12B886] hover:underline" target="_blank">
+                Termos de Uso
+              </Link>{' '}
+              e a{' '}
               <Link to="/privacidade" className="text-[#12B886] hover:underline" target="_blank">
-                Termos de Uso e Política de Privacidade
+                Política de Privacidade
               </Link>{' '}
               da infraestrutura dMRV do Orbis Protocol (LGPD Art. 7º/18).
             </span>

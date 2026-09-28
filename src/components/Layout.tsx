@@ -1027,29 +1027,52 @@ export default function Layout() {
             </div>
           </div>
 
-          {/* Bottom Bar — Copyright & Regulatório / LGPD */}
-          <div className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#93A3B5]/80">
-            <p className="text-center sm:text-left">
-              © {new Date().getFullYear()} Orbis Protocol • Auditoria & Rastreabilidade dMRV. Todos
-              os direitos reservados.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-6">
-              <Link
-                to="/titular-dados"
-                className="text-[11px] text-[#12B886] hover:underline font-semibold transition-colors"
-              >
-                Canal do Titular LGPD (Art. 18)
-              </Link>
-              <Link
-                to="/privacidade"
-                className="text-[11px] text-[#93A3B5]/80 hover:text-[#12B886] underline transition-colors"
-              >
-                Política de Privacidade
-              </Link>
-              <span className="text-[#12B886] font-semibold text-[11px] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
-                Atestado de Conformidade Orbis
-              </span>
+          {/* Bottom Bar — Copyright & Regulatório / LGPD / Proteção Anti-Cópia */}
+          <div className="pt-8 sm:pt-10 flex flex-col gap-4 text-xs text-[#93A3B5]/80">
+            {/* Linha 1: Aviso curto de proteção de conteúdo e documentos */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pb-3 border-b border-[rgba(244,247,250,0.05)] text-center sm:text-left">
+              <p className="text-[11px] text-[#93A3B5] flex items-center gap-2 justify-center sm:justify-start">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#12B886] shrink-0" />
+                <span>
+                  Conteúdo e documentos protegidos — © {new Date().getFullYear()} Orbis Protocol.
+                  Prova documental via hash SHA-256 e trilha imutável.
+                </span>
+              </p>
+              <div className="flex items-center gap-3 shrink-0 text-[11px]">
+                <Link
+                  to="/termos"
+                  className="text-[#12B886] hover:underline font-semibold transition-colors"
+                >
+                  Termos de Uso
+                </Link>
+                <span className="text-[rgba(244,247,250,0.2)]">•</span>
+                <Link
+                  to="/privacidade"
+                  className="text-[#93A3B5] hover:text-[#12B886] underline transition-colors"
+                >
+                  Privacidade
+                </Link>
+              </div>
+            </div>
+
+            {/* Linha 2: Copyright institucional & Links complementares */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-center sm:text-left text-[11px] text-[#93A3B5]/70">
+                © {new Date().getFullYear()} Orbis Protocol • Infraestrutura de Prova Documental &
+                Auditoria dMRV. Todos os direitos reservados.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-5">
+                <Link
+                  to="/titular-dados"
+                  className="text-[11px] text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                >
+                  Canal do Titular LGPD (Art. 18)
+                </Link>
+                <span className="text-[#12B886] font-semibold text-[11px] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
+                  Atestado de Conformidade Orbis
+                </span>
+              </div>
             </div>
           </div>
         </div>

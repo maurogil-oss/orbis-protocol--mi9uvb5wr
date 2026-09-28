@@ -587,6 +587,19 @@ export default function RadarSemanalPublicPage() {
             Orbis Protocol • Inteligência regulatória, infraestrutura de conformidade e prova
             documental. As análises refletem atos normativos oficiais e publicações governamentais.
           </p>
+          <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] flex flex-wrap items-center justify-center gap-4 text-[11px] text-[#93A3B5]/80">
+            <span>
+              Conteúdo e documentos protegidos — © {new Date().getFullYear()} Orbis Protocol
+            </span>
+            <span>•</span>
+            <Link to="/termos" className="text-[#12B886] hover:underline font-semibold">
+              Termos de Uso
+            </Link>
+            <span>•</span>
+            <Link to="/privacidade" className="text-[#93A3B5] hover:text-[#12B886] underline">
+              Privacidade
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

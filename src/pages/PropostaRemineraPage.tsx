@@ -1390,6 +1390,10 @@ export const PropostaRemineraPage: React.FC = () => {
           </button>
           <span>•</span>
           <span className="font-mono text-[11px]">Metal Carbon Hub / Reminera</span>
+          <span>•</span>
+          <Link to="/termos" className="text-[#93A3B5] hover:text-[#12B886] underline font-medium">
+            Termos de Uso
+          </Link>
         </div>
       </footer>
     </div>
