@@ -1804,7 +1804,7 @@ export default function PassaporteLotePublicoPage() {
                             <table className="w-full text-left text-xs print-table">
                               <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] uppercase font-semibold text-[10px] print:text-slate-600 print:border-slate-300">
                                 <tr>
-                                  <th className="py-2.5 px-3">Selo DPP Oficial</th>
+                                  <th className="py-2.5 px-3">CÓDIGO DPP</th>
                                   <th className="py-2.5 px-3">Descrição da Peça</th>
                                   <th className="py-2.5 px-3">Subsistema</th>
                                   <th className="py-2.5 px-3">Material Declarado</th>

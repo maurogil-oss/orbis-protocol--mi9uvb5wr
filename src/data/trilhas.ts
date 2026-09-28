@@ -138,7 +138,7 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     lei: 'NBC TO 3000 & ART TÉCNICA',
     titulo: 'Peritos Técnicos & Auditores Habilitados',
     subtitulo:
-      'Credenciamento para profissionais habilitados (CREA, CRC, CONPEJ, OAB) com chancela pericial e emissão de laudos com fé pública.',
+      'Credenciamento para profissionais habilitados (CREA, CRC, OAB) com chancela pericial e ART/RRT acoplada — laudos com responsável técnico identificável e hash verificável.',
     descricao:
       'Trilha voltada a peritos contábeis, engenheiros avaliadores e auditores independentes que desejam atuar no ecossistema Orbis Protocol emitindo laudos técnicos dMRV com ART acoplada e remuneração profissional por perícia.',
     publico: 'Engenheiros CREA, Contadores/Auditores CRC, Advogados OAB e Peritos Judiciais.',

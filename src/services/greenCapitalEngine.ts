@@ -234,7 +234,7 @@ export const LINHAS_CREDITO_VERDE: LinhaCreditoVerde[] = [
     ],
     evidenciasQueOrbisAtende: [
       'Dossiê com métricas de Escopo 1 (combustíveis e agroquímicos) e Escopo 2',
-      'Laudo técnico padronizado com fé pública pericial',
+      'Laudo técnico padronizado com ART/RRT acoplada',
     ],
     criteriosEnquadramento: [
       'Aquisição de sistemas fotovoltaicos, irrigação de alta precisão ou biogás',

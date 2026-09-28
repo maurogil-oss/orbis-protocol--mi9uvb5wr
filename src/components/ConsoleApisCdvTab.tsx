@@ -1052,7 +1052,7 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
                                       <th className="py-2.5 px-3">Peça do Catálogo</th>
                                       <th className="py-2.5 px-3">Subsistema</th>
                                       <th className="py-2.5 px-3">Situação Checklist</th>
-                                      <th className="py-2.5 px-3">Selo DPP / SKU</th>
+                                      <th className="py-2.5 px-3">Código DPP / SKU</th>
                                       <th className="py-2.5 px-3 text-right">Peso</th>
                                       <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
                                       <th className="py-2.5 px-3 text-center">Ações</th>

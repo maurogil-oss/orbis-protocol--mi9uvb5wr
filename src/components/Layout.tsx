@@ -1048,7 +1048,7 @@ export default function Layout() {
               </Link>
               <span className="text-[#12B886] font-semibold text-[11px] flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
-                Atestado de Conformidade Registrado
+                Atestado de Conformidade Orbis
               </span>
             </div>
           </div>
