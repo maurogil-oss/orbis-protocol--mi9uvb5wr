@@ -156,7 +156,7 @@ export default function PainelCliente() {
     { num: '02', label: 'Fatores Oficiais MCTI', concluido: true },
     { num: '03', label: 'Ingestão Ativa NF-e (Mod. 55/65)', concluido: nfeList.length > 0 },
     { num: '04', label: 'Emissão de Laudos', concluido: false },
-    { num: '05', label: 'Selo Oficial Concedido', concluido: false },
+    { num: '05', label: 'Atestado Orbis Emitido', concluido: false },
   ]
 
   const loadData = async () => {
@@ -1412,7 +1412,7 @@ export default function PainelCliente() {
               <div className="flex items-center gap-2 mb-4">
                 <Award className="w-6 h-6 text-[#D9B36C]" />
                 <h3 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                  SELO OFICIAL CONCEDIDO
+                  ATESTADO ORBIS EMITIDO
                 </h3>
               </div>
 
@@ -1448,7 +1448,7 @@ export default function PainelCliente() {
                 </div>
               ) : (
                 <div className="p-6 rounded-xl bg-[#0A0E12] border border-dashed border-[rgba(244,247,250,0.15)] text-center text-xs text-[#93A3B5]">
-                  Selo oficial em fase de emissão final após conferência das notas e balanço de
+                  Atestado Orbis em fase de emissão final após conferência das notas e balanço de
                   emissões.
                 </div>
               )}

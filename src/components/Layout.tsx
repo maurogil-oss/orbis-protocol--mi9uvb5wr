@@ -1046,7 +1046,7 @@ export default function Layout() {
               </Link>
               <span className="text-[#12B886] font-semibold text-[11px] flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
-                Selo Oficial Registrado
+                Atestado de Conformidade Registrado
               </span>
             </div>
           </div>

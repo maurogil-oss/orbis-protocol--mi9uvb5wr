@@ -21,7 +21,7 @@ export const SERVICOS_COBRANCA: Record<ServicoCobrancaId, ServicoPrecoInfo> = {
     detalhes: [
       'Primeiro resultado prévio validado por CNPJ',
       'Hash de integridade criptográfica dMRV',
-      'Emissão do Selo Oficial Orbis Protocol',
+      'Emissão do Atestado Orbis Protocol dMRV',
       'Atestado preparatório para exigências ESG bancárias (Res. BCB 4.945/2021)',
     ],
   },
@@ -50,7 +50,7 @@ export const SERVICOS_COBRANCA: Record<ServicoCobrancaId, ServicoPrecoInfo> = {
       'Passaporte Digital do Fornecedor com revelação seletiva',
       'Dossiê contínuo de elegibilidade para linhas BRDE e fomento',
       'Curva MAC personalizada (Custo Marginal de Abatimento)',
-      'Selo Oficial ACP / IBESG com QR Code verificável',
+      'Atestado ORBIS/IBESG com QR Code verificável',
     ],
   },
 }

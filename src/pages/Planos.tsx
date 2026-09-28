@@ -75,7 +75,7 @@ export default function Planos() {
       destaques: [
         'Diagnóstico anual preliminar validado por CNPJ',
         'Hash de integridade criptográfica dMRV',
-        'Emissão do Selo Oficial Orbis Protocol dMRV',
+        'Emissão do Atestado Orbis Protocol dMRV',
         'Atestado preparatório para exigências ESG bancárias (Res. BCB 4.945/2021)',
         'Ingestão real de XML NF-e (Mod. 55/65) com apuração de créditos tributários ativos',
         'Suporte técnico via canal oficial',

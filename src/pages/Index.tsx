@@ -728,7 +728,8 @@ export default function Index() {
               </h2>
               <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
                 Inicie o diagnóstico em 4 etapas, teste com nossos modelos pré-carregados e
-                visualize sua qualificação ambiental, tributária e emissão do Selo Oficial.
+                visualize sua qualificação ambiental, tributária e emissão do Atestado Orbis (com
+                ART/RRT).
               </p>
             </div>
 

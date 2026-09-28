@@ -30,7 +30,7 @@ export const PRODUTOS_REAIS_FALLBACK: Record<
     preco: 490,
     tipo: 'avulso',
     descricao:
-      'Primeiro resultado prévio validado por CNPJ com Hash de integridade criptográfica dMRV e Selo Oficial.',
+      'Primeiro resultado prévio validado por CNPJ com Hash de integridade criptográfica dMRV e Atestado Orbis.',
   },
   laudo_pericial: {
     nome: 'Laudo Pericial com ART (MOVER)',

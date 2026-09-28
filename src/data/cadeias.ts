@@ -223,12 +223,12 @@ export const CADEIAS_PRODUTIVAS: CadeiaProdutiva[] = [
     fatorEmissao: 'Ar-condicionado central, iluminação e logística de entrega urbana',
     regulamentacao: 'Diretrizes ACP / IBESG e Novo IVA',
     descricao:
-      'Adequação ágil para pequenas e médias empresas do setor comercial. Selo Oficial de Sustentabilidade para vitrines e lojas com documentação pronta para envio a instituições financeiras.',
+      'Adequação ágil para pequenas e médias empresas do setor comercial. Atestado Orbis para vitrines e lojas com documentação pronta para envio a instituições financeiras.',
     principaisIndicadores: [
       'Eficiência energética kWh/m²',
       'Logística reversa de embalagens',
       'Score ESG simplificado',
     ],
-    tipoLaudo: 'Selo Oficial de Conformidade para Comércio & Serviços',
+    tipoLaudo: 'Atestado de Conformidade Orbis (com ART/RRT)',
   },
 ]

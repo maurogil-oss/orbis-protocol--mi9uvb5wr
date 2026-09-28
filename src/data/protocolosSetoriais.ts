@@ -1422,7 +1422,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       'Taxa de reciclagem de papelão e embalagens pós-venda',
       'Score ESG simplificado para obtenção de taxas bancárias especiais',
     ],
-    tipoLaudo: 'Selo Oficial de Conformidade para Comércio & Serviços (Parceria ACP)',
+    tipoLaudo: 'Atestado de Conformidade Orbis (com ART/RRT)',
     enquadramentoLegal: [
       {
         norma: 'Lei Complementar nº 214/2025',
@@ -1456,7 +1456,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       entregas: [
         'Comparativo tributário com simulação de impacto do novo IVA sobre margens de venda',
         'Inventário simplificado de emissões de Escopo 2 (eletricidade) e Escopo 1 (ar-condicionado)',
-        'Selo Oficial Orbis / ACP para uso em fachadas, websites e material promocional',
+        'Selo Comercial ORBIS/IBESG',
       ],
       tco2ePorUnidade: '15 a 45 kg CO2e / m² de loja por ano',
       elegibilidadeLinhasVerdes: [

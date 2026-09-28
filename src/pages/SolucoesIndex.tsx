@@ -38,7 +38,7 @@ export default function SolucoesIndex() {
       titulo: 'Bureau ACP Paraná',
       subtitulo: 'Sustentabilidade acessível para empresas do comércio e serviços do Paraná.',
       descricao:
-        'Diagnóstico rápido, qualificação tributária subsidiada para associados da Associação Comercial do Paraná e emissão de Selo Oficial para vitrines e websites.',
+        'Diagnóstico rápido, qualificação tributária subsidiada para associados da Associação Comercial do Paraná e emissão de Atestado Orbis para vitrines e websites.',
       link: '/bureau',
       ctaText: 'Ver Detalhes do Bureau ACP',
     },
