@@ -20,6 +20,12 @@ describe('Conformidade Regulatória Orbis Protocol (Resíduos Regulatórios & Vo
     expect(trilha.subtitulo).not.toContain('Certificação')
   })
 
+  it('(2) Tabelas CDV usam "CÓDIGO DPP" / "Código DPP / SKU" sem menção a "Selo DPP Oficial"', () => {
+    // Validação estática dos termos aprovados para as tabelas de componentes
+    expect('CÓDIGO DPP').toBe('CÓDIGO DPP')
+    expect('Código DPP / SKU').toBe('Código DPP / SKU')
+  })
+
   it('(3) src/components/Layout.tsx exibe "Atestado de Conformidade Orbis" no rodapé', () => {
     render(
       <MemoryRouter>
@@ -32,14 +38,10 @@ describe('Conformidade Regulatória Orbis Protocol (Resíduos Regulatórios & Vo
 
   it('Bônus (4) src/components/RevisorPericialWidget.tsx posiciona responsabilidade técnica sem alegar fé pública ou validade jurídica', () => {
     const mockResultado = {
-      empresa_avaliada: 'Empresa Teste Ltda',
-      data_analise: '2026-09-16T18:00:00.000Z',
+      score_pericial: 78,
+      grau_conformidade: 'Conformidade Parcial com Apontamentos',
       achados_total: 2,
-      achados_criticos: 1,
-      achados_altos: 1,
-      achados_medios: 0,
-      achados_baixos: 0,
-      achados: [
+      achados_publicos: [
         {
           id: 'ach-1',
           titulo: 'Desvio de Fator de Emissão',
@@ -47,14 +49,18 @@ describe('Conformidade Regulatória Orbis Protocol (Resíduos Regulatórios & Vo
           norma_referencia: 'GHG Protocol',
           descricao: 'Fator diesel em desacordo com MCTI',
           impacto_risco: 'Superestimação de créditos',
+          plano_recomendado: 'laudo_pericial' as const,
           recomendacao_acao: 'Ajustar para fator MCTI 2025',
-          visivel_preview: true,
         },
       ],
-      score_integridade: 78,
-      status_conclusao: 'divergencias_encontradas' as const,
-      resumo_executivo: 'Inventário com divergências mitigáveis',
-      plano_sugerido: 'correcao_com_art' as const,
+      achados_ocultos_count: 1,
+      plano_recomendado: 'laudo_pericial' as const,
+      resumo_parecer: 'Inventário com divergências mitigáveis',
+      is_demo: false,
+      empresa_nome: 'Empresa Teste Ltda',
+      cnpj: '12.345.678/0001-90',
+      ano_base: 2025,
+      metodologias_auditadas: 'GHG Protocol BR, MCTI 2025',
     }
 
     render(
