@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import {
   ShieldCheck,
   Shield,
@@ -20,6 +21,10 @@ import {
   FileCheck2,
   Award,
   BookOpen,
+  Server,
+  Key,
+  Copy,
+  Code2,
 } from 'lucide-react'
 import {
   TermoCustodiaA1Modal,
@@ -38,6 +43,15 @@ import {
   listarImportacoesSped,
   SpedResumoPeriodo,
 } from '@/services/spedService'
+import {
+  EmpresaApiKeyNfsRecord,
+  NfsApiLoteLogRecord,
+  obterOuCriarApiKeyNfs,
+  regenerarApiKeyNfs,
+  revogarApiKeyNfs,
+  listarApiKeysNfs,
+  listarLogsLotesNfs,
+} from '@/services/nfsApiService'
 import { formatCurrencyBRL } from '@/services/nfeParser'
 
 interface HubConexaoFiscalProps {
@@ -55,8 +69,10 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
   onNfeImportada,
   onNavegarParaAba,
 }) => {
-  // Modelo selecionado na interface (ou visão lado a lado)
-  const [modeloAtivo, setModeloAtivo] = useState<'modelo1' | 'modelo2' | 'modelo3'>('modelo1')
+  // Modelo selecionado na interface: agora inclui o Modelo 4 (API de NFs)
+  const [modeloAtivo, setModeloAtivo] = useState<'modelo1' | 'modelo2' | 'modelo3' | 'modelo4'>(
+    'modelo1',
+  )
 
   // Estado do Certificado A1 (Modelo 3)
   const [statusA1, setStatusA1] = useState<CertificadoA1Status | null>(null)
@@ -84,24 +100,171 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
   )
   const spedInputRef = useRef<HTMLInputElement | null>(null)
 
-  // Carrega status A1 e histórico SPED
+  // Estado específico da API de NFs (Modelo 4)
+  const [apiKeyNfsAtiva, setApiKeyNfsAtiva] = useState<EmpresaApiKeyNfsRecord | null>(null)
+  const [chaveNfsRecemCriada, setChaveNfsRecemCriada] = useState<string | null>(null)
+  const [chaveCopiada, setChaveCopiada] = useState(false)
+  const [isGerandoApiKeyNfs, setIsGerandoApiKeyNfs] = useState(false)
+  const [isRevogandoApiKeyNfs, setIsRevogandoApiKeyNfs] = useState(false)
+  const [mensagemNfsApi, setMensagemNfsApi] = useState<{
+    tipo: 'ok' | 'erro'
+    texto: string
+  } | null>(null)
+  const [logsLotesNfs, setLogsLotesNfs] = useState<NfsApiLoteLogRecord[]>([])
+
+  // Carrega status A1, histórico SPED e chaves da API de NFs
   const recarregarDados = async () => {
-    if (!usuarioId) return
     setIsCarregandoA1(true)
     try {
-      const st = await obterStatusCertificadoA1(usuarioId)
-      setStatusA1(st)
-      if (st?.cnpj_titular) setCnpjA1(st.cnpj_titular)
-      if (st?.razao_social) setRazaoA1(st.razao_social)
-      if (st?.termo_lgpd_aceito) setTermoAceitoDireto(true)
+      if (usuarioId) {
+        const st = await obterStatusCertificadoA1(usuarioId)
+        setStatusA1(st)
+        if (st?.cnpj_titular) setCnpjA1(st.cnpj_titular)
+        if (st?.razao_social) setRazaoA1(st.razao_social)
+        if (st?.termo_lgpd_aceito) setTermoAceitoDireto(true)
 
-      const speds = await listarImportacoesSped(usuarioId)
-      setHistoricoSped(speds)
+        const speds = await listarImportacoesSped(usuarioId)
+        setHistoricoSped(speds)
+      }
+
+      // Carregar chaves de API de NFs para o CNPJ
+      const cleanCnpj = (cnpjEmpresa || cnpjA1 || '').replace(/\D/g, '')
+      if (cleanCnpj) {
+        const keys = await listarApiKeysNfs(cleanCnpj)
+        const ativa = keys.find((k) => k.ativa) || null
+        setApiKeyNfsAtiva(ativa)
+
+        const logs = await listarLogsLotesNfs(cleanCnpj, 10)
+        setLogsLotesNfs(logs)
+      }
     } catch {
       /* ignore */
     } finally {
       setIsCarregandoA1(false)
     }
+  }
+
+  // Gerar chave de API de NFs
+  const handleGerarOuVerApiKeyNfs = async () => {
+    const cleanCnpj = (cnpjEmpresa || cnpjA1 || '').replace(/\D/g, '')
+    if (!cleanCnpj) {
+      setMensagemNfsApi({
+        tipo: 'erro',
+        texto:
+          'CNPJ da empresa não identificado. Certifique-se de que a empresa está selecionada no painel.',
+      })
+      return
+    }
+
+    setIsGerandoApiKeyNfs(true)
+    setMensagemNfsApi(null)
+    try {
+      const res = await obterOuCriarApiKeyNfs({
+        empresaNome: razaoSocial || razaoA1 || 'Empresa Emissora',
+        cnpj: cleanCnpj,
+        usuarioId: usuarioId,
+      })
+      setApiKeyNfsAtiva(res.record)
+      if (res.chaveCompleta) {
+        setChaveNfsRecemCriada(res.chaveCompleta)
+        setMensagemNfsApi({
+          tipo: 'ok',
+          texto:
+            'Chave de API gerada com sucesso! Copie e armazene com segurança — ela não será exibida novamente.',
+        })
+      } else {
+        setMensagemNfsApi({
+          tipo: 'ok',
+          texto:
+            'Chave de API ativa identificada. Para gerar uma nova chave, clique em "Regenerar Chave".',
+        })
+      }
+      await recarregarDados()
+    } catch (err: any) {
+      setMensagemNfsApi({
+        tipo: 'erro',
+        texto: err.message || 'Erro ao gerar chave de API de NFs.',
+      })
+    } finally {
+      setIsGerandoApiKeyNfs(false)
+    }
+  }
+
+  // Regenerar chave de API de NFs
+  const handleRegenerarApiKeyNfs = async () => {
+    const cleanCnpj = (cnpjEmpresa || cnpjA1 || '').replace(/\D/g, '')
+    if (!cleanCnpj) return
+
+    const confirmou = window.confirm(
+      'ATENÇÃO: Deseja realmente regenerar a Chave de API de NFs?\n\nA chave anterior será imediatamente desativada e qualquer ERP ou automação configurada com a chave antiga deixará de se autenticar até que seja atualizada.',
+    )
+    if (!confirmou) return
+
+    setIsGerandoApiKeyNfs(true)
+    setMensagemNfsApi(null)
+    try {
+      const res = await regenerarApiKeyNfs({
+        empresaNome: razaoSocial || razaoA1 || 'Empresa Emissora',
+        cnpj: cleanCnpj,
+        usuarioId: usuarioId,
+      })
+      setApiKeyNfsAtiva(res.record)
+      setChaveNfsRecemCriada(res.novaChave)
+      setMensagemNfsApi({
+        tipo: 'ok',
+        texto:
+          'Nova Chave de API gerada com sucesso! Copie agora e atualize seu ERP imediatamente.',
+      })
+      await recarregarDados()
+    } catch (err: any) {
+      setMensagemNfsApi({
+        tipo: 'erro',
+        texto: err.message || 'Erro ao regenerar chave de API.',
+      })
+    } finally {
+      setIsGerandoApiKeyNfs(false)
+    }
+  }
+
+  // Revogar chave de API de NFs
+  const handleRevogarApiKeyNfs = async () => {
+    if (!apiKeyNfsAtiva) return
+
+    const confirmou = window.confirm(
+      'ATENÇÃO: Deseja revogar a Chave de API de NFs desta empresa?\n\nQualquer envio de XMLs pelo ERP utilizando esta chave será rejeitado imediatamente com status 401 Unauthorized.',
+    )
+    if (!confirmou) return
+
+    setIsRevogandoApiKeyNfs(true)
+    setMensagemNfsApi(null)
+    try {
+      await revogarApiKeyNfs(
+        apiKeyNfsAtiva.id,
+        'Revogação manual solicitada pelo administrador no Hub Fiscal',
+      )
+      setApiKeyNfsAtiva(null)
+      setChaveNfsRecemCriada(null)
+      setMensagemNfsApi({
+        tipo: 'ok',
+        texto:
+          'Chave de API revogada com sucesso. Nenhuma nova requisição será aceita com a chave revogada.',
+      })
+      await recarregarDados()
+    } catch (err: any) {
+      setMensagemNfsApi({
+        tipo: 'erro',
+        texto: err.message || 'Erro ao revogar chave de API.',
+      })
+    } finally {
+      setIsRevogandoApiKeyNfs(false)
+    }
+  }
+
+  const handleCopiarChave = () => {
+    if (!chaveNfsRecemCriada) return
+    navigator.clipboard.writeText(chaveNfsRecemCriada)
+    setChaveCopiada(true)
+    setTimeout(() => setChaveCopiada(false), 3000)
   }
 
   // Tratamento de seleção de arquivo .pfx / .p12
@@ -299,17 +462,17 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/50 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              HUB DE CONEXÃO FISCAL ACP • 3 ROTAS DE INTEGRAÇÃO
+              HUB DE CONEXÃO FISCAL ACP • 4 ROTAS DE INTEGRAÇÃO
             </div>
             <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#F4F7FA]">
               INTEGRAÇÃO & CUSTÓDIA FISCAL HOMOLOGADA
             </h2>
             <p className="text-xs sm:text-sm text-[#93A3B5] max-w-3xl mt-2 leading-relaxed">
               O Bureau ACP disponibiliza{' '}
-              <strong className="text-[#F4F7FA]">3 modelos soberanos de conexão fiscal</strong> para
+              <strong className="text-[#F4F7FA]">4 rotas soberanas de conexão fiscal</strong> para
               garantir conformidade total com a LGPD e o sigilo bancário-fiscal (LC 105/2001).
-              Escolha a rota que melhor atende à política de compliance e segurança da sua
-              organização.
+              Escolha a rota que melhor atende à política de compliance, infraestrutura de ERP e
+              segurança da sua organização.
             </p>
           </div>
 
@@ -322,8 +485,64 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
         </div>
       </div>
 
-      {/* COMPARATIVO DAS 3 ROTAS DE CONEXÃO LADO A LADO */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* COMPARATIVO DAS 4 ROTAS DE CONEXÃO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* MODELO 4: API de NFs - Integração Direta com ERP (NOVO) */}
+        <div
+          onClick={() => setModeloAtivo('modelo4')}
+          className={`cursor-pointer p-5 rounded-2xl border transition-all flex flex-col justify-between relative ${
+            modeloAtivo === 'modelo4'
+              ? 'bg-[#16202B] border-[#12B886] shadow-emerald-glow ring-1 ring-[#12B886]'
+              : 'bg-[#111820] border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/50'
+          }`}
+        >
+          <div className="absolute -top-3 left-4">
+            <span className="px-2.5 py-0.5 rounded-full bg-[#12B886] text-[#0A0E12] font-heading font-extrabold text-[10px] uppercase tracking-wider shadow-md flex items-center gap-1">
+              <Server className="w-3 h-3" /> NOVO • MODELO 4
+            </span>
+          </div>
+
+          <div className="pt-2">
+            <div className="w-9 h-9 rounded-xl bg-[#12B886]/10 border border-[#12B886]/40 flex items-center justify-center mb-3">
+              <Server className="w-5 h-5 text-[#12B886]" />
+            </div>
+
+            <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+              API de NFs (ERP Direto)
+            </h3>
+            <p className="text-xs text-[#12B886] font-semibold mt-0.5">
+              Envio Contínuo de XMLs via HTTP/REST
+            </p>
+
+            <p className="text-xs text-[#93A3B5] mt-2.5 leading-relaxed">
+              O ERP da empresa empurra XMLs de NF-e em lote diretamente para a plataforma sem upload
+              manual e com autenticação por chave de API.
+            </p>
+
+            <div className="mt-3 p-2.5 rounded-xl bg-[#12B886]/10 border border-[#12B886]/30 text-[11px] text-[#F4F7FA] space-y-1">
+              <strong className="block text-[#12B886] uppercase font-bold text-[10px]">
+                ⚡ Ingestão Automatizada:
+              </strong>
+              <span>
+                Recepção direta dos XMLs próprios da sua empresa com processamento instantâneo no
+                motor fiscal.
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-3 border-t border-[rgba(244,247,250,0.08)] flex items-center justify-between">
+            <span className="text-[11px] text-[#93A3B5]">
+              {apiKeyNfsAtiva ? 'Chave Ativa' : 'Sem Chave'}
+            </span>
+            <button
+              type="button"
+              className="text-xs font-bold text-[#12B886] hover:underline flex items-center gap-1"
+            >
+              <span>Configurar API</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
         {/* MODELO 1: RECOMENDADA - Procuração Eletrônica e-CAC / Gov.br */}
         <div
           onClick={() => setModeloAtivo('modelo1')}
@@ -483,6 +702,306 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
       </div>
 
       {/* ÁREA DE EXECUÇÃO DETALHADA DO MODELO SELECIONADO */}
+
+      {/* DETALHES DO MODELO 4: API DE NFS - INTEGRAÇÃO DIRETA COM ERP */}
+      {modeloAtivo === 'modelo4' && (
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[#12B886]/40 shadow-xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[rgba(244,247,250,0.1)]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#12B886]/10 border border-[#12B886]/40 flex items-center justify-center">
+                <Server className="w-5 h-5 text-[#12B886]" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] border border-[#12B886]/40">
+                  MODELO 4 • INTEGRAÇÃO ERP REST / HTTP
+                </span>
+                <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA] mt-1">
+                  API de NFs — Integração Direta com o ERP da Empresa
+                </h3>
+              </div>
+            </div>
+
+            <Link
+              to="/api-docs-nfs"
+              target="_blank"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#16202B] border border-[#12B886]/50 text-[#12B886] hover:bg-[#12B886]/10 transition-all flex items-center justify-center gap-2"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>Documentação Completa da API</span>
+            </Link>
+          </div>
+
+          <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] text-xs text-[#93A3B5] leading-relaxed">
+            <strong className="text-[#F4F7FA] block mb-1">
+              Como funciona a integração contínua:
+            </strong>
+            A empresa conecta seu ERP ou sistema fiscal diretamente à plataforma Orbis Protocol e os
+            arquivos XML das Notas Fiscais Eletrônicas (NF-e modelo 55 / NFC-e modelo 65) chegam de
+            forma contínua, sem necessidade de upload manual. Cada documento recebido é
+            automaticamente processado pelo motor fiscal, apurando créditos tributários (PIS,
+            COFINS, ICMS, IPI e IBS/CBS da Reforma Tributária) e consumo energético/combustíveis de
+            forma soberana e auditável.
+          </div>
+
+          {/* Feedback de mensagens da API */}
+          {mensagemNfsApi && (
+            <div
+              className={`p-4 rounded-xl text-xs flex items-center gap-2 ${
+                mensagemNfsApi.tipo === 'ok'
+                  ? 'bg-[#12B886]/10 border border-[#12B886]/30 text-[#12B886]'
+                  : 'bg-[#F03E54]/10 border border-[#F03E54]/30 text-[#F03E54]'
+              }`}
+            >
+              {mensagemNfsApi.tipo === 'ok' ? (
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0" />
+              )}
+              <span>{mensagemNfsApi.texto}</span>
+            </div>
+          )}
+
+          {/* GESTÃO DA CHAVE DE API DA EMPRESA */}
+          <div className="p-6 rounded-2xl bg-[#0A0E12] border border-[#12B886]/30 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 flex items-center justify-center">
+                  <Key className="w-4 h-4 text-[#12B886]" />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-sm text-[#F4F7FA]">
+                    Credencial de Acesso da Empresa (X-API-Key)
+                  </h4>
+                  <p className="text-xs text-[#93A3B5]">
+                    CNPJ Vinculado:{' '}
+                    <strong className="text-[#F4F7FA] font-mono">
+                      {cnpjEmpresa || cnpjA1 || 'CNPJ da Conta'}
+                    </strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Status da Chave */}
+              <div>
+                {apiKeyNfsAtiva ? (
+                  <span className="px-3 py-1 rounded-full bg-[#12B886]/20 border border-[#12B886]/40 text-[#12B886] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Chave Ativa
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 rounded-full bg-[#F03E54]/20 border border-[#F03E54]/40 text-[#F03E54] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Nenhuma Chave Ativa
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Exibição da chave recém-criada (uma única vez com aviso em destaque) */}
+            {chaveNfsRecemCriada && (
+              <div className="p-4 rounded-xl bg-[#16202B] border-2 border-[#12B886] space-y-3">
+                <div className="flex items-center gap-2 text-[#12B886] text-xs font-bold uppercase">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Chave de API Gerada — Guarde com Segurança</span>
+                </div>
+                <p className="text-xs text-[#93A3B5] leading-relaxed">
+                  ⚠️ <strong className="text-[#F4F7FA]">Atenção:</strong> Por motivos estritos de
+                  segurança, esta chave de API será exibida <strong>apenas uma vez</strong>. Copie e
+                  cole no cofre do seu ERP ou arquivo de variáveis de ambiente do seu sistema agora.
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/50 font-mono text-xs text-[#12B886] break-all select-all font-bold">
+                    {chaveNfsRecemCriada}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopiarChave}
+                    className="px-4 py-2.5 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase tracking-wider hover:bg-[#0CA678] transition-all flex items-center justify-center gap-2 shadow-emerald-glow shrink-0"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>{chaveCopiada ? 'Copiado!' : 'Copiar Chave'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Chave Mascarada e Metadados */}
+            {apiKeyNfsAtiva && !chaveNfsRecemCriada && (
+              <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#93A3B5] block">
+                    Chave Ativa
+                  </span>
+                  <span className="font-mono text-[#F4F7FA] font-bold">
+                    {apiKeyNfsAtiva.chave_mascarada || 'orb_nfs_live_...******'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#93A3B5] block">
+                    Criada em
+                  </span>
+                  <span className="text-[#93A3B5] font-mono">
+                    {apiKeyNfsAtiva.created ? apiKeyNfsAtiva.created.slice(0, 10) : 'Ativa'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#93A3B5] block">
+                    Último Uso
+                  </span>
+                  <span className="text-[#12B886] font-mono">
+                    {apiKeyNfsAtiva.ultimo_uso
+                      ? apiKeyNfsAtiva.ultimo_uso.slice(0, 19).replace('T', ' ')
+                      : 'Aguardando 1º lote'}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Ações de Chave: Gerar / Regenerar / Revogar */}
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              {!apiKeyNfsAtiva ? (
+                <button
+                  type="button"
+                  disabled={isGerandoApiKeyNfs}
+                  onClick={handleGerarOuVerApiKeyNfs}
+                  className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all flex items-center gap-2 shadow-emerald-glow disabled:opacity-50"
+                >
+                  <Key className="w-4 h-4" />
+                  <span>
+                    {isGerandoApiKeyNfs ? 'Gerando Chave...' : 'Gerar Chave de API de NFs'}
+                  </span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled={isGerandoApiKeyNfs}
+                    onClick={handleRegenerarApiKeyNfs}
+                    className="px-4 py-2 rounded-xl font-semibold text-xs bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={`w-3.5 h-3.5 text-[#12B886] ${isGerandoApiKeyNfs ? 'animate-spin' : ''}`}
+                    />
+                    <span>Regenerar Chave</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isRevogandoApiKeyNfs}
+                    onClick={handleRevogarApiKeyNfs}
+                    className="px-4 py-2 rounded-xl font-semibold text-xs bg-[#F03E54]/10 border border-[#F03E54]/30 text-[#F03E54] hover:bg-[#F03E54]/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>{isRevogandoApiKeyNfs ? 'Revogando...' : 'Revogar Chave'}</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* EXEMPLO MÍNIMO DE CHAMADA (CURL / FETCH) */}
+          <div className="p-6 rounded-2xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-heading font-bold text-sm text-[#F4F7FA] flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-[#12B886]" />
+                Exemplo Mínimo de Chamada (cURL / HTTP)
+              </h4>
+              <span className="text-[11px] font-mono text-[#93A3B5]">
+                POST /backend/v1/nfs/lotes
+              </span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-x-auto">
+              <pre className="text-xs text-[#12B886] font-mono leading-relaxed select-all">
+                {`curl -X POST "https://www.orbis-protocol.com/backend/v1/nfs/lotes" \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: ${chaveNfsRecemCriada || apiKeyNfsAtiva?.chave_mascarada || 'orb_nfs_live_SEU_TOKEN_AQUI'}" \\
+  -d '{
+    "documentos": [
+      {
+        "nome_arquivo": "NF_000123.xml",
+        "xml": "<nfeProc xmlns=\\"http://www.portalfiscal.inf.br/nfe\\"><NFe><infNFe Id=\\"NFe35240212345678000190550010000001231000001234\\">...</infNFe></NFe></nfeProc>"
+      }
+    ]
+  }'`}
+              </pre>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-[#93A3B5]">
+              <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)]">
+                <strong className="text-[#F4F7FA] block mb-1">Rate Limit</strong>
+                Até 60 requisições em lote por minuto por chave de API ativa.
+              </div>
+              <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)]">
+                <strong className="text-[#F4F7FA] block mb-1">Tamanho Máximo</strong>
+                Até 100 XMLs de NF-e por requisição (ou 10 MB totais de payload).
+              </div>
+              <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)]">
+                <strong className="text-[#F4F7FA] block mb-1">Sigilo Fiscal Obrigatório</strong>
+                O CNPJ da chave deve coincidir com o emitente ou destinatário da nota.
+              </div>
+            </div>
+          </div>
+
+          {/* HISTÓRICO DE LOTES INGERIDOS VIA API */}
+          {logsLotesNfs.length > 0 && (
+            <div className="space-y-3">
+              <h5 className="font-bold text-xs uppercase tracking-wider text-[#93A3B5]">
+                Últimos Lotes Recebidos via API ({logsLotesNfs.length})
+              </h5>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
+                    <tr>
+                      <th className="py-2 px-3">Data/Hora</th>
+                      <th className="py-2 px-3">CNPJ</th>
+                      <th className="py-2 px-3 text-center">Status</th>
+                      <th className="py-2 px-3 text-right">Recebidos</th>
+                      <th className="py-2 px-3 text-right">Aceitos</th>
+                      <th className="py-2 px-3 text-right">Rejeitados</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
+                    {logsLotesNfs.map((item) => (
+                      <tr key={item.id} className="hover:bg-[#16202B]/40">
+                        <td className="py-2 px-3 text-[#93A3B5] font-mono">
+                          {item.created ? item.created.slice(0, 19).replace('T', ' ') : '-'}
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[#F4F7FA]">
+                          {item.cnpj_vinculado}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              item.status === 'processado'
+                                ? 'bg-[#12B886]/20 text-[#12B886]'
+                                : item.status === 'parcial'
+                                  ? 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                                  : 'bg-[#F03E54]/20 text-[#F03E54]'
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono font-bold">
+                          {item.total_recebidos}
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono text-[#12B886] font-bold">
+                          {item.total_aceitos}
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono text-[#F03E54]">
+                          {item.total_rejeitados}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* DETALHES DO MODELO 1: PROCURAÇÃO ELETRÔNICA E-CAC */}
       {modeloAtivo === 'modelo1' && (

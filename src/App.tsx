@@ -48,6 +48,7 @@ import DcpProdutoPublicoPage from './pages/DcpProdutoPublicoPage'
 import CanalTitularPage from './pages/CanalTitularPage'
 import CheckoutPage from './pages/CheckoutPage'
 import ApiDocsCdvPage from './pages/ApiDocsCdvPage'
+import { ApiDocsNfsPage } from './pages/ApiDocsNfsPage'
 import FatoresEmissaoPublicoPage from './pages/FatoresEmissaoPublicoPage'
 import MoverPublicPage from './pages/MoverPublicPage'
 import DossieMoverPage from './pages/DossieMoverPage'
@@ -117,6 +118,7 @@ const App = () => (
             <Route path="/planos" element={<Planos />} />
             <Route path="/financeiro" element={<Navigate to="/planos" replace />} />
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />
+            <Route path="/api-docs-nfs" element={<ApiDocsNfsPage />} />
             <Route path="/fatores" element={<FatoresEmissaoPublicoPage />} />
             <Route path="/mover" element={<MoverPublicPage />} />
             <Route path="/materiais-criticos" element={<MateriaisCriticosPublicPage />} />

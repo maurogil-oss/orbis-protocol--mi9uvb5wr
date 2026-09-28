@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-28T11:51:38.865Z",
+  "generatedAt": "2026-09-28T12:32:52.254Z",
   "collections": [
     {
       "name": "users",
@@ -4810,6 +4810,193 @@
       ],
       "indexes": [
         "CREATE UNIQUE INDEX idx_radar_leituras_user_edicao ON radar_leituras (usuario, edicao)"
+      ]
+    },
+    {
+      "name": "empresa_api_keys_nfs",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "empresa_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj_vinculado",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "chave_prefixo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "chave_hash",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "chave_mascarada",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativa",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ultimo_uso",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "requests_count_1min",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_revogacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "motivo_revogacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_nfs_keys_usuario ON empresa_api_keys_nfs (usuario)",
+        "CREATE INDEX idx_nfs_keys_cnpj ON empresa_api_keys_nfs (cnpj_vinculado)",
+        "CREATE INDEX idx_nfs_keys_hash ON empresa_api_keys_nfs (chave_hash)"
+      ]
+    },
+    {
+      "name": "nfs_api_lotes_log",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cnpj_vinculado",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "api_key_hash",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "total_recebidos",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_aceitos",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_rejeitados",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["processado", "parcial", "rejeitado"]
+        },
+        {
+          "name": "ip_origem",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resumo_processamento_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_nfs_log_usuario ON nfs_api_lotes_log (usuario)",
+        "CREATE INDEX idx_nfs_log_cnpj ON nfs_api_lotes_log (cnpj_vinculado)",
+        "CREATE INDEX idx_nfs_log_created ON nfs_api_lotes_log (created)"
       ]
     }
   ]
