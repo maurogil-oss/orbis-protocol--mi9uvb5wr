@@ -165,7 +165,7 @@ export default function Index() {
 
             {/* Headline Principal */}
             <h1 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl text-[#F4F7FA] tracking-tight leading-[1.08] mb-6 max-w-4xl">
-              Lemos as notas fiscais da sua cadeia e geramos a{' '}
+              Lemos cada nota fiscal da sua cadeia e geramos a{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#12B886] via-[#27C08C] to-[#D9B36C]">
                 prova de descarbonização
               </span>
@@ -173,7 +173,8 @@ export default function Index() {
 
             {/* Sub-headline Linear: pequena, espaçada, elegante */}
             <p className="font-heading text-sm sm:text-base md:text-lg text-[#93A3B5] font-semibold tracking-[0.08em] uppercase mb-8">
-              para Descarbonização, Governança Tributária e Circularidade
+              Conformidade com a Lei 15.042, rastreabilidade da cadeia e circularidade — a prova que
+              bancos, auditorias e reguladores exigem
             </p>
 
             {/* Descrição em parágrafo */}

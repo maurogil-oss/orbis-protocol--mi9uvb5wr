@@ -18,12 +18,14 @@ describe('Hero Section - Home (Index)', () => {
     // Título principal (h1) com o novo texto exato
     const h1 = screen.getByRole('heading', { level: 1 })
     expect(h1).toBeDefined()
-    expect(h1.textContent).toContain('Lemos as notas fiscais da sua cadeia e geramos a')
+    expect(h1.textContent).toContain('Lemos cada nota fiscal da sua cadeia e geramos a')
     expect(h1.textContent).toContain('prova de descarbonização')
 
-    // Subtítulo mantido
+    // Subtítulo atualizado sem repetição da palavra descarbonização
     expect(
-      screen.getByText('para Descarbonização, Governança Tributária e Circularidade'),
+      screen.getByText(
+        'Conformidade com a Lei 15.042, rastreabilidade da cadeia e circularidade — a prova que bancos, auditorias e reguladores exigem',
+      ),
     ).toBeDefined()
 
     // CTAs mantidos

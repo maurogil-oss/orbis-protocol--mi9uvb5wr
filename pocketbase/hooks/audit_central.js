@@ -15,111 +15,117 @@
 
 // 1. users: mudança de papel e status de assinatura
 onRecordUpdate((e) => {
-  const rec = e.record
-  const orig = rec.original()
-  if (!orig) return
+  try {
+    const rec = e.record
+    if (!rec) return
+    const orig = rec.original()
+    if (!orig) return
 
-  const auditCol = $app.findCollectionByNameOrId('audit_log')
+    const auditCol = $app.findCollectionByNameOrId('audit_log')
+    if (!auditCol) return
 
-  // Mudança de papel de usuário
-  if (rec.getString('role') !== orig.getString('role')) {
-    const log = new Record(auditCol)
-    log.set('acao', 'usuario_mudanca_papel')
-    log.set('entidade', 'users')
-    log.set('entidade_id', rec.id)
-    log.set('ator_id', 'governanca_master')
-    log.set('ator_email', rec.getString('email'))
-    log.set('papel', rec.getString('role'))
-    log.set('detalhes', {
-      papel_anterior: orig.getString('role'),
-      novo_papel: rec.getString('role'),
-      user_email: rec.getString('email'),
-      user_nome: rec.getString('name'),
-      timestamp: new Date().toISOString(),
-    })
-    $app.save(log)
-  }
+    // Mudança de papel de usuário
+    if (rec.getString('role') !== orig.getString('role')) {
+      const log = new Record(auditCol)
+      log.set('acao', 'usuario_mudanca_papel')
+      log.set('entidade', 'users')
+      log.set('entidade_id', rec.id)
+      log.set('ator_id', 'governanca_master')
+      log.set('ator_email', rec.getString('email'))
+      log.set('papel', rec.getString('role'))
+      log.set('detalhes', {
+        papel_anterior: orig.getString('role'),
+        novo_papel: rec.getString('role'),
+        user_email: rec.getString('email'),
+        user_nome: rec.getString('name'),
+        timestamp: new Date().toISOString(),
+      })
+      $app.save(log)
+    }
 
-  // Mudança de status de aprovação de contas Gestão
-  if (rec.getString('status_aprovacao') !== orig.getString('status_aprovacao')) {
-    const log = new Record(auditCol)
-    const novoStatusAprov = rec.getString('status_aprovacao') || 'pendente'
-    const statusAntAprov = orig.getString('status_aprovacao') || 'pendente'
-    log.set('acao', 'gestao_status_aprovacao_alterado')
-    log.set('entidade', 'users')
-    log.set('entidade_id', rec.id)
-    log.set('ator_id', 'governanca_master')
-    log.set('ator_email', rec.getString('email'))
-    log.set('papel', rec.getString('role'))
-    log.set('detalhes', {
-      status_aprovacao_anterior: statusAntAprov,
-      novo_status_aprovacao: novoStatusAprov,
-      user_email: rec.getString('email'),
-      user_nome: rec.getString('name'),
-      user_role: rec.getString('role'),
-      timestamp: new Date().toISOString(),
-    })
-    $app.save(log)
-  }
+    // Mudança de status de aprovação de contas Gestão
+    if (rec.getString('status_aprovacao') !== orig.getString('status_aprovacao')) {
+      const log = new Record(auditCol)
+      const novoStatusAprov = rec.getString('status_aprovacao') || 'pendente'
+      const statusAntAprov = orig.getString('status_aprovacao') || 'pendente'
+      log.set('acao', 'gestao_status_aprovacao_alterado')
+      log.set('entidade', 'users')
+      log.set('entidade_id', rec.id)
+      log.set('ator_id', 'governanca_master')
+      log.set('ator_email', rec.getString('email'))
+      log.set('papel', rec.getString('role'))
+      log.set('detalhes', {
+        status_aprovacao_anterior: statusAntAprov,
+        novo_status_aprovacao: novoStatusAprov,
+        user_email: rec.getString('email'),
+        user_nome: rec.getString('name'),
+        user_role: rec.getString('role'),
+        timestamp: new Date().toISOString(),
+      })
+      $app.save(log)
+    }
 
-  // Suspensão / reativação / alteração de status de assinatura
-  if (rec.getString('assinatura_status') !== orig.getString('assinatura_status')) {
-    const log = new Record(auditCol)
-    log.set('acao', 'assinatura_status_alterado')
-    log.set('entidade', 'users')
-    log.set('entidade_id', rec.id)
-    log.set('ator_id', 'sistema_admin')
-    log.set('ator_email', rec.getString('email'))
-    log.set('papel', rec.getString('role'))
-    log.set('detalhes', {
-      status_anterior: orig.getString('assinatura_status'),
-      novo_status: rec.getString('assinatura_status'),
-      plano: rec.getString('plano_ativo'),
-      user_email: rec.getString('email'),
-    })
-    $app.save(log)
-  }
+    // Suspensão / reativação / alteração de status de assinatura
+    if (rec.getString('assinatura_status') !== orig.getString('assinatura_status')) {
+      const log = new Record(auditCol)
+      log.set('acao', 'assinatura_status_alterado')
+      log.set('entidade', 'users')
+      log.set('entidade_id', rec.id)
+      log.set('ator_id', 'sistema_admin')
+      log.set('ator_email', rec.getString('email'))
+      log.set('papel', rec.getString('role'))
+      log.set('detalhes', {
+        status_anterior: orig.getString('assinatura_status'),
+        novo_status: rec.getString('assinatura_status'),
+        plano: rec.getString('plano_ativo'),
+        user_email: rec.getString('email'),
+      })
+      $app.save(log)
+    }
 
-  // Liberação / Suspensão / Alteração do status de acesso do Parceiro
-  if (rec.getString('parceiro_acesso_status') !== orig.getString('parceiro_acesso_status')) {
-    const log = new Record(auditCol)
-    const novoStatusAcesso = rec.getString('parceiro_acesso_status') || 'pendente'
-    const statusAntAcesso = orig.getString('parceiro_acesso_status') || 'pendente'
-    log.set('acao', 'parceiro_acesso_alterado')
-    log.set('entidade', 'users')
-    log.set('entidade_id', rec.id)
-    log.set('ator_id', 'financeiro_admin')
-    log.set('ator_email', rec.getString('email'))
-    log.set('papel', 'admin/financeiro')
-    log.set('detalhes', {
-      status_anterior: statusAntAcesso,
-      novo_status: novoStatusAcesso,
-      user_id: rec.id,
-      user_email: rec.getString('email'),
-      user_nome: rec.getString('name'),
-      cliente_codigo: rec.getString('cliente_codigo'),
-      data_evento: new Date().toISOString(),
-    })
-    $app.save(log)
+    // Liberação / Suspensão / Alteração do status de acesso do Parceiro
+    if (rec.getString('parceiro_acesso_status') !== orig.getString('parceiro_acesso_status')) {
+      const log = new Record(auditCol)
+      const novoStatusAcesso = rec.getString('parceiro_acesso_status') || 'pendente'
+      const statusAntAcesso = orig.getString('parceiro_acesso_status') || 'pendente'
+      log.set('acao', 'parceiro_acesso_alterado')
+      log.set('entidade', 'users')
+      log.set('entidade_id', rec.id)
+      log.set('ator_id', 'financeiro_admin')
+      log.set('ator_email', rec.getString('email'))
+      log.set('papel', 'admin/financeiro')
+      log.set('detalhes', {
+        status_anterior: statusAntAcesso,
+        novo_status: novoStatusAcesso,
+        user_id: rec.id,
+        user_email: rec.getString('email'),
+        user_nome: rec.getString('name'),
+        cliente_codigo: rec.getString('cliente_codigo'),
+        data_evento: new Date().toISOString(),
+      })
+      $app.save(log)
 
-    // Se o parceiro foi liberado, também atualizamos o parceiros correspondente para 'ativo'
-    // Se suspenso, atualizamos para 'suspenso'
-    try {
-      const pCol = $app.findCollectionByNameOrId('parceiros')
-      const pRec = $app.findFirstRecordByData('parceiros', 'usuario', rec.id)
-      if (pRec) {
-        if (novoStatusAcesso === 'liberado') {
-          pRec.set('status', 'ativo')
-          $app.save(pRec)
-        } else if (novoStatusAcesso === 'suspenso') {
-          pRec.set('status', 'suspenso')
-          $app.save(pRec)
-        } else if (novoStatusAcesso === 'pendente') {
-          pRec.set('status', 'inativo')
-          $app.save(pRec)
+      // Se o parceiro foi liberado, também atualizamos o parceiros correspondente para 'ativo'
+      // Se suspenso, atualizamos para 'suspenso'
+      try {
+        const pCol = $app.findCollectionByNameOrId('parceiros')
+        const pRec = $app.findFirstRecordByData('parceiros', 'usuario', rec.id)
+        if (pRec) {
+          if (novoStatusAcesso === 'liberado') {
+            pRec.set('status', 'ativo')
+            $app.save(pRec)
+          } else if (novoStatusAcesso === 'suspenso') {
+            pRec.set('status', 'suspenso')
+            $app.save(pRec)
+          } else if (novoStatusAcesso === 'pendente') {
+            pRec.set('status', 'inativo')
+            $app.save(pRec)
+          }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
+  } catch (err) {
+    console.warn('[audit_central] Erro ignorado em users onRecordUpdate:', err && err.message)
   }
 }, 'users')
 

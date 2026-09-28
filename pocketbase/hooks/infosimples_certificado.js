@@ -18,6 +18,29 @@ routerAdd('POST', '/backend/v1/infosimples/salvar-certificado-a1', (e) => {
       ? String(body.arquivo_nome).trim()
       : 'certificado.pfx'
 
+    // Helper interno para formatar datas no padrão obrigatório do PocketBase v0.36: "YYYY-MM-DD HH:mm:ss.000Z"
+    const formatarDataPb = (dataInput) => {
+      if (!dataInput) return ''
+      let d = null
+      if (dataInput instanceof Date) {
+        d = dataInput
+      } else {
+        const s = String(dataInput).trim()
+        if (!s) return ''
+        d = new Date(s)
+      }
+      if (!d || isNaN(d.getTime())) return ''
+      const pad = (n, len = 2) => String(n).padStart(len, '0')
+      const ano = d.getUTCFullYear()
+      const mes = pad(d.getUTCMonth() + 1)
+      const dia = pad(d.getUTCDate())
+      const hora = pad(d.getUTCHours())
+      const min = pad(d.getUTCMinutes())
+      const seg = pad(d.getUTCSeconds())
+      const ms = pad(d.getUTCMilliseconds(), 3)
+      return `${ano}-${mes}-${dia} ${hora}:${min}:${seg}.${ms}Z`
+    }
+
     if (!cnpjTitular || cnpjTitular.length !== 14) {
       return e.badRequestError(
         'CNPJ do titular do certificado é obrigatório e deve ter 14 dígitos.',
@@ -170,12 +193,14 @@ routerAdd('POST', '/backend/v1/infosimples/salvar-certificado-a1', (e) => {
         )
       }
 
-      // 6. Constrói o objeto File via $filesystem.fileFromBytes para gravar no PocketBase
-      nomeArquivoSalvo =
-        arquivoNomeOriginal.toLowerCase().endsWith('.pfx') ||
-        arquivoNomeOriginal.toLowerCase().endsWith('.p12')
-          ? arquivoNomeOriginal
-          : arquivoNomeOriginal + '.pfx'
+      // 6. Sanitização rigorosa do nome do arquivo e extensão .pfx para compatibilidade de MIME
+      let nomeBase = arquivoNomeOriginal.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/_{2,}/g, '_')
+      if (nomeBase.toLowerCase().endsWith('.p12')) {
+        nomeBase = nomeBase.slice(0, -4) + '.pfx'
+      } else if (!nomeBase.toLowerCase().endsWith('.pfx')) {
+        nomeBase = nomeBase.replace(/\.[^/.]+$/, '') + '.pfx'
+      }
+      nomeArquivoSalvo = nomeBase || 'certificado.pfx'
 
       try {
         if (typeof $filesystem !== 'undefined' && typeof $filesystem.fileFromBytes === 'function') {
@@ -216,7 +241,8 @@ routerAdd('POST', '/backend/v1/infosimples/salvar-certificado-a1', (e) => {
       reqInfo.remoteIP ||
       '127.0.0.1'
     const termoVersao = body.termo_versao ? String(body.termo_versao).trim() : 'v2026-01'
-    const agoraIso = new Date().toISOString()
+    const agoraDate = new Date()
+    const dataAceitePb = formatarDataPb(agoraDate)
 
     certRec.set('cnpj_titular', cnpjTitular)
     if (razaoSocial) certRec.set('razao_social', razaoSocial)
@@ -225,18 +251,18 @@ routerAdd('POST', '/backend/v1/infosimples/salvar-certificado-a1', (e) => {
       certRec.set('arquivo_pfx', arquivoFileObject)
     }
     if (validadeExtraidaIso) {
-      certRec.set('validade_certificado', validadeExtraidaIso)
+      certRec.set('validade_certificado', formatarDataPb(validadeExtraidaIso))
     } else if (body.validade_certificado) {
-      certRec.set('validade_certificado', String(body.validade_certificado))
+      certRec.set('validade_certificado', formatarDataPb(body.validade_certificado))
     }
 
     certRec.set('ativo', true)
     certRec.set('status_custodia', 'ativo')
     certRec.set('termo_lgpd_aceito', true)
-    certRec.set('data_aceite_lgpd', agoraIso)
+    certRec.set('data_aceite_lgpd', dataAceitePb)
     certRec.set('termo_versao', termoVersao)
     certRec.set('consentimento_ip', String(clientIp).split(',')[0].trim())
-    certRec.set('consentimento_data_hora', agoraIso)
+    certRec.set('consentimento_data_hora', dataAceitePb)
     certRec.set('data_revogacao', '')
     certRec.set('motivo_revogacao', '')
 
@@ -259,12 +285,19 @@ routerAdd('POST', '/backend/v1/infosimples/salvar-certificado-a1', (e) => {
       status_custodia: 'ativo',
       termo_versao: termoVersao,
       consentimento_ip: certRec.getString('consentimento_ip'),
-      consentimento_data_hora: agoraIso,
+      consentimento_data_hora: dataAceitePb,
     })
   } catch (err) {
+    console.error(
+      '[salvar-certificado-a1] ERRO NA GRAVAÇÃO:',
+      err ? err.message : err,
+      err && err.response ? JSON.stringify(err.response) : '',
+      err && err.data ? JSON.stringify(err.data) : '',
+      err && err.stack ? err.stack : '',
+    )
     return e.json(500, {
       sucesso: false,
-      erro: err.message || 'Erro ao processar certificado A1.',
+      erro: err && err.message ? err.message : 'Erro ao processar certificado A1.',
     })
   }
 })
