@@ -134,11 +134,29 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
           authRecord.id,
         )
         if (certRec && certRec.getBool('ativo')) {
-          const secretKey =
+          const rawSecret =
             $os.getenv('PB_SUPERUSER_TOKEN') || 'orbis_protocol_safe_key_32chars_min'
-          const passRaw = certRec.getString('senha_cifrada')
-            ? $security.decrypt(certRec.getString('senha_cifrada'), secretKey)
-            : ''
+          const derivedKey = $security.sha256(rawSecret).slice(0, 32)
+          const cipherText = certRec.getString('senha_cifrada')
+          let passRaw = ''
+          if (cipherText) {
+            try {
+              // Tentativa prioritária: chave derivada SHA-256 (32 bytes)
+              passRaw = $security.decrypt(cipherText, derivedKey)
+            } catch (decErr) {
+              // Fallback defensivo: se o registro foi cifrado antes com outra chave/fallback legado
+              try {
+                passRaw = $security.decrypt(cipherText, rawSecret)
+              } catch (legacyErr) {
+                console.error(
+                  '[InfoSimples] Falha ao descriptografar senha do certificado A1: ' +
+                    (decErr.message || '') +
+                    ' / ' +
+                    (legacyErr.message || ''),
+                )
+              }
+            }
+          }
           payload.pkcs12_pass = passRaw
           usouCertificado = true
         }

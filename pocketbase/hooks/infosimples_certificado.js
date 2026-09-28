@@ -213,11 +213,12 @@ routerAdd('POST', '/backend/v1/infosimples/salvar-certificado-a1', (e) => {
       }
     }
 
-    // Criptografa a senha com chave segura no servidor
-    const secretKey = $os.getenv('PB_SUPERUSER_TOKEN') || 'orbis_protocol_safe_key_32chars_min'
+    // Criptografa a senha com chave segura no servidor (derivada com SHA-256 para garantir 32 bytes exatos para AES-256)
+    const rawSecret = $os.getenv('PB_SUPERUSER_TOKEN') || 'orbis_protocol_safe_key_32chars_min'
+    const derivedKey = $security.sha256(rawSecret).slice(0, 32)
     let senhaCifrada = ''
     if (senhaRaw) {
-      senhaCifrada = $security.encrypt(senhaRaw, secretKey)
+      senhaCifrada = $security.encrypt(senhaRaw, derivedKey)
     }
 
     const certCol = $app.findCollectionByNameOrId('cliente_certificados_a1')
