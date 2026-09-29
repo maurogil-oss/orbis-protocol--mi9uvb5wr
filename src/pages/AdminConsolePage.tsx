@@ -964,30 +964,30 @@ export default function AdminConsolePage() {
   })
 
   return (
-    <div className="min-h-screen py-10 bg-[#0A0E12] text-[#F4F7FA]">
+    <div className="min-h-screen py-10 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
         {/* Header Admin */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-[rgba(244,247,250,0.1)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30 text-[10px] font-mono uppercase font-bold tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-800 dark:text-[#12B886] border border-emerald-300 dark:border-[#12B886]/30 text-[10px] font-mono uppercase font-bold tracking-wider">
                 CONSOLE DE GESTÃO ESTRATÉGICA • CONTROLES INTERNOS
               </span>
-              <span className="text-[11px] text-[#93A3B5] font-mono">
+              <span className="text-[11px] text-slate-500 dark:text-[#93A3B5] font-mono">
                 Role: {user?.role || 'admin'}
               </span>
               {/* Badge fixo de Acesso Somente Visualização para papel financeiro_leitor */}
               {isReadOnly && (
-                <span className="px-3 py-1 rounded-full bg-[#D9B36C]/20 text-[#D9B36C] border border-[#D9B36C]/50 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#D9B36C]" />
+                <span className="px-3 py-1 rounded-full bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-800 dark:text-[#D9B36C] border border-amber-300 dark:border-[#D9B36C]/50 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-700 dark:text-[#D9B36C]" />
                   <span>Acesso somente visualização</span>
                 </span>
               )}
             </div>
-            <h1 className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA] tracking-wide">
+            <h1 className="font-heading font-black text-2xl sm:text-3xl text-slate-900 dark:text-[#F4F7FA] tracking-wide">
               ADMINISTRAÇÃO ORBIS PROTOCOL
             </h1>
-            <p className="text-xs sm:text-sm text-[#93A3B5] mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] mt-1">
               Governança centralizada de faturamento, clientes mestres, consumo de APIs, parceiros,
               rede pericial e trilha de auditoria append-only.
             </p>
@@ -997,7 +997,7 @@ export default function AdminConsolePage() {
             <button
               onClick={carregarTodosDados}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.15)] text-xs text-[#93A3B5] hover:text-[#F4F7FA] hover:border-[#12B886] transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:border-[#12B886] transition-colors shadow-sm"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#12B886]' : ''}`}
@@ -1006,7 +1006,7 @@ export default function AdminConsolePage() {
             </button>
             <Link
               to="/painel"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#16202B] border border-[#12B886]/40 text-xs font-semibold text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/40 text-xs font-semibold text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors shadow-sm"
             >
               <span>Painel do Cliente</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -1033,64 +1033,74 @@ export default function AdminConsolePage() {
         {/* Top Cards Resumo Geral */}
         {kpis && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)]">
-              <span className="text-[10px] text-[#93A3B5] uppercase block">Receita Faturada</span>
+            <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] uppercase block">
+                Receita Faturada
+              </span>
               <span className="font-heading font-black text-xl text-[#12B886]">
                 R$ {kpis.receitaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
                 {kpis.cobrancasPagas} cobranças pagas
               </span>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)]">
-              <span className="text-[10px] text-[#93A3B5] uppercase block">
+            <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] uppercase block">
                 Cobranças Pendentes
               </span>
-              <span className="font-heading font-black text-xl text-[#D9B36C]">
+              <span className="font-heading font-black text-xl text-amber-700 dark:text-[#D9B36C]">
                 {kpis.cobrancasPendentes}
               </span>
-              <span className="text-[10px] text-[#93A3B5] block mt-0.5">aguardando PIX</span>
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
+                aguardando PIX
+              </span>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)]">
-              <span className="text-[10px] text-[#93A3B5] uppercase block">Clientes Mestres</span>
-              <span className="font-heading font-black text-xl text-[#F4F7FA]">
+            <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] uppercase block">
+                Clientes Mestres
+              </span>
+              <span className="font-heading font-black text-xl text-slate-900 dark:text-[#F4F7FA]">
                 {kpis.totalClientes}
               </span>
-              <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
                 {kpis.totalLeads} no funil
               </span>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)]">
-              <span className="text-[10px] text-[#93A3B5] uppercase block">
+            <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] uppercase block">
                 Consultas DPP / Lotes
               </span>
-              <span className="font-heading font-black text-xl text-[#3B82F6]">
+              <span className="font-heading font-black text-xl text-blue-600 dark:text-[#3B82F6]">
                 {kpis.totalConsultasDpp}
               </span>
-              <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
                 {kpis.totalLotesCdv} lotes CDV
               </span>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)]">
-              <span className="text-[10px] text-[#93A3B5] uppercase block">Comissões a Pagar</span>
-              <span className="font-heading font-black text-xl text-[#D9B36C]">
+            <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] uppercase block">
+                Comissões a Pagar
+              </span>
+              <span className="font-heading font-black text-xl text-amber-700 dark:text-[#D9B36C]">
                 R$ {kpis.comissoesPendentes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
                 {kpis.totalParceiros} parceiros ativos
               </span>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)]">
-              <span className="text-[10px] text-[#93A3B5] uppercase block">Fila Rede Pericial</span>
+            <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] uppercase block">
+                Fila Rede Pericial
+              </span>
               <span className="font-heading font-black text-xl text-[#12B886]">
                 {kpis.peritosPendentes}
               </span>
-              <span className="text-[10px] text-[#93A3B5] block mt-0.5">
+              <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
                 {kpis.peritosAprovados} homologados
               </span>
             </div>
@@ -1098,7 +1108,7 @@ export default function AdminConsolePage() {
         )}
 
         {/* Menu de Abas (Mobile: scroll horizontal) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 border-b border-[rgba(244,247,250,0.08)] no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] no-scrollbar">
           {abas.map((aba) => {
             const Icon = aba.icon
             const active = activeTab === aba.id
@@ -1109,7 +1119,7 @@ export default function AdminConsolePage() {
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                   active
                     ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
-                    : 'bg-[#111820] text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B] border border-[rgba(244,247,250,0.06)]'
+                    : 'bg-white dark:bg-[#111820] text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:bg-slate-100 dark:hover:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.06)] shadow-sm'
                 }`}
               >
                 <Icon className="w-4 h-4" />

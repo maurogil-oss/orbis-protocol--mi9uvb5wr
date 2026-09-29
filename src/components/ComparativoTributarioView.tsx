@@ -69,27 +69,27 @@ export function ComparativoTributarioView({
   const IconImpacto = badge.icon
 
   return (
-    <div className="space-y-6 animate-fade-in text-left">
+    <div className="space-y-6 animate-fade-in text-left text-slate-900 dark:text-[#F4F7FA]">
       {/* Cabeçalho da Etapa Comparativa */}
-      <div className="border-b border-[rgba(244,247,250,0.08)] pb-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-bold tracking-wider uppercase mb-2">
+      <div className="border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] pb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/40 text-[#12B886] text-xs font-bold tracking-wider uppercase mb-2">
           <Scale className="w-3.5 h-3.5" />
           ETAPA FINAL • COMPARATIVO REFORMA TRIBUTÁRIA × PERFIL ESG
         </div>
-        <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-[#F4F7FA]">
+        <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 dark:text-[#F4F7FA]">
           TRIBUTOS ATUAIS × DEPOIS DA REFORMA
         </h2>
-        <p className="text-xs sm:text-sm text-[#93A3B5] mt-1">
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] mt-1">
           Cruzamento dos dados coletados (regime declarado, limiares SBCE e fronteira CBAM) com o
           modelo de transição IBS/CBS (EC 132/2023 + Lei Complementar).
         </p>
       </div>
 
       {/* Destaque da Faixa de Impacto Qualitativo */}
-      <div className={`p-5 rounded-2xl border ${badge.bg} transition-all space-y-2`}>
+      <div className={`p-5 rounded-2xl border ${badge.bg} transition-all space-y-2 shadow-sm`}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#0A0E12]/60 shrink-0">
+            <div className="p-2 rounded-xl bg-white/60 dark:bg-[#0A0E12]/60 shrink-0 shadow-sm">
               <IconImpacto className="w-5 h-5" />
             </div>
             <div>
@@ -107,35 +107,40 @@ export function ComparativoTributarioView({
             {badge.badgeText}
           </span>
         </div>
-        <p className="text-xs text-[#93A3B5] leading-relaxed pl-1 pt-1">
+        <p className="text-xs text-slate-600 dark:text-[#93A3B5] leading-relaxed pl-1 pt-1">
           {comparativo.subtituloImpacto}
         </p>
       </div>
 
       {/* Mini Resumo das Variáveis do Perfil */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-          <span className="text-[#93A3B5] block text-[11px] flex items-center gap-1.5 mb-1">
+        <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] shadow-sm">
+          <span className="text-slate-600 dark:text-[#93A3B5] block text-[11px] flex items-center gap-1.5 mb-1">
             <Building2 className="w-3.5 h-3.5 text-[#12B886]" />
             Regime Declarado:
           </span>
-          <span className="font-semibold text-[#F4F7FA]">{regimeDeclarado || 'A confirmar'}</span>
+          <span className="font-semibold text-slate-900 dark:text-[#F4F7FA]">
+            {regimeDeclarado || 'A confirmar'}
+          </span>
         </div>
-        <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-          <span className="text-[#93A3B5] block text-[11px] flex items-center gap-1.5 mb-1">
-            <Globe2 className="w-3.5 h-3.5 text-[#D9B36C]" />
+        <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] shadow-sm">
+          <span className="text-slate-600 dark:text-[#93A3B5] block text-[11px] flex items-center gap-1.5 mb-1">
+            <Globe2 className="w-3.5 h-3.5 text-amber-600 dark:text-[#D9B36C]" />
             Exportação UE / CBAM:
           </span>
-          <span className="font-semibold text-[#F4F7FA]">
+          <span className="font-semibold text-slate-900 dark:text-[#F4F7FA]">
             {exportaUE ? `Sim (${cbamBens || 'Bens cobertos'})` : 'Não'}
           </span>
         </div>
-        <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-          <span className="text-[#93A3B5] block text-[11px] flex items-center gap-1.5 mb-1">
+        <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] shadow-sm">
+          <span className="text-slate-600 dark:text-[#93A3B5] block text-[11px] flex items-center gap-1.5 mb-1">
             <ShieldCheck className="w-3.5 h-3.5 text-[#12B886]" />
             Enquadramento SBCE:
           </span>
-          <span className="font-semibold text-[#D9B36C] truncate block" title={enquadramentoSBCE}>
+          <span
+            className="font-semibold text-amber-700 dark:text-[#D9B36C] truncate block"
+            title={enquadramentoSBCE}
+          >
             {enquadramentoSBCE || 'Avaliação preliminar'}
           </span>
         </div>
@@ -155,35 +160,39 @@ export function ComparativoTributarioView({
       )}
 
       {/* Tabela Comparativa Lado a Lado "Hoje × Depois da Reforma" */}
-      <div className="rounded-xl border border-[rgba(244,247,250,0.12)] overflow-hidden bg-[#0A0E12]">
-        <div className="grid grid-cols-12 bg-[#16202B] px-4 py-3 border-b border-[rgba(244,247,250,0.1)] text-xs font-bold uppercase tracking-wider text-[#93A3B5]">
-          <div className="col-span-12 sm:col-span-3 text-[#F4F7FA]">Tributo & Eixo</div>
-          <div className="hidden sm:block sm:col-span-4 text-[#93A3B5]">Sistema Vigente (Hoje)</div>
+      <div className="rounded-xl border border-slate-200 dark:border-[rgba(244,247,250,0.12)] overflow-hidden bg-slate-50 dark:bg-[#0A0E12] shadow-sm">
+        <div className="grid grid-cols-12 bg-slate-100 dark:bg-[#16202B] px-4 py-3 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-[#93A3B5]">
+          <div className="col-span-12 sm:col-span-3 text-slate-900 dark:text-[#F4F7FA]">
+            Tributo & Eixo
+          </div>
+          <div className="hidden sm:block sm:col-span-4 text-slate-600 dark:text-[#93A3B5]">
+            Sistema Vigente (Hoje)
+          </div>
           <div className="hidden sm:block sm:col-span-5 text-[#12B886]">Reforma (EC 132/2023)</div>
         </div>
 
-        <div className="divide-y divide-[rgba(244,247,250,0.08)]">
+        <div className="divide-y divide-slate-200 dark:divide-[rgba(244,247,250,0.08)]">
           {comparativo.linhas.map((linha, idx) => (
             <div
               key={idx}
-              className="p-4 grid grid-cols-12 gap-3 items-start hover:bg-[#111820]/60 transition-colors"
+              className="p-4 grid grid-cols-12 gap-3 items-start hover:bg-slate-100/60 dark:hover:bg-[#111820]/60 transition-colors"
             >
               {/* Eixo */}
               <div className="col-span-12 sm:col-span-3">
-                <span className="font-heading font-bold text-sm text-[#F4F7FA] block">
+                <span className="font-heading font-bold text-sm text-slate-900 dark:text-[#F4F7FA] block">
                   {linha.tributo}
                 </span>
-                <span className="sm:hidden text-[11px] text-[#93A3B5] mt-1 block">
+                <span className="sm:hidden text-[11px] text-slate-500 dark:text-[#93A3B5] mt-1 block">
                   Visão comparada:
                 </span>
               </div>
 
               {/* Hoje */}
               <div className="col-span-12 sm:col-span-4 text-xs">
-                <span className="sm:hidden text-[10px] uppercase font-bold text-[#93A3B5] block mb-0.5">
+                <span className="sm:hidden text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] block mb-0.5">
                   Hoje:
                 </span>
-                <span className="text-[#93A3B5]">{linha.hoje}</span>
+                <span className="text-slate-600 dark:text-[#93A3B5]">{linha.hoje}</span>
               </div>
 
               {/* Depois da Reforma + Reflexo no Caso Concreto */}
@@ -191,9 +200,11 @@ export function ComparativoTributarioView({
                 <span className="sm:hidden text-[10px] uppercase font-bold text-[#12B886] block mb-0.5">
                   Depois da Reforma:
                 </span>
-                <span className="text-[#F4F7FA] font-medium block">{linha.reforma}</span>
-                <div className="p-2.5 rounded-lg bg-[#16202B]/80 border border-[rgba(244,247,250,0.06)] text-[11px] text-[#93A3B5] leading-relaxed">
-                  <strong className="text-[#D9B36C] block text-[10px] uppercase tracking-wider mb-0.5">
+                <span className="text-slate-900 dark:text-[#F4F7FA] font-medium block">
+                  {linha.reforma}
+                </span>
+                <div className="p-2.5 rounded-lg bg-white dark:bg-[#16202B]/80 border border-slate-200 dark:border-[rgba(244,247,250,0.06)] text-[11px] text-slate-600 dark:text-[#93A3B5] leading-relaxed shadow-sm">
+                  <strong className="text-amber-700 dark:text-[#D9B36C] block text-[10px] uppercase tracking-wider mb-0.5">
                     Reflexo no perfil da empresa:
                   </strong>
                   {linha.detalhePersonalizado}
@@ -359,18 +370,20 @@ export function ComparativoTributarioView({
         )}
 
       {/* Informação sobre a fase de testes e transição */}
-      <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] space-y-1 text-xs">
-        <div className="flex items-center gap-2 text-[#D9B36C]">
+      <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] space-y-1 text-xs shadow-sm">
+        <div className="flex items-center gap-2 text-amber-700 dark:text-[#D9B36C]">
           <HelpCircle className="w-4 h-4 shrink-0" />
           <strong className="uppercase tracking-wider text-[11px]">
             Cronograma Oficial de Transição
           </strong>
         </div>
-        <p className="text-[#93A3B5] leading-relaxed pl-6">{comparativo.transicaoInfo}</p>
+        <p className="text-slate-600 dark:text-[#93A3B5] leading-relaxed pl-6">
+          {comparativo.transicaoInfo}
+        </p>
       </div>
 
       {/* Disclaimer Regulatório Obrigatório */}
-      <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] text-[11px] text-[#93A3B5]/80 leading-relaxed italic">
+      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] text-[11px] text-slate-500 dark:text-[#93A3B5]/80 leading-relaxed italic">
         <strong>Aviso Regulatório:</strong> {comparativo.disclaimer}
       </div>
 

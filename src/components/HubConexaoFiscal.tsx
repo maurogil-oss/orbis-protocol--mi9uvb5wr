@@ -460,7 +460,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
       <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#16202B] via-[#111820] to-[#16202B] border border-[#12B886]/40 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/50 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/50 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
               <Sparkles className="w-3.5 h-3.5" />
               HUB DE CONEXÃO FISCAL ACP • 4 ROTAS DE INTEGRAÇÃO
             </div>
@@ -705,7 +705,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
 
       {/* DETALHES DO MODELO 4: API DE NFS - INTEGRAÇÃO DIRETA COM ERP */}
       {modeloAtivo === 'modelo4' && (
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[#12B886]/40 shadow-xl space-y-6">
+        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/40 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[rgba(244,247,250,0.1)]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#12B886]/10 border border-[#12B886]/40 flex items-center justify-center">
@@ -1099,7 +1099,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
 
       {/* DETALHES DO MODELO 2: PORTAL DO CONTADOR / IMPORTAÇÃO SPED */}
       {modeloAtivo === 'modelo2' && (
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[#3B82F6]/40 shadow-xl space-y-6">
+        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#111820] border border-blue-300 dark:border-[#3B82F6]/40 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[rgba(244,247,250,0.1)]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#3B82F6]/10 border border-[#3B82F6]/40 flex items-center justify-center">
@@ -1282,7 +1282,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
 
       {/* DETALHES DO MODELO 3: CERTIFICADO A1 DIRETO COM TERMO E REVOGAÇÃO */}
       {modeloAtivo === 'modelo3' && (
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[#D9B36C]/40 shadow-xl space-y-6">
+        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#111820] border border-amber-300 dark:border-[#D9B36C]/40 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[rgba(244,247,250,0.1)]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/40 flex items-center justify-center">

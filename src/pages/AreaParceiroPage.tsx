@@ -163,10 +163,10 @@ export default function AreaParceiroPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-20 bg-[#0A0E12] text-[#F4F7FA] flex items-center justify-center">
+      <div className="min-h-screen py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] flex items-center justify-center transition-colors">
         <div className="text-center space-y-3">
           <div className="w-8 h-8 border-2 border-[#12B886] border-t-transparent rounded-full animate-spin mx-auto" />
-          <span className="text-xs text-[#93A3B5]">
+          <span className="text-xs text-slate-600 dark:text-[#93A3B5]">
             Carregando Painel Financeiro do Parceiro...
           </span>
         </div>
@@ -178,44 +178,46 @@ export default function AreaParceiroPage() {
   // "Cadastro em homologação pela controladoria" (nenhum dado)
   if (isNaoLiberado) {
     return (
-      <div className="min-h-screen py-20 bg-[#0A0E12] text-[#F4F7FA] flex items-center justify-center">
+      <div className="min-h-screen py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] flex items-center justify-center transition-colors">
         <div className="max-w-xl mx-auto px-4 text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-[#D9B36C] flex items-center justify-center mx-auto shadow-lg shadow-[#D9B36C]/5">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-[#D9B36C]/10 border border-amber-200 dark:border-[#D9B36C]/30 text-amber-700 dark:text-[#D9B36C] flex items-center justify-center mx-auto shadow-lg shadow-[#D9B36C]/5">
             <Clock className="w-8 h-8 animate-pulse" />
           </div>
 
           <div className="space-y-2">
-            <span className="font-mono text-xs text-[#D9B36C] bg-[#D9B36C]/10 px-3 py-1 rounded-full uppercase tracking-wider font-semibold border border-[#D9B36C]/20">
+            <span className="font-mono text-xs text-amber-800 dark:text-[#D9B36C] bg-amber-50 dark:bg-[#D9B36C]/10 px-3 py-1 rounded-full uppercase tracking-wider font-semibold border border-amber-200 dark:border-[#D9B36C]/20">
               {user?.cliente_codigo || 'ORB-PAR-NOVO'}
             </span>
-            <h1 className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA]">
+            <h1 className="font-heading font-black text-2xl sm:text-3xl text-slate-900 dark:text-[#F4F7FA]">
               Cadastro em homologação pela controladoria
             </h1>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed max-w-md mx-auto pt-2">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed max-w-md mx-auto pt-2">
               Seu perfil de parceiro foi registrado e vinculado à nossa tesouraria. Nosso time de
               controladoria e conformidade fiscal está revisando suas informações.
             </p>
           </div>
 
           {/* Cards mobile-friendly com detalhes do protocolo */}
-          <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] text-left space-y-3 text-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-[rgba(244,247,250,0.05)]">
-              <span className="text-[#93A3B5]">Titular Registrado</span>
-              <strong className="text-[#F4F7FA]">{user?.name || user?.email}</strong>
+          <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] text-left space-y-3 text-xs shadow-sm">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[rgba(244,247,250,0.05)]">
+              <span className="text-slate-600 dark:text-[#93A3B5]">Titular Registrado</span>
+              <strong className="text-slate-900 dark:text-[#F4F7FA]">
+                {user?.name || user?.email}
+              </strong>
             </div>
-            <div className="flex items-center justify-between pb-2 border-b border-[rgba(244,247,250,0.05)]">
-              <span className="text-[#93A3B5]">Status de Liberação</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#D9B36C]/20 text-[#D9B36C]">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[rgba(244,247,250,0.05)]">
+              <span className="text-slate-600 dark:text-[#93A3B5]">Status de Liberação</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-800 dark:text-[#D9B36C]">
                 {parceiroAcessoStatus === 'suspenso' ? 'Suspenso' : 'Pendente de Aprovação'}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#93A3B5]">Módulo de Liquidação</span>
+              <span className="text-slate-600 dark:text-[#93A3B5]">Módulo de Liquidação</span>
               <span className="text-[#12B886] font-mono text-[11px]">RPA / NFS-e Automatizado</span>
             </div>
           </div>
 
-          <p className="text-[11px] text-[#93A3B5]">
+          <p className="text-[11px] text-slate-500 dark:text-[#93A3B5]">
             Assim que seu acesso for liberado pelo gestor financeiro, este painel dará acesso
             imediato às suas comissões, link exclusivo de indicação e extrato de repasses.
           </p>
@@ -226,15 +228,15 @@ export default function AreaParceiroPage() {
 
   if (!parceiro) {
     return (
-      <div className="min-h-screen py-20 bg-[#0A0E12] text-[#F4F7FA]">
+      <div className="min-h-screen py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
         <div className="max-w-2xl mx-auto px-4 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-[#D9B36C] flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-[#D9B36C]/10 border border-amber-200 dark:border-[#D9B36C]/30 text-amber-700 dark:text-[#D9B36C] flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h1 className="font-heading font-black text-2xl text-[#F4F7FA]">
+          <h1 className="font-heading font-black text-2xl text-slate-900 dark:text-[#F4F7FA]">
             Acesso Restrito ao Programa de Afiliados & Parceiros
           </h1>
-          <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
             Sua conta atual ({user?.email}) ainda não possui um código de parceiro homologado
             (ORB-PAR-XXXX) vinculado. Entre em contato com a equipe de novos negócios da Orbis
             Protocol para credenciamento institucional.
@@ -242,7 +244,7 @@ export default function AreaParceiroPage() {
           <div className="pt-4 flex justify-center gap-3">
             <Link
               to="/painel"
-              className="px-5 py-2.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA]"
+              className="px-5 py-2.5 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-800 dark:text-[#F4F7FA] shadow-sm"
             >
               Voltar ao Painel do Cliente
             </Link>
@@ -259,25 +261,28 @@ export default function AreaParceiroPage() {
   }
 
   return (
-    <div className="min-h-screen py-10 bg-[#0A0E12] text-[#F4F7FA]">
+    <div className="min-h-screen py-10 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-8">
         {/* Header do Parceiro */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.1)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="px-2.5 py-0.5 rounded-full bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30 text-[10px] font-mono uppercase font-bold tracking-wider">
                 PROGRAMA DE PARCEIROS & AFILIADOS ORBIS
               </span>
-              <span className="text-[11px] font-mono text-[#D9B36C] bg-[#D9B36C]/10 px-2 py-0.5 rounded">
+              <span className="text-[11px] font-mono text-amber-800 dark:text-[#D9B36C] bg-amber-50 dark:bg-[#D9B36C]/10 px-2 py-0.5 rounded border border-amber-200 dark:border-transparent">
                 {parceiro.codigo_parceiro}
               </span>
             </div>
-            <h1 className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA] tracking-wide">
+            <h1 className="font-heading font-black text-2xl sm:text-3xl text-slate-900 dark:text-[#F4F7FA] tracking-wide">
               {parceiro.nome}
             </h1>
-            <p className="text-xs text-[#93A3B5] mt-1">
-              CNPJ/CPF: <strong className="font-mono text-[#F4F7FA]">{parceiro.cpf_cnpj}</strong> •
-              Comissão contratada:{' '}
+            <p className="text-xs text-slate-600 dark:text-[#93A3B5] mt-1">
+              CNPJ/CPF:{' '}
+              <strong className="font-mono text-slate-900 dark:text-[#F4F7FA]">
+                {parceiro.cpf_cnpj}
+              </strong>{' '}
+              • Comissão contratada:{' '}
               <strong className="text-[#12B886]">
                 {parceiro.percentual_comissao}% por venda liquidada
               </strong>
@@ -287,7 +292,7 @@ export default function AreaParceiroPage() {
           <div className="flex items-center gap-3">
             <Link
               to="/painel"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.15)] text-xs text-[#93A3B5] hover:text-[#F4F7FA]"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] shadow-sm"
             >
               <span>Painel Geral</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -304,15 +309,15 @@ export default function AreaParceiroPage() {
         )}
 
         {/* Link de Indicação & Destaque */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-[#111820] to-[#16202B] border border-[#12B886]/30 space-y-3">
+        <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-50/50 to-slate-100 dark:from-[#111820] dark:to-[#16202B] border border-emerald-300 dark:border-[#12B886]/30 space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Share2 className="w-4 h-4 text-[#12B886]" />
-              <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#F4F7FA]">
+              <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-[#F4F7FA]">
                 Seu Link Exclusivo de Indicação
               </span>
             </div>
-            <span className="text-[10px] text-[#D9B36C] font-mono">
+            <span className="text-[10px] text-amber-800 dark:text-[#D9B36C] font-mono">
               Comissões nascem somente de cobranças pagas
             </span>
           </div>
@@ -322,7 +327,7 @@ export default function AreaParceiroPage() {
               type="text"
               readOnly
               value={linkIndicacao}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#12B886] font-mono select-all focus:outline-none"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-xs text-[#12B886] font-mono select-all focus:outline-none"
             />
             <button
               onClick={handleCopiarLink}
@@ -332,7 +337,7 @@ export default function AreaParceiroPage() {
               <span>{copiado ? 'Link Copiado!' : 'Copiar Link'}</span>
             </button>
           </div>
-          <p className="text-[11px] text-[#93A3B5]">
+          <p className="text-[11px] text-slate-600 dark:text-[#93A3B5]">
             Compartilhe este link com seus clientes. Todas as contratações em{' '}
             <strong>/checkout?ref={parceiro.codigo_parceiro}</strong> vincularão automaticamente{' '}
             {parceiro.percentual_comissao}% de comissão após o pagamento via PIX.
@@ -341,42 +346,50 @@ export default function AreaParceiroPage() {
 
         {/* 4 Cards de Métricas do Parceiro */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-1">
-            <span className="text-xs text-[#93A3B5] uppercase block">Saldo a Receber</span>
-            <div className="font-heading font-black text-2xl text-[#D9B36C]">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] space-y-1 shadow-sm">
+            <span className="text-xs text-slate-600 dark:text-[#93A3B5] uppercase block">
+              Saldo a Receber
+            </span>
+            <div className="font-heading font-black text-2xl text-amber-700 dark:text-[#D9B36C]">
               R$ {totalCalculada.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <span className="text-[10px] text-[#93A3B5] block">Comissões calculadas pendentes</span>
+            <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block">
+              Comissões calculadas pendentes
+            </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-1">
-            <span className="text-xs text-[#93A3B5] uppercase block">Total Repassado</span>
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] space-y-1 shadow-sm">
+            <span className="text-xs text-slate-600 dark:text-[#93A3B5] uppercase block">
+              Total Repassado
+            </span>
             <div className="font-heading font-black text-2xl text-[#12B886]">
               R$ {totalPaga.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <span className="text-[10px] text-[#93A3B5] block">
+            <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block">
               Liquidações efetuadas com sucesso
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-1">
-            <span className="text-xs text-[#93A3B5] uppercase block">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] space-y-1 shadow-sm">
+            <span className="text-xs text-slate-600 dark:text-[#93A3B5] uppercase block">
               Volume de Vendas Indicadas
             </span>
-            <div className="font-heading font-black text-2xl text-[#F4F7FA]">
+            <div className="font-heading font-black text-2xl text-slate-900 dark:text-[#F4F7FA]">
               R$ {totalVendasVolume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <span className="text-[10px] text-[#93A3B5] block">
+            <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block">
               {vendasIndicadas.filter((v) => v.status === 'pago').length} contratos faturados
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-1">
-            <span className="text-xs text-[#93A3B5] uppercase block">Comissão Contratada</span>
-            <div className="font-heading font-black text-2xl text-[#3B82F6]">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] space-y-1 shadow-sm">
+            <span className="text-xs text-slate-600 dark:text-[#93A3B5] uppercase block">
+              Comissão Contratada
+            </span>
+            <div className="font-heading font-black text-2xl text-blue-600 dark:text-[#3B82F6]">
               {parceiro.percentual_comissao}%
             </div>
-            <span className="text-[10px] text-[#93A3B5] block">
+            <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block">
               Percentual congelado na criação
             </span>
           </div>
@@ -388,14 +401,14 @@ export default function AreaParceiroPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Vendas Indicadas */}
             <div className="space-y-3">
-              <h2 className="font-heading font-bold text-base text-[#F4F7FA]">
+              <h2 className="font-heading font-bold text-base text-slate-900 dark:text-[#F4F7FA]">
                 Vendas Indicadas ({vendasIndicadas.length})
               </h2>
 
               {/* Versão Desktop (Tabela) */}
-              <div className="hidden sm:block rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-hidden">
+              <div className="hidden sm:block rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] overflow-hidden shadow-sm">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#0D1217] text-[#93A3B5] uppercase text-[10px] border-b border-[rgba(244,247,250,0.08)]">
+                  <thead className="bg-slate-100/70 dark:bg-[#0D1217] text-slate-600 dark:text-[#93A3B5] uppercase text-[10px] border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
                     <tr>
                       <th className="p-3.5">Cliente Tomador</th>
                       <th className="p-3.5">Serviço</th>
@@ -404,16 +417,23 @@ export default function AreaParceiroPage() {
                       <th className="p-3.5 text-right">Data</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[rgba(244,247,250,0.05)]">
+                  <tbody className="divide-y divide-slate-200 dark:divide-[rgba(244,247,250,0.05)] text-slate-900 dark:text-[#F4F7FA]">
                     {vendasIndicadas.map((v) => (
-                      <tr key={v.id} className="hover:bg-[#16202B]/50 transition-colors">
+                      <tr
+                        key={v.id}
+                        className="hover:bg-slate-50 dark:hover:bg-[#16202B]/50 transition-colors"
+                      >
                         <td className="p-3.5">
-                          <strong className="text-[#F4F7FA] block">{v.tomador_nome}</strong>
-                          <span className="font-mono text-[10px] text-[#93A3B5]">
+                          <strong className="text-slate-900 dark:text-[#F4F7FA] block">
+                            {v.tomador_nome}
+                          </strong>
+                          <span className="font-mono text-[10px] text-slate-500 dark:text-[#93A3B5]">
                             {v.tomador_cpf_cnpj}
                           </span>
                         </td>
-                        <td className="p-3.5 text-[#D9B36C]">{v.servico_nome}</td>
+                        <td className="p-3.5 text-amber-700 dark:text-[#D9B36C]">
+                          {v.servico_nome}
+                        </td>
                         <td className="p-3.5 font-bold font-heading text-[#12B886]">
                           R$ {Number(v.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </td>
@@ -421,21 +441,24 @@ export default function AreaParceiroPage() {
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                               v.status === 'pago'
-                                ? 'bg-[#12B886]/20 text-[#12B886]'
-                                : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                                ? 'bg-emerald-50 dark:bg-[#12B886]/20 text-[#12B886]'
+                                : 'bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-800 dark:text-[#D9B36C]'
                             }`}
                           >
                             {v.status}
                           </span>
                         </td>
-                        <td className="p-3.5 text-right text-[10px] text-[#93A3B5]">
+                        <td className="p-3.5 text-right text-[10px] text-slate-500 dark:text-[#93A3B5]">
                           {new Date(v.created).toLocaleDateString('pt-BR')}
                         </td>
                       </tr>
                     ))}
                     {vendasIndicadas.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="p-6 text-center text-xs text-[#93A3B5]">
+                        <td
+                          colSpan={5}
+                          className="p-6 text-center text-xs text-slate-500 dark:text-[#93A3B5]"
+                        >
                           Nenhuma venda indicada registrada ainda com seu código.
                         </td>
                       </tr>
@@ -449,38 +472,40 @@ export default function AreaParceiroPage() {
                 {vendasIndicadas.map((v) => (
                   <div
                     key={v.id}
-                    className="p-3.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] space-y-2 text-xs"
+                    className="p-3.5 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] space-y-2 text-xs shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <strong className="text-[#F4F7FA] text-sm block">{v.tomador_nome}</strong>
-                        <span className="font-mono text-[10px] text-[#93A3B5]">
+                        <strong className="text-slate-900 dark:text-[#F4F7FA] text-sm block">
+                          {v.tomador_nome}
+                        </strong>
+                        <span className="font-mono text-[10px] text-slate-500 dark:text-[#93A3B5]">
                           {v.tomador_cpf_cnpj}
                         </span>
                       </div>
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
                           v.status === 'pago'
-                            ? 'bg-[#12B886]/20 text-[#12B886]'
-                            : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                            ? 'bg-emerald-50 dark:bg-[#12B886]/20 text-[#12B886]'
+                            : 'bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-800 dark:text-[#D9B36C]'
                         }`}
                       >
                         {v.status}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[rgba(244,247,250,0.05)]">
-                      <span className="text-[#D9B36C]">{v.servico_nome}</span>
+                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100 dark:border-[rgba(244,247,250,0.05)]">
+                      <span className="text-amber-700 dark:text-[#D9B36C]">{v.servico_nome}</span>
                       <span className="font-bold text-[#12B886] font-heading text-sm">
                         R$ {Number(v.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
-                    <div className="text-[10px] text-[#93A3B5] text-right">
+                    <div className="text-[10px] text-slate-500 dark:text-[#93A3B5] text-right">
                       {new Date(v.created).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
                 ))}
                 {vendasIndicadas.length === 0 && (
-                  <div className="p-6 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] text-center text-xs text-[#93A3B5]">
+                  <div className="p-6 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] text-center text-xs text-slate-500 dark:text-[#93A3B5]">
                     Nenhuma venda indicada registrada ainda com seu código.
                   </div>
                 )}
@@ -493,7 +518,7 @@ export default function AreaParceiroPage() {
                 <h2 className="font-heading font-bold text-base text-[#12B886]">
                   Extrato de Comissões & Repasses ({comissoes.length})
                 </h2>
-                <span className="text-[10px] text-[#93A3B5] font-mono">
+                <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] font-mono">
                   Snapshot de % preservado
                 </span>
               </div>
@@ -502,31 +527,35 @@ export default function AreaParceiroPage() {
                 {comissoes.map((c) => (
                   <div
                     key={c.id}
-                    className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                    className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-[#F4F7FA]">Comissão de Faturamento</span>
-                        <span className="text-[10px] text-[#93A3B5] font-mono">
+                        <span className="font-bold text-slate-900 dark:text-[#F4F7FA]">
+                          Comissão de Faturamento
+                        </span>
+                        <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] font-mono">
                           Cobrança: {c.cobranca_id}
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                             c.status === 'paga'
-                              ? 'bg-[#12B886]/20 text-[#12B886]'
-                              : 'bg-[#D9B36C]/20 text-[#D9B36C]'
+                              ? 'bg-emerald-50 dark:bg-[#12B886]/20 text-[#12B886]'
+                              : 'bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-800 dark:text-[#D9B36C]'
                           }`}
                         >
                           {c.status === 'paga' ? 'Pago' : 'A Pagar'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-[#93A3B5]">
+                      <div className="text-[11px] text-slate-600 dark:text-[#93A3B5]">
                         Base de cálculo:{' '}
-                        <strong className="text-[#F4F7FA]">
+                        <strong className="text-slate-900 dark:text-[#F4F7FA]">
                           R$ {Number(c.base_calculo).toLocaleString('pt-BR')}
                         </strong>{' '}
                         • Percentual snapshot:{' '}
-                        <strong className="text-[#3B82F6]">{c.percentual_aplicado}%</strong>
+                        <strong className="text-blue-600 dark:text-[#3B82F6]">
+                          {c.percentual_aplicado}%
+                        </strong>
                       </div>
                       {c.comprovante && (
                         <div className="text-[10px] text-[#12B886] font-mono flex items-center gap-1">
@@ -536,11 +565,11 @@ export default function AreaParceiroPage() {
                       )}
                     </div>
 
-                    <div className="text-left sm:text-right pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(244,247,250,0.05)]">
+                    <div className="text-left sm:text-right pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-[rgba(244,247,250,0.05)]">
                       <div className="font-heading font-black text-lg text-[#12B886]">
                         R$ {Number(c.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
-                      <span className="text-[10px] text-[#93A3B5] block">
+                      <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block">
                         {c.data_pagamento
                           ? `Repassado em ${new Date(c.data_pagamento).toLocaleDateString('pt-BR')}`
                           : 'Aguardando liquidação e validação fiscal'}
@@ -549,7 +578,7 @@ export default function AreaParceiroPage() {
                   </div>
                 ))}
                 {comissoes.length === 0 && (
-                  <div className="p-6 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.08)] text-center text-xs text-[#93A3B5]">
+                  <div className="p-6 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] text-center text-xs text-slate-500 dark:text-[#93A3B5]">
                     Nenhuma comissão apurada ainda. Assim que uma contratação pelo seu link for
                     liquidada e confirmada, seu extrato e percentual constarão nesta seção.
                   </div>
@@ -559,15 +588,15 @@ export default function AreaParceiroPage() {
           </div>
           {/* Coluna 3: Edição dos Próprios Dados Bancários */}
           <div className="space-y-4">
-            <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-4">
-              <div className="flex items-center gap-2 border-b border-[rgba(244,247,250,0.08)] pb-3">
-                <CreditCard className="w-4 h-4 text-[#D9B36C]" />
-                <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
+            <div className="p-6 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] space-y-4 shadow-sm">
+              <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] pb-3">
+                <CreditCard className="w-4 h-4 text-amber-700 dark:text-[#D9B36C]" />
+                <h3 className="font-heading font-bold text-sm text-slate-900 dark:text-[#F4F7FA]">
                   Dados Bancários & Documentação Fiscal
                 </h3>
               </div>
 
-              <p className="text-[11px] text-[#93A3B5]">
+              <p className="text-[11px] text-slate-600 dark:text-[#93A3B5]">
                 Mantenha sua chave PIX e documentação fiscal (RPA ou NFS-e) atualizados para
                 liberação pontual dos repasses de honorários.
               </p>
@@ -576,8 +605,8 @@ export default function AreaParceiroPage() {
               <div
                 className={`p-3 rounded-xl border text-xs space-y-1 ${
                   parceiro.documento_fiscal_validado
-                    ? 'bg-[#12B886]/10 border-[#12B886]/40 text-[#12B886]'
-                    : 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
+                    ? 'bg-emerald-50 dark:bg-[#12B886]/10 border-emerald-300 dark:border-[#12B886]/40 text-emerald-800 dark:text-[#12B886]'
+                    : 'bg-rose-50 dark:bg-[#EF4444]/10 border-rose-300 dark:border-[#EF4444]/40 text-rose-800 dark:text-[#EF4444]'
                 }`}
               >
                 <div className="flex items-center gap-1.5 font-bold uppercase text-[10px] tracking-wider">
@@ -590,7 +619,7 @@ export default function AreaParceiroPage() {
                   </span>
                 </div>
                 {!parceiro.documento_fiscal_validado && (
-                  <p className="text-[11px] text-[#93A3B5] leading-relaxed">
+                  <p className="text-[11px] text-slate-600 dark:text-[#93A3B5] leading-relaxed">
                     Repasse bloqueado: anexe RPA (PF) ou NFS-e (PJ) para liberar o pagamento da sua
                     comissão.
                   </p>
@@ -599,61 +628,69 @@ export default function AreaParceiroPage() {
 
               <form onSubmit={handleSalvarDadosBancarios} className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-[#93A3B5] mb-1">Instituição Bancária</label>
+                  <label className="block text-slate-600 dark:text-[#93A3B5] mb-1">
+                    Instituição Bancária
+                  </label>
                   <input
                     type="text"
                     placeholder="Ex: 001 - Banco do Brasil"
                     value={banco}
                     onChange={(e) => setBanco(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-slate-900 dark:text-[#F4F7FA]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[#93A3B5] mb-1">Agência</label>
+                    <label className="block text-slate-600 dark:text-[#93A3B5] mb-1">Agência</label>
                     <input
                       type="text"
                       placeholder="Ex: 1234-5"
                       value={agencia}
                       onChange={(e) => setAgencia(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-slate-900 dark:text-[#F4F7FA]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[#93A3B5] mb-1">Conta Corrente</label>
+                    <label className="block text-slate-600 dark:text-[#93A3B5] mb-1">
+                      Conta Corrente
+                    </label>
                     <input
                       type="text"
                       placeholder="Ex: 98765-4"
                       value={conta}
                       onChange={(e) => setConta(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-slate-900 dark:text-[#F4F7FA]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[#93A3B5] mb-1">Chave PIX Preferencial *</label>
+                  <label className="block text-slate-600 dark:text-[#93A3B5] mb-1">
+                    Chave PIX Preferencial *
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="CNPJ, CPF, E-mail ou Telefone"
                     value={chavePix}
                     onChange={(e) => setChavePix(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#12B886] font-mono font-bold"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-[#12B886] font-mono font-bold"
                   />
                 </div>
 
-                <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] space-y-2">
-                  <span className="font-bold text-[#D9B36C] uppercase text-[10px] block">
+                <div className="pt-2 border-t border-slate-200 dark:border-[rgba(244,247,250,0.06)] space-y-2">
+                  <span className="font-bold text-amber-700 dark:text-[#D9B36C] uppercase text-[10px] block">
                     Comprovação Fiscal (Exigência CFO):
                   </span>
                   <div>
-                    <label className="block text-[#93A3B5] mb-1">Tipo de Documento Fiscal *</label>
+                    <label className="block text-slate-600 dark:text-[#93A3B5] mb-1">
+                      Tipo de Documento Fiscal *
+                    </label>
                     <select
                       value={tipoDocFiscal}
                       onChange={(e) => setTipoDocFiscal(e.target.value as 'RPA' | 'NFSe_pj')}
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-slate-900 dark:text-[#F4F7FA]"
                     >
                       <option value="RPA">
                         RPA — Recibo de Pagamento a Autônomo (Pessoa Física)
@@ -664,7 +701,7 @@ export default function AreaParceiroPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[#93A3B5] mb-1">
+                    <label className="block text-slate-600 dark:text-[#93A3B5] mb-1">
                       Link / URL do RPA ou NFS-e Anexada
                     </label>
                     <input
@@ -672,7 +709,7 @@ export default function AreaParceiroPage() {
                       placeholder="https://.../meu-rpa-assinado.pdf ou chave de acesso"
                       value={docFiscalUrl}
                       onChange={(e) => setDocFiscalUrl(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono text-[11px]"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-slate-900 dark:text-[#F4F7FA] font-mono text-[11px]"
                     />
                   </div>
                 </div>
@@ -687,7 +724,7 @@ export default function AreaParceiroPage() {
                 </button>
               </form>
 
-              <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] text-[10px] text-[#93A3B5] leading-relaxed">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.06)] text-[10px] text-slate-600 dark:text-[#93A3B5] leading-relaxed">
                 🔒 <strong>Privacidade Garantida:</strong> Seus dados bancários são criptografados e
                 acessíveis exclusivamente pela tesouraria da Orbis Protocol para liquidação de
                 honorários.

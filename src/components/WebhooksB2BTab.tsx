@@ -165,7 +165,7 @@ export function WebhooksB2BTab() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* HEADER DA ABA */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-[#111820] border border-[#12B886]/30 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/30 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Radio className="w-5 h-5 text-[#12B886]" />
@@ -245,7 +245,7 @@ export function WebhooksB2BTab() {
         </div>
 
         {webhooks.length === 0 ? (
-          <div className="p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] text-center text-xs text-[#93A3B5]">
+          <div className="p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] text-center text-xs text-slate-600 dark:text-[#93A3B5] shadow-sm">
             Nenhum webhook registrado ainda. Clique no botão acima para cadastrar sua URL de destino
             e receber eventos em tempo real.
           </div>
@@ -254,7 +254,7 @@ export function WebhooksB2BTab() {
             {webhooks.map((wh) => (
               <div
                 key={wh.id}
-                className="p-5 sm:p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
+                className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] space-y-4 shadow-sm"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[rgba(244,247,250,0.06)] pb-3">
                   <div>
@@ -362,7 +362,7 @@ export function WebhooksB2BTab() {
             webhook.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-[rgba(244,247,250,0.1)] bg-[#111820]">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-[rgba(244,247,250,0.1)] bg-white dark:bg-[#111820] shadow-sm">
             <table className="w-full text-left text-xs">
               <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] uppercase font-semibold">
                 <tr>
@@ -434,7 +434,7 @@ export function WebhooksB2BTab() {
       </div>
 
       {/* DOCUMENTAÇÃO INLINE COM EXEMPLO DE VALIDAÇÃO HMAC */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-4">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] space-y-4 shadow-sm">
         <div className="flex items-center gap-2">
           <Code className="w-5 h-5 text-[#3B82F6]" />
           <h3 className="font-heading font-extrabold text-base text-[#F4F7FA]">
@@ -487,7 +487,7 @@ export function WebhooksB2BTab() {
       {/* MODAL DE NOVO WEBHOOK */}
       {showNovoModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#111820] border border-[#12B886] rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl animate-fade-in">
+          <div className="w-full max-w-lg bg-white dark:bg-[#111820] border border-emerald-400 dark:border-[#12B886] rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl animate-fade-in">
             <div className="flex items-center justify-between border-b border-[rgba(244,247,250,0.08)] pb-3">
               <h3 className="font-heading font-extrabold text-base sm:text-lg text-[#F4F7FA]">
                 Registrar Webhook B2B

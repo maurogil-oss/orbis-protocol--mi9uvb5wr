@@ -684,21 +684,21 @@ export default function PainelCliente() {
   }
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
+    <div className="min-h-screen py-12 md:py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-6 border-b border-[rgba(244,247,250,0.1)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-6 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-3">
               <ShieldCheck className="w-4 h-4" />
               PAINEL DO CLIENTE • AMBIENTE AUTENTICADO
             </div>
-            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA]">
+            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-[#F4F7FA]">
               VISÃO GERAL DO PROTOCOLO & CRÉDITOS FISCAIS
             </h1>
-            <p className="text-xs sm:text-sm text-[#93A3B5] mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] mt-1">
               Organização:{' '}
-              <strong className="text-[#F4F7FA]">
+              <strong className="text-slate-900 dark:text-[#F4F7FA]">
                 {currentLead?.razao_social || 'Empresa Cadastrada'}
               </strong>{' '}
               ({currentLead?.cnpj || 'CNPJ em análise'})
@@ -709,17 +709,17 @@ export default function PainelCliente() {
             {(isMaster || isAdmin) && (
               <Link
                 to="/admin"
-                className="px-4 py-2.5 rounded-lg text-xs font-bold bg-[#16202B] border border-[#D9B36C] text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 shadow-sm"
+                className="px-4 py-2.5 rounded-lg text-xs font-bold bg-white dark:bg-[#16202B] border border-amber-400 dark:border-[#D9B36C] text-amber-800 dark:text-[#D9B36C] hover:bg-amber-50 dark:hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 shadow-sm"
                 title="Acesso direto ao Console Administrativo e Governança"
               >
-                <Sliders className="w-3.5 h-3.5 text-[#D9B36C]" />
+                <Sliders className="w-3.5 h-3.5 text-amber-700 dark:text-[#D9B36C]" />
                 <span>Console Admin</span>
               </Link>
             )}
             <button
               type="button"
               onClick={() => setModalAlterarSenhaAberto(true)}
-              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-slate-700 dark:text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all flex items-center gap-2 shadow-sm"
               title="Alterar a senha da minha conta"
             >
               <KeyRound className="w-3.5 h-3.5" />
@@ -737,14 +737,14 @@ export default function PainelCliente() {
             </button>
             <Link
               to="/capital"
-              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886]/10 flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/40 text-[#12B886] hover:bg-emerald-50 dark:hover:bg-[#12B886]/10 flex items-center gap-1.5 shadow-sm"
             >
               <Coins className="w-3.5 h-3.5" />
               <span>Green Capital (8 Linhas)</span>
             </Link>
             <Link
               to="/diagnostico"
-              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886]"
+              className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-slate-700 dark:text-[#F4F7FA] hover:border-[#12B886] shadow-sm"
             >
               Novo CNPJ
             </Link>
@@ -758,14 +758,14 @@ export default function PainelCliente() {
         />
 
         {/* SELETOR DE ABAS DO MÓDULO FISCAL & MOTOR PERICIAL */}
-        <div className="flex border-b border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">
+        <div className="flex border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">
           <button
             type="button"
             onClick={() => setAbaFiscalAtiva('dmrv_emissoes')}
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'dmrv_emissoes'
                 ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
             <Leaf className="w-4 h-4 text-emerald-500" />
@@ -777,11 +777,11 @@ export default function PainelCliente() {
             onClick={() => setAbaFiscalAtiva('lastro_circularidade')}
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'lastro_circularidade'
-                ? 'border-[#D9B36C] text-[#D9B36C]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                ? 'border-amber-500 dark:border-[#D9B36C] text-amber-800 dark:text-[#D9B36C]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
-            <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
+            <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-[#D9B36C]" />
             <span>Lastro de Circularidade (Dec. 11.413)</span>
           </button>
 
@@ -790,11 +790,11 @@ export default function PainelCliente() {
             onClick={() => setAbaFiscalAtiva('ccrlr_sinir')}
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'ccrlr_sinir'
-                ? 'border-[#3B82F6] text-[#3B82F6]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                ? 'border-blue-500 dark:border-[#3B82F6] text-blue-700 dark:text-[#3B82F6]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
-            <FileText className="w-4 h-4 text-[#60A5FA]" />
+            <FileText className="w-4 h-4 text-blue-500 dark:text-[#60A5FA]" />
             <span>CCRLR & Interoperabilidade SINIR</span>
           </button>
 
@@ -804,7 +804,7 @@ export default function PainelCliente() {
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'hub_fiscal'
                 ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
             <Network className="w-4 h-4" />
@@ -817,7 +817,7 @@ export default function PainelCliente() {
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'upload_manual'
                 ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
             <UploadCloud className="w-4 h-4" />
@@ -830,7 +830,7 @@ export default function PainelCliente() {
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'infosimples'
                 ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
             <Receipt className="w-4 h-4" />
@@ -843,7 +843,7 @@ export default function PainelCliente() {
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'motor_emissoes'
                 ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
             <FileCheck className="w-4 h-4" />
@@ -856,7 +856,7 @@ export default function PainelCliente() {
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'cdv_apis'
                 ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
             <Terminal className="w-4 h-4" />
@@ -868,11 +868,11 @@ export default function PainelCliente() {
             onClick={() => setAbaFiscalAtiva('webhooks_b2b')}
             className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 whitespace-nowrap ${
               abaFiscalAtiva === 'webhooks_b2b'
-                ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
+                ? 'border-amber-500 dark:border-[#D9B36C] text-amber-800 dark:text-[#D9B36C]'
+                : 'border-transparent text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA]'
             }`}
           >
-            <Radio className="w-4 h-4 text-[#D9B36C]" />
+            <Radio className="w-4 h-4 text-amber-600 dark:text-[#D9B36C]" />
             <span>Webhooks B2B & Mensageria</span>
           </button>
         </div>
@@ -967,17 +967,17 @@ export default function PainelCliente() {
         )}
 
         {abaFiscalAtiva === 'upload_manual' && (
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[#12B886]/30 mb-10 shadow-xl">
+          <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/30 mb-10 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
                 <div className="flex items-center gap-2">
                   <UploadCloud className="w-5 h-5 text-[#12B886]" />
-                  <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                  <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
                     INGESTÃO MULTI-MODELO FISCAL (NF-E, NFC-E, NFS-E, CT-E, MDF-E, NF3E, NFCOM,
                     BP-E, CT-E OS, FATURAS)
                   </h2>
                 </div>
-                <p className="text-xs text-[#93A3B5] mt-1">
+                <p className="text-xs text-slate-600 dark:text-[#93A3B5] mt-1">
                   Envie seus arquivos fiscais para substituir estimativas preliminares por créditos
                   fiscais reais apurados e alimentar o motor pericial de emissões de Escopo 1, 2 e
                   3.
@@ -1009,10 +1009,10 @@ export default function PainelCliente() {
                   type="button"
                   disabled={isFechandoCompetencia || nfeList.length === 0}
                   onClick={handleExecutarFechamentoCompetencia}
-                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/40 hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 disabled:opacity-40"
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white dark:bg-[#16202B] text-amber-800 dark:text-[#D9B36C] border border-amber-300 dark:border-[#D9B36C]/40 hover:bg-amber-50 dark:hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 disabled:opacity-40 shadow-sm"
                   title="Calcula e registra o hash encadeado SHA-256 de todas as notas fiscais da competência"
                 >
-                  <ShieldCheck className="w-4 h-4 text-[#D9B36C]" />
+                  <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-[#D9B36C]" />
                   <span>{isFechandoCompetencia ? 'Fechando...' : 'Fechar Competência'}</span>
                 </button>
 
@@ -1047,7 +1047,7 @@ export default function PainelCliente() {
                       hashDocumentosFonte: hashFontes,
                     })
                   }}
-                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#16202B] text-[#12B886] border border-[#12B886]/40 hover:bg-[#12B886]/10 transition-all flex items-center gap-2 disabled:opacity-40"
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white dark:bg-[#16202B] text-[#12B886] border border-emerald-300 dark:border-[#12B886]/40 hover:bg-emerald-50 dark:hover:bg-[#12B886]/10 transition-all flex items-center gap-2 disabled:opacity-40 shadow-sm"
                   title="Exporta arquivo CSV analítico com BOM e cabeçalho de integridade criptográfica SHA-256"
                 >
                   <Download className="w-4 h-4 text-[#12B886]" />
@@ -1058,12 +1058,12 @@ export default function PainelCliente() {
 
             {/* Banner Informativo do Hash de Fechamento por Competência */}
             {(hashFechamentoAtual || fechamentoMsg) && (
-              <div className="mb-5 p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="mb-5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-emerald-300 dark:border-[#12B886]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2 text-[#12B886] font-semibold">
                   <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0" />
                   <span>
                     Hash de fechamento da competência:{' '}
-                    <strong className="font-mono text-[#F4F7FA]">
+                    <strong className="font-mono text-slate-900 dark:text-[#F4F7FA]">
                       {hashFechamentoAtual
                         ? `${hashFechamentoAtual.hash_fechamento.slice(0, 18)}...${hashFechamentoAtual.hash_fechamento.slice(-6)}`
                         : ''}
@@ -1071,7 +1071,7 @@ export default function PainelCliente() {
                     verificado ✓
                   </span>
                 </div>
-                <div className="text-[11px] text-[#93A3B5] font-mono">
+                <div className="text-[11px] text-slate-500 dark:text-[#93A3B5] font-mono">
                   Competência: {hashFechamentoAtual?.competencia || 'Vigente'} •{' '}
                   {hashFechamentoAtual?.total_notas || nfeList.length} notas inclusas
                 </div>
@@ -1080,25 +1080,25 @@ export default function PainelCliente() {
 
             {/* Feedback de erro/sucesso */}
             {uploadError && (
-              <div className="mb-4 p-3 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
+              <div className="mb-4 p-3 rounded-lg bg-rose-50 dark:bg-[#F03E54]/10 border border-rose-300 dark:border-[#F03E54]/30 text-xs text-rose-700 dark:text-[#F03E54] flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{uploadError}</span>
               </div>
             )}
             {uploadSuccess && (
-              <div className="mb-4 p-3 rounded-lg bg-[#12B886]/10 border border-[#12B886]/30 text-xs text-[#12B886] flex items-center gap-2">
+              <div className="mb-4 p-3 rounded-lg bg-emerald-50 dark:bg-[#12B886]/10 border border-emerald-300 dark:border-[#12B886]/30 text-xs text-emerald-800 dark:text-[#12B886] flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{uploadSuccess}</span>
               </div>
             )}
 
             {/* Resumo dos Créditos Apurados */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-4 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-0.5">
+                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] block mb-0.5">
                   Docs Ingeridos
                 </span>
-                <span className="text-xl font-heading font-black text-[#F4F7FA]">
+                <span className="text-xl font-heading font-black text-slate-900 dark:text-[#F4F7FA]">
                   {totaisNfe.totalNotas}
                 </span>
               </div>
@@ -1111,37 +1111,37 @@ export default function PainelCliente() {
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#D9B36C] block mb-0.5">
+                <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-[#D9B36C] block mb-0.5">
                   ICMS Destacado
                 </span>
-                <span className="text-xl font-heading font-black text-[#D9B36C]">
+                <span className="text-xl font-heading font-black text-amber-700 dark:text-[#D9B36C]">
                   {formatCurrencyBRL(totaisNfe.somaIcms)}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#93A3B5] block mb-0.5">
+                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] block mb-0.5">
                   IPI Apurado
                 </span>
-                <span className="text-xl font-heading font-black text-[#F4F7FA]">
+                <span className="text-xl font-heading font-black text-slate-900 dark:text-[#F4F7FA]">
                   {formatCurrencyBRL(totaisNfe.somaIpi)}
                 </span>
               </div>
             </div>
 
             {/* Alerta Educativo de Transição IBS/CBS e Imposto Seletivo */}
-            <div className="mb-6 p-4 rounded-xl bg-[#16202B] border border-[#12B886]/30 space-y-2 text-xs">
+            <div className="mb-6 p-4 rounded-xl bg-slate-100/80 dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/30 space-y-2 text-xs">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 text-[#12B886] font-bold">
                   <ShieldCheck className="w-4 h-4 text-[#12B886]" />
                   <span>TRANSIÇÃO REFORMA TRIBUTÁRIA (FASE-TESTE 2026)</span>
                 </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#12B886]/10 text-[#12B886] font-semibold border border-[#12B886]/30">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#12B886]/10 text-emerald-800 dark:text-[#12B886] font-semibold border border-emerald-300 dark:border-[#12B886]/30">
                   Prazo Oficial: 1º/08/2026
                 </span>
               </div>
 
               {totaisNfe.notasComIbsCbs > 0 ? (
-                <div className="text-[#F4F7FA] text-xs">
+                <div className="text-slate-900 dark:text-[#F4F7FA] text-xs">
                   Foram identificados grupos <strong className="text-[#12B886]">IBS/CBS</strong> em{' '}
                   <span className="font-mono text-[#12B886] font-bold">
                     {totaisNfe.notasComIbsCbs} nota(s)
@@ -1150,18 +1150,20 @@ export default function PainelCliente() {
                   {formatCurrencyBRL(totaisNfe.somaCbs)}.
                 </div>
               ) : (
-                <div className="text-[#93A3B5] text-xs leading-relaxed">
-                  <span className="text-[#D9B36C] font-semibold">Aviso educativo: </span>
+                <div className="text-slate-600 dark:text-[#93A3B5] text-xs leading-relaxed">
+                  <span className="text-amber-700 dark:text-[#D9B36C] font-semibold">
+                    Aviso educativo:{' '}
+                  </span>
                   Notas sem destaque IBS/CBS — a partir de{' '}
-                  <strong className="text-[#F4F7FA]">1º/08/2026</strong> o destaque (IBS 0,1% / CBS
-                  0,9% na fase-teste) é obrigatório; verifique a atualização do emissor. O
-                  recolhimento é dispensado se as obrigações acessórias forem cumpridas (art. 348 da
-                  LC 214/2025).
+                  <strong className="text-slate-900 dark:text-[#F4F7FA]">1º/08/2026</strong> o
+                  destaque (IBS 0,1% / CBS 0,9% na fase-teste) é obrigatório; verifique a
+                  atualização do emissor. O recolhimento é dispensado se as obrigações acessórias
+                  forem cumpridas (art. 348 da LC 214/2025).
                 </div>
               )}
 
               {totaisNfe.totalItensIS > 0 && (
-                <div className="pt-2 border-t border-[rgba(244,247,250,0.08)] flex items-center gap-2 text-xs text-[#F03E54]">
+                <div className="pt-2 border-t border-slate-200 dark:border-[rgba(244,247,250,0.08)] flex items-center gap-2 text-xs text-rose-700 dark:text-[#F03E54]">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>
                     Identificado(s) <strong>{totaisNfe.totalItensIS} item(ns)</strong> com NCM
@@ -1175,7 +1177,7 @@ export default function PainelCliente() {
             {nfeList.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
+                  <thead className="border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] text-slate-600 dark:text-[#93A3B5] uppercase font-semibold">
                     <tr>
                       <th className="py-2.5 px-3">Documento / Emissão</th>
                       <th className="py-2.5 px-3">Origem</th>
@@ -1189,14 +1191,17 @@ export default function PainelCliente() {
                       <th className="py-2.5 px-3 text-center">Ação</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
+                  <tbody className="divide-y divide-slate-200 dark:divide-[rgba(244,247,250,0.06)] text-slate-900 dark:text-[#F4F7FA]">
                     {nfeList.map((item) => (
-                      <tr key={item.id} className="hover:bg-[#16202B]/40 transition-colors">
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50 dark:hover:bg-[#16202B]/40 transition-colors"
+                      >
                         <td className="py-2.5 px-3">
                           <div className="font-mono font-semibold text-[#12B886]">
                             Doc nº {item.numero_nota || 'S/N'} (Série {item.serie || '1'})
                           </div>
-                          <div className="text-[10px] text-[#93A3B5]">
+                          <div className="text-[10px] text-slate-500 dark:text-[#93A3B5]">
                             {item.data_emissao
                               ? item.data_emissao.slice(0, 10)
                               : 'Data não informada'}{' '}
@@ -1207,8 +1212,8 @@ export default function PainelCliente() {
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold ${
                               (item as any).origem === 'infosimples'
-                                ? 'bg-[#3B82F6]/20 text-[#3B82F6]'
-                                : 'bg-[#12B886]/20 text-[#12B886]'
+                                ? 'bg-blue-100 dark:bg-[#3B82F6]/20 text-blue-700 dark:text-[#3B82F6]'
+                                : 'bg-emerald-100 dark:bg-[#12B886]/20 text-emerald-800 dark:text-[#12B886]'
                             }`}
                           >
                             {(item as any).origem || 'manual'}
@@ -1221,7 +1226,7 @@ export default function PainelCliente() {
                           >
                             {item.nome_emitente || 'Não informado'}
                           </div>
-                          <div className="text-[10px] font-mono text-[#93A3B5]">
+                          <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
                             {item.cnpj_emitente}
                           </div>
                         </td>
@@ -1229,7 +1234,7 @@ export default function PainelCliente() {
                           <div className="truncate max-w-[150px]" title={item.nome_destinatario}>
                             {item.nome_destinatario || 'Consumidor'}
                           </div>
-                          <div className="text-[10px] font-mono text-[#93A3B5]">
+                          <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
                             {item.cnpj_destinatario}
                           </div>
                         </td>
@@ -1244,7 +1249,7 @@ export default function PainelCliente() {
                                 ((item as any).dados_adicionais_json?.valor_ibs_total || 0) +
                                   ((item as any).dados_adicionais_json?.valor_cbs_total || 0),
                               )}
-                              <span className="block text-[9px] text-[#93A3B5]">
+                              <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5]">
                                 IBS:{' '}
                                 {formatCurrencyBRL(
                                   (item as any).dados_adicionais_json?.valor_ibs_total || 0,
@@ -1257,7 +1262,7 @@ export default function PainelCliente() {
                             </div>
                           ) : (
                             <span
-                              className="text-[10px] text-[#D9B36C] cursor-help block"
+                              className="text-[10px] text-amber-700 dark:text-[#D9B36C] cursor-help block"
                               title="Nota sem destaque IBS/CBS — a partir de 1º/08/2026 o destaque (IBS 0,1% / CBS 0,9%) é obrigatório"
                             >
                               Sem IBS/CBS
@@ -1265,7 +1270,7 @@ export default function PainelCliente() {
                           )}
                           {((item as any).dados_adicionais_json?.itens_sujeitos_is_qtd || 0) >
                             0 && (
-                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-[#F03E54]/20 text-[#F03E54] text-[9px] font-bold">
+                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-rose-100 dark:bg-[#F03E54]/20 text-rose-700 dark:text-[#F03E54] text-[9px] font-bold">
                               IS ({(item as any).dados_adicionais_json.itens_sujeitos_is_qtd})
                             </span>
                           )}
@@ -1273,17 +1278,17 @@ export default function PainelCliente() {
                         <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
                           {formatCurrencyBRL((item.valor_pis || 0) + (item.valor_cofins || 0))}
                         </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-[#D9B36C]">
+                        <td className="py-2.5 px-3 text-right font-mono text-amber-700 dark:text-[#D9B36C]">
                           {formatCurrencyBRL(item.valor_icms || 0)}
                         </td>
                         <td className="py-2.5 px-3 text-center">
                           {Array.isArray((item as any).flags_revisao) &&
                           (item as any).flags_revisao.length > 0 ? (
                             <span
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#D9B36C]/20 border border-[#D9B36C]/40 text-[#D9B36C] text-[10px] font-semibold cursor-help"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C] text-[10px] font-semibold cursor-help"
                               title={(item as any).flags_revisao.join(' | ')}
                             >
-                              <AlertCircle className="w-3 h-3 text-[#D9B36C]" />
+                              <AlertCircle className="w-3 h-3 text-amber-700 dark:text-[#D9B36C]" />
                               Desvio ANP
                             </span>
                           ) : (
@@ -1294,7 +1299,7 @@ export default function PainelCliente() {
                           <button
                             type="button"
                             onClick={() => handleDeleteNfe(item.id)}
-                            className="p-1 rounded text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
+                            className="p-1 rounded text-slate-500 dark:text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
                             title="Remover nota fiscal"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1306,8 +1311,8 @@ export default function PainelCliente() {
                 </table>
               </div>
             ) : (
-              <div className="text-center py-6 border border-dashed border-[rgba(244,247,250,0.12)] rounded-xl text-xs text-[#93A3B5] bg-[#0A0E12]">
-                <FileCode className="w-8 h-8 text-[#93A3B5]/40 mx-auto mb-2" />
+              <div className="text-center py-6 border border-dashed border-slate-200 dark:border-[rgba(244,247,250,0.12)] rounded-xl text-xs text-slate-500 dark:text-[#93A3B5] bg-slate-50 dark:bg-[#0A0E12]">
+                <FileCode className="w-8 h-8 text-slate-400 dark:text-[#93A3B5]/40 mx-auto mb-2" />
                 Nenhum documento fiscal importado ainda. Selecione arquivos XML/JSON ou use a aba de
                 importação via InfoSimples.
               </div>
@@ -1317,17 +1322,17 @@ export default function PainelCliente() {
 
         {/* 2. COMPARATIVO DA REFORMA TRIBUTÁRIA ATUALIZADO COM CRÉDITOS REAIS */}
         {currentLead && comparativoCalculado && (
-          <div className="p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-10 shadow-xl">
+          <div className="p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] mb-10 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <Scale className="w-5 h-5 text-[#12B886]" />
-                <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
                   DIAGNÓSTICO TRIBUTÁRIO • REFORMA EC 132/2023 (IBS/CBS)
                 </h2>
               </div>
               <div className="flex items-center gap-3">
                 {totaisNfe.totalNotas > 0 && (
-                  <span className="px-3 py-1 rounded-full bg-[#12B886]/10 text-[#12B886] font-bold text-xs uppercase border border-[#12B886]/30 flex items-center gap-1.5">
+                  <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-[#12B886]/10 text-emerald-800 dark:text-[#12B886] font-bold text-xs uppercase border border-emerald-300 dark:border-[#12B886]/30 flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Alimentado com {totaisNfe.totalNotas} NF-e reais
                   </span>
@@ -1336,7 +1341,7 @@ export default function PainelCliente() {
                   type="button"
                   onClick={handleExportarDossieCompleto}
                   disabled={isExportandoPdf}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.2)] text-slate-700 dark:text-[#F4F7FA] hover:border-[#12B886] flex items-center gap-1.5 shadow-sm"
                 >
                   <Download className="w-3.5 h-3.5 text-[#12B886]" />
                   <span>Exportar PDF</span>
@@ -1355,17 +1360,17 @@ export default function PainelCliente() {
         )}
 
         {/* 3. PROGRESSO DO DIAGNÓSTICO (5 ETAPAS) */}
-        <div className="p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-10 shadow-xl">
+        <div className="p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] mb-10 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-heading font-bold text-lg text-[#F4F7FA]">
+              <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
                 ESTEIRA DE CERTIFICAÇÃO & DESCARBONIZAÇÃO (5 FASES)
               </h2>
-              <p className="text-xs text-[#93A3B5]">
+              <p className="text-xs text-slate-600 dark:text-[#93A3B5]">
                 Acompanhe o status do seu laudo probatório e homologação de selo.
               </p>
             </div>
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 dark:bg-[#12B886]/10 text-emerald-800 dark:text-[#12B886] border border-emerald-300 dark:border-[#12B886]/30">
               {nfeList.length > 0 ? '60% CONCLUÍDO' : '40% CONCLUÍDO'}
             </span>
           </div>
@@ -1376,10 +1381,10 @@ export default function PainelCliente() {
                 key={idx}
                 className={`p-4 rounded-xl border flex flex-col justify-between ${
                   etapa.concluido
-                    ? 'bg-[#12B886]/10 border-[#12B886] text-[#F4F7FA]'
+                    ? 'bg-emerald-50 dark:bg-[#12B886]/10 border-emerald-400 dark:border-[#12B886] text-slate-900 dark:text-[#F4F7FA]'
                     : idx === 3
-                      ? 'bg-[#D9B36C]/10 border-[#D9B36C] text-[#F4F7FA]'
-                      : 'bg-[#0A0E12] border-[rgba(244,247,250,0.1)] text-[#93A3B5]'
+                      ? 'bg-amber-50 dark:bg-[#D9B36C]/10 border-amber-400 dark:border-[#D9B36C] text-slate-900 dark:text-[#F4F7FA]'
+                      : 'bg-slate-50 dark:bg-[#0A0E12] border-slate-200 dark:border-[rgba(244,247,250,0.1)] text-slate-600 dark:text-[#93A3B5]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -1389,14 +1394,14 @@ export default function PainelCliente() {
                   {etapa.concluido ? (
                     <CheckCircle2 className="w-4 h-4 text-[#12B886]" />
                   ) : idx === 3 ? (
-                    <Clock className="w-4 h-4 text-[#D9B36C] animate-pulse" />
+                    <Clock className="w-4 h-4 text-amber-600 dark:text-[#D9B36C] animate-pulse" />
                   ) : (
-                    <span className="w-2 h-2 rounded-full bg-[#93A3B5]/40" />
+                    <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-[#93A3B5]/40" />
                   )}
                 </div>
                 <div>
                   <div className="text-xs font-semibold leading-tight mb-1">{etapa.label}</div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#93A3B5]">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-[#93A3B5]">
                     {etapa.concluido ? 'Concluído' : idx === 3 ? 'Em Análise Pericial' : 'Pendente'}
                   </span>
                 </div>
@@ -1407,22 +1412,22 @@ export default function PainelCliente() {
 
         {/* 4. GRID: SELO OBTIDO & LAUDOS EMITIDOS */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
-          <div className="lg:col-span-5 p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] flex flex-col justify-between shadow-xl">
+          <div className="lg:col-span-5 p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] flex flex-col justify-between shadow-sm">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Award className="w-6 h-6 text-[#D9B36C]" />
-                <h3 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                <Award className="w-6 h-6 text-amber-600 dark:text-[#D9B36C]" />
+                <h3 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
                   ATESTADO ORBIS EMITIDO
                 </h3>
               </div>
 
               {currentSelo ? (
-                <div className="p-6 rounded-xl bg-gradient-to-b from-[#16202B] to-[#0A0E12] border border-[#12B886] space-y-4">
+                <div className="p-6 rounded-xl bg-gradient-to-b from-slate-50 to-white dark:from-[#16202B] dark:to-[#0A0E12] border border-[#12B886] space-y-4 shadow-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-wider text-[#93A3B5] font-semibold">
+                    <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-[#93A3B5] font-semibold">
                       Chancela dMRV
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#12B886]/20 text-[#12B886] text-[10px] font-bold uppercase">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#12B886]/20 text-[#12B886] text-[10px] font-bold uppercase">
                       Ativo
                     </span>
                   </div>
@@ -1431,23 +1436,23 @@ export default function PainelCliente() {
                     <div className="font-heading font-black text-2xl text-[#12B886] tracking-wider">
                       {currentSelo.codigo_selo}
                     </div>
-                    <div className="text-xs text-[#F4F7FA] font-medium mt-1">
+                    <div className="text-xs text-slate-900 dark:text-[#F4F7FA] font-medium mt-1">
                       {currentSelo.empresa}
                     </div>
-                    <div className="text-[11px] font-mono text-[#D9B36C]">
+                    <div className="text-[11px] font-mono text-amber-700 dark:text-[#D9B36C]">
                       CNPJ: {currentSelo.cnpj}
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-[#93A3B5] border-t border-[rgba(244,247,250,0.08)] pt-3 flex justify-between">
+                  <div className="text-[11px] text-slate-500 dark:text-[#93A3B5] border-t border-slate-200 dark:border-[rgba(244,247,250,0.08)] pt-3 flex justify-between">
                     <span>Validade até:</span>
-                    <span className="text-[#F4F7FA] font-semibold">
+                    <span className="text-slate-900 dark:text-[#F4F7FA] font-semibold">
                       {new Date(currentSelo.data_validade).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="p-6 rounded-xl bg-[#0A0E12] border border-dashed border-[rgba(244,247,250,0.15)] text-center text-xs text-[#93A3B5]">
+                <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-dashed border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-center text-xs text-slate-500 dark:text-[#93A3B5]">
                   Atestado Orbis em fase de emissão final após conferência das notas e balanço de
                   emissões.
                 </div>
@@ -1457,7 +1462,7 @@ export default function PainelCliente() {
             <div className="pt-6">
               <Link
                 to="/verificador"
-                className="w-full py-3 rounded-xl text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl text-xs font-semibold border border-slate-200 dark:border-[rgba(244,247,250,0.2)] text-slate-700 dark:text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all flex items-center justify-center gap-2 shadow-sm"
               >
                 <span>Consultar no Verificador Público</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -1465,15 +1470,17 @@ export default function PainelCliente() {
             </div>
           </div>
 
-          <div className="lg:col-span-7 p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl">
+          <div className="lg:col-span-7 p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-[#12B886]" />
-                <h3 className="font-heading font-bold text-lg text-[#F4F7FA]">
+                <h3 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
                   LAUDOS PERICIAIS & DOCUMENTOS EMITIDOS
                 </h3>
               </div>
-              <span className="text-xs font-mono text-[#93A3B5]">3 documentos</span>
+              <span className="text-xs font-mono text-slate-500 dark:text-[#93A3B5]">
+                3 documentos
+              </span>
             </div>
 
             <div className="space-y-3">
@@ -1502,28 +1509,32 @@ export default function PainelCliente() {
               ].map((doc, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/40 transition-all flex items-center justify-between gap-4"
+                  className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/40 transition-all flex items-center justify-between gap-4"
                 >
                   <div>
-                    <h4 className="text-xs font-semibold text-[#F4F7FA] mb-0.5">{doc.titulo}</h4>
-                    <div className="flex items-center gap-3 text-[11px] text-[#93A3B5]">
+                    <h4 className="text-xs font-semibold text-slate-900 dark:text-[#F4F7FA] mb-0.5">
+                      {doc.titulo}
+                    </h4>
+                    <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-[#93A3B5]">
                       <span>{doc.tipo}</span>
                       <span>•</span>
-                      <span className="text-[#D9B36C]">{doc.art}</span>
+                      <span className="text-amber-700 dark:text-[#D9B36C]">{doc.art}</span>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0 flex items-center gap-3">
                     <div>
-                      <span className="inline-block px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
+                      <span className="inline-block px-2 py-0.5 rounded bg-emerald-100 dark:bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
                         {doc.status}
                       </span>
-                      <span className="block text-[10px] text-[#93A3B5] mt-1">{doc.data}</span>
+                      <span className="block text-[10px] text-slate-500 dark:text-[#93A3B5] mt-1">
+                        {doc.data}
+                      </span>
                     </div>
                     <button
                       type="button"
                       onClick={handleExportarDossieCompleto}
-                      className="p-2 rounded-lg bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] hover:bg-[#12B886]/10 transition-colors"
+                      className="p-2 rounded-lg bg-white dark:bg-[#16202B] text-slate-600 dark:text-[#93A3B5] hover:text-[#12B886] hover:bg-emerald-50 dark:hover:bg-[#12B886]/10 transition-colors shadow-sm"
                       title="Baixar Laudo em PDF"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -1536,18 +1547,18 @@ export default function PainelCliente() {
         </div>
 
         {/* 5. ATALHO AOS PLANOS & FATURAMENTO */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-[#111820] via-[#16202B] to-[#111820] border border-[rgba(244,247,250,0.12)] flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-100 via-white to-slate-100 dark:from-[#111820] dark:via-[#16202B] dark:to-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
           <div>
-            <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
+            <h4 className="font-heading font-bold text-base text-slate-900 dark:text-[#F4F7FA]">
               PRECISA DE GOVERNANÇA AVANÇADA E SUPORTE A SPED/NF-E EM LOTE?
             </h4>
-            <p className="text-xs text-[#93A3B5] mt-0.5">
+            <p className="text-xs text-slate-600 dark:text-[#93A3B5] mt-0.5">
               Conheça os planos Corporativos com preparação para ERPs e suporte pericial dMRV.
             </p>
           </div>
           <Link
             to="/planos"
-            className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shrink-0"
+            className="px-6 py-2.5 rounded-xl text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] shrink-0 shadow-emerald-glow"
           >
             Acessar Planos & Faturamento
           </Link>

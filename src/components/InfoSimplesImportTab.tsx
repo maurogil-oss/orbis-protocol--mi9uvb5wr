@@ -164,7 +164,7 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
       <div className="p-6 rounded-2xl bg-gradient-to-r from-[#16202B] via-[#111820] to-[#16202B] border border-[#12B886]/30 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/40 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-2 shadow-sm">
               <Globe className="w-3.5 h-3.5" />
               INTEGRAÇÃO OFICIAL INFOSIMPLES • SEFAZ / RECEITA FEDERAL
             </div>
@@ -180,7 +180,7 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
         </div>
       </div>
       {/* Formulário de Consulta por Chave */}
-      <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)]">
+      <div className="p-6 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-sm">
         <form onSubmit={handleConsultar} className="space-y-4">
           <div>
             <label className="block text-xs uppercase font-bold text-[#F4F7FA] mb-2 flex items-center justify-between">
@@ -314,7 +314,7 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
       </div>
       {/* Painel Expansível de Certificado Digital A1 */}
       {mostrarConfigA1 && (
-        <div className="p-6 rounded-2xl bg-[#111820] border border-[#D9B36C]/30 shadow-xl space-y-4">
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#111820] border border-amber-300 dark:border-[#D9B36C]/30 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Lock className="w-5 h-5 text-[#D9B36C]" />
