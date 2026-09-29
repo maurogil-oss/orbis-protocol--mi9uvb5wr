@@ -1,6 +1,27 @@
 <!-- HTML template for the frontend react app: https://developer.mozilla.org/en-US/docs/Web/HTML --><!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('orbis-theme');
+          var html = document.documentElement;
+          if (saved === 'dark') {
+            html.classList.add('dark');
+          } else if (saved === 'light') {
+            html.classList.remove('dark');
+          } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Se o sistema preferir dark, mas sem escolha salva, padrão de fábrica continua claro por spec
+            // ou respeita preferência se configurado. Pela spec: sem preferência salva, abre claro como padrão de fábrica.
+            html.classList.remove('dark');
+          } else {
+            html.classList.remove('dark');
+          }
+        } catch (e) {
+          // fallback silencioso
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Orbis - Protocol Auditoria &amp; Rastreabilidade ESG</title>

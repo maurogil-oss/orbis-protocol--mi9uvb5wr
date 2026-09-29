@@ -7,7 +7,49 @@
 
 @layer base {
   :root {
-    /* Orbis Protocol Dark-First Design System */
+    /* Orbis Protocol Light Theme (Corporate Default - Bloomberg ESG / B3 style) */
+    --background: 210 40% 98%; /* slate-50 #F8FAFC */
+    --foreground: 222 47% 11%; /* slate-900 #0F172A */
+
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 222 47% 11%; /* slate-900 #0F172A */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 160 84% 39%; /* emerald-600 #059669 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 32% 91%; /* slate-200 #E2E8F0 */
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%; /* slate-100 #F1F5F9 */
+    --muted-foreground: 215 16% 47%; /* slate-600 #475569 */
+
+    --accent: 38 92% 50%; /* amber-600 #D97706 */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 350 89% 60%; /* #E11D48 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%; /* hairline slate-200 #E2E8F0 */
+    --input: 214 32% 91%;
+    --ring: 160 84% 39%; /* emerald-600 */
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 160 84% 39%;
+  }
+
+  .dark {
+    /* Orbis Protocol Dark-First Design System (Preserved 100% Identical) */
     --background: 210 28% 5%; /* #0A0E12 */
     --foreground: 210 25% 97%; /* #F4F7FA */
 
@@ -36,8 +78,6 @@
     --input: 213 30% 14%;
     --ring: 164 82% 40%; /* emerald glow ring */
 
-    --radius: 0.75rem;
-
     --sidebar-background: 213 30% 10%;
     --sidebar-foreground: 210 25% 97%;
     --sidebar-primary: 164 82% 40%;
@@ -49,7 +89,7 @@
   }
 
   * {
-    border-color: rgba(244, 247, 250, 0.12);
+    border-color: hsl(var(--border));
   }
 
   html {
@@ -64,8 +104,8 @@
   }
 
   body {
-    background-color: #0a0e12;
-    color: #f4f7fa;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family:
       'Inter',
       -apple-system,

@@ -4,6 +4,7 @@ import { OrbisGlobe } from './OrbisGlobe'
 import { OrbisLogo } from './OrbisLogo'
 import { useAuth } from '@/contexts/AuthContext'
 import { AssistenteOrbisWidget } from './AssistenteOrbisWidget'
+import { ThemeToggle } from './ThemeToggle'
 import {
   Menu,
   X,
@@ -220,30 +221,30 @@ export default function Layout() {
   ]
 
   return (
-    <div className="flex flex-col min-h-screen w-full overflow-x-clip bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30 selection:text-white">
+    <div className="flex flex-col min-h-screen w-full overflow-x-clip bg-background text-foreground selection:bg-emerald-600/20 selection:text-emerald-900 dark:selection:bg-[#12B886]/30 dark:selection:text-white">
       {/* Cabeçalho Unificado Sticky com z-index alto e largura contida */}
       <div className="sticky top-0 z-40 w-full">
-        {/* 1. Regulatory Marquee Top Bar — Sólido opaco #0A0E12 sem transparência e sem backdrop-blur */}
-        <div className="w-full bg-[#0A0E12] border-b border-[rgba(244,247,250,0.06)] py-2 text-xs overflow-hidden transition-colors duration-300">
-          <div className="animate-marquee items-center gap-6 whitespace-nowrap text-[#93A3B5] font-medium tracking-wider">
+        {/* 1. Regulatory Marquee Top Bar — Contraste refinado claro e escuro */}
+        <div className="w-full bg-slate-100 dark:bg-[#0A0E12] border-b border-slate-200/80 dark:border-[rgba(244,247,250,0.06)] py-2 text-xs overflow-hidden transition-colors duration-300">
+          <div className="animate-marquee items-center gap-6 whitespace-nowrap text-slate-600 dark:text-[#93A3B5] font-medium tracking-wider">
             {[...regulations, ...regulations].map((reg, idx) => (
               <span key={idx} className="inline-flex items-center gap-4">
-                <span className="text-[#12B886] font-semibold flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#12B886]" />
+                <span className="text-emerald-700 dark:text-[#12B886] font-semibold flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886]" />
                   {reg}
                 </span>
-                <span className="text-[rgba(244,247,250,0.2)]">•</span>
+                <span className="text-slate-300 dark:text-[rgba(244,247,250,0.2)]">•</span>
               </span>
             ))}
           </div>
         </div>
 
-        {/* 2. Sticky Header — Sólido opaco #0A0E12 sem transparência e sem backdrop-blur, com divisória fina e sombra suave ao rolar */}
+        {/* 2. Sticky Header — Fundo surface corporativo branco/slate no claro e #0A0E12 no escuro */}
         <header
-          className={`w-full transition-all duration-300 bg-[#0A0E12] ${
+          className={`w-full transition-all duration-300 bg-white/95 dark:bg-[#0A0E12] backdrop-blur-md ${
             isScrolled
-              ? 'border-b border-[rgba(244,247,250,0.08)] shadow-[0_4px_24px_rgba(0,0,0,0.6)]'
-              : 'border-b border-[rgba(244,247,250,0.04)]'
+              ? 'border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)]'
+              : 'border-b border-slate-200/70 dark:border-[rgba(244,247,250,0.04)]'
           }`}
         >
           <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
@@ -251,10 +252,10 @@ export default function Layout() {
             <Link to="/" className="flex items-center gap-3.5 group" title="Orbis Protocol">
               <OrbisGlobe size={42} />
               <div className="flex flex-col">
-                <span className="font-heading font-black text-xl tracking-[0.08em] text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
-                  ORBIS<span className="text-[#12B886]">.</span>PROTOCOL
+                <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F4F7FA] group-hover:text-emerald-600 dark:group-hover:text-[#12B886] transition-colors">
+                  ORBIS<span className="text-emerald-600 dark:text-[#12B886]">.</span>PROTOCOL
                 </span>
-                <span className="text-[10px] tracking-[0.2em] uppercase text-[#93A3B5] font-semibold -mt-1">
+                <span className="text-[10px] tracking-[0.2em] uppercase text-slate-500 dark:text-[#93A3B5] font-semibold -mt-1">
                   Auditoria & Rastreabilidade
                 </span>
               </div>
@@ -264,10 +265,10 @@ export default function Layout() {
             <nav className="hidden lg:flex items-center gap-6 xl:gap-7 ml-6 xl:ml-8 mr-6 xl:mr-8">
               <Link
                 to="/"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
+                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#12B886] ${
                   location.pathname === '/' && !location.hash
-                    ? 'text-[#12B886] font-semibold'
-                    : 'text-[#93A3B5]'
+                    ? 'text-emerald-600 dark:text-[#12B886] font-semibold'
+                    : 'text-slate-600 dark:text-[#93A3B5]'
                 }`}
               >
                 Início
@@ -275,10 +276,10 @@ export default function Layout() {
 
               <Link
                 to="/trilhas"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
+                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#12B886] ${
                   location.pathname.startsWith('/trilhas')
-                    ? 'text-[#12B886] font-semibold'
-                    : 'text-[#93A3B5]'
+                    ? 'text-emerald-600 dark:text-[#12B886] font-semibold'
+                    : 'text-slate-600 dark:text-[#93A3B5]'
                 }`}
               >
                 Trilhas
@@ -302,14 +303,18 @@ export default function Layout() {
                   }}
                   aria-expanded={solutionsDropdownOpen}
                   aria-haspopup="true"
-                  className={`inline-flex items-center gap-1.5 text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] py-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#12B886] rounded ${
-                    isSolutionsActive ? 'text-[#12B886] font-semibold' : 'text-[#93A3B5]'
+                  className={`inline-flex items-center gap-1.5 text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#12B886] py-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-600 dark:focus-visible:ring-[#12B886] rounded ${
+                    isSolutionsActive
+                      ? 'text-emerald-600 dark:text-[#12B886] font-semibold'
+                      : 'text-slate-600 dark:text-[#93A3B5]'
                   }`}
                 >
                   <span>Soluções</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      solutionsDropdownOpen ? 'rotate-180 text-[#12B886]' : 'opacity-70'
+                      solutionsDropdownOpen
+                        ? 'rotate-180 text-emerald-600 dark:text-[#12B886]'
+                        : 'opacity-70'
                     }`}
                   />
                 </button>
@@ -321,15 +326,15 @@ export default function Layout() {
                     aria-label="Submenu Soluções"
                     className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
                   >
-                    <div className="w-[580px] max-w-[92vw] p-4 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.12)] shadow-2xl backdrop-blur-xl max-h-[85vh] overflow-y-auto">
-                      <div className="px-3 py-2 border-b border-[rgba(244,247,250,0.08)] flex items-center justify-between mb-3">
-                        <span className="text-xs font-semibold tracking-wider text-[#12B886]">
+                    <div className="w-[580px] max-w-[92vw] p-4 rounded-xl bg-white dark:bg-[#0D1217] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-xl dark:shadow-2xl backdrop-blur-xl max-h-[85vh] overflow-y-auto">
+                      <div className="px-3 py-2 border-b border-slate-100 dark:border-[rgba(244,247,250,0.08)] flex items-center justify-between mb-3">
+                        <span className="text-xs font-semibold tracking-wider text-emerald-600 dark:text-[#12B886]">
                           Soluções por perfil
                         </span>
                         <Link
                           to="/solucoes"
                           onClick={() => setSolutionsDropdownOpen(false)}
-                          className="text-xs text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                          className="text-xs text-slate-500 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-colors"
                         >
                           Ver visão geral →
                         </Link>
@@ -339,10 +344,10 @@ export default function Layout() {
                         {solutionGroups.map((group) => (
                           <div key={group.persona} className="space-y-1.5">
                             <div className="px-2.5 flex items-baseline justify-between">
-                              <span className="text-xs font-bold text-[#F4F7FA] uppercase tracking-wider">
+                              <span className="text-xs font-bold text-slate-900 dark:text-[#F4F7FA] uppercase tracking-wider">
                                 {group.persona}
                               </span>
-                              <span className="text-[11px] text-[#93A3B5] hidden sm:inline">
+                              <span className="text-[11px] text-slate-500 dark:text-[#93A3B5] hidden sm:inline">
                                 {group.rotuloCurto}
                               </span>
                             </div>
@@ -360,15 +365,15 @@ export default function Layout() {
                                     onClick={() => setSolutionsDropdownOpen(false)}
                                     className={`group flex items-start gap-3 p-2.5 rounded-lg transition-all ${
                                       isActive
-                                        ? 'bg-[#12B886]/10 border border-[#12B886]/30'
-                                        : 'hover:bg-[#16202B] border border-transparent'
+                                        ? 'bg-emerald-50 dark:bg-[#12B886]/10 border border-emerald-200 dark:border-[#12B886]/30'
+                                        : 'hover:bg-slate-50 dark:hover:bg-[#16202B] border border-transparent'
                                     }`}
                                   >
                                     <div
                                       className={`mt-0.5 p-2 rounded-lg flex-shrink-0 transition-colors ${
                                         isActive
-                                          ? 'bg-[#12B886]/20 text-[#12B886]'
-                                          : 'bg-[#111820] text-[#93A3B5] group-hover:text-[#12B886] group-hover:bg-[#12B886]/10'
+                                          ? 'bg-emerald-100 text-emerald-700 dark:bg-[#12B886]/20 dark:text-[#12B886]'
+                                          : 'bg-slate-100 dark:bg-[#111820] text-slate-500 dark:text-[#93A3B5] group-hover:text-emerald-600 dark:group-hover:text-[#12B886] group-hover:bg-emerald-50 dark:group-hover:bg-[#12B886]/10'
                                       }`}
                                     >
                                       <Icon className="w-4 h-4" />
@@ -378,20 +383,20 @@ export default function Layout() {
                                         <span
                                           className={`text-sm font-semibold tracking-wide transition-colors ${
                                             isActive
-                                              ? 'text-[#12B886]'
-                                              : 'text-[#F4F7FA] group-hover:text-[#12B886]'
+                                              ? 'text-emerald-700 dark:text-[#12B886]'
+                                              : 'text-slate-900 dark:text-[#F4F7FA] group-hover:text-emerald-600 dark:group-hover:text-[#12B886]'
                                           }`}
                                         >
                                           {item.title}
                                         </span>
                                         {'badge' in item && item.badge && (
-                                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-[#16202B] text-[#D9B36C] border border-[#D9B36C]/30 shrink-0">
-                                            <span className="w-1 h-1 rounded-full bg-[#D9B36C]" />
+                                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-amber-50 dark:bg-[#16202B] text-amber-700 dark:text-[#D9B36C] border border-amber-200 dark:border-[#D9B36C]/30 shrink-0">
+                                            <span className="w-1 h-1 rounded-full bg-amber-500 dark:bg-[#D9B36C]" />
                                             {item.badge}
                                           </span>
                                         )}
                                       </div>
-                                      <span className="text-xs text-[#93A3B5] leading-snug line-clamp-1">
+                                      <span className="text-xs text-slate-500 dark:text-[#93A3B5] leading-snug line-clamp-1">
                                         {item.desc}
                                       </span>
                                     </div>
@@ -404,12 +409,12 @@ export default function Layout() {
                       </div>
 
                       {/* Atalho adicional para Bureau ACP unificado */}
-                      <div className="mt-3 pt-3 border-t border-[rgba(244,247,250,0.06)] px-2.5 flex items-center justify-between text-xs text-[#93A3B5]">
+                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[rgba(244,247,250,0.06)] px-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-[#93A3B5]">
                         <span>Passaporte sustentável de fornecedores:</span>
                         <Link
                           to="/bureau"
                           onClick={() => setSolutionsDropdownOpen(false)}
-                          className="text-[#12B886] hover:underline font-medium"
+                          className="text-emerald-600 dark:text-[#12B886] hover:underline font-medium"
                         >
                           Acessar Cockpit Bureau ACP →
                         </Link>
@@ -421,60 +426,62 @@ export default function Layout() {
 
               <Link
                 to="/verificador"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-[#12B886] ${
+                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#12B886] ${
                   location.pathname === '/verificador'
-                    ? 'text-[#12B886] font-semibold'
-                    : 'text-[#93A3B5]'
+                    ? 'text-emerald-600 dark:text-[#12B886] font-semibold'
+                    : 'text-slate-600 dark:text-[#93A3B5]'
                 }`}
               >
                 Consultar Selo
               </Link>
             </nav>
 
-            {/* Header Action Buttons — Respiro generoso garantido (0.0.74 e 0.0.76) */}
+            {/* Header Action Buttons & Theme Toggle — Respiro generoso garantido (0.0.74 e 0.0.76) */}
             <div className="hidden md:flex items-center gap-3.5 pl-4 xl:pl-6">
+              <ThemeToggle />
+
               <Link
                 to="/diagnostico"
-                className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:shadow-emerald-glow-subtle hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/50 transition-all duration-200 shadow-sm"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#12B886] dark:text-[#0A0E12] dark:hover:bg-[#0CA678] hover:shadow-emerald-glow-subtle hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm"
               >
                 Iniciar Diagnóstico
               </Link>
 
               <Link
                 to="/demo"
-                className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-[rgba(244,247,250,0.14)] text-[#93A3B5] hover:border-[#12B886]/50 hover:text-[#F4F7FA] hover:bg-[#111820] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#12B886]/40 transition-all duration-200 bg-[#0A0E12]"
+                className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 dark:border-[rgba(244,247,250,0.14)] text-slate-700 dark:text-[#93A3B5] hover:border-emerald-600/50 dark:hover:border-[#12B886]/50 hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:bg-slate-50 dark:hover:bg-[#111820] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 transition-all duration-200 bg-white dark:bg-[#0A0E12]"
               >
                 Ver Demonstração
               </Link>
 
               {isAuthenticated ? (
-                <div className="flex items-center gap-2.5 pl-3 border-l border-[rgba(244,247,250,0.12)]">
+                <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-[rgba(244,247,250,0.12)]">
                   <Link
                     to={isParceiro ? '/parceiro-painel' : '/painel'}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:border-[#12B886]/60 hover:text-[#12B886] hover:-translate-y-0.5 transition-all duration-200 bg-[#111820]"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-slate-800 dark:text-[#F4F7FA] hover:border-emerald-600/60 dark:hover:border-[#12B886]/60 hover:text-emerald-700 dark:hover:text-[#12B886] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#111820]"
                   >
-                    <LayoutDashboard className="w-4 h-4 text-[#12B886] stroke-[1.5]" />
+                    <LayoutDashboard className="w-4 h-4 text-emerald-600 dark:text-[#12B886] stroke-[1.5]" />
                     {isParceiro ? 'Painel do Parceiro' : 'Painel'}
                   </Link>
                   <button
                     onClick={logout}
                     title="Sair"
-                    className="p-2 rounded-xl text-[#93A3B5] hover:text-[#F03E54] border border-[rgba(244,247,250,0.12)] hover:border-[#F03E54]/40 transition-all duration-200 bg-[#111820]"
+                    className="p-2 rounded-xl text-slate-500 dark:text-[#93A3B5] hover:text-rose-600 dark:hover:text-[#F03E54] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] hover:border-rose-200 dark:hover:border-[#F03E54]/40 transition-all duration-200 bg-white dark:bg-[#111820]"
                   >
                     <LogOut className="w-4 h-4 stroke-[1.5]" />
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2.5 pl-3 border-l border-[rgba(244,247,250,0.12)]">
+                <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-[rgba(244,247,250,0.12)]">
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-[rgba(244,247,250,0.14)] text-[#93A3B5] hover:border-[#12B886]/60 hover:text-[#F4F7FA] hover:-translate-y-0.5 transition-all duration-200 bg-[#0A0E12]"
+                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 dark:border-[rgba(244,247,250,0.14)] text-slate-700 dark:text-[#93A3B5] hover:border-emerald-600/60 dark:hover:border-[#12B886]/60 hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0A0E12]"
                   >
                     Entrar
                   </Link>
                   <Link
                     to="/registro"
-                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#16202B] border border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
+                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-50 dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/40 text-emerald-700 dark:text-[#12B886] hover:bg-emerald-600 hover:text-white dark:hover:bg-[#12B886] dark:hover:text-[#0A0E12] hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
                   >
                     Criar conta
                   </Link>
@@ -483,13 +490,16 @@ export default function Layout() {
             </div>
 
             {/* Mobile Hamburger Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-[#F4F7FA] hover:text-[#12B886] transition-colors"
-              aria-label="Abrir menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            <div className="lg:hidden flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 text-slate-800 dark:text-[#F4F7FA] hover:text-emerald-600 dark:hover:text-[#12B886] transition-colors"
+                aria-label="Abrir menu"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+            </div>
           </div>
         </header>
       </div>
@@ -727,13 +737,13 @@ export default function Layout() {
       {/* Widget Flutuante do Assistente Orbis IA (Landing / e /diagnostico e todo o site) */}
       <AssistenteOrbisWidget />
 
-      {/* 5. Institutional Footer — Estilo Linear dark-first com glow suave e transição fluida a partir de #0A0E12 */}
-      <footer className="bg-gradient-to-b from-[#0A0E12] via-[#080B0F] to-[#070A0D] border-t border-[rgba(244,247,250,0.08)] pt-20 sm:pt-24 pb-12 sm:pb-16 text-[#93A3B5] relative overflow-hidden">
+      {/* 5. Institutional Footer — Design corporativo claro/escuro */}
+      <footer className="bg-slate-50 dark:bg-gradient-to-b dark:from-[#0A0E12] dark:via-[#080B0F] dark:to-[#070A0D] border-t border-slate-200 dark:border-[rgba(244,247,250,0.08)] pt-20 sm:pt-24 pb-12 sm:pb-16 text-slate-600 dark:text-[#93A3B5] relative overflow-hidden">
         {/* Glow sutil de fundo no rodapé */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[250px] linear-glow-emerald pointer-events-none opacity-40" />
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-14 sm:pb-16 border-b border-[rgba(244,247,250,0.06)]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-14 sm:pb-16 border-b border-slate-200/80 dark:border-[rgba(244,247,250,0.06)]">
             {/* Col 1 & 2: Brand Info (5 colunas no grid de 12 para excelente respiro) */}
             <div className="lg:col-span-5 flex flex-col justify-between gap-6 pr-0 lg:pr-8">
               <div className="space-y-4">
@@ -742,15 +752,15 @@ export default function Layout() {
                     <OrbisGlobe size={40} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-heading font-black text-xl tracking-[0.08em] text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
+                    <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F4F7FA] group-hover:text-emerald-600 dark:group-hover:text-[#12B886] transition-colors">
                       ORBIS PROTOCOL
                     </span>
-                    <span className="text-[10px] tracking-[0.25em] text-[#D9B36C] font-mono uppercase font-bold">
+                    <span className="text-[10px] tracking-[0.25em] text-amber-700 dark:text-[#D9B36C] font-mono uppercase font-bold">
                       Carbono & Circularidade
                     </span>
                   </div>
                 </Link>{' '}
-                <p className="text-xs sm:text-sm text-[#93A3B5]/90 leading-relaxed max-w-sm">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5]/90 leading-relaxed max-w-sm">
                   Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para cálculo da
                   pegada de carbono, laudos periciais, conformidade tributária e emissão de selos e
                   passaportes digitais verificáveis — prontos para envio aos órgãos de controle e a
@@ -759,9 +769,9 @@ export default function Layout() {
               </div>
 
               <div className="pt-2">
-                <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#111820]/70 border border-[rgba(244,247,250,0.08)] text-[11px] text-[#D9B36C]">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#D9B36C] shrink-0" />
-                  <span className="font-mono tracking-tight text-[#93A3B5]">
+                <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#111820]/70 border border-slate-200 dark:border-[rgba(244,247,250,0.08)] text-[11px] text-amber-700 dark:text-[#D9B36C] shadow-xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600 dark:text-[#D9B36C] shrink-0" />
+                  <span className="font-mono tracking-tight text-slate-700 dark:text-[#93A3B5]">
                     MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.598.964/0001-01
                   </span>
                 </div>
@@ -770,18 +780,18 @@ export default function Layout() {
 
             {/* Col 2: HUB DE SOLUÇÕES (3 colunas) */}
             <div className="lg:col-span-3 flex flex-col gap-4">
-              <span className="font-heading text-[11px] text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
+              <span className="font-heading text-[11px] text-slate-900 dark:text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
                 HUB DE SOLUÇÕES
               </span>
               <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
                 <li>
                   <Link
                     to="/solucoes#orbis-lpf"
-                    className="group inline-flex items-center gap-2 text-[#F4F7FA] font-medium hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200"
+                    className="group inline-flex items-center gap-2 text-slate-900 dark:text-[#F4F7FA] font-medium hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200"
                   >
                     <span>Orbis LPF — Leitura Pré-Faturamento</span>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#12B886]/15 text-[#12B886] border border-[#12B886]/35 shrink-0">
-                      <span className="w-1 h-1 rounded-full bg-[#12B886]" />
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 dark:bg-[#12B886]/15 text-emerald-800 dark:text-[#12B886] border border-emerald-300 dark:border-[#12B886]/35 shrink-0">
+                      <span className="w-1 h-1 rounded-full bg-emerald-600 dark:bg-[#12B886]" />
                       Novo
                     </span>
                   </Link>
@@ -789,7 +799,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/trilhas/peritos-tecnicos"
-                    className="text-[#93A3B5] hover:text-[#F4F7FA] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Peritos Técnicos & Auditores
                   </Link>
@@ -797,10 +807,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/materiais-criticos"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Materiais Críticos Recuperados</span>
-                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
+                    <span className="text-[9px] bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-700 dark:text-[#12B886] border border-emerald-200 dark:border-[#12B886]/25 px-1 py-0.5 rounded font-mono font-semibold">
                       DCP
                     </span>
                   </Link>
@@ -808,7 +818,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/checkout"
-                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Checkout PIX & NFS-e</span>
                   </Link>
@@ -816,7 +826,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/bureau"
-                    className="text-[#93A3B5] hover:text-[#D9B36C] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-amber-700 dark:hover:text-[#D9B36C] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Cockpit Bureau ACP (Passaporte)
                   </Link>
@@ -824,10 +834,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/corporativo"
-                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Modo Demonstração Corporativo</span>
-                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
+                    <span className="text-[9px] bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-700 dark:text-[#12B886] border border-emerald-200 dark:border-[#12B886]/25 px-1 py-0.5 rounded font-mono font-semibold">
                       Demo
                     </span>
                   </Link>
@@ -835,7 +845,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/solucoes/portal-corporativo"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Portal Corporativo (IFRS/SPED)
                   </Link>
@@ -843,10 +853,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/mover"
-                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Espaço MOVER (GS 448)</span>
-                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
+                    <span className="text-[9px] bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-700 dark:text-[#12B886] border border-emerald-200 dark:border-[#12B886]/25 px-1 py-0.5 rounded font-mono font-semibold">
                       Novo
                     </span>
                   </Link>
@@ -854,7 +864,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/solucoes/case-cdverde"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Case CDVerde (Desmontagem VFV)
                   </Link>
@@ -862,10 +872,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/api-docs-cdv"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
                   >
                     <span>API v1 — Desmontagem Veicular</span>
-                    <span className="text-[9px] bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.12)] px-1 py-0.5 rounded font-mono">
+                    <span className="text-[9px] bg-slate-100 dark:bg-[#16202B] text-slate-600 dark:text-[#93A3B5] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] px-1 py-0.5 rounded font-mono">
                       v1
                     </span>
                   </Link>
@@ -873,10 +883,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/fatores"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Catálogo de Fatores CO₂e</span>
-                    <span className="text-[9px] bg-[#D9B36C]/10 text-[#D9B36C] border border-[#D9B36C]/30 px-1 py-0.5 rounded font-mono font-medium">
+                    <span className="text-[9px] bg-amber-50 dark:bg-[#D9B36C]/10 text-amber-800 dark:text-[#D9B36C] border border-amber-200 dark:border-[#D9B36C]/30 px-1 py-0.5 rounded font-mono font-medium">
                       Bloco 4
                     </span>
                   </Link>
@@ -884,7 +894,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/solucoes/cadeias-produtivas"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Catálogo 15 Cadeias Produtivas
                   </Link>
@@ -894,14 +904,14 @@ export default function Layout() {
 
             {/* Col 3: TRILHAS SETORIAIS (2 colunas) */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-              <span className="font-heading text-[11px] text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
+              <span className="font-heading text-[11px] text-slate-900 dark:text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
                 TRILHAS SETORIAIS
               </span>
               <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
                 <li>
                   <Link
                     to="/radar-regulatorio"
-                    className="text-[#93A3B5] hover:text-[#F4F7FA] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Radar Regulatório
                   </Link>
@@ -909,10 +919,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/credenciamento"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Credenciamento de Perito</span>
-                    <span className="text-[9px] bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
+                    <span className="text-[9px] bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-700 dark:text-[#12B886] border border-emerald-200 dark:border-[#12B886]/25 px-1 py-0.5 rounded font-mono">
                       ART
                     </span>
                   </Link>
@@ -920,7 +930,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/trilhas/sbce-financas-verdes"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Mercado SBCE & Finanças Verdes
                   </Link>
@@ -928,7 +938,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/trilhas/peritos-tecnicos"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Peritos Técnicos & Auditores
                   </Link>
@@ -936,7 +946,7 @@ export default function Layout() {
                 <li className="pt-1">
                   <Link
                     to="/trilhas"
-                    className="text-[#12B886] hover:underline text-xs inline-flex items-center gap-1 font-medium hover:translate-x-0.5 transition-all duration-200"
+                    className="text-emerald-600 dark:text-[#12B886] hover:underline text-xs inline-flex items-center gap-1 font-medium hover:translate-x-0.5 transition-all duration-200"
                   >
                     <span>Todas as Trilhas →</span>
                   </Link>
@@ -946,17 +956,17 @@ export default function Layout() {
 
             {/* Col 4: FERRAMENTAS & CONTATO (2 colunas) */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-              <span className="font-heading text-[11px] text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
+              <span className="font-heading text-[11px] text-slate-900 dark:text-[#F4F7FA] font-bold tracking-[0.18em] uppercase opacity-90">
                 FERRAMENTAS
               </span>
               <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
                 <li>
                   <Link
                     to="/demo"
-                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Ver Demonstração</span>
-                    <span className="px-1 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 text-[9px] font-mono">
+                    <span className="px-1 py-0.5 rounded bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-700 dark:text-[#12B886] border border-emerald-200 dark:border-[#12B886]/25 text-[9px] font-mono">
                       Tour
                     </span>
                   </Link>
@@ -964,10 +974,10 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/radar-regulatorio"
-                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >
                     <span>Radar Regulatório 2026</span>
-                    <span className="px-1 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/25 text-[9px] font-mono">
+                    <span className="px-1 py-0.5 rounded bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-700 dark:text-[#12B886] border border-emerald-200 dark:border-[#12B886]/25 text-[9px] font-mono">
                       Novo
                     </span>
                   </Link>
@@ -975,7 +985,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/diagnostico"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Diagnóstico por CNPJ
                   </Link>
@@ -983,7 +993,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/verificador"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Consultar Selo
                   </Link>
@@ -991,7 +1001,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/fatores"
-                    className="text-[#93A3B5] hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Fatores CO₂e & Metodologia
                   </Link>
@@ -999,7 +1009,7 @@ export default function Layout() {
                 <li>
                   <Link
                     to="/capital"
-                    className="text-[#93A3B5] hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
                   >
                     Green Capital Engine
                   </Link>
@@ -1008,17 +1018,17 @@ export default function Layout() {
                   <li>
                     <Link
                       to="/console-do-auditor"
-                      className="text-[#D9B36C] hover:text-[#D9B36C]/80 transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
+                      className="text-amber-700 dark:text-[#D9B36C] hover:text-amber-800 dark:hover:text-[#D9B36C]/80 transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
                     >
                       <span>Console do Auditor</span>
-                      <Lock className="w-3 h-3 text-[#D9B36C]" />
+                      <Lock className="w-3 h-3 text-amber-600 dark:text-[#D9B36C]" />
                     </Link>
                   </li>
                 )}
                 <li>
                   <Link
                     to="/teste"
-                    className="text-[11px] text-[#93A3B5]/50 hover:text-[#93A3B5] transition-colors"
+                    className="text-[11px] text-slate-400 dark:text-[#93A3B5]/50 hover:text-slate-600 dark:hover:text-[#93A3B5] transition-colors"
                   >
                     Catálogo de Teste
                   </Link>
@@ -1028,11 +1038,11 @@ export default function Layout() {
           </div>
 
           {/* Bottom Bar — Copyright & Regulatório / LGPD / Proteção Anti-Cópia */}
-          <div className="pt-8 sm:pt-10 flex flex-col gap-4 text-xs text-[#93A3B5]/80">
+          <div className="pt-8 sm:pt-10 flex flex-col gap-4 text-xs text-slate-500 dark:text-[#93A3B5]/80">
             {/* Linha 1: Aviso curto de proteção de conteúdo e documentos */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pb-3 border-b border-[rgba(244,247,250,0.05)] text-center sm:text-left">
-              <p className="text-[11px] text-[#93A3B5] flex items-center gap-2 justify-center sm:justify-start">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#12B886] shrink-0" />
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pb-3 border-b border-slate-200/60 dark:border-[rgba(244,247,250,0.05)] text-center sm:text-left">
+              <p className="text-[11px] text-slate-600 dark:text-[#93A3B5] flex items-center gap-2 justify-center sm:justify-start">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886] shrink-0" />
                 <span>
                   Conteúdo e documentos protegidos — © {new Date().getFullYear()} Orbis Protocol.
                   Prova documental via hash SHA-256 e trilha imutável.
@@ -1041,14 +1051,14 @@ export default function Layout() {
               <div className="flex items-center gap-3 shrink-0 text-[11px]">
                 <Link
                   to="/termos"
-                  className="text-[#12B886] hover:underline font-semibold transition-colors"
+                  className="text-emerald-600 dark:text-[#12B886] hover:underline font-semibold transition-colors"
                 >
                   Termos de Uso
                 </Link>
-                <span className="text-[rgba(244,247,250,0.2)]">•</span>
+                <span className="text-slate-300 dark:text-[rgba(244,247,250,0.2)]">•</span>
                 <Link
                   to="/privacidade"
-                  className="text-[#93A3B5] hover:text-[#12B886] underline transition-colors"
+                  className="text-slate-600 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] underline transition-colors"
                 >
                   Privacidade
                 </Link>
@@ -1057,19 +1067,19 @@ export default function Layout() {
 
             {/* Linha 2: Copyright institucional & Links complementares */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-center sm:text-left text-[11px] text-[#93A3B5]/70">
+              <p className="text-center sm:text-left text-[11px] text-slate-500 dark:text-[#93A3B5]/70">
                 © {new Date().getFullYear()} Orbis Protocol • Infraestrutura de Prova Documental &
                 Auditoria dMRV. Todos os direitos reservados.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-5">
                 <Link
                   to="/titular-dados"
-                  className="text-[11px] text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                  className="text-[11px] text-slate-500 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-colors"
                 >
                   Canal do Titular LGPD (Art. 18)
                 </Link>
-                <span className="text-[#12B886] font-semibold text-[11px] flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
+                <span className="text-emerald-700 dark:text-[#12B886] font-semibold text-[11px] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-[#12B886] animate-pulse" />
                   Atestado de Conformidade Orbis
                 </span>
               </div>

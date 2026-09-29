@@ -106,28 +106,28 @@ export function NumerosVerificaveisSection() {
   ]
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-[#0A0E12] via-[#0C1015] to-[#0A0E12] border-y border-[rgba(244,247,250,0.05)] relative overflow-hidden">
+    <section className="py-16 md:py-24 bg-slate-50 dark:bg-gradient-to-b dark:from-[#0A0E12] dark:via-[#0C1015] dark:to-[#0A0E12] border-y border-slate-200/80 dark:border-[rgba(244,247,250,0.05)] relative overflow-hidden">
       {/* Glow suave integrado */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-[#12B886]/5 blur-[120px] pointer-events-none opacity-70" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-emerald-500/5 dark:bg-[#12B886]/5 blur-[120px] pointer-events-none opacity-70" />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/30 text-[#12B886] text-xs font-semibold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#16202B] border border-emerald-200 dark:border-[#12B886]/30 text-emerald-700 dark:text-[#12B886] text-xs font-semibold uppercase tracking-wider mb-3">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Transparência Pública e Auditabilidade</span>
             </div>
-            <h2 className="font-heading font-black text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide">
+            <h2 className="font-heading font-black text-2xl sm:text-4xl text-slate-900 dark:text-[#F4F7FA] tracking-wide">
               NÚMEROS VERIFICÁVEIS
             </h2>
-            <p className="text-sm sm:text-base text-[#93A3B5] mt-2 max-w-2xl leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-[#93A3B5] mt-2 max-w-2xl leading-relaxed">
               Números consultáveis em tempo real na infraestrutura PocketBase; registros de
               demonstração identificados.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono text-[#93A3B5] bg-[#111820] px-3 py-2 rounded-xl border border-[rgba(244,247,250,0.08)]">
-            <span className="w-2 h-2 rounded-full bg-[#12B886] animate-pulse" />
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-600 dark:text-[#93A3B5] bg-white dark:bg-[#111820] px-3 py-2 rounded-xl border border-slate-200 dark:border-[rgba(244,247,250,0.08)] shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-[#12B886] animate-pulse" />
             <span>Consultas primárias em tempo real</span>
           </div>
         </div>
@@ -142,19 +142,21 @@ export function NumerosVerificaveisSection() {
               ? item.badgeCor
               : temVolumeReal
                 ? item.badgeCor
-                : 'text-[#93A3B5] bg-[#16202B]'
+                : 'text-slate-500 bg-slate-100 dark:text-[#93A3B5] dark:bg-[#16202B]'
 
             return (
               <div
                 key={item.id}
-                className={`p-5 rounded-2xl bg-[#111820] border ${
-                  temVolumeReal ? item.bordaCor : 'border-[rgba(244,247,250,0.08)]'
-                } flex flex-col justify-between hover:border-[rgba(244,247,250,0.25)] transition-all group`}
+                className={`p-5 rounded-2xl bg-white dark:bg-[#111820] border ${
+                  temVolumeReal
+                    ? `${item.bordaCor} dark:${item.bordaCor}`
+                    : 'border-slate-200/80 dark:border-[rgba(244,247,250,0.08)]'
+                } flex flex-col justify-between shadow-xs hover:shadow-md dark:shadow-none hover:border-slate-300 dark:hover:border-[rgba(244,247,250,0.25)] transition-all group`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div
-                      className={`w-10 h-10 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.1)] flex items-center justify-center ${item.corDestaque} group-hover:scale-105 transition-transform`}
+                      className={`w-10 h-10 rounded-xl bg-slate-50 dark:bg-[#16202B] border border-slate-200/80 dark:border-[rgba(244,247,250,0.1)] flex items-center justify-center ${item.corDestaque} group-hover:scale-105 transition-transform`}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
@@ -167,34 +169,36 @@ export function NumerosVerificaveisSection() {
 
                   {/* REGRA CRÍTICA: Se uma contagem for zero, exibir o módulo SEM o número. Nunca inventar ou exibir zero como se fosse volume. */}
                   {metricas.carregando ? (
-                    <div className="h-9 w-20 bg-[#16202B] animate-pulse rounded-lg mb-2" />
+                    <div className="h-9 w-20 bg-slate-100 dark:bg-[#16202B] animate-pulse rounded-lg mb-2" />
                   ) : temVolumeReal ? (
                     <div className="mb-2">
                       <span
-                        className={`font-heading font-black text-3xl sm:text-4xl tracking-tight ${item.corDestaque}`}
+                        className={`font-heading font-black text-3xl sm:text-4xl tracking-tight text-slate-900 dark:${item.corDestaque}`}
                       >
                         {item.valor.toLocaleString('pt-BR')}
                       </span>
                     </div>
                   ) : (
                     <div className="mb-2">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#93A3B5] px-2.5 py-1 rounded bg-[#16202B]">
-                        <CheckCircle2 className="w-3 h-3 text-[#12B886]" />
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-[#93A3B5] px-2.5 py-1 rounded bg-slate-100 dark:bg-[#16202B]">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-[#12B886]" />
                         Módulo Integrado
                       </span>
                     </div>
                   )}
 
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA] mb-1 leading-snug">
+                  <h3 className="font-heading font-bold text-sm text-slate-900 dark:text-[#F4F7FA] mb-1 leading-snug">
                     {item.titulo}
                   </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed mb-4">{item.subtitulo}</p>
+                  <p className="text-xs text-slate-600 dark:text-[#93A3B5] leading-relaxed mb-4">
+                    {item.subtitulo}
+                  </p>
                 </div>
 
-                <div className="pt-3 border-t border-[rgba(244,247,250,0.06)]">
+                <div className="pt-3 border-t border-slate-100 dark:border-[rgba(244,247,250,0.06)]">
                   <Link
                     to={item.link}
-                    className="inline-flex items-center gap-1.5 text-xs text-[#93A3B5] hover:text-[#F4F7FA] transition-colors group-hover:translate-x-0.5 duration-200"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-[#93A3B5] dark:hover:text-[#F4F7FA] hover:text-emerald-800 transition-colors group-hover:translate-x-0.5 duration-200"
                   >
                     <span>{item.rotuloLink}</span>
                     <ExternalLink className="w-3 h-3" />
