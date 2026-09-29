@@ -55,16 +55,30 @@ export const OrbisOrbitalRing: React.FC<OrbisOrbitalRingProps> = ({
         className="relative z-10 w-full h-full"
       >
         <defs>
+          {/* Gradiente Escuro: Verde-Esmeralda & Dourado */}
           <linearGradient id="orbitalGradientEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#12B886" stopOpacity="0.8" />
             <stop offset="50%" stopColor="#27C08C" stopOpacity="0.3" />
             <stop offset="100%" stopColor="#D9B36C" stopOpacity="0.7" />
           </linearGradient>
 
+          {/* Gradiente Claro: Traço visível grafite / slate-700 mesclado com esmeralda corporativo */}
+          <linearGradient id="orbitalGradientEmeraldLight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#059669" stopOpacity="0.75" />
+            <stop offset="50%" stopColor="#334155" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#B45309" stopOpacity="0.65" />
+          </linearGradient>
+
           <linearGradient id="orbitalGradientSubtle" x1="100%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#D9B36C" stopOpacity="0.4" />
             <stop offset="50%" stopColor="#12B886" stopOpacity="0.15" />
             <stop offset="100%" stopColor="#93A3B5" stopOpacity="0.3" />
+          </linearGradient>
+
+          <linearGradient id="orbitalGradientSubtleLight" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#D97706" stopOpacity="0.5" />
+            <stop offset="50%" stopColor="#475569" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#64748B" stopOpacity="0.4" />
           </linearGradient>
         </defs>
 
@@ -74,25 +88,24 @@ export const OrbisOrbitalRing: React.FC<OrbisOrbitalRingProps> = ({
             cx={size / 2}
             cy={size / 2}
             r={rOuter}
-            stroke="url(#orbitalGradientEmerald)"
             strokeWidth={strokeWidth}
             strokeDasharray={`${size * 0.15} ${size * 0.08} ${size * 0.4} ${size * 0.12}`}
-            strokeOpacity="0.6"
+            strokeOpacity="0.7"
+            className="stroke-[url(#orbitalGradientEmeraldLight)] dark:stroke-[url(#orbitalGradientEmerald)]"
           />
           {/* Marcador orbital ponto no anel externo */}
           <circle
             cx={size / 2 + rOuter}
             cy={size / 2}
             r={strokeWidth * 2.2}
-            fill="#12B886"
-            className="filter drop-shadow-[0_0_6px_#12B886]"
+            className="fill-emerald-600 dark:fill-[#12B886] filter drop-shadow-[0_0_4px_rgba(5,150,105,0.4)] dark:drop-shadow-[0_0_6px_#12B886]"
           />
           <circle
             cx={size / 2 - rOuter}
             cy={size / 2}
             r={strokeWidth * 1.5}
-            fill="#D9B36C"
-            fillOpacity="0.8"
+            fillOpacity="0.85"
+            className="fill-amber-600 dark:fill-[#D9B36C]"
           />
         </g>
 
@@ -102,28 +115,27 @@ export const OrbisOrbitalRing: React.FC<OrbisOrbitalRingProps> = ({
             cx={size / 2}
             cy={size / 2}
             r={rMiddle}
-            stroke="url(#orbitalGradientSubtle)"
             strokeWidth={strokeWidth}
             strokeDasharray="3 7"
-            strokeOpacity="0.5"
+            strokeOpacity="0.6"
+            className="stroke-[url(#orbitalGradientSubtleLight)] dark:stroke-[url(#orbitalGradientSubtle)]"
           />
           {/* Marcadores discretos */}
           <circle
             cx={size / 2}
             cy={size / 2 - rMiddle}
             r={strokeWidth * 1.8}
-            fill="#D9B36C"
-            className="filter drop-shadow-[0_0_4px_#D9B36C]"
+            className="fill-amber-600 dark:fill-[#D9B36C] filter drop-shadow-[0_0_3px_rgba(217,119,6,0.3)] dark:drop-shadow-[0_0_4px_#D9B36C]"
           />
         </g>
 
-        {/* Anel Interno Fino */}
+        {/* Anel Interno Fino: visível em grafite/slate-300 no tema claro e sutil no escuro */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={rInner}
-          stroke="rgba(244, 247, 250, 0.12)"
           strokeWidth={strokeWidth}
+          className="stroke-slate-400/40 dark:stroke-[rgba(244,247,250,0.12)]"
         />
 
         {/* Núcleo central com ponto pulsante caso solicitado */}
@@ -133,11 +145,15 @@ export const OrbisOrbitalRing: React.FC<OrbisOrbitalRingProps> = ({
               cx={size / 2}
               cy={size / 2}
               r={strokeWidth * 3}
-              fill="#12B886"
-              fillOpacity="0.2"
-              className="animate-ping origin-center"
+              fillOpacity="0.25"
+              className="fill-emerald-600 dark:fill-[#12B886] animate-ping origin-center"
             />
-            <circle cx={size / 2} cy={size / 2} r={strokeWidth * 1.8} fill="#12B886" />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={strokeWidth * 1.8}
+              className="fill-emerald-600 dark:fill-[#12B886]"
+            />
           </g>
         )}
       </svg>
@@ -155,16 +171,16 @@ export const OrbisSectionDivider: React.FC<{
   return (
     <div className={`relative w-full flex items-center justify-center my-10 sm:my-14 ${className}`}>
       {/* Linha fina com gradiente suave nas pontas para fusão imperceptível */}
-      <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[rgba(244,247,250,0.08)] to-transparent" />
+      <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-[rgba(244,247,250,0.08)] to-transparent" />
 
       {/* Elemento central com anel orbital e badge discreta opcional em fundo contínuo */}
-      <div className="relative z-10 flex items-center gap-3 px-4 bg-[#0A0E12]/90 backdrop-blur-sm rounded-full">
+      <div className="relative z-10 flex items-center gap-3 px-4 py-1 bg-white/95 dark:bg-[#0A0E12]/90 border border-slate-200 dark:border-transparent backdrop-blur-sm rounded-full shadow-xs dark:shadow-none">
         <div className="relative flex items-center justify-center w-8 h-8">
-          <div className="absolute inset-0 rounded-full bg-[#12B886]/8 blur-sm" />
+          <div className="absolute inset-0 rounded-full bg-emerald-500/10 dark:bg-[#12B886]/8 blur-sm" />
           <OrbisOrbitalRing size={32} showCore={false} glow={false} strokeWidth={0.8} />
         </div>
         {label && (
-          <span className="text-[10px] font-mono font-medium tracking-[0.2em] text-[#93A3B5]/80 uppercase">
+          <span className="text-[10px] font-mono font-semibold tracking-[0.2em] text-slate-700 dark:text-[#93A3B5]/80 uppercase">
             {label}
           </span>
         )}

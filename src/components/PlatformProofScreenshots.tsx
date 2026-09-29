@@ -35,38 +35,41 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
 
   return (
     <section
-      className={`relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-[#0A0E12] via-[#0B0F14] to-[#0A0E12] ${className}`}
+      className={`relative py-20 md:py-28 overflow-hidden bg-slate-50 dark:bg-gradient-to-b dark:from-[#0A0E12] dark:via-[#0B0F14] dark:to-[#0A0E12] border-y border-slate-200/80 dark:border-[rgba(244,247,250,0.05)] ${className}`}
     >
       {/* Background glow suave em gradiente Linear verde-esmeralda e dourado com transição contínua */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] max-w-full h-[450px] linear-glow-combined pointer-events-none opacity-80" />
-      <div className="absolute -bottom-10 right-10 w-[500px] h-[300px] linear-glow-emerald pointer-events-none opacity-60" />
+      <div className="hidden dark:block absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] max-w-full h-[450px] linear-glow-combined pointer-events-none opacity-80" />
+      <div className="hidden dark:block absolute -bottom-10 right-10 w-[500px] h-[300px] linear-glow-emerald pointer-events-none opacity-60" />
+
+      {/* Gradiente sutil corporativo no modo claro */}
+      <div className="dark:hidden absolute inset-0 bg-radial from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
         {/* Cabeçalho da seção com tipografia Linear: título curto e pesado, subtítulo espaçado */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-16">
           <div className="max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#12B886] text-xs font-mono font-semibold uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] text-emerald-700 dark:text-[#12B886] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-[#12B886] animate-pulse" />
               <span>PROVA REAL EM PRODUÇÃO</span>
             </div>
-            <h2 className="font-heading font-black text-2xl sm:text-4xl text-[#F4F7FA] tracking-tight">
+            <h2 className="font-heading font-black text-2xl sm:text-4xl text-slate-900 dark:text-[#F4F7FA] tracking-tight">
               INTERFACES REAIS DO PROTOCOLO
             </h2>
-            <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-[#93A3B5] leading-relaxed">
               Explore os módulos operacionais onde os dados são auditados, ancorados e conferidos
               publicamente a cada segundo — sem telas conceituais.
             </p>
           </div>
 
           {/* Abas de alternância de tela em contêiner discreto estilo Linear */}
-          <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] self-start md:self-auto overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] self-start md:self-auto overflow-x-auto max-w-full shadow-xs">
             <button
               type="button"
               onClick={() => setActiveTab('radar')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                 activeTab === 'radar'
-                  ? 'bg-[#16202B] text-[#12B886] border border-[#12B886]/40 shadow-sm'
-                  : 'text-[#93A3B5] hover:text-[#F4F7FA]'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-[#16202B] dark:text-[#12B886] dark:border-[#12B886]/40 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-[#93A3B5] dark:hover:text-[#F4F7FA]'
               }`}
             >
               <Compass className="w-3.5 h-3.5" />
@@ -77,8 +80,8 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
               onClick={() => setActiveTab('verificador')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                 activeTab === 'verificador'
-                  ? 'bg-[#16202B] text-[#12B886] border border-[#12B886]/40 shadow-sm'
-                  : 'text-[#93A3B5] hover:text-[#F4F7FA]'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-[#16202B] dark:text-[#12B886] dark:border-[#12B886]/40 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-[#93A3B5] dark:hover:text-[#F4F7FA]'
               }`}
             >
               <Search className="w-3.5 h-3.5" />
@@ -89,8 +92,8 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
               onClick={() => setActiveTab('passaporte')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                 activeTab === 'passaporte'
-                  ? 'bg-[#16202B] text-[#12B886] border border-[#12B886]/40 shadow-sm'
-                  : 'text-[#93A3B5] hover:text-[#F4F7FA]'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-[#16202B] dark:text-[#12B886] dark:border-[#12B886]/40 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-[#93A3B5] dark:hover:text-[#F4F7FA]'
               }`}
             >
               <Cpu className="w-3.5 h-3.5" />
@@ -99,9 +102,9 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
           </div>
         </div>
 
-        {/* Moldura de tela da plataforma no padrão Linear (janela estilizada, barra de ferramentas, perspectiva e sombra) */}
+        {/* Moldura de tela da plataforma no padrão Linear (janela estilizada, barra de ferramentas, perspectiva e sombra — o mockup interno permanece escuro por ser um terminal de dados) */}
         <div className="linear-frame-perspective">
-          <div className="rounded-2xl bg-[#0D1217] border border-[rgba(244,247,250,0.12)] linear-card-mockup overflow-hidden">
+          <div className="rounded-2xl bg-[#0D1217] border border-slate-300/80 dark:border-[rgba(244,247,250,0.12)] linear-card-mockup overflow-hidden shadow-2xl">
             {/* Top Bar da Moldura macOS / App Window */}
             <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#090D11] border-b border-[rgba(244,247,250,0.08)]">
               <div className="flex items-center gap-2">

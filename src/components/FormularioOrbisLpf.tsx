@@ -138,29 +138,29 @@ export function FormularioOrbisLpf({
   return (
     <div
       id={id}
-      className={`scroll-mt-28 p-6 sm:p-10 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.14)] shadow-2xl relative ${className}`}
+      className={`scroll-mt-28 p-6 sm:p-10 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.14)] shadow-xl dark:shadow-2xl relative text-slate-900 dark:text-[#F4F7FA] ${className}`}
     >
       {onClose && (
         <button
           onClick={onClose}
           type="button"
           aria-label="Fechar formulário"
-          className="absolute top-5 right-5 p-2 rounded-lg text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B] transition-colors"
+          className="absolute top-5 right-5 p-2 rounded-lg text-slate-500 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:bg-slate-100 dark:hover:bg-[#16202B] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
       )}
 
       {tituloVisivel && (
-        <div className="mb-8 border-b border-[rgba(244,247,250,0.08)] pb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold uppercase tracking-wider mb-3">
+        <div className="mb-8 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] pb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#16202B] border border-emerald-200 dark:border-[#12B886]/40 text-emerald-800 dark:text-[#12B886] text-xs font-semibold uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Oferta Piloto • 1 Leitura por CNPJ</span>
           </div>
-          <h2 className="font-heading font-extrabold text-2xl sm:text-3xl md:text-4xl text-[#F4F7FA] mb-3">
+          <h2 className="font-heading font-extrabold text-2xl sm:text-3xl md:text-4xl text-slate-900 dark:text-[#F4F7FA] mb-3">
             Sua primeira leitura é por nossa conta.
           </h2>
-          <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed max-w-3xl">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-[#93A3B5] leading-relaxed max-w-3xl">
             Envie os dados do seu próximo embarque e receba o Relatório de Pré-Leitura Orbis: a
             intensidade de carbono estimada do lote, o cenário de custo na ausência de prova e o que
             falta para fechar o dossiê probatório completo.
@@ -169,22 +169,22 @@ export function FormularioOrbisLpf({
       )}
 
       {/* Grid informativa: O que você recebe e Como funciona */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-5 sm:p-6 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-5 sm:p-6 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#12B886] block mb-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-[#12B886] block mb-3">
             O que você recebe:
           </span>
-          <ul className="space-y-2.5 text-xs sm:text-sm text-[#93A3B5]">
+          <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5]">
             <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-[#12B886] shrink-0 mt-0.5" />
               <span>Intensidade de carbono estimada do lote (tCO₂e por unidade);</span>
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-[#12B886] shrink-0 mt-0.5" />
               <span>Comparação entre o cenário sem prova e o cenário com dossiê probatório;</span>
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-[#12B886] shrink-0 mt-0.5" />
               <span>
                 Lista objetiva do que falta para a prova completa — e o que o Orbis resolve.
               </span>
@@ -193,10 +193,10 @@ export function FormularioOrbisLpf({
         </div>
 
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#D9B36C] block mb-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-[#D9B36C] block mb-3">
             Como funciona:
           </span>
-          <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
             A leitura inicial é operada pela equipe técnica Orbis (oferta piloto). 1 leitura por
             CNPJ, sem custo e sem compromisso. Se o número fizer sentido, você conversa com a gente.
             Se não fizer, você ganhou um número que talvez não tivesse.
@@ -206,17 +206,17 @@ export function FormularioOrbisLpf({
 
       {/* Mensagem de sucesso */}
       {sucesso ? (
-        <div className="p-6 sm:p-8 rounded-xl bg-[#12B886]/10 border border-[#12B886] text-center space-y-4 animate-fade-in">
-          <div className="w-14 h-14 rounded-full bg-[#12B886]/20 border border-[#12B886] flex items-center justify-center mx-auto text-[#12B886]">
+        <div className="p-6 sm:p-8 rounded-xl bg-emerald-50 dark:bg-[#12B886]/10 border border-emerald-300 dark:border-[#12B886] text-center space-y-4 animate-fade-in">
+          <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-[#12B886]/20 border border-emerald-300 dark:border-[#12B886] flex items-center justify-center mx-auto text-emerald-700 dark:text-[#12B886]">
             <CheckCircle2 className="w-8 h-8" />
           </div>
-          <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+          <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F4F7FA]">
             Solicitação Recebida com Sucesso!
           </h3>
-          <p className="text-sm text-[#93A3B5] max-w-lg mx-auto leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-[#93A3B5] max-w-lg mx-auto leading-relaxed">
             Nossa equipe técnica já registrou os dados do seu CNPJ ({cnpj || 'informado'}).
             Iniciaremos a análise da intensidade de carbono estimada do lote e entraremos em contato
-            pelo e-mail <strong className="text-[#F4F7FA]">{email}</strong>.
+            pelo e-mail <strong className="text-slate-900 dark:text-[#F4F7FA]">{email}</strong>.
           </p>
           <div className="pt-2">
             <button
@@ -230,7 +230,7 @@ export function FormularioOrbisLpf({
                 setSetor('')
                 setVolumeExportacao('')
               }}
-              className="text-xs font-semibold text-[#12B886] hover:underline"
+              className="text-xs font-semibold text-emerald-700 dark:text-[#12B886] hover:underline"
             >
               Nova consulta ou conferência de outro CNPJ
             </button>
@@ -242,11 +242,11 @@ export function FormularioOrbisLpf({
           {avisoDuplicado && (
             <div
               data-testid="aviso-duplicado"
-              className="p-4 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C] text-[#F4F7FA] flex items-start gap-3 animate-fade-in text-sm leading-relaxed"
+              className="p-4 rounded-xl bg-amber-50 dark:bg-[#D9B36C]/10 border border-amber-300 dark:border-[#D9B36C] text-slate-800 dark:text-[#F4F7FA] flex items-start gap-3 animate-fade-in text-sm leading-relaxed"
             >
-              <AlertCircle className="w-5 h-5 text-[#D9B36C] shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-[#D9B36C] shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-[#D9B36C] font-semibold mb-0.5">
+                <strong className="block text-amber-800 dark:text-[#D9B36C] font-semibold mb-0.5">
                   Aviso de Solicitação Anterior
                 </strong>
                 <span>{avisoDuplicado}</span>
@@ -258,9 +258,9 @@ export function FormularioOrbisLpf({
           {feedbackGeral && (
             <div
               data-testid="erro-geral"
-              className="p-4 rounded-xl bg-red-500/10 border border-red-500/40 text-red-300 flex items-start gap-3 animate-fade-in text-sm"
+              className="p-4 rounded-xl bg-red-500/10 border border-red-500/40 text-red-600 dark:text-red-300 flex items-start gap-3 animate-fade-in text-sm"
             >
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
               <span>{feedbackGeral}</span>
             </div>
           )}
@@ -270,9 +270,9 @@ export function FormularioOrbisLpf({
             <div>
               <label
                 htmlFor="lpf-cnpj"
-                className="block text-xs font-bold uppercase tracking-wider text-[#F4F7FA] mb-2"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F4F7FA] mb-2"
               >
-                CNPJ <span className="text-[#12B886]">*</span>
+                CNPJ <span className="text-emerald-600 dark:text-[#12B886]">*</span>
               </label>
               <div className="relative">
                 <input
@@ -283,29 +283,31 @@ export function FormularioOrbisLpf({
                   placeholder="00.000.000/0000-00"
                   value={cnpj}
                   onChange={(e) => handleCnpjChange(e.target.value)}
-                  className={`w-full px-4 py-3 rounded-xl bg-[#0A0E12] border ${
+                  className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border ${
                     erros.cnpj
                       ? 'border-red-500 focus:border-red-500'
-                      : 'border-[rgba(244,247,250,0.18)] focus:border-[#12B886]'
-                  } text-[#F4F7FA] placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors`}
+                      : 'border-slate-200 dark:border-[rgba(244,247,250,0.18)] focus:border-emerald-500 dark:focus:border-[#12B886]'
+                  } text-slate-900 dark:text-[#F4F7FA] placeholder-slate-400 dark:placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors`}
                 />
                 {consultandoCnpj && (
-                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-[#93A3B5]">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#12B886]" />
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#93A3B5]">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-[#12B886]" />
                     <span className="hidden sm:inline">Buscando...</span>
                   </div>
                 )}
               </div>
-              {erros.cnpj && <p className="text-xs text-red-400 mt-1.5">{erros.cnpj}</p>}
+              {erros.cnpj && (
+                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">{erros.cnpj}</p>
+              )}
             </div>
 
             {/* Razão Social */}
             <div>
               <label
                 htmlFor="lpf-razao-social"
-                className="block text-xs font-bold uppercase tracking-wider text-[#F4F7FA] mb-2"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F4F7FA] mb-2"
               >
-                Razão Social <span className="text-[#12B886]">*</span>
+                Razão Social <span className="text-emerald-600 dark:text-[#12B886]">*</span>
               </label>
               <input
                 id="lpf-razao-social"
@@ -322,14 +324,16 @@ export function FormularioOrbisLpf({
                     return next
                   })
                 }}
-                className={`w-full px-4 py-3 rounded-xl bg-[#0A0E12] border ${
+                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border ${
                   erros.razao_social
                     ? 'border-red-500 focus:border-red-500'
-                    : 'border-[rgba(244,247,250,0.18)] focus:border-[#12B886]'
-                } text-[#F4F7FA] placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors`}
+                    : 'border-slate-200 dark:border-[rgba(244,247,250,0.18)] focus:border-emerald-500 dark:focus:border-[#12B886]'
+                } text-slate-900 dark:text-[#F4F7FA] placeholder-slate-400 dark:placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors`}
               />
               {erros.razao_social && (
-                <p className="text-xs text-red-400 mt-1.5">{erros.razao_social}</p>
+                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">
+                  {erros.razao_social}
+                </p>
               )}
             </div>
 
@@ -337,9 +341,9 @@ export function FormularioOrbisLpf({
             <div>
               <label
                 htmlFor="lpf-email"
-                className="block text-xs font-bold uppercase tracking-wider text-[#F4F7FA] mb-2"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F4F7FA] mb-2"
               >
-                E-mail Comercial <span className="text-[#12B886]">*</span>
+                E-mail Comercial <span className="text-emerald-600 dark:text-[#12B886]">*</span>
               </label>
               <input
                 id="lpf-email"
@@ -356,20 +360,22 @@ export function FormularioOrbisLpf({
                     return next
                   })
                 }}
-                className={`w-full px-4 py-3 rounded-xl bg-[#0A0E12] border ${
+                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border ${
                   erros.email
                     ? 'border-red-500 focus:border-red-500'
-                    : 'border-[rgba(244,247,250,0.18)] focus:border-[#12B886]'
-                } text-[#F4F7FA] placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors`}
+                    : 'border-slate-200 dark:border-[rgba(244,247,250,0.18)] focus:border-emerald-500 dark:focus:border-[#12B886]'
+                } text-slate-900 dark:text-[#F4F7FA] placeholder-slate-400 dark:placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors`}
               />
-              {erros.email && <p className="text-xs text-red-400 mt-1.5">{erros.email}</p>}
+              {erros.email && (
+                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">{erros.email}</p>
+              )}
             </div>
 
             {/* Contato/telefone */}
             <div>
               <label
                 htmlFor="lpf-telefone"
-                className="block text-xs font-bold uppercase tracking-wider text-[#F4F7FA] mb-2"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F4F7FA] mb-2"
               >
                 Contato / Telefone
               </label>
@@ -380,7 +386,7 @@ export function FormularioOrbisLpf({
                 placeholder="(00) 00000-0000"
                 value={contatoTelefone}
                 onChange={(e) => setContatoTelefone(maskPhone(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.18)] focus:border-[#12B886] text-[#F4F7FA] placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.18)] focus:border-emerald-500 dark:focus:border-[#12B886] text-slate-900 dark:text-[#F4F7FA] placeholder-slate-400 dark:placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors"
               />
             </div>
 
@@ -388,9 +394,9 @@ export function FormularioOrbisLpf({
             <div>
               <label
                 htmlFor="lpf-setor"
-                className="block text-xs font-bold uppercase tracking-wider text-[#F4F7FA] mb-2"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F4F7FA] mb-2"
               >
-                Setor <span className="text-[#12B886]">*</span>
+                Setor <span className="text-emerald-600 dark:text-[#12B886]">*</span>
               </label>
               <select
                 id="lpf-setor"
@@ -405,32 +411,38 @@ export function FormularioOrbisLpf({
                     return next
                   })
                 }}
-                className={`w-full px-4 py-3 rounded-xl bg-[#0A0E12] border ${
+                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border ${
                   erros.setor
                     ? 'border-red-500 focus:border-red-500'
-                    : 'border-[rgba(244,247,250,0.18)] focus:border-[#12B886]'
-                } text-[#F4F7FA] text-sm focus:outline-none transition-colors`}
+                    : 'border-slate-200 dark:border-[rgba(244,247,250,0.18)] focus:border-emerald-500 dark:focus:border-[#12B886]'
+                } text-slate-900 dark:text-[#F4F7FA] text-sm focus:outline-none transition-colors`}
               >
                 <option value="" disabled>
                   Selecione o setor
                 </option>
                 {SETORES_DISPONIVEIS.map((s) => (
-                  <option key={s.valor} value={s.valor} className="bg-[#111820] text-[#F4F7FA]">
+                  <option
+                    key={s.valor}
+                    value={s.valor}
+                    className="bg-white text-slate-900 dark:bg-[#111820] dark:text-[#F4F7FA]"
+                  >
                     {s.rotulo}
                   </option>
                 ))}
               </select>
-              {erros.setor && <p className="text-xs text-red-400 mt-1.5">{erros.setor}</p>}
+              {erros.setor && (
+                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">{erros.setor}</p>
+              )}
             </div>
 
             {/* Volume de exportação estimado (opcional) */}
             <div>
               <label
                 htmlFor="lpf-volume"
-                className="block text-xs font-bold uppercase tracking-wider text-[#F4F7FA] mb-2"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F4F7FA] mb-2"
               >
                 Volume de Exportação Estimado{' '}
-                <span className="text-[10px] text-[#93A3B5] font-normal normal-case">
+                <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] font-normal normal-case">
                   (opcional)
                 </span>
               </label>
@@ -441,7 +453,7 @@ export function FormularioOrbisLpf({
                 placeholder="Ex.: 500 toneladas/mês, 2 lotes/ano"
                 value={volumeExportacao}
                 onChange={(e) => setVolumeExportacao(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.18)] focus:border-[#12B886] text-[#F4F7FA] placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.18)] focus:border-emerald-500 dark:focus:border-[#12B886] text-slate-900 dark:text-[#F4F7FA] placeholder-slate-400 dark:placeholder-[#93A3B5]/60 text-sm focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -451,7 +463,7 @@ export function FormularioOrbisLpf({
             <button
               type="submit"
               disabled={enviando}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-sm font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] hover:scale-[1.01] transition-all shadow-emerald-glow disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#12B886] dark:text-[#0A0E12] dark:hover:bg-[#0CA678] hover:scale-[1.01] transition-all shadow-md dark:shadow-emerald-glow disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {enviando ? (
                 <>
@@ -466,7 +478,7 @@ export function FormularioOrbisLpf({
               )}
             </button>
 
-            <p className="text-xs text-[#93A3B5] leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-[#93A3B5] leading-relaxed">
               Seus dados são usados exclusivamente para a elaboração da leitura. Sem spam, sem
               compartilhamento.
             </p>
