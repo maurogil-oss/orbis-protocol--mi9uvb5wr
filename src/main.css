@@ -256,9 +256,9 @@
   .linear-glow-emerald {
     background: radial-gradient(
       65% 65% at 50% 30%,
-      rgba(18, 184, 134, 0.14) 0%,
-      rgba(18, 184, 134, 0.05) 45%,
-      rgba(18, 184, 134, 0.01) 70%,
+      rgba(5, 150, 105, 0.12) 0%,
+      rgba(5, 150, 105, 0.04) 45%,
+      rgba(5, 150, 105, 0.01) 70%,
       transparent 100%
     );
   }
@@ -266,8 +266,8 @@
   .linear-glow-gold {
     background: radial-gradient(
       55% 55% at 50% 50%,
-      rgba(217, 179, 108, 0.1) 0%,
-      rgba(217, 179, 108, 0.03) 50%,
+      rgba(217, 179, 108, 0.08) 0%,
+      rgba(217, 179, 108, 0.02) 50%,
       rgba(217, 179, 108, 0.005) 75%,
       transparent 100%
     );
@@ -276,9 +276,9 @@
   .linear-glow-combined {
     background: radial-gradient(
       75% 60% at 50% 0%,
-      rgba(18, 184, 134, 0.13) 0%,
-      rgba(217, 179, 108, 0.06) 45%,
-      rgba(18, 184, 134, 0.01) 70%,
+      rgba(37, 99, 235, 0.1) 0%,
+      rgba(5, 150, 105, 0.06) 45%,
+      rgba(5, 150, 105, 0.01) 70%,
       transparent 85%
     );
   }

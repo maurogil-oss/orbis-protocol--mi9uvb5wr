@@ -31,7 +31,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
       onClick={toggleTheme}
       title={isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
       aria-label={isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
-      className={`inline-flex items-center justify-center p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-[#93A3B5] dark:hover:text-[#F4F7FA] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] bg-white dark:bg-[#111820] hover:bg-slate-50 dark:hover:bg-[#16202B] transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${className}`}
+      className={`inline-flex items-center justify-center p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-[#94A3B8] dark:hover:text-[#F8FAFC] border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0E1A2E] hover:bg-slate-50 dark:hover:bg-[#111827] transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/50 ${className}`}
     >
       {isDark ? (
         <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-180 duration-300" />
