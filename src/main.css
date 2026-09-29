@@ -49,43 +49,43 @@
   }
 
   .dark {
-    /* Orbis Protocol Dark-First Design System (Preserved 100% Identical) */
-    --background: 210 28% 5%; /* #0A0E12 */
-    --foreground: 210 25% 97%; /* #F4F7FA */
+    /* Orbis Protocol Dark Theme Refinement - Institutional Navy Palette (ORBIS.UOS inspired) */
+    --background: 217 60% 10%; /* #0A1628 */
+    --foreground: 210 40% 98%; /* #F8FAFC */
 
-    --card: 213 30% 10%; /* #111820 */
-    --card-foreground: 210 25% 97%;
+    --card: 218 53% 12%; /* #0E1A2E */
+    --card-foreground: 210 40% 98%; /* #F8FAFC */
 
-    --popover: 213 30% 10%;
-    --popover-foreground: 210 25% 97%;
+    --popover: 218 53% 12%; /* #0E1A2E */
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 164 82% 40%; /* #12B886 emerald */
-    --primary-foreground: 210 28% 5%;
+    --primary: 221 83% 53%; /* #2563EB primary corporate blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 213 32% 13%; /* #16202B */
-    --secondary-foreground: 210 25% 97%;
+    --secondary: 215 28% 17%; /* #111827 surface secondary */
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 214 20% 16%;
-    --muted-foreground: 213 18% 64%; /* #93A3B5 */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%; /* #94A3B8 */
 
     --accent: 41 57% 64%; /* #D9B36C gold champagne */
-    --accent-foreground: 210 28% 5%;
+    --accent-foreground: 217 60% 10%;
 
     --destructive: 352 86% 59%; /* #F03E54 */
-    --destructive-foreground: 210 25% 97%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 210 25% 20%; /* subtle border rgba(244,247,250,0.12) */
-    --input: 213 30% 14%;
-    --ring: 164 82% 40%; /* emerald glow ring */
+    --border: 217 33% 17%; /* slate-800 hairline */
+    --input: 217 33% 17%;
+    --ring: 221 83% 53%; /* #2563EB ring */
 
-    --sidebar-background: 213 30% 10%;
-    --sidebar-foreground: 210 25% 97%;
-    --sidebar-primary: 164 82% 40%;
-    --sidebar-primary-foreground: 210 28% 5%;
-    --sidebar-accent: 213 32% 13%;
-    --sidebar-accent-foreground: 210 25% 97%;
-    --sidebar-border: 210 25% 20%;
-    --sidebar-ring: 164 82% 40%;
+    --sidebar-background: 218 53% 12%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 28% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   * {
@@ -132,39 +132,37 @@
 
 @layer utilities {
   .bg-orbis-dark {
-    background-color: #0a0e12;
+    background-color: #0a1628;
   }
   .bg-orbis-card {
-    background-color: #111820;
+    background-color: #0e1a2e;
   }
   .bg-orbis-card-hover {
-    background-color: #16202b;
+    background-color: #111827;
   }
   .text-orbis-muted {
-    color: #93a3b5;
+    color: #94a3b8;
   }
   .text-orbis-emerald {
-    color: #12b886;
+    color: #059669;
   }
   .text-orbis-gold {
     color: #d9b36c;
   }
   .border-orbis-subtle {
-    border-color: rgba(244, 247, 250, 0.12);
+    border-color: rgba(148, 163, 184, 0.12);
   }
   .border-orbis-emerald {
-    border-color: #12b886;
+    border-color: #059669;
   }
   .shadow-emerald-glow {
-    box-shadow: 0 0 24px rgba(18, 184, 134, 0.35);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   }
   .shadow-emerald-glow-subtle {
-    box-shadow:
-      0 0 16px rgba(18, 184, 134, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
   .shadow-gold-glow {
-    box-shadow: 0 0 24px rgba(217, 179, 108, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   }
 
   /* Marquee animation */
@@ -296,17 +294,17 @@
       transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       box-shadow 0.4s ease;
     box-shadow:
-      0 20px 40px -15px rgba(0, 0, 0, 0.7),
-      0 0 0 1px rgba(244, 247, 250, 0.08),
-      0 0 30px -10px rgba(18, 184, 134, 0.15);
+      0 20px 40px -15px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(148, 163, 184, 0.12),
+      0 4px 12px rgba(0, 0, 0, 0.25);
   }
 
   .linear-card-mockup:hover {
     transform: rotateX(0deg) translateY(-6px);
     box-shadow:
-      0 30px 60px -20px rgba(0, 0, 0, 0.8),
-      0 0 0 1px rgba(18, 184, 134, 0.35),
-      0 0 45px -10px rgba(18, 184, 134, 0.28);
+      0 24px 48px -18px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(5, 150, 105, 0.4),
+      0 8px 24px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -326,14 +324,14 @@
   }
 
   body {
-    background-color: #0a0e12 !important;
-    color: #f4f7fa !important;
+    background-color: #0a1628 !important;
+    color: #f8fafc !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   .proposta-deck-root {
-    background-color: #0a0e12 !important;
+    background-color: #0a1628 !important;
     padding: 0 !important;
     margin: 0 !important;
   }
@@ -359,8 +357,8 @@
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
-    background: #0d131a !important;
-    background-color: #0d131a !important;
+    background: #0e1a2e !important;
+    background-color: #0e1a2e !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }

@@ -50,47 +50,47 @@ export function BalancoMassaVeiculoSection({
   const getCategoriaIcon = (cat: ItemBalancoMassa['categoria']) => {
     switch (cat) {
       case 'reuso_circular':
-        return <Sparkles className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
+        return <Sparkles className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
       case 'metais_reciclagem':
-        return <Flame className="w-4 h-4 text-blue-600 dark:text-[#3B82F6]" />
+        return <Flame className="w-4 h-4 text-blue-600 dark:text-[#2563EB]" />
       case 'despoluicao_gate':
         return <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-[#10B981]" />
       case 'oleo_rlo':
         return <Droplets className="w-4 h-4 text-amber-600 dark:text-[#D9B36C]" />
       case 'perdas_processo':
-        return <Layers className="w-4 h-4 text-slate-500 dark:text-[#93A3B5]" />
+        return <Layers className="w-4 h-4 text-slate-500 dark:text-[#94A3B8]" />
       default:
-        return <Recycle className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
+        return <Recycle className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
     }
   }
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#111820] border-2 border-emerald-500/40 dark:border-[#12B886]/40 shadow-sm dark:shadow-emerald-glow overflow-hidden text-slate-900 dark:text-[#F4F7FA]">
+    <div className="rounded-3xl bg-white dark:bg-[#0E1A2E] border-2 border-emerald-500/40 dark:border-slate-800 shadow-sm dark:shadow-sm overflow-hidden text-slate-900 dark:text-[#F8FAFC]">
       {/* CABEÇALHO DO BLOCO */}
-      <div className="p-5 sm:p-7 bg-gradient-to-r from-slate-50 via-slate-100/70 to-slate-50 dark:from-[#111820] dark:via-[#16202B] dark:to-[#111820] border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
+      <div className="p-5 sm:p-7 bg-gradient-to-r from-slate-50 via-slate-100/70 to-slate-50 dark:from-[#0E1A2E] dark:via-[#111827] dark:to-[#0E1A2E] border-b border-slate-200 dark:border-slate-800">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#12B886]/15 border border-emerald-200 dark:border-[#12B886]/40 text-emerald-700 dark:text-[#12B886] text-[11px] font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#059669]/15 border border-emerald-200 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] text-[11px] font-bold uppercase tracking-wider">
                 <Scale className="w-3.5 h-3.5" />
                 INDICADOR OFICIAL • BALANÇO DE MASSA DO VEÍCULO DOADOR
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-[#D9B36C]/20 border border-amber-200 dark:border-[#D9B36C]/50 text-amber-700 dark:text-[#D9B36C] text-[10px] font-mono font-bold uppercase">
                 ESTIMATIVA CURBSIDE
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-[#3B82F6]/20 border border-blue-200 dark:border-[#3B82F6]/40 text-blue-700 dark:text-[#60A5FA] text-[10px] font-mono font-bold uppercase">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-[#2563EB]/20 border border-blue-200 dark:border-[#2563EB]/40 text-blue-700 dark:text-[#60A5FA] text-[10px] font-mono font-bold uppercase">
                 DIRETIVA ELV 2000/53/EC
               </span>
             </div>
 
-            <h3 className="font-heading font-black text-xl sm:text-2xl text-slate-900 dark:text-[#F4F7FA] tracking-wide">
+            <h3 className="font-heading font-black text-xl sm:text-2xl text-slate-900 dark:text-[#F8FAFC] tracking-wide">
               Balanço de Massa & Taxa de Valorização Circular (%RRR)
             </h3>
 
-            <p className="text-xs text-slate-600 dark:text-[#93A3B5] max-w-3xl leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-[#94A3B8] max-w-3xl leading-relaxed">
               Consolidação analítica dos fluxos ponderais do veículo doador{' '}
               {veiculoModelo ? (
-                <strong className="text-slate-900 dark:text-[#F4F7FA]">{veiculoModelo}</strong>
+                <strong className="text-slate-900 dark:text-[#F8FAFC]">{veiculoModelo}</strong>
               ) : (
                 ''
               )}
@@ -100,23 +100,23 @@ export function BalancoMassaVeiculoSection({
           </div>
 
           {/* Destaque Curbside Estimado */}
-          <div className="shrink-0 p-4 rounded-2xl bg-slate-50 dark:bg-[#0A0E12] border border-emerald-500/30 dark:border-[#12B886]/40 min-w-[240px]">
-            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] tracking-wider mb-1">
+          <div className="shrink-0 p-4 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-500/30 dark:border-slate-800 min-w-[240px]">
+            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-500 dark:text-[#94A3B8] tracking-wider mb-1">
               <span>Massa Estimada (Curbside)</span>
               <span className="font-mono text-amber-700 dark:text-[#D9B36C]">± Referência</span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="font-heading font-black text-2xl sm:text-3xl text-emerald-600 dark:text-[#12B886]">
+              <span className="font-heading font-black text-2xl sm:text-3xl text-emerald-600 dark:text-[#059669]">
                 {balanco.massaEstimadaVeiculoKg.toLocaleString('pt-BR', {
                   minimumFractionDigits: 1,
                   maximumFractionDigits: 1,
                 })}
               </span>
-              <span className="text-xs text-slate-500 dark:text-[#93A3B5] font-mono">
+              <span className="text-xs text-slate-500 dark:text-[#94A3B8] font-mono">
                 kg (tara estimada)
               </span>
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-[#93A3B5] mt-1 line-clamp-2 leading-tight">
+            <div className="text-[10px] text-slate-500 dark:text-[#94A3B8] mt-1 line-clamp-2 leading-tight">
               {balanco.fonteEstimativaVeiculo}
             </div>
           </div>
@@ -127,36 +127,36 @@ export function BalancoMassaVeiculoSection({
         {/* CARDS COM OS 4 INDICADORES CENTRAIS DO BALANÇO */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* 1. Reúso Circular */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A0E12] border border-emerald-500/40 dark:border-[#12B886]/50 relative overflow-hidden group">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-500/40 dark:border-slate-800 relative overflow-hidden group">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-bold text-emerald-700 dark:text-[#12B886] flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+              <span className="font-bold text-emerald-700 dark:text-[#059669] flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5" />
                 Reúso Circular
               </span>
-              <span className="text-[10px] font-mono font-bold text-emerald-800 dark:text-[#12B886] bg-emerald-100 dark:bg-[#12B886]/10 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono font-bold text-emerald-800 dark:text-[#059669] bg-emerald-100 dark:bg-[#059669]/10 px-2 py-0.5 rounded-full">
                 {balanco.percentualReusoPct.toFixed(1)}%
               </span>
             </div>
-            <div className="font-heading font-black text-xl sm:text-2xl text-emerald-700 dark:text-[#12B886] mt-1">
+            <div className="font-heading font-black text-xl sm:text-2xl text-emerald-700 dark:text-[#059669] mt-1">
               {balanco.massaCircularRecuperadaKg.toLocaleString('pt-BR', {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 2,
               })}{' '}
-              <span className="text-xs font-normal text-slate-500 dark:text-[#93A3B5]">kg</span>
+              <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">kg</span>
             </div>
-            <p className="text-[10px] text-slate-600 dark:text-[#93A3B5] mt-1 leading-snug">
+            <p className="text-[10px] text-slate-600 dark:text-[#94A3B8] mt-1 leading-snug">
               Peças íntegras catalogadas no DPP Consolidado
             </p>
           </div>
 
           {/* 2. Destinação Final Total */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A0E12] border border-blue-400/40 dark:border-[#3B82F6]/50 relative overflow-hidden">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-blue-400/40 dark:border-slate-800 relative overflow-hidden">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="font-bold text-blue-700 dark:text-[#60A5FA] flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
                 <Flame className="w-3.5 h-3.5" />
                 Destinação Final
               </span>
-              <span className="text-[10px] font-mono font-bold text-blue-800 dark:text-[#60A5FA] bg-blue-100 dark:bg-[#3B82F6]/10 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono font-bold text-blue-800 dark:text-[#60A5FA] bg-blue-100 dark:bg-[#2563EB]/10 px-2 py-0.5 rounded-full">
                 {balanco.percentualReciclagemDestinacaoPct.toFixed(1)}%
               </span>
             </div>
@@ -165,81 +165,81 @@ export function BalancoMassaVeiculoSection({
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 2,
               })}{' '}
-              <span className="text-xs font-normal text-slate-500 dark:text-[#93A3B5]">kg</span>
+              <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">kg</span>
             </div>
-            <p className="text-[10px] text-slate-600 dark:text-[#93A3B5] mt-1 leading-snug">
+            <p className="text-[10px] text-slate-600 dark:text-[#94A3B8] mt-1 leading-snug">
               Gate (bateria/pneus) + RLO + Metais/Aciaria
             </p>
           </div>
 
           {/* 3. Valorização Total (% RRR) */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A0E12] border-2 border-emerald-600 dark:border-[#12B886] relative overflow-hidden">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border-2 border-emerald-600 dark:border-[#059669] relative overflow-hidden">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-bold text-slate-900 dark:text-[#F4F7FA] flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886]" />
+              <span className="font-bold text-slate-900 dark:text-[#F8FAFC] flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
                 Taxa Valorização Total
               </span>
-              <span className="text-[10px] font-mono font-black text-emerald-800 dark:text-[#12B886] bg-emerald-100 dark:bg-[#12B886]/20 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-[#12B886]/40">
+              <span className="text-[10px] font-mono font-black text-emerald-800 dark:text-[#059669] bg-emerald-100 dark:bg-[#059669]/20 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-[#059669]/40">
                 {balanco.percentualValorizacaoTotalPct.toFixed(1)}%
               </span>
             </div>
-            <div className="font-heading font-black text-xl sm:text-2xl text-slate-900 dark:text-[#F4F7FA] mt-1">
+            <div className="font-heading font-black text-xl sm:text-2xl text-slate-900 dark:text-[#F8FAFC] mt-1">
               {balanco.massaValorizadaTotalKg.toLocaleString('pt-BR', {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 2,
               })}{' '}
-              <span className="text-xs font-normal text-slate-500 dark:text-[#93A3B5]">kg</span>
+              <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">kg</span>
             </div>
-            <p className="text-[10px] text-emerald-700 dark:text-[#12B886] mt-1 font-semibold flex items-center gap-1">
+            <p className="text-[10px] text-emerald-700 dark:text-[#059669] mt-1 font-semibold flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" />
               Reúso + Reciclagem homologados
             </p>
           </div>
 
           {/* 4. Perdas de Processo / Não Rastreado */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] relative overflow-hidden">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 relative overflow-hidden">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-bold text-slate-600 dark:text-[#93A3B5] flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+              <span className="font-bold text-slate-600 dark:text-[#94A3B8] flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
                 <Layers className="w-3.5 h-3.5 text-slate-500 dark:text-[#64748B]" />
                 Perdas / Processo
               </span>
-              <span className="text-[10px] font-mono font-bold text-slate-600 dark:text-[#93A3B5] bg-slate-100 dark:bg-[#16202B] px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono font-bold text-slate-600 dark:text-[#94A3B8] bg-slate-100 dark:bg-[#111827] px-2 py-0.5 rounded-full">
                 {balanco.percentualPerdasPct.toFixed(1)}%
               </span>
             </div>
-            <div className="font-heading font-black text-xl sm:text-2xl text-slate-800 dark:text-[#93A3B5] mt-1">
+            <div className="font-heading font-black text-xl sm:text-2xl text-slate-800 dark:text-[#94A3B8] mt-1">
               {balanco.massaPerdasProcessoKg.toLocaleString('pt-BR', {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 2,
               })}{' '}
               <span className="text-xs font-normal text-slate-500 dark:text-[#64748B]">kg</span>
             </div>
-            <p className="text-[10px] text-slate-500 dark:text-[#93A3B5] mt-1 leading-snug">
+            <p className="text-[10px] text-slate-500 dark:text-[#94A3B8] mt-1 leading-snug">
               Fração residual, estofamentos ou não triada
             </p>
           </div>
         </div>
 
         {/* BARRA HORIZONTAL DE COMPOSIÇÃO PERCENTUAL (% PONDERADA SOBRE A MASSA CURBSIDE) */}
-        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] space-y-3">
+        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Percent className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
-              <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-[#F4F7FA]">
+              <Percent className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+              <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-[#F8FAFC]">
                 Composição Ponderada da Massa do Veículo ({balanco.massaEstimadaVeiculoKg} kg =
                 100%)
               </span>
             </div>
             <span className="text-[11px] font-mono text-amber-700 dark:text-[#D9B36C]">
               Valorização Efetiva:{' '}
-              <strong className="text-emerald-700 dark:text-[#12B886]">
+              <strong className="text-emerald-700 dark:text-[#059669]">
                 {balanco.percentualValorizacaoTotalPct.toFixed(1)}%
               </strong>
             </span>
           </div>
 
           {/* Barra Stacked */}
-          <div className="h-6 w-full rounded-xl bg-slate-200 dark:bg-[#16202B] overflow-hidden flex shadow-inner border border-slate-300 dark:border-[rgba(244,247,250,0.08)]">
+          <div className="h-6 w-full rounded-xl bg-slate-200 dark:bg-[#111827] overflow-hidden flex shadow-inner border border-slate-300 dark:border-slate-800">
             {balanco.itens.map((item) => {
               if (item.percentual <= 0) return null
               return (
@@ -249,7 +249,7 @@ export function BalancoMassaVeiculoSection({
                     width: `${item.percentual}%`,
                     backgroundColor: item.cor,
                   }}
-                  className="h-full relative group transition-all duration-300 hover:brightness-110 flex items-center justify-center text-[10px] font-mono font-bold text-[#0A0E12] overflow-hidden px-1"
+                  className="h-full relative group transition-all duration-300 hover:brightness-110 flex items-center justify-center text-[10px] font-mono font-bold text-white overflow-hidden px-1"
                   title={`${item.rotulo}: ${item.massaKg.toFixed(1)} kg (${item.percentual.toFixed(1)}%)`}
                 >
                   {item.percentual >= 8 && <span>{item.percentual.toFixed(0)}%</span>}
@@ -263,7 +263,7 @@ export function BalancoMassaVeiculoSection({
             {balanco.itens.map((item) => (
               <div
                 key={item.categoria}
-                className="flex items-start gap-2 p-2 rounded-xl bg-white dark:bg-[#111820]/70 border border-slate-200 dark:border-[rgba(244,247,250,0.04)] shadow-xs"
+                className="flex items-start gap-2 p-2 rounded-xl bg-white dark:bg-[#0E1A2E]/70 border border-slate-200 dark:border-slate-800 shadow-xs"
               >
                 <span
                   className="w-3 h-3 rounded-full shrink-0 mt-0.5"
@@ -271,12 +271,12 @@ export function BalancoMassaVeiculoSection({
                 />
                 <div className="min-w-0 flex-1">
                   <div
-                    className="text-[10px] font-bold text-slate-900 dark:text-[#F4F7FA] truncate"
+                    className="text-[10px] font-bold text-slate-900 dark:text-[#F8FAFC] truncate"
                     title={item.rotulo}
                   >
                     {item.rotulo.split('(')[0].trim()}
                   </div>
-                  <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5] flex items-center justify-between">
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-[#94A3B8] flex items-center justify-between">
                     <span>{item.massaKg.toFixed(1)} kg</span>
                     <strong className="text-amber-700 dark:text-[#D9B36C]">
                       {item.percentual.toFixed(1)}%
@@ -289,27 +289,27 @@ export function BalancoMassaVeiculoSection({
         </div>
 
         {/* PARÂMETRO COMPARATIVO: DIRETIVA ELV 2000/53/EC (META EUROPEIA DE REÚSO, RECICLAGEM E VALORIZAÇÃO) */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50/70 via-white to-blue-50/70 dark:from-[#111820] dark:via-[#16202B] dark:to-[#111820] border-2 border-blue-400/50 dark:border-[#3B82F6]/40 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-blue-200 dark:border-[rgba(244,247,250,0.08)]">
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50/70 via-white to-blue-50/70 dark:from-[#0E1A2E] dark:via-[#111827] dark:to-[#0E1A2E] border-2 border-blue-400/50 dark:border-slate-800 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-blue-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-[#3B82F6] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-[#2563EB] animate-pulse" />
               <span className="font-heading font-extrabold text-xs uppercase tracking-wider text-blue-700 dark:text-[#60A5FA]">
                 BENCHMARK INTERNACIONAL • DIRETIVA ELV 2000/53/EC (END-OF-LIFE VEHICLES)
               </span>
             </div>
-            <span className="text-[10px] font-mono text-slate-600 dark:text-[#93A3B5]">
+            <span className="text-[10px] font-mono text-slate-600 dark:text-[#94A3B8]">
               Art. 7º • Metas %RRR (Reuse, Recycling and Recovery)
             </span>
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-[#93A3B5] leading-relaxed">
+          <p className="text-xs text-slate-600 dark:text-[#94A3B8] leading-relaxed">
             A Diretiva 2000/53/EC do Parlamento Europeu estabelece os parâmetros técnicos globais de
             referência para a gestão de veículos em fim de vida: meta mínima de{' '}
-            <strong className="text-slate-900 dark:text-[#F4F7FA]">
+            <strong className="text-slate-900 dark:text-[#F8FAFC]">
               85% para Reúso e Reciclagem
             </strong>{' '}
             de massa por veículo e meta mínima de{' '}
-            <strong className="text-emerald-700 dark:text-[#12B886]">
+            <strong className="text-emerald-700 dark:text-[#059669]">
               95% para Valorização Total
             </strong>{' '}
             (incluindo recuperação energética).
@@ -317,15 +317,15 @@ export function BalancoMassaVeiculoSection({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
             {/* Meta 1: 85% Reúso + Reciclagem */}
-            <div className="p-4 rounded-xl bg-white dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] space-y-2 shadow-xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-900 dark:text-[#F4F7FA]">
+                <span className="font-bold text-slate-900 dark:text-[#F8FAFC]">
                   Meta 1: Reúso + Reciclagem (≥ 85%)
                 </span>
                 <span
                   className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     balanco.atingiuMetaReusoReciclagem
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-[#12B886]/15 dark:text-[#12B886] dark:border-[#12B886]/30'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-[#059669]/15 dark:text-[#059669] dark:border-[#059669]/30'
                       : 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-[#F59E0B]/15 dark:text-[#F59E0B] dark:border-[#F59E0B]/30'
                   }`}
                 >
@@ -345,19 +345,19 @@ export function BalancoMassaVeiculoSection({
 
               {/* Barra de Progresso Meta 1 */}
               <div className="space-y-1">
-                <div className="h-2.5 w-full bg-slate-200 dark:bg-[#16202B] rounded-full overflow-hidden flex">
+                <div className="h-2.5 w-full bg-slate-200 dark:bg-[#111827] rounded-full overflow-hidden flex">
                   <div
                     style={{
                       width: `${Math.min(balanco.percentualValorizacaoTotalPct, 100)}%`,
                     }}
                     className={`h-full ${
                       balanco.atingiuMetaReusoReciclagem
-                        ? 'bg-emerald-600 dark:bg-[#12B886]'
+                        ? 'bg-emerald-600 dark:bg-[#059669]'
                         : 'bg-amber-500 dark:bg-[#D9B36C]'
                     }`}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
+                <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-[#94A3B8]">
                   <span>Apurado no Lote: {balanco.percentualValorizacaoTotalPct.toFixed(1)}%</span>
                   <span>Alvo Regulatório: 85,0%</span>
                 </div>
@@ -365,16 +365,16 @@ export function BalancoMassaVeiculoSection({
             </div>
 
             {/* Meta 2: 95% Valorização Total */}
-            <div className="p-4 rounded-xl bg-white dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] space-y-2 shadow-xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-900 dark:text-[#F4F7FA]">
+                <span className="font-bold text-slate-900 dark:text-[#F8FAFC]">
                   Meta 2: Valorização Total (≥ 95%)
                 </span>
                 <span
                   className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     balanco.atingiuMetaValorizacaoTotal
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-[#12B886]/15 dark:text-[#12B886] dark:border-[#12B886]/30'
-                      : 'bg-blue-100 text-blue-800 border border-blue-300 dark:bg-[#3B82F6]/15 dark:text-[#60A5FA] dark:border-[#3B82F6]/30'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-[#059669]/15 dark:text-[#059669] dark:border-[#059669]/30'
+                      : 'bg-blue-100 text-blue-800 border border-blue-300 dark:bg-[#2563EB]/15 dark:text-[#60A5FA] dark:border-[#2563EB]/30'
                   }`}
                 >
                   {balanco.atingiuMetaValorizacaoTotal ? (
@@ -384,7 +384,7 @@ export function BalancoMassaVeiculoSection({
                     </>
                   ) : (
                     <>
-                      <Info className="w-3 h-3" />
+                      <AlertTriangle className="w-3 h-3" />
                       Diferencial Restante:{' '}
                       {(95.0 - balanco.percentualValorizacaoTotalPct).toFixed(1)}%
                     </>
@@ -394,19 +394,19 @@ export function BalancoMassaVeiculoSection({
 
               {/* Barra de Progresso Meta 2 */}
               <div className="space-y-1">
-                <div className="h-2.5 w-full bg-slate-200 dark:bg-[#16202B] rounded-full overflow-hidden flex">
+                <div className="h-2.5 w-full bg-slate-200 dark:bg-[#111827] rounded-full overflow-hidden flex">
                   <div
                     style={{
                       width: `${Math.min(balanco.percentualValorizacaoTotalPct, 100)}%`,
                     }}
                     className={`h-full ${
                       balanco.atingiuMetaValorizacaoTotal
-                        ? 'bg-emerald-600 dark:bg-[#12B886]'
-                        : 'bg-blue-600 dark:bg-[#3B82F6]'
+                        ? 'bg-emerald-600 dark:bg-[#059669]'
+                        : 'bg-blue-600 dark:bg-[#2563EB]'
                     }`}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
+                <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-[#94A3B8]">
                   <span>Apurado no Lote: {balanco.percentualValorizacaoTotalPct.toFixed(1)}%</span>
                   <span>Alvo Pleno: 95,0%</span>
                 </div>
@@ -419,15 +419,15 @@ export function BalancoMassaVeiculoSection({
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-[#93A3B5]">
+              <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-[#94A3B8]">
                 Detalhamento de Fluxos Ponderais & Rastreabilidade de Saída
               </span>
             </div>
 
             {/* Filtro Interativo de Taxonomia LR */}
-            <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-[#0A0E12] p-1 rounded-xl border border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
-              <span className="text-[10px] text-slate-600 dark:text-[#93A3B5] px-2 flex items-center gap-1 font-semibold">
-                <Filter className="w-3 h-3 text-emerald-600 dark:text-[#12B886]" />
+            <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-[#0A1628] p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-600 dark:text-[#94A3B8] px-2 flex items-center gap-1 font-semibold">
+                <Filter className="w-3 h-3 text-emerald-600 dark:text-[#059669]" />
                 Taxonomia LR:
               </span>
               <button
@@ -435,8 +435,8 @@ export function BalancoMassaVeiculoSection({
                 onClick={() => setFiltroLr('todos')}
                 className={`text-[10px] font-mono px-2.5 py-1 rounded-lg transition-all ${
                   filtroLr === 'todos'
-                    ? 'bg-emerald-600 text-white dark:bg-[#12B886] dark:text-[#0A0E12] font-bold shadow'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white dark:text-[#93A3B5] dark:hover:text-[#F4F7FA] dark:hover:bg-[#16202B]'
+                    ? 'bg-emerald-600 text-white dark:bg-[#059669] dark:text-white font-bold shadow'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white dark:text-[#94A3B8] dark:hover:text-[#F8FAFC] dark:hover:bg-[#111827]'
                 }`}
               >
                 Todos ({balanco.itens.length})
@@ -446,7 +446,7 @@ export function BalancoMassaVeiculoSection({
                 onClick={() => setFiltroLr('sujeito_lr_11413')}
                 className={`text-[10px] font-mono px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${
                   filtroLr === 'sujeito_lr_11413'
-                    ? 'bg-amber-600 text-white dark:bg-[#D9B36C] dark:text-[#0A0E12] font-bold shadow'
+                    ? 'bg-amber-600 text-white dark:bg-[#D9B36C] dark:text-[#0A1628] font-bold shadow'
                     : 'text-amber-700 dark:text-[#D9B36C] hover:bg-amber-100/70 dark:hover:bg-[#D9B36C]/15'
                 }`}
               >
@@ -464,8 +464,8 @@ export function BalancoMassaVeiculoSection({
                 onClick={() => setFiltroLr('convencional')}
                 className={`text-[10px] font-mono px-2.5 py-1 rounded-lg transition-all ${
                   filtroLr === 'convencional'
-                    ? 'bg-blue-600 text-white dark:bg-[#3B82F6] dark:text-[#0A0E12] font-bold shadow'
-                    : 'text-blue-700 dark:text-[#60A5FA] hover:bg-blue-100/70 dark:hover:bg-[#3B82F6]/15'
+                    ? 'bg-blue-600 text-white dark:bg-[#2563EB] dark:text-white font-bold shadow'
+                    : 'text-blue-700 dark:text-[#60A5FA] hover:bg-blue-100/70 dark:hover:bg-[#2563EB]/15'
                 }`}
               >
                 Convencional (
@@ -479,9 +479,9 @@ export function BalancoMassaVeiculoSection({
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-[rgba(244,247,250,0.08)] bg-white dark:bg-[#0A0E12]">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1628]">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] text-slate-600 dark:text-[#93A3B5] uppercase font-semibold text-[10px] bg-slate-50 dark:bg-[#111820]">
+              <thead className="border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-[#94A3B8] uppercase font-semibold text-[10px] bg-slate-50 dark:bg-[#0E1A2E]">
                 <tr>
                   <th className="py-2.5 px-3">Fração / Destino Ponderal</th>
                   <th className="py-2.5 px-3">Taxonomia Decreto 11.413/2023</th>
@@ -491,7 +491,7 @@ export function BalancoMassaVeiculoSection({
                   <th className="py-2.5 px-3 text-center">Enquadramento ELV</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-[rgba(244,247,250,0.04)] text-slate-800 dark:text-[#F4F7FA]">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-[#F8FAFC]">
                 {balanco.itens
                   .filter((item) => {
                     const isLrObrigatoria =
@@ -507,16 +507,16 @@ export function BalancoMassaVeiculoSection({
                     return (
                       <tr
                         key={item.categoria}
-                        className="hover:bg-slate-50 dark:hover:bg-[#16202B]/50 transition-colors"
+                        className="hover:bg-slate-50 dark:hover:bg-[#111827]/50 transition-colors"
                       >
                         <td className="py-3 px-3">
                           <div className="flex items-center gap-2">
                             {getCategoriaIcon(item.categoria)}
                             <div>
-                              <div className="font-semibold text-slate-900 dark:text-[#F4F7FA]">
+                              <div className="font-semibold text-slate-900 dark:text-[#F8FAFC]">
                                 {item.rotulo}
                               </div>
-                              <div className="text-[10px] text-slate-500 dark:text-[#93A3B5] line-clamp-1">
+                              <div className="text-[10px] text-slate-500 dark:text-[#94A3B8] line-clamp-1">
                                 {item.descricao}
                               </div>
                             </div>
@@ -529,12 +529,12 @@ export function BalancoMassaVeiculoSection({
                               Sujeito à LR Dec. 11.413
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200 dark:bg-[#16202B] dark:text-[#93A3B5] dark:border-[rgba(244,247,250,0.08)]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200 dark:bg-[#111827] dark:text-[#94A3B8] dark:border-slate-800">
                               Metal Convencional / Reúso
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-3 font-mono text-[11px] text-slate-600 dark:text-[#93A3B5]">
+                        <td className="py-3 px-3 font-mono text-[11px] text-slate-600 dark:text-[#94A3B8]">
                           {item.tipoFluxoResumo}
                         </td>
                         <td className="py-3 px-3 text-right font-mono font-bold text-amber-700 dark:text-[#D9B36C] whitespace-nowrap">
@@ -557,11 +557,11 @@ export function BalancoMassaVeiculoSection({
                         </td>
                         <td className="py-3 px-3 text-center">
                           {item.categoria === 'perdas_processo' ? (
-                            <span className="text-[10px] font-mono text-slate-600 dark:text-[#93A3B5] bg-slate-100 dark:bg-[#16202B] px-2 py-0.5 rounded">
+                            <span className="text-[10px] font-mono text-slate-600 dark:text-[#94A3B8] bg-slate-100 dark:bg-[#111827] px-2 py-0.5 rounded">
                               Fração Não Recuperada
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 dark:text-[#12B886] dark:bg-[#12B886]/10 dark:border-[#12B886]/20">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 dark:text-[#059669] dark:bg-[#059669]/10 dark:border-[#059669]/20">
                               <CheckCircle2 className="w-3 h-3" />
                               Valorização Computada
                             </span>
@@ -576,23 +576,23 @@ export function BalancoMassaVeiculoSection({
         </div>
 
         {/* HASH SHA-256 DO BALANÇO & CLÁUSULA DE RESERVA PRÉ-LAUDO */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#0A0E12] border border-emerald-500/35 dark:border-[#12B886]/35 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] pb-2">
+        <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-500/35 dark:border-slate-800 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
-              <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-[#F4F7FA]">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+              <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-[#F8FAFC]">
                 HASH SHA-256 CANÔNICO DO BALANÇO DE MASSA
               </span>
             </div>
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 dark:text-[#12B886] bg-emerald-100 dark:bg-[#12B886]/15 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-[#12B886]/30">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 dark:text-[#059669] bg-emerald-100 dark:bg-[#059669]/15 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-[#059669]/30">
               <CheckCircle2 className="w-3 h-3" />
               Determinístico & Auditável ✓
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#111820] p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-[rgba(244,247,250,0.06)] shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0E1A2E] p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
             <div className="min-w-0 flex-1">
-              <span className="text-[9px] font-mono text-slate-500 dark:text-[#93A3B5] uppercase block">
+              <span className="text-[9px] font-mono text-slate-500 dark:text-[#94A3B8] uppercase block">
                 Prova Criptográfica Lexicográfica do Balanço Ponderal
               </span>
               <span className="font-mono text-[11px] sm:text-xs text-amber-700 dark:text-[#D9B36C] break-all select-all font-semibold">
@@ -602,12 +602,12 @@ export function BalancoMassaVeiculoSection({
             <button
               type="button"
               onClick={copyHash}
-              className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#16202B] text-xs font-semibold text-slate-700 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:bg-emerald-50 dark:hover:bg-[#12B886]/20 transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-center border border-slate-200 dark:border-transparent"
+              className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#111827] text-xs font-semibold text-slate-700 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:bg-emerald-50 dark:hover:bg-[#059669]/20 transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-center border border-slate-200 dark:border-transparent"
             >
               {copiedHash ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886]" />
-                  <span className="text-emerald-700 dark:text-[#12B886]">Copiado</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
+                  <span className="text-emerald-700 dark:text-[#059669]">Copiado</span>
                 </>
               ) : (
                 <>
@@ -619,7 +619,7 @@ export function BalancoMassaVeiculoSection({
           </div>
 
           {/* Cláusula Estrita de Reserva Pré-Laudo */}
-          <div className="p-3 rounded-xl bg-white dark:bg-[#111820] border border-amber-200 dark:border-[#D9B36C]/30 text-[10px] text-slate-600 dark:text-[#93A3B5] leading-relaxed flex items-start gap-2 shadow-xs">
+          <div className="p-3 rounded-xl bg-white dark:bg-[#0E1A2E] border border-amber-200 dark:border-[#D9B36C]/30 text-[10px] text-slate-600 dark:text-[#94A3B8] leading-relaxed flex items-start gap-2 shadow-xs">
             <Info className="w-4 h-4 text-amber-700 dark:text-[#D9B36C] shrink-0 mt-0.5" />
             <div>
               <strong className="text-amber-800 dark:text-[#D9B36C] block uppercase font-bold text-[9px] mb-0.5">

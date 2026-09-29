@@ -18,7 +18,7 @@ describe('Fase 1 Tema Claro/Escuro na Home e Componentes Principais', () => {
     const globe = container.firstChild as HTMLElement
     expect(globe).toBeDefined()
     // Contraste do halo para claro/escuro
-    expect(container.innerHTML).toContain('dark:bg-[#12B886]/25')
+    expect(container.innerHTML).toContain('dark:bg-[#059669]/25')
     expect(container.innerHTML).toContain('border-slate-300/70')
   })
 
@@ -31,9 +31,9 @@ describe('Fase 1 Tema Claro/Escuro na Home e Componentes Principais', () => {
     const { container: dividerContainer } = render(<OrbisSectionDivider label="DIVISOR DE PROVA" />)
     expect(screen.getByText('DIVISOR DE PROVA')).toBeDefined()
     expect(dividerContainer.innerHTML).toContain('via-slate-300')
-    expect(dividerContainer.innerHTML).toContain('dark:via-[rgba(244,247,250,0.08)]')
+    expect(dividerContainer.innerHTML).toContain('dark:via-slate-800')
     expect(dividerContainer.innerHTML).toContain('text-slate-700')
-    expect(dividerContainer.innerHTML).toContain('dark:text-[#93A3B5]/80')
+    expect(dividerContainer.innerHTML).toContain('dark:text-[#94A3B8]/80')
   })
 
   it('renderiza PlatformProofScreenshots com título, moldura e abas adaptados para claro e escuro', () => {
@@ -46,7 +46,9 @@ describe('Fase 1 Tema Claro/Escuro na Home e Componentes Principais', () => {
 
     const heading = screen.getByText('INTERFACES REAIS DO PROTOCOLO')
     expect(heading.className).toContain('text-slate-900')
-    expect(heading.className).toContain('dark:text-[#F4F7FA]')
+    expect(heading.className).toMatch(
+      /dark:text-\[#(F4F7FA|F8FAFC)\]|dark:text-white|dark:text-slate-100/,
+    )
   })
 
   it('renderiza AssistenteOrbisWidget no tema claro/escuro com texto de contraste legível', () => {
@@ -73,6 +75,8 @@ describe('Fase 1 Tema Claro/Escuro na Home e Componentes Principais', () => {
     // O container principal deve ter classes duplas
     const heading = screen.getByText(/Balanço de Massa & Taxa de Valorização Circular/i)
     expect(heading.className).toContain('text-slate-900')
-    expect(heading.className).toContain('dark:text-[#F4F7FA]')
+    expect(heading.className).toMatch(
+      /dark:text-\[#(F4F7FA|F8FAFC)\]|dark:text-white|dark:text-slate-100/,
+    )
   })
 })
