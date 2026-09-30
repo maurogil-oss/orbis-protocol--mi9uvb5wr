@@ -9,6 +9,7 @@ import {
   gerarHtmlRelatorioDossie,
   calcularHashCanonicalDocumentosFonte,
   exportarDocumentosFonteCsv,
+  gerarHtmlDemonstracaoOrientada,
   DocumentoFonteNFe,
 } from '../relatorioLaudoPdf'
 
@@ -218,6 +219,77 @@ describe('Relatório Pericial em PDF & Hash Criptográfico', () => {
     expect(html).toContain('HASH-FONTES-TESTE-105')
     expect(html).toContain('RELAÇÃO COMPLETA INDIVIDUALIZADA DISPONÍVEL EM CSV')
     expect(html).toContain('TOTALIZAÇÃO GERAL (105 NOTAS AUDITADAS)')
+  })
+
+  it('deve gerar HTML da Demonstração Orientada contendo as 6 etapas, faixa de autenticidade e marca d água de proveniência', () => {
+    const html = gerarHtmlDemonstracaoOrientada(
+      {
+        loteClio: {
+          marcaModelo: 'Renault Clio Authentique 1.0 16V Hi-Flex',
+          baixaDetran: 'PR-BX-2026-1240105',
+          placa: 'AYK-7110',
+          cartelaDesmontagem: '12401050711',
+          totalPecas: 77,
+          totalPesoKg: 437.7,
+          totalCo2eEvitadoKg: 1584.81,
+          pecas611Count: 49,
+          pecasMoverCount: 28,
+        },
+        simulador: {
+          tipoCombustivel: 'diesel',
+          quantidade: 2150,
+          unidade: 'Litros (Diesel B S10)',
+          fatorTexto: '2,670 kg CO₂e/L (Fóssil) + 0,357 kg CO₂/L (B14 Biogênico)',
+          fonteOficial: 'GHG Protocol Brasil v2025.1 / ANP / IPCC AR6',
+          tierIncerteza: 'Tier 3',
+          fossilTon: 5.741,
+          fossilKg: 5740.5,
+          bioTon: 0.768,
+          bioKg: 767.55,
+        },
+        dossie: {
+          razaoSocial: 'Indústrias & Logística Integrada Brasil S.A.',
+          cnpj: '76.492.108/0001-92',
+          totalNotas: 12,
+          emissoesTotaisTco2e: 1420.3,
+          escopo1Tco2e: 480.2,
+          escopo2Tco2e: 310.6,
+          escopo3Tco2e: 629.5,
+          hashFechamento: '0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c98d7ef2049ba12',
+          enquadramentoSbceTexto: 'Isento (< 10k tCO₂e)',
+          statusSbce: 'isento',
+        },
+      },
+      '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+    )
+
+    // Verifica presença da faixa de autenticidade
+    expect(html).toContain('EMITIDO VIA ORBIS PROTOCOL')
+
+    // Verifica presença da marca d'água de proveniência
+    expect(html).toContain('watermark-proveniencia-overlay')
+    expect(html).toContain('watermark-proveniencia-line')
+    expect(html).toContain('print-color-adjust: exact')
+
+    // Verifica as 6 etapas no documento
+    expect(html).toContain('A Orbis é plataforma de auditoria e rastreabilidade') // Citação oficial
+    expect(html).toContain('Etapa 1. Os 4 Pilares Fundamentais da Plataforma')
+    expect(html).toContain('Etapa 2. Motor de Cálculo com Segregação Fóssil × Biogênico')
+    expect(html).toContain('Etapa 3. Laudos Periciais, Conformidade SBCE e Dossiê Fiscal')
+    expect(html).toContain('Etapa 4. Rastreabilidade Veicular (CDV / Programa MOVER)')
+    expect(html).toContain('Etapa 5. Documentos Prontos para Envio')
+    expect(html).toContain('Etapa 6. Autenticidade Criptográfica & Verificador Público')
+
+    // Verifica dados do lote Clio e do dossiê
+    expect(html).toContain('PR-BX-2026-1240105')
+    expect(html).toContain('AYK-7110')
+    expect(html).toContain('77')
+    expect(html).toContain('0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c98d7ef2049ba12')
+    expect(html).toContain('0xabcdef1234567890')
+
+    // Verifica que NÃO promete PAdES nem Adobe Reader (regra do projeto)
+    expect(html).not.toContain('PAdES')
+    expect(html).not.toContain('Adobe')
   })
 
   it('deve exportar CSV de documentos fonte com BOM UTF-8 e cabeçalho de metadados sem erros em ambiente DOM', () => {

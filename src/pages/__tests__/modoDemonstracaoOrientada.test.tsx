@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import ModoDemonstracaoOrientadaPage from '../ModoDemonstracaoOrientadaPage'
 import * as demoAuditService from '@/services/demoAuditService'
 import * as cdvService from '@/services/cdvService'
+import * as relatorioLaudoPdf from '@/services/relatorioLaudoPdf'
 
 describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
   beforeEach(() => {
@@ -128,5 +129,37 @@ describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
 
     const linkPlanos = screen.getByRole('link', { name: /Ver Planos & Tabela de Preços/i })
     expect(linkPlanos.getAttribute('href')).toBe('/planos')
+  })
+
+  it('deve exibir o botão Exportar Demonstração (PDF) no cabeçalho e acionar a exportação', async () => {
+    const exportarSpy = vi
+      .spyOn(relatorioLaudoPdf, 'exportarDemonstracaoOrientadaPdf')
+      .mockResolvedValue({
+        hash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        codigo: 'ORBIS-DEMO-1240105-0001',
+      })
+
+    render(
+      <MemoryRouter initialEntries={['/demo']}>
+        <ModoDemonstracaoOrientadaPage />
+      </MemoryRouter>,
+    )
+
+    const botoesExportar = screen.getAllByRole('button', {
+      name: /Exportar Demonstração \(PDF\)/i,
+    })
+    expect(botoesExportar.length).toBeGreaterThanOrEqual(1)
+
+    // Dispara exportação clicando no botão do cabeçalho
+    fireEvent.click(botoesExportar[0])
+
+    await waitFor(() => {
+      expect(exportarSpy).toHaveBeenCalledTimes(1)
+    })
+
+    const payloadChamada = exportarSpy.mock.calls[0][0]
+    expect(payloadChamada.loteClio?.baixaDetran).toBe('PR-BX-2026-1240105')
+    expect(payloadChamada.dossie?.hashFechamento).toBeDefined()
+    expect(payloadChamada.simulador?.tipoCombustivel).toBe('diesel')
   })
 })

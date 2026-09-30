@@ -1525,6 +1525,936 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
 /**
  * Exporta o Dossiê Pericial abrindo a tela de impressão / salvar como PDF do navegador
  */
+export interface DadosDemonstracaoOrientadaPdf {
+  loteClio?: {
+    marcaModelo: string
+    baixaDetran: string
+    placa: string
+    cartelaDesmontagem: string
+    totalPecas: number
+    totalPesoKg: number
+    totalCo2eEvitadoKg: number
+    cdvNome?: string
+    cdvCnpj?: string
+    pecas611Count?: number
+    pecasMoverCount?: number
+    pecasAmostra?: Array<{
+      numero?: number
+      descricao: string
+      material?: string
+      pesoKg?: number
+      co2eEvitadoKg?: number
+      seloDpp?: string
+    }>
+    avaliacaoAdicionalidade?: {
+      adicionalidade_investimento: boolean
+      barreira_tecnologica: boolean
+      nao_obrigatoriedade_legal: boolean
+      justificativa_pericial?: string
+    }
+  }
+  simulador?: {
+    tipoCombustivel: 'diesel' | 'eletricidade' | 'etanol'
+    quantidade: number
+    unidade: string
+    fatorTexto: string
+    fonteOficial: string
+    tierIncerteza: string
+    fossilTon: number
+    fossilKg: number
+    bioTon: number
+    bioKg: number
+  }
+  dossie?: {
+    razaoSocial: string
+    cnpj: string
+    totalNotas: number
+    emissoesTotaisTco2e: number
+    escopo1Tco2e: number
+    escopo2Tco2e: number
+    escopo3Tco2e: number
+    hashFechamento: string
+    enquadramentoSbceTexto: string
+    statusSbce: string
+  }
+}
+
+/**
+ * Monta o HTML do Documento Oficial da Demonstração Orientada (/demo)
+ * Estruturado nas 6 etapas com faixa 'EMITIDO VIA ORBIS PROTOCOL' e marca d'água de proveniência.
+ */
+export function gerarHtmlDemonstracaoOrientada(
+  dados: DadosDemonstracaoOrientadaPdf,
+  hashSha256: string,
+): string {
+  const dataExtenso = new Date().toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
+  const clio = dados.loteClio
+  const sim = dados.simulador
+  const dos = dados.dossie
+
+  const clioBaixa = clio?.baixaDetran || 'PR-BX-2026-1240105'
+  const clioModelo = clio?.marcaModelo || 'Renault Clio Authentique 1.0 16V Hi-Flex'
+  const clioPlaca = clio?.placa || 'AYK-7110'
+  const clioCartela = clio?.cartelaDesmontagem || '12401050711'
+  const clioTotalPecas = clio?.totalPecas || 77
+  const clioPecas611 = clio?.pecas611Count ?? 49
+  const clioPecasMover = clio?.pecasMoverCount ?? 28
+  const clioPeso = clio?.totalPesoKg || 437.7
+  const clioCo2e = clio?.totalCo2eEvitadoKg || 1584.81
+
+  const hashDossie =
+    dos?.hashFechamento || '0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c98d7ef2049ba12'
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Demonstração Técnica Orientada — Orbis Protocol</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 14mm 14mm 14mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      color: #111827;
+      font-size: 10.5pt;
+      line-height: 1.45;
+    }
+    .page-break {
+      page-break-after: always;
+      break-after: page;
+    }
+    .avoid-break {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    /* MARCA D'ÁGUA DE PROVENIÊNCIA REPETIÇÃO DIAGONAL */
+    .watermark-proveniencia-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      overflow: hidden;
+      opacity: 0.075;
+      user-select: none;
+    }
+    .watermark-proveniencia-line {
+      transform: rotate(-24deg);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #0A0E12;
+      letter-spacing: 3px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    /* FAIXA DE PROVENIÊNCIA */
+    .watermark-proveniencia-faixa {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #F8FAFC;
+      border: 1px dashed #CBD5E1;
+      border-left: 3px solid #12B886;
+      border-radius: 4px;
+      padding: 6px 10px;
+      margin-bottom: 14px;
+      font-size: 7.5pt;
+      color: #475569;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .watermark-proveniencia-faixa strong {
+      color: #0A0E12;
+    }
+    .watermark-proveniencia-faixa .badge-origem {
+      background: rgba(18, 184, 134, 0.15);
+      color: #047857;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 7pt;
+      border: 1px solid rgba(18, 184, 134, 0.35);
+      white-space: nowrap;
+    }
+
+    /* CAPA */
+    .capa-container {
+      position: relative;
+      background: linear-gradient(135deg, #0A0E12 0%, #111820 60%, #070A0D 100%);
+      color: #F4F7FA;
+      padding: 38px 32px;
+      border-radius: 8px;
+      min-height: 940px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-left: 6px solid #12B886;
+      overflow: hidden;
+    }
+    .capa-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(244, 247, 250, 0.15);
+      padding-bottom: 18px;
+    }
+    .capa-brand {
+      font-size: 20pt;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #F4F7FA;
+    }
+    .capa-brand span {
+      color: #12B886;
+    }
+    .badge-demo-top {
+      background: #D9B36C;
+      color: #0A0E12;
+      font-weight: 900;
+      font-size: 8pt;
+      padding: 3px 9px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .capa-tag {
+      background: rgba(18, 184, 134, 0.15);
+      color: #12B886;
+      border: 1px solid #12B886;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .capa-title-area {
+      margin: 40px 0;
+    }
+    .capa-subtitle {
+      color: #D9B36C;
+      font-size: 11pt;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .capa-title {
+      font-size: 24pt;
+      font-weight: 900;
+      line-height: 1.15;
+      color: #FFFFFF;
+      margin: 0 0 16px 0;
+    }
+    .capa-desc {
+      color: #93A3B5;
+      font-size: 11pt;
+      max-width: 650px;
+      line-height: 1.5;
+    }
+    .citacao-oficial-box {
+      background: rgba(18, 184, 134, 0.08);
+      border-left: 4px solid #12B886;
+      border-radius: 6px;
+      padding: 16px 20px;
+      color: #F4F7FA;
+      font-size: 10pt;
+      line-height: 1.55;
+      font-style: italic;
+      margin-top: 20px;
+    }
+    .capa-meta-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(244, 247, 250, 0.12);
+      border-radius: 6px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      font-size: 9.5pt;
+    }
+    .capa-meta-item label {
+      display: block;
+      color: #93A3B5;
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    .capa-meta-item strong {
+      color: #F4F7FA;
+      font-size: 10.5pt;
+    }
+    .capa-footer {
+      border-top: 1px solid rgba(244, 247, 250, 0.15);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.5pt;
+      color: #93A3B5;
+    }
+
+    /* PÁGINAS DE CONTEÚDO */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #12B886;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      font-size: 8.5pt;
+      color: #6B7280;
+    }
+    .page-header-title {
+      font-weight: 800;
+      color: #0A0E12;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .section-title {
+      font-size: 13.5pt;
+      font-weight: 800;
+      color: #0A0E12;
+      margin: 18px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 4px solid #12B886;
+      padding-left: 10px;
+    }
+    .section-subtitle {
+      font-size: 9pt;
+      color: #4B5563;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    /* CARDS & GRIDS */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .card-highlight {
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+    }
+    .card-gold {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+    }
+    .card-label {
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #6B7280;
+      margin-bottom: 3px;
+      letter-spacing: 0.5px;
+    }
+    .card-value {
+      font-size: 13pt;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.1;
+    }
+    .card-value-green {
+      color: #059669;
+    }
+    .card-value-gold {
+      color: #B45309;
+    }
+    .card-desc {
+      font-size: 7.5pt;
+      color: #4B5563;
+      margin-top: 3px;
+    }
+
+    /* TABELAS */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 8.5pt;
+    }
+    th {
+      background: #0A0E12;
+      color: #FFFFFF;
+      text-align: left;
+      padding: 7px 9px;
+      font-weight: 700;
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 6px 9px;
+      border-bottom: 1px solid #E5E7EB;
+      color: #374151;
+    }
+    tr:nth-child(even) td {
+      background: #F9FAFB;
+    }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .font-bold { font-weight: 700; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-green { background: #DCFCE7; color: #166534; }
+    .badge-blue { background: #DBEAFE; color: #1E40AF; }
+    .badge-yellow { background: #FEF3C7; color: #92400E; }
+
+    .disclaimer-box {
+      background: #F3F4F6;
+      border-left: 3px solid #9CA3AF;
+      padding: 9px 12px;
+      font-size: 7.5pt;
+      color: #4B5563;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+    .hash-box {
+      background: #0A0E12;
+      color: #D9B36C;
+      font-family: monospace;
+      padding: 9px 12px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      word-break: break-all;
+      margin-top: 12px;
+      border: 1px solid rgba(217, 179, 108, 0.4);
+    }
+    .footer-fixed {
+      margin-top: 18px;
+      padding-top: 8px;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: #9CA3AF;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== MARCA D'ÁGUA DE PROVENIÊNCIA (REPETIÇÃO DIAGONAL) ==================== -->
+  <div class="watermark-proveniencia-overlay" aria-hidden="true">
+    <div class="watermark-proveniencia-line">
+      ORBIS PROTOCOL • DEMONSTRAÇÃO ORIENTADA • EMISSÃO: ${dataExtenso.toUpperCase()} • HASH: ${hashSha256.slice(0, 16)} • CDV RASTREADO
+    </div>
+    <div class="watermark-proveniencia-line">
+      INFRAESTRUTURA DMRV • ORBIS PROTOCOL • LOTE: ${clioBaixa} • HASH: ${hashSha256.slice(0, 16)}
+    </div>
+    <div class="watermark-proveniencia-line">
+      EMITIDO VIA ORBIS PROTOCOL • PROVA IMUTÁVEL SHA-256 • AUTENTICIDADE EM ORBIS-PROTOCOL.COM/VERIFICADOR
+    </div>
+    <div class="watermark-proveniencia-line">
+      ORBIS PROTOCOL • DEMONSTRAÇÃO ORIENTADA • EMISSÃO: ${dataExtenso.toUpperCase()} • HASH: ${hashSha256.slice(0, 16)} • CDV RASTREADO
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 1: CAPA & ETAPA 1 (CITAÇÃO + 4 PILARES) ==================== -->
+  <div class="capa-container page-break">
+    <div class="capa-header">
+      <div class="capa-brand">ORBIS<span>.</span>PROTOCOL</div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span class="badge-demo-top">MODO DEMONSTRAÇÃO ORIENTADA</span>
+        <span class="capa-tag">6 ETAPAS • PROVA TÉCNICA</span>
+      </div>
+    </div>
+
+    <div class="capa-title-area">
+      <div class="capa-subtitle">RELATÓRIO TÉCNICO DE DEMONSTRAÇÃO COMERCIAL</div>
+      <h1 class="capa-title">ESTEIRA COMPLETA DE AUDITORIA DMRV & RASTREABILIDADE</h1>
+      <p class="capa-desc">
+        Apresentação estruturada do fluxo que converte notas fiscais, faturas de insumos e processos
+        de desmontagem veicular em lastro auditável, laudos técnicos e passaportes digitais verificáveis.
+      </p>
+
+      <!-- Etapa 1: Citação Oficial de Valor -->
+      <div class="citacao-oficial-box">
+        &ldquo;A Orbis é plataforma de auditoria e rastreabilidade; nossas entregas são o cálculo da pegada de carbono, laudos periciais de descarbonização, conformidade tributária e passaportes digitais de produto verificáveis — facilitando o controle da sua empresa, com documentos prontos para envio aos órgãos de controle, à sua contabilidade e a instituições financeiras.&rdquo;
+      </div>
+    </div>
+
+    <div>
+      <div class="capa-meta-box">
+        <div class="capa-meta-item">
+          <label>Identificador da Sessão</label>
+          <strong>DEMO-TOUR-ORIENTADO</strong>
+        </div>
+        <div class="capa-meta-item">
+          <label>Data & Hora de Emissão</label>
+          <strong>${dataExtenso}</strong>
+        </div>
+        <div class="capa-meta-item">
+          <label>Lote Demonstrativo CDV</label>
+          <strong style="color: #12B886;">${clioBaixa} (${clioTotalPecas} peças)</strong>
+        </div>
+        <div class="capa-meta-item">
+          <label>Chancela / Selo de Demonstração</label>
+          <strong style="color: #D9B36C;">ORBIS-DEMO-6ETAPAS-2026</strong>
+        </div>
+      </div>
+
+      <div class="capa-footer" style="margin-top: 20px;">
+        <span>ORBIS PROTOCOL • INFRAESTRUTURA DMRV • NBC TO 3000 • ISO 14064-3</span>
+        <span>Padrão Probatório Criptográfico SHA-256</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 2: OS 4 PILARES & ETAPA 2 (MOTOR DE CÁLCULO) ==================== -->
+  <div class="page-break" style="position: relative;">
+    <div class="page-header">
+      <span class="page-header-title">Orbis Protocol • Demonstração Orientada • Etapas 1 e 2</span>
+      <span>${clioBaixa} • ${dataExtenso}</span>
+    </div>
+
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Demonstração Oficial: <strong>4 Pilares Fundamentais & Motor de Cálculo</strong></span>
+      </div>
+      <div>
+        <span>Hash Probatório: <strong style="color: #047857;">${hashSha256.slice(0, 16)}...</strong></span>
+      </div>
+    </div>
+
+    <!-- Etapa 1 Continuação: Os 4 Pilares -->
+    <div class="section-title">Etapa 1. Os 4 Pilares Fundamentais da Plataforma</div>
+    <div class="section-subtitle">
+      Estrutura de entregáveis que compõem o escopo de atuação do Orbis Protocol para clientes corporativos, contabilidades e peritos.
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-highlight">
+        <div class="card-label">Pilar 1 • Pegada de Carbono Auditável</div>
+        <div class="card-desc" style="font-size: 8pt; color: #1F2937; line-height: 1.45;">
+          Ingestão automatizada de documentos fiscais eletrônicos (NF-e mod. 55, CT-e mod. 57, NF3e mod. 66 e SPED Fiscal) com classificação por NCM/CNAE e segregação técnica rigorosa entre emissões fósseis e biogênicas (IPCC AR6).
+        </div>
+      </div>
+      <div class="card card-gold">
+        <div class="card-label">Pilar 2 • Conformidade & Reforma Tributária</div>
+        <div class="card-desc" style="font-size: 8pt; color: #1F2937; line-height: 1.45;">
+          Enquadramento normativo sob a Lei Federal nº 15.042/2024 (Sistema Brasileiro de Comércio de Emissões - SBCE) e simulação do IVA dual (IBS estadual/municipal e CBS federal - LC 214/2025) com não cumulatividade plena.
+        </div>
+      </div>
+      <div class="card card-highlight">
+        <div class="card-label">Pilar 3 • Rastreabilidade & Passaporte Digital</div>
+        <div class="card-desc" style="font-size: 8pt; color: #1F2937; line-height: 1.45;">
+          Passaporte Digital de Produto (DPP) para lotes veiculares (CONTRAN 611 / MOVER) e insumos industriais com ancoragem canônica SHA-256 e verificação pública por QR code no /verificador.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Pilar 4 • Documentos Prontos para Envio</div>
+        <div class="card-desc" style="font-size: 8pt; color: #1F2937; line-height: 1.45;">
+          Relatórios técnicos estruturados em PDF para contabilidade (IFRS/SPED), instituições financeiras para redução de spread (Green Capital Engine) e órgãos de controle fiscal/ambiental sem retrabalho.
+        </div>
+      </div>
+    </div>
+
+    <!-- Etapa 2: Motor de Cálculo com Segregação Fóssil x Biogênico -->
+    <div class="section-title">Etapa 2. Motor de Cálculo com Segregação Fóssil × Biogênico</div>
+    <div class="section-subtitle">
+      Cálculo da pegada com fatores oficiais GHG Protocol Brasil v2025.1, MCTI/SIN e IPCC AR6 (GWP100).
+    </div>
+
+    ${
+      sim
+        ? `
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-label">Insumo / Combustível Simulado</div>
+        <div class="card-value" style="font-size: 11pt;">
+          ${sim.tipoCombustivel === 'diesel' ? 'Diesel B S10' : sim.tipoCombustivel === 'etanol' ? 'Etanol Hidratado' : 'Eletricidade (SIN)'}
+        </div>
+        <div class="card-desc">${sim.quantidade.toLocaleString('pt-BR')} ${sim.unidade}</div>
+      </div>
+
+      <div class="card card-highlight">
+        <div class="card-label">Emissão Fóssil (Escopo 1/2)</div>
+        <div class="card-value card-value-green">${sim.fossilTon.toFixed(3)} <span style="font-size: 9pt;">tCO₂e</span></div>
+        <div class="card-desc">${sim.fossilKg.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kgCO₂e (computa no SBCE)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Emissão Biogênica (Reporte Separado)</div>
+        <div class="card-value" style="color: #059669;">${sim.bioTon.toFixed(3)} <span style="font-size: 9pt;">tCO₂</span></div>
+        <div class="card-desc">${sim.bioKg.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kgCO₂ (ciclo neutro biomassa)</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <div class="card-label">Metadados Oficiais do Fator de Emissão</div>
+      <div style="font-size: 8pt; color: #374151; line-height: 1.5; font-family: ui-monospace, monospace;">
+        <div>• <strong>Fator aplicado:</strong> ${sim.fatorTexto}</div>
+        <div>• <strong>Fonte oficial:</strong> ${sim.fonteOficial}</div>
+        <div>• <strong>Tier de Incerteza Metodológica:</strong> ${sim.tierIncerteza}</div>
+      </div>
+    </div>
+    `
+        : `
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-label">Insumo Simulado</div>
+        <div class="card-value" style="font-size: 11pt;">Diesel B S10 (Frota)</div>
+        <div class="card-desc">2.150 Litros declarados</div>
+      </div>
+      <div class="card card-highlight">
+        <div class="card-label">Emissão Fóssil</div>
+        <div class="card-value card-value-green">5,741 <span style="font-size: 9pt;">tCO₂e</span></div>
+        <div class="card-desc">Fator 2,670 kgCO₂e/L (GHG Protocol)</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Emissão Biogênica</div>
+        <div class="card-value" style="color: #059669;">0,768 <span style="font-size: 9pt;">tCO₂</span></div>
+        <div class="card-desc">Parcela B14 Biodiesel (0,357 kgCO₂/L)</div>
+      </div>
+    </div>
+    `
+    }
+
+    <div class="card" style="margin-top: 10px;">
+      <div class="card-label">Catálogo de 15 Protocolos Setoriais</div>
+      <div style="font-size: 8pt; color: #4B5563; line-height: 1.45;">
+        O motor do Orbis opera com 15 protocolos setoriais calibrados, cobrindo transporte rodoviário, desmontagem veicular (CONTRAN/MOVER), metalurgia, energia, química e papel & celulose.
+      </div>
+    </div>
+
+    <div class="footer-fixed">
+      <span>Orbis Protocol • Demonstração Orientada</span>
+      <span>Página 2 de 4</span>
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 3: ETAPA 3 (DOSSIÊ 12 NFS) & ETAPA 4 (LOTE CLIO CDV) ==================== -->
+  <div class="page-break" style="position: relative;">
+    <div class="page-header">
+      <span class="page-header-title">Orbis Protocol • Demonstração Orientada • Etapas 3 e 4</span>
+      <span>${clioBaixa} • ${dataExtenso}</span>
+    </div>
+
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Demonstração Oficial: <strong>Dossiê Tributário & Lote Veicular Renault Clio</strong></span>
+      </div>
+      <div>
+        <span>Hash Probatório: <strong style="color: #047857;">${hashSha256.slice(0, 16)}...</strong></span>
+      </div>
+    </div>
+
+    <!-- Etapa 3: Resumo do Dossiê Tributário com Hash -->
+    <div class="section-title">Etapa 3. Laudos Periciais, Conformidade SBCE e Dossiê Fiscal</div>
+    <div class="section-subtitle">
+      Amostra de 12 notas fiscais auditadas (${dos?.razaoSocial || 'Indústrias & Logística Integrada Brasil S.A.'}, CNPJ ${dos?.cnpj || '76.492.108/0001-92'}).
+    </div>
+
+    <div class="grid-3">
+      <div class="card card-highlight">
+        <div class="card-label">Emissões Consolidadas (12 NFs)</div>
+        <div class="card-value card-value-green">1.420,3 <span style="font-size: 9pt;">tCO₂e</span></div>
+        <div class="card-desc">E1 (480,2t) • E2 (310,6t) • E3 (629,5t)</div>
+      </div>
+      <div class="card card-gold">
+        <div class="card-label">Enquadramento SBCE</div>
+        <div class="card-value card-value-gold" style="font-size: 11pt;">Isento (&lt; 10k tCO₂e)</div>
+        <div class="card-desc">Sem obrigação compulsória sob a Lei 15.042/2024</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Incentivo Reforma Tributária</div>
+        <div class="card-value" style="font-size: 11pt; color: #1E40AF;">Não Cumulatividade Plena</div>
+        <div class="card-desc">Aproveitamento de créditos de IBS e CBS</div>
+      </div>
+    </div>
+
+    <div class="hash-box" style="margin-top: 8px;">
+      <div style="font-size: 7pt; color: #93A3B5; margin-bottom: 2px;">
+        HASH SHA-256 DE FECHAMENTO DE COMPETÊNCIA DO DOSSIÊ TRIBUTÁRIO:
+      </div>
+      <div style="font-size: 7.5pt;">${hashDossie}</div>
+      <div style="font-size: 6.5pt; color: #93A3B5; margin-top: 3px;">
+        Trilha probatória encadeada de 12 notas fiscais com integridade ISAE 3000 / NBC TO 3000.
+      </div>
+    </div>
+
+    <!-- Etapa 4: Rastreabilidade Veicular CDV / MOVER (Lote Clio) -->
+    <div class="section-title" style="margin-top: 20px;">Etapa 4. Rastreabilidade Veicular (CDV / Programa MOVER)</div>
+    <div class="section-subtitle">
+      Lote real de demonstração <strong>${clioModelo}</strong>, baixa DETRAN <strong>${clioBaixa}</strong>, placa <strong>${clioPlaca}</strong> e cartela <strong>${clioCartela}</strong>.
+    </div>
+
+    <div class="grid-4">
+      <div class="card">
+        <div class="card-label">Total de Peças</div>
+        <div class="card-value">${clioTotalPecas}</div>
+        <div class="card-desc">${clioPecas611} CONTRAN 611 + ${clioPecasMover} MOVER</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Massa Reutilizável</div>
+        <div class="card-value">${clioPeso.toFixed(1)} <span style="font-size: 8pt;">kg</span></div>
+        <div class="card-desc">Aço, Alumínio e Polímeros</div>
+      </div>
+      <div class="card card-highlight">
+        <div class="card-label">CO₂e Evitado</div>
+        <div class="card-value card-value-green">${(clioCo2e / 1000).toFixed(2)} <span style="font-size: 8pt;">tCO₂e</span></div>
+        <div class="card-desc">Substituição de virgem</div>
+      </div>
+      <div class="card card-gold">
+        <div class="card-label">Status Probatório</div>
+        <div class="card-value card-value-gold" style="font-size: 10pt;">DETRAN Homologado</div>
+        <div class="card-desc">CTF-IBAMA 6812490</div>
+      </div>
+    </div>
+
+    <!-- Amostra de Peças com Selo DPP -->
+    <div style="font-weight: 700; font-size: 8.5pt; color: #111827; margin: 10px 0 6px 0;">
+      Amostra de Peças Rastradas com Selo DPP (Passaporte Digital de Produto)
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 10%;">Item</th>
+          <th style="width: 38%;">Descrição do Componente</th>
+          <th style="width: 16%;">Material</th>
+          <th style="width: 12%; text-align: right;">Peso (kg)</th>
+          <th style="width: 14%; text-align: right;">CO₂e Evitado</th>
+          <th style="width: 10%;">Selo DPP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-mono font-bold">#01</td>
+          <td>Motor de Partida 12V Hi-Flex</td>
+          <td>Cobre / Aço</td>
+          <td class="text-right font-mono">3,80</td>
+          <td class="text-right font-mono font-bold" style="color: #059669;">9,31 kg</td>
+          <td><span class="badge badge-green">DPP-001</span></td>
+        </tr>
+        <tr>
+          <td class="font-mono font-bold">#02</td>
+          <td>Cabeçote 16V em Liga de Alumínio Usinado</td>
+          <td>Alumínio</td>
+          <td class="text-right font-mono">16,50</td>
+          <td class="text-right font-mono font-bold" style="color: #059669;">135,30 kg</td>
+          <td><span class="badge badge-green">DPP-002</span></td>
+        </tr>
+        <tr>
+          <td class="font-mono font-bold">#20</td>
+          <td>Carcaça da Caixa de Câmbio Manual JB1</td>
+          <td>Alumínio</td>
+          <td class="text-right font-mono">18,00</td>
+          <td class="text-right font-mono font-bold" style="color: #059669;">147,60 kg</td>
+          <td><span class="badge badge-green">DPP-020</span></td>
+        </tr>
+        <tr>
+          <td class="font-mono font-bold">#50</td>
+          <td>Módulo Eletrônico de Injeção ECU (Rol MOVER)</td>
+          <td>Polímeros/PCB</td>
+          <td class="text-right font-mono">0,80</td>
+          <td class="text-right font-mono font-bold" style="color: #059669;">2,10 kg</td>
+          <td><span class="badge badge-yellow">MOVER-050</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-fixed">
+      <span>Orbis Protocol • Demonstração Orientada</span>
+      <span>Página 3 de 4</span>
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 4: ETAPAS 5 E 6 (DOCUMENTOS PRONTOS, CONCLUSÃO & VERIFICADOR) ==================== -->
+  <div style="position: relative;">
+    <div class="page-header">
+      <span class="page-header-title">Orbis Protocol • Demonstração Orientada • Etapas 5 e 6</span>
+      <span>${clioBaixa} • ${dataExtenso}</span>
+    </div>
+
+    <!-- FAIXA DE PROVENIÊNCIA & AUTENTICIDADE -->
+    <div class="watermark-proveniencia-faixa">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-origem">EMITIDO VIA ORBIS PROTOCOL</span>
+        <span>Demonstração Oficial: <strong>Documentos Prontos para Envio & Verificador Público</strong></span>
+      </div>
+      <div>
+        <span>Hash Probatório: <strong style="color: #047857;">${hashSha256.slice(0, 16)}...</strong></span>
+      </div>
+    </div>
+
+    <!-- Etapa 5: Documentos Prontos para Envio -->
+    <div class="section-title">Etapa 5. Documentos Prontos para Envio</div>
+    <div class="section-subtitle">
+      Conjunto de entregáveis padronizados para auditorias, instituições financeiras e órgãos fiscais.
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-label">Órgãos de Controle & Fiscalização</div>
+        <div style="font-size: 9pt; font-weight: 700; color: #111827; margin: 2px 0;">Laudo Pericial dMRV</div>
+        <div class="card-desc">
+          Memória de cálculo, fatores MCTI/IPCC, registro de ART e hash canônico SHA-256 para comprovação no SBCE.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Contabilidade & Auditoria Externa</div>
+        <div style="font-size: 9pt; font-weight: 700; color: #111827; margin: 2px 0;">Dossiê Fechamento SPED</div>
+        <div class="card-desc">
+          Conciliação fiscal com EFD Contribuições e notas de despesa com trilha probatória ISAE 3000.
+        </div>
+      </div>
+
+      <div class="card card-highlight">
+        <div class="card-label">Instituições Financeiras</div>
+        <div style="font-size: 9pt; font-weight: 700; color: #065F46; margin: 2px 0;">Parecer Green Capital Engine</div>
+        <div class="card-desc">
+          8 linhas de financiamento verde (BNDES, BRDE, Sicredi, Fomento PR) para redução de spread em contratos de crédito.
+        </div>
+      </div>
+    </div>
+
+    <!-- Etapa 6: Encerramento, Autenticidade Criptográfica e Verificador -->
+    <div class="section-title">Etapa 6. Autenticidade Criptográfica & Verificador Público</div>
+    <div class="section-subtitle">
+      Mecanismo aberto de conferência para peritos, clientes, auditores e autoridades.
+    </div>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <div style="font-size: 8pt; color: #374151; line-height: 1.5;">
+        A integridade deste documento e de qualquer laudo ou passaporte gerado pelo Orbis Protocol é verificável publicamente e de forma gratuita. A validação pode ser realizada a qualquer momento mediante inserção do hash SHA-256 no portal <strong>orbis-protocol.com/verificador</strong> ou por leitura do QR code público do passaporte do lote (<span class="font-mono" style="color: #059669;">/passaporte-lote/${clioBaixa}</span>).
+      </div>
+    </div>
+
+    <div class="hash-box">
+      <div style="font-size: 7pt; color: #93A3B5; margin-bottom: 2px; text-transform: uppercase;">
+        HASH SHA-256 DE AUTENTICIDADE DESTA DEMONSTRAÇÃO ORIENTADA:
+      </div>
+      <div>${hashSha256}</div>
+      <div style="font-size: 6.5pt; color: #93A3B5; margin-top: 4px;">
+        Certificação de Prova Documental Digital • Orbis Protocol dMRV
+      </div>
+    </div>
+
+    <div class="disclaimer-box" style="margin-top: 14px;">
+      <strong>AVISO LEGAL REGULATÓRIO & MARCA PEDAGÓGICA:</strong><br/>
+      Este documento foi gerado a partir do <strong>Modo Demonstração Orientada (/demo)</strong> da plataforma Orbis Protocol, utilizando dados do lote veicular homologado Renault Clio (baixa DETRAN ${clioBaixa}) e do modelo didático de 12 documentos fiscais. Destina-se à demonstração de capacidades técnicas, probatórias e metodológicas de auditoria ambiental e tributária, não gerando efeitos fiscais reais nem substituindo laudo pericial definitivo formalizado por perito credenciado com ART/RRT.
+    </div>
+
+    <div class="footer-fixed">
+      <span>Orbis Protocol • Demonstração Orientada • Hash: ${hashSha256.slice(0, 16)}...</span>
+      <span>Página 4 de 4</span>
+    </div>
+  </div>
+
+</body>
+</html>`
+}
+
+/**
+ * Exporta o Relatório da Demonstração Orientada (/demo) em PDF abrindo a tela de impressão do navegador.
+ * Reaproveita o padrão visual e de integridade criptográfica dos laudos periciais.
+ */
+export async function exportarDemonstracaoOrientadaPdf(
+  dados: DadosDemonstracaoOrientadaPdf,
+): Promise<{ hash: string; codigo: string }> {
+  const clioBaixa = dados.loteClio?.baixaDetran || 'PR-BX-2026-1240105'
+  const simTipo = dados.simulador?.tipoCombustivel || 'diesel'
+  const simQtd = dados.simulador?.quantidade || 1000
+
+  // String canônica para SHA-256 determinístico da sessão
+  const canonicalString = [
+    'ORBIS-DEMO-ORIENTADA',
+    clioBaixa,
+    simTipo,
+    String(simQtd),
+    dados.dossie?.hashFechamento ||
+      '0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c98d7ef2049ba12',
+    new Date().toISOString().slice(0, 13), // Granularidade horária para reprodutibilidade
+  ].join('|')
+
+  const hash = await calcularHashDossie(canonicalString)
+  const codigo = `ORBIS-DEMO-${clioBaixa.replace(/\D/g, '').slice(0, 8)}-${Date.now().toString().slice(-4)}`
+
+  const htmlContent = gerarHtmlDemonstracaoOrientada(dados, hash)
+
+  const printWindow = window.open('', '_blank', 'width=900,height=1000')
+  if (!printWindow) {
+    throw new Error(
+      'Bloqueador de pop-ups ativo. Permita pop-ups para visualizar e baixar o relatório da demonstração em PDF.',
+    )
+  }
+
+  printWindow.document.open()
+  printWindow.document.write(htmlContent)
+  printWindow.document.close()
+
+  printWindow.focus()
+  setTimeout(() => {
+    printWindow.print()
+  }, 400)
+
+  return { hash, codigo }
+}
+
 export async function exportarRelatorioDossiePdf(
   dados: DadosRelatorioDossie,
   onGravarRegistro?: (hash: string, codigo: string) => Promise<void>,

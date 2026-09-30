@@ -29,6 +29,8 @@ import { consultarLoteConsolidado, CdvLoteRecord, CdvPecaRecord } from '@/servic
 import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { registrarInicioDemonstracao } from '@/services/demoAuditService'
+import { exportarDemonstracaoOrientadaPdf } from '@/services/relatorioLaudoPdf'
+import { useToast } from '@/hooks/use-toast'
 
 interface EtapaGuia {
   id: number
@@ -107,6 +109,10 @@ export default function ModoDemonstracaoOrientadaPage() {
   // Simulador interativo da Etapa 2 (Motor de Cálculo)
   const [simTipo, setSimTipo] = useState<'diesel' | 'eletricidade' | 'etanol'>('diesel')
   const [simQtd, setSimQtd] = useState<number>(1000)
+
+  // Estado da exportação do relatório em PDF
+  const [exportandoPdf, setExportandoPdf] = useState<boolean>(false)
+  const { toast } = useToast()
 
   // Registra início de telemetria da demonstração anônima no backend PocketBase
   useEffect(() => {
@@ -207,6 +213,67 @@ export default function ModoDemonstracaoOrientadaPage() {
   const progressoPercent = Math.round((etapaAtiva / ETAPAS.length) * 100)
   const etapaAtualObj = ETAPAS.find((e) => e.id === etapaAtiva) || ETAPAS[0]
 
+  const handleExportarDemonstracaoPdf = async () => {
+    try {
+      setExportandoPdf(true)
+      const resultado = await exportarDemonstracaoOrientadaPdf({
+        loteClio: {
+          marcaModelo: loteClio?.marca_modelo || 'Renault Clio Authentique 1.0 16V Hi-Flex',
+          baixaDetran: loteClio?.identificador || 'PR-BX-2026-1240105',
+          placa: loteClio?.placa || 'AYK-7110',
+          cartelaDesmontagem: loteClio?.cartela_desmontagem || '12401050711',
+          totalPecas: loteClio?.total_pecas || (pecasClio.length > 0 ? pecasClio.length : 77),
+          totalPesoKg: loteClio?.total_peso_kg || 437.7,
+          totalCo2eEvitadoKg: loteClio?.total_co2e_evitado_kg || 1584.81,
+          cdvNome: loteClio?.cdv_nome || 'Centro de Desmontagem Veicular Modelo Ltda.',
+          cdvCnpj: loteClio?.cdv_cnpj || '28.149.882/0001-40',
+          pecas611Count: pecas611.length > 0 ? pecas611.length : 49,
+          pecasMoverCount: pecasMover.length > 0 ? pecasMover.length : 28,
+        },
+        simulador: {
+          tipoCombustivel: simTipo,
+          quantidade: simQtd,
+          unidade: simResult.unidade,
+          fatorTexto: simResult.fatorTexto,
+          fonteOficial: simResult.fonte,
+          tierIncerteza: simResult.tier,
+          fossilTon: simResult.fossilTon,
+          fossilKg: simResult.fossilKg,
+          bioTon: simResult.bioTon,
+          bioKg: simResult.bioKg,
+        },
+        dossie: {
+          razaoSocial: DOSSIE_DEFAULT_FALLBACK.razaoSocial,
+          cnpj: DOSSIE_DEFAULT_FALLBACK.cnpj,
+          totalNotas: NOTAS_DEFAULT_FALLBACK.length,
+          emissoesTotaisTco2e: DOSSIE_DEFAULT_FALLBACK.totalEmissoesTco2e,
+          escopo1Tco2e: DOSSIE_DEFAULT_FALLBACK.escopo1Tco2e,
+          escopo2Tco2e: DOSSIE_DEFAULT_FALLBACK.escopo2Tco2e,
+          escopo3Tco2e: DOSSIE_DEFAULT_FALLBACK.escopo3Tco2e,
+          hashFechamento:
+            DOSSIE_DEFAULT_FALLBACK.hashFechamentoCompetencia ||
+            '0x8f4b29a7e3c12948bb92ff78201a0bc45d61e93f91823ab12c98d7ef2049ba12',
+          enquadramentoSbceTexto: 'Isento (< 10.000 tCO₂e/ano)',
+          statusSbce: 'isento',
+        },
+      })
+
+      toast({
+        title: 'Demonstração exportada com sucesso',
+        description: `Documento oficial gerado com hash SHA-256 ${resultado.hash.slice(0, 16)}...`,
+      })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao exportar demonstração em PDF'
+      toast({
+        title: 'Não foi possível exportar o PDF',
+        description: msg,
+        variant: 'destructive',
+      })
+    } finally {
+      setExportandoPdf(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA] pb-24">
       {/* 1. BARRA DE PROGRESSO FIXA NO TOPO */}
@@ -230,8 +297,21 @@ export default function ModoDemonstracaoOrientadaPage() {
             </span>
           </div>
 
-          {/* Controles Anterior / Próximo compactos no topo */}
-          <div className="flex items-center gap-2">
+          {/* Controles Anterior / Próximo compactos no topo e botão de exportação */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportarDemonstracaoPdf}
+              disabled={exportandoPdf}
+              title="Exportar documento oficial da demonstração em PDF com as 6 etapas e hash SHA-256"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D9B36C]/15 border border-[#D9B36C]/40 text-[#D9B36C] hover:bg-[#D9B36C] hover:text-[#0A0E12] font-semibold transition-all text-xs disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5 shrink-0" />
+              <span>{exportandoPdf ? 'Gerando PDF...' : 'Exportar Demonstração (PDF)'}</span>
+            </button>
+
+            <div className="h-4 w-px bg-[rgba(244,247,250,0.12)] hidden sm:block" />
+
             <button
               type="button"
               disabled={etapaAtiva === 1}
@@ -242,7 +322,7 @@ export default function ModoDemonstracaoOrientadaPage() {
               <span>Anterior</span>
             </button>
 
-            <span className="font-mono text-[#D9B36C] font-semibold px-2">{progressoPercent}%</span>
+            <span className="font-mono text-[#D9B36C] font-semibold px-1">{progressoPercent}%</span>
 
             {etapaAtiva < ETAPAS.length ? (
               <button
@@ -287,6 +367,17 @@ export default function ModoDemonstracaoOrientadaPage() {
             </div>
 
             <div className="flex flex-row lg:flex-col gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={handleExportarDemonstracaoPdf}
+                disabled={exportandoPdf}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#D9B36C] text-[#0A0E12] hover:bg-[#c49f57] transition-all text-center shadow-md disabled:opacity-60"
+              >
+                <Download className="w-4 h-4" />
+                <span>
+                  {exportandoPdf ? 'Gerando Documento...' : 'Exportar Demonstração (PDF)'}
+                </span>
+              </button>
               <Link
                 to="/diagnostico"
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow text-center"
