@@ -239,19 +239,19 @@ export function BureauACP() {
   )
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
+    <div className="min-h-screen py-12 md:py-20 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-8">
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.1)] pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-bold tracking-wider uppercase mb-2">
-              <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] text-xs font-bold tracking-wider uppercase mb-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
               COCKPIT DO BUREAU ACP • ASSOCIAÇÃO COMERCIAL DO PARANÁ
             </div>
-            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA]">
+            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-[#F8FAFC]">
               PASSAPORTE DO FORNECEDOR COM REVELAÇÃO SELETIVA
             </h1>
-            <p className="text-xs sm:text-sm text-[#93A3B5] mt-1 max-w-3xl">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] mt-1 max-w-3xl">
               Plataforma de homologação técnica e climática para cadeias compradoras. Revelação
               seletiva: compradores acessam indicadores verificados (kg CO₂e/kg, Score ESG, Curva
               MAC e Dossiê BRDE) sem expor margens comerciais ou preços estratégicos.
@@ -261,14 +261,14 @@ export function BureauACP() {
           <div className="flex items-center gap-3">
             <button
               onClick={carregarDados}
-              className="p-2.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA]"
+              className="p-2.5 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC]"
               title="Atualizar lista"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={handleAbrirNovoPassaporte}
-              className="px-5 py-2.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 text-xs uppercase tracking-wider"
+              className="px-5 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 dark:bg-[#2563EB] dark:hover:bg-blue-600 text-white transition-all shadow-sm flex items-center gap-2 text-xs uppercase tracking-wider"
             >
               <Plus className="w-4 h-4" />
               <span>Novo Passaporte</span>
@@ -277,13 +277,13 @@ export function BureauACP() {
         </div>
 
         {/* Navegação entre Abas do Cockpit: Passaportes de Fornecedores vs. Programa Carbono (MOVER / CDVs) */}
-        <div className="flex items-center gap-2 border-b border-[rgba(244,247,250,0.1)] pb-2">
+        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
           <button
             onClick={() => setAbaAtiva('passaportes')}
             className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
               abaAtiva === 'passaportes'
-                ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
-                : 'bg-[#111820] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)]'
+                ? 'bg-emerald-600 text-white dark:bg-[#2563EB] shadow-sm'
+                : 'bg-white dark:bg-[#0E1A2E] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] border border-slate-200 dark:border-slate-800'
             }`}
           >
             <Building2 className="w-4 h-4" />
@@ -294,20 +294,20 @@ export function BureauACP() {
             onClick={() => setAbaAtiva('programa_carbono')}
             className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
               abaAtiva === 'programa_carbono'
-                ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
-                : 'bg-[#111820] text-[#93A3B5] hover:text-[#F4F7FA] border border-[rgba(244,247,250,0.1)]'
+                ? 'bg-emerald-600 text-white dark:bg-[#2563EB] shadow-sm'
+                : 'bg-white dark:bg-[#0E1A2E] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] border border-slate-200 dark:border-slate-800'
             }`}
           >
-            <Leaf className="w-4 h-4 text-[#12B886]" />
+            <Leaf className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
             <span>Programa Carbono • CDVs ({cdvsCarbono.length})</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#D9B36C]/20 text-[#D9B36C] font-mono">
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-700 dark:text-[#D9B36C] font-mono">
               MOVER GS 448
             </span>
           </button>
 
           <Link
             to="/dossie-mover"
-            className="ml-auto hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[#D9B36C] hover:text-[#F4F7FA] bg-[#16202B] border border-[#D9B36C]/30 transition-colors"
+            className="ml-auto hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-amber-700 dark:text-[#D9B36C] hover:text-slate-900 dark:hover:text-[#F8FAFC] bg-white dark:bg-[#111827] border border-amber-300 dark:border-[#D9B36C]/30 transition-colors"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Dossiê do Projeto MOVER →</span>
@@ -316,96 +316,110 @@ export function BureauACP() {
 
         {/* 3 Métricas Rápidas do Cockpit */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
             <div>
-              <span className="text-xs text-[#93A3B5] block">Fornecedores Homologados</span>
-              <div className="font-heading font-black text-3xl text-[#12B886] mt-1">
+              <span className="text-xs text-slate-600 dark:text-[#94A3B8] block">
+                Fornecedores Homologados
+              </span>
+              <div className="font-heading font-black text-3xl text-emerald-600 dark:text-[#059669] mt-1">
                 {passaportes.length}
               </div>
-              <span className="text-[10px] text-[#D9B36C] mt-1 block">
+              <span className="text-[10px] text-amber-700 dark:text-[#D9B36C] mt-1 block">
                 Passaportes Verificados dMRV
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[#12B886]/10 flex items-center justify-center text-[#12B886]">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-[#059669]/10 flex items-center justify-center text-emerald-600 dark:text-[#059669]">
               <Building2 className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
             <div>
-              <span className="text-xs text-[#93A3B5] block">Score Médio ESG da Carteira</span>
-              <div className="font-heading font-black text-3xl text-[#D9B36C] mt-1">
+              <span className="text-xs text-slate-600 dark:text-[#94A3B8] block">
+                Score Médio ESG da Carteira
+              </span>
+              <div className="font-heading font-black text-3xl text-amber-700 dark:text-[#D9B36C] mt-1">
                 {passaportes.length > 0
                   ? Math.round(
                       passaportes.reduce((acc, p) => acc + (p.score_esg || 0), 0) /
                         passaportes.length,
                     )
                   : 88}
-                <span className="text-sm font-normal text-[#93A3B5]">/100</span>
+                <span className="text-sm font-normal text-slate-500 dark:text-[#94A3B8]">/100</span>
               </div>
-              <span className="text-[10px] text-[#12B886] mt-1 block">Conformidade Plena</span>
+              <span className="text-[10px] text-emerald-700 dark:text-[#059669] mt-1 block">
+                Conformidade Plena
+              </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[#D9B36C]/10 flex items-center justify-center text-[#D9B36C]">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-[#D9B36C]/10 flex items-center justify-center text-amber-700 dark:text-[#D9B36C]">
               <Award className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
             <div>
-              <span className="text-xs text-[#93A3B5] block">Elegibilidade BRDE / Fomento PR</span>
-              <div className="font-heading font-black text-3xl text-[#12B886] mt-1">100%</div>
-              <span className="text-[10px] text-[#93A3B5] mt-1 block">Com Dossiê Conectado</span>
+              <span className="text-xs text-slate-600 dark:text-[#94A3B8] block">
+                Elegibilidade BRDE / Fomento PR
+              </span>
+              <div className="font-heading font-black text-3xl text-emerald-600 dark:text-[#059669] mt-1">
+                100%
+              </div>
+              <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] mt-1 block">
+                Com Dossiê Conectado
+              </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[#12B886]/10 flex items-center justify-center text-[#12B886]">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-[#059669]/10 flex items-center justify-center text-emerald-600 dark:text-[#059669]">
               <FileCheck2 className="w-6 h-6" />
             </div>
           </div>
         </div>
 
         {/* Painel de Acesso Rápido aos Documentos Demonstrativos (DCP Corporativo & DCP do Produto) */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-[#111820] via-[#16202B] to-[#111820] border border-[#12B886]/40 shadow-lg space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(244,247,250,0.08)] pb-2.5">
+        <div className="p-5 rounded-2xl bg-white dark:bg-gradient-to-r dark:from-[#0E1A2E] dark:via-[#111827] dark:to-[#0E1A2E] border border-emerald-500/30 dark:border-slate-800 shadow-sm space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#12B886] animate-pulse" />
-              <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-[#F4F7FA]">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-[#059669] animate-pulse" />
+              <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-slate-900 dark:text-[#F8FAFC]">
                 DOCUMENTOS DEMONSTRATIVOS DCP • ESTRUTURA IMPRIMÍVEL (2 PÁGINAS)
               </h3>
             </div>
-            <span className="text-[10px] font-mono font-bold text-[#D9B36C] uppercase bg-[#D9B36C]/10 px-2.5 py-0.5 rounded border border-[#D9B36C]/30">
+            <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-[#D9B36C] uppercase bg-amber-50 dark:bg-[#D9B36C]/10 px-2.5 py-0.5 rounded border border-amber-300 dark:border-[#D9B36C]/30">
               Padrão Oficial Orbis • Chave SHA-256 Verificável
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Card DCP Corporativo Demo */}
-            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/60 transition-all flex flex-col justify-between space-y-3">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 hover:border-emerald-500/60 transition-all flex flex-col justify-between space-y-3">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#12B886]/15 text-[#12B886] border border-[#12B886]/30">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 dark:bg-[#059669]/15 text-emerald-700 dark:text-[#059669] border border-emerald-300 dark:border-[#059669]/30">
                     <Building2 className="w-3 h-3" />
                     Corporativo Demo
                   </span>
-                  <span className="text-[10px] font-mono text-[#93A3B5]">
+                  <span className="text-[10px] font-mono text-slate-500 dark:text-[#94A3B8]">
                     Competência Julho/2026
                   </span>
                 </div>
-                <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
+                <h4 className="font-heading font-bold text-base text-slate-900 dark:text-[#F8FAFC]">
                   DCP Corporativo Demo (Indústrias & Logística Integrada)
                 </h4>
-                <p className="text-xs text-[#93A3B5] mt-1 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-[#94A3B8] mt-1 leading-relaxed">
                   Página imprimível de 2 páginas lendo as 12 NF-e: Materialidade por CNAE,
                   inventário com duplo reporte (SIN × I-REC), classificação física NCM com Tiers,
                   parecer do Revisor e histórico de consultas.
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] flex items-center justify-between">
-                <span className="font-mono text-[11px] text-[#D9B36C]">12 NF-e • 12 CNAEs</span>
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span className="font-mono text-[11px] text-amber-700 dark:text-[#D9B36C]">
+                  12 NF-e • 12 CNAEs
+                </span>
                 <Link
                   to="/corporativo"
-                  className="px-3.5 py-1.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] font-medium text-xs inline-flex items-center gap-1.5 transition-all"
+                  className="px-3.5 py-1.5 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] hover:bg-slate-100 dark:hover:bg-[#1F2C3A] font-medium text-xs inline-flex items-center gap-1.5 transition-all"
                 >
-                  <Eye className="w-3.5 h-3.5 text-[#93A3B5]" />
+                  <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-[#94A3B8]" />
                   <span>Abrir demonstração corporativa</span>
                   <ExternalLink className="w-3 h-3 ml-0.5" />
                 </Link>
@@ -413,36 +427,36 @@ export function BureauACP() {
             </div>
 
             {/* Card DCP do Produto Demo (Klabin NCM 4819) */}
-            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/60 transition-all flex flex-col justify-between space-y-3">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 hover:border-emerald-500/60 transition-all flex flex-col justify-between space-y-3">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#3B82F6]/15 text-[#3B82F6] border border-[#3B82F6]/30">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 dark:bg-[#3B82F6]/15 text-blue-700 dark:text-[#3B82F6] border border-blue-200 dark:border-[#3B82F6]/30">
                     <Package className="w-3 h-3" />
                     Produto / NCM 4819
                   </span>
-                  <span className="text-[10px] font-mono text-[#93A3B5]">
+                  <span className="text-[10px] font-mono text-slate-500 dark:text-[#94A3B8]">
                     Selo ORB-DCP-KLBN-4819
                   </span>
                 </div>
-                <h4 className="font-heading font-bold text-base text-[#F4F7FA]">
+                <h4 className="font-heading font-bold text-base text-slate-900 dark:text-[#F8FAFC]">
                   DCP do Produto (Caixas Kraft Klabin S.A.)
                 </h4>
-                <p className="text-xs text-[#93A3B5] mt-1 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-[#94A3B8] mt-1 leading-relaxed">
                   Página imprimível de 2 páginas com unidade funcional de "1 unidade vendida",
                   pegada segregada fóssil × biogênica × emissões evitadas, hash SHA-256 verificável
                   e QR code público (?via=qr).
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] flex items-center justify-between">
-                <span className="font-mono text-[11px] text-[#D9B36C]">
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span className="font-mono text-[11px] text-amber-700 dark:text-[#D9B36C]">
                   Unidade Funcional: 1 un
                 </span>
                 <Link
                   to="/dcp/ORB-DCP-KLBN-4819"
-                  className="px-3.5 py-1.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] font-medium text-xs inline-flex items-center gap-1.5 transition-all"
+                  className="px-3.5 py-1.5 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] hover:bg-slate-100 dark:hover:bg-[#1F2C3A] font-medium text-xs inline-flex items-center gap-1.5 transition-all"
                 >
-                  <Eye className="w-3.5 h-3.5 text-[#93A3B5]" />
+                  <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-[#94A3B8]" />
                   <span>Abrir DCP do Produto</span>
                   <ExternalLink className="w-3 h-3 ml-0.5" />
                 </Link>
@@ -452,21 +466,21 @@ export function BureauACP() {
         </div>
 
         {/* Barra de Busca e Filtros */}
-        <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
           <div className="relative w-full sm:w-96">
-            <Search className="w-4 h-4 text-[#93A3B5] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar por razão social, CNPJ ou token..."
-              className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886]"
+              className="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#2563EB]"
             />
           </div>
 
-          <div className="text-xs text-[#93A3B5] flex items-center gap-2">
+          <div className="text-xs text-slate-600 dark:text-[#94A3B8] flex items-center gap-2">
             <span>Revelação Seletiva:</span>
-            <span className="px-2.5 py-1 rounded bg-[#12B886]/10 text-[#12B886] font-mono text-[10px] font-bold">
+            <span className="px-2.5 py-1 rounded bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] font-mono text-[10px] font-bold">
               Proteção Ativa de Dados Estratégicos
             </span>
           </div>
@@ -476,23 +490,25 @@ export function BureauACP() {
         {abaAtiva === 'programa_carbono' && (
           <div className="space-y-6">
             {/* Banner de Reserva Metodológica da Camada 2 */}
-            <div className="p-4 rounded-xl bg-[#16202B]/80 border border-[#D9B36C]/40 text-xs text-[#D9B36C] flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 flex-shrink-0 text-[#D9B36C] mt-0.5" />
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-[#111827]/80 border border-amber-300 dark:border-[#D9B36C]/40 text-xs text-amber-800 dark:text-[#D9B36C] flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 flex-shrink-0 text-amber-600 dark:text-[#D9B36C] mt-0.5" />
               <div className="space-y-1">
                 <span className="font-bold uppercase tracking-wider block">
                   Reserva Metodológica Pré-Laudo (Programa de Descarbonização de CDVs)
                 </span>
-                <p className="text-[#93A3B5] leading-relaxed">{RESERVA_METODOLOGICA_PRE_LAUDO}</p>
+                <p className="text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+                  {RESERVA_METODOLOGICA_PRE_LAUDO}
+                </p>
               </div>
             </div>
 
             {/* Cabeçalho da Seção */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F8FAFC]">
                   MONITORAMENTO DE CDVs & ELEGIBILIDADE AO PROGRAMA CARBONO
                 </h2>
-                <p className="text-xs text-[#93A3B5] mt-1">
+                <p className="text-xs text-slate-600 dark:text-[#94A3B8] mt-1">
                   Acompanhamento de Centrais de Desmontagem Veicular candidatas e homologadas. O
                   Selo CDV Conforme atesta conformidade prévia com Lei 12.977/2014, credenciamento
                   DETRAN e rastreabilidade fiscal de lotes.
@@ -501,7 +517,7 @@ export function BureauACP() {
 
               <Link
                 to="/dossie-mover"
-                className="px-4 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase tracking-wider hover:bg-[#0CA678] inline-flex items-center gap-2 shadow-emerald-glow self-start sm:self-auto"
+                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#2563EB] dark:hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 shadow-sm self-start sm:self-auto"
               >
                 <span>Ver Dossiê Completo</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -513,23 +529,23 @@ export function BureauACP() {
               {cdvsCarbono.map((cdv) => (
                 <div
                   key={cdv.cdv_id}
-                  className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] space-y-6"
+                  className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm"
                 >
                   {/* Topo do Card do CDV */}
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                        <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F8FAFC]">
                           {cdv.cdv_nome}
                         </h3>
-                        <span className="font-mono text-xs text-[#D9B36C] px-2.5 py-0.5 rounded bg-[#16202B]">
+                        <span className="font-mono text-xs text-amber-700 dark:text-[#D9B36C] px-2.5 py-0.5 rounded bg-amber-50 dark:bg-[#111827]">
                           CNPJ: {cdv.cdv_cnpj}
                         </span>
-                        <span className="font-mono text-xs text-[#93A3B5] px-2.5 py-0.5 rounded bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                        <span className="font-mono text-xs text-slate-600 dark:text-[#94A3B8] px-2.5 py-0.5 rounded bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800">
                           {cdv.codigo_detran} ({cdv.uf})
                         </span>
                       </div>
-                      <span className="text-xs text-[#93A3B5] mt-1 block">
+                      <span className="text-xs text-slate-600 dark:text-[#94A3B8] mt-1 block">
                         Candidato a VPA (Voluntary Project Activity — Área de Projeto Voluntário) •
                         Metodologia GS 448
                       </span>
@@ -538,21 +554,21 @@ export function BureauACP() {
                     {/* Selo CDV Conforme como Pré-Requisito */}
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
+                        <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] block uppercase font-bold">
                           Pré-Requisito do Programa
                         </span>
-                        <span className="font-heading font-bold text-sm text-[#F4F7FA]">
+                        <span className="font-heading font-bold text-sm text-slate-900 dark:text-[#F8FAFC]">
                           Selo CDV Conforme
                         </span>
                       </div>
                       {cdv.status_selo_cdv_conforme === 'obtido' ? (
-                        <div className="px-3 py-1.5 rounded-xl bg-[#12B886]/20 border border-[#12B886]/40 text-[#12B886] flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
-                          <CheckCircle2 className="w-4 h-4 text-[#12B886]" />
+                        <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#059669]/20 border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
                           <span>Status: Obtido</span>
                         </div>
                       ) : (
-                        <div className="px-3 py-1.5 rounded-xl bg-[#D9B36C]/20 border border-[#D9B36C]/40 text-[#D9B36C] flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
-                          <AlertCircle className="w-4 h-4 text-[#D9B36C]" />
+                        <div className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-700 dark:text-[#D9B36C] flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-[#D9B36C]" />
                           <span>Status: Pendente</span>
                         </div>
                       )}
@@ -561,54 +577,62 @@ export function BureauACP() {
 
                   {/* 4 Métricas Principais da Operação de Desmonte */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                      <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] uppercase font-bold block">
                         Volume VFV Declarado
                       </span>
-                      <div className="font-heading font-black text-2xl text-[#F4F7FA] mt-1">
+                      <div className="font-heading font-black text-2xl text-slate-900 dark:text-[#F8FAFC] mt-1">
                         {cdv.vfv_declarado_ano}{' '}
-                        <span className="text-xs font-normal text-[#93A3B5]">veículos/ano</span>
+                        <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">
+                          veículos/ano
+                        </span>
                       </div>
-                      <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                      <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] mt-1 block">
                         Capacidade de pátio informada
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                      <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] uppercase font-bold block">
                         VFV Processados no Sistema
                       </span>
-                      <div className="font-heading font-black text-2xl text-[#12B886] mt-1">
+                      <div className="font-heading font-black text-2xl text-emerald-600 dark:text-[#059669] mt-1">
                         {cdv.vfv_processados_registrados}{' '}
-                        <span className="text-xs font-normal text-[#93A3B5]">lotes auditados</span>
+                        <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">
+                          lotes auditados
+                        </span>
                       </div>
-                      <span className="text-[10px] text-[#D9B36C] mt-1 block">
+                      <span className="text-[10px] text-amber-700 dark:text-[#D9B36C] mt-1 block">
                         Lastro com baixa no DETRAN
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                      <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] uppercase font-bold block">
                         Massa de Materiais Destinados
                       </span>
-                      <div className="font-heading font-black text-2xl text-[#F4F7FA] mt-1">
+                      <div className="font-heading font-black text-2xl text-slate-900 dark:text-[#F8FAFC] mt-1">
                         {cdv.peso_total_materiais_kg.toFixed(1)}{' '}
-                        <span className="text-xs font-normal text-[#93A3B5]">kg apurados</span>
+                        <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">
+                          kg apurados
+                        </span>
                       </div>
-                      <span className="text-[10px] text-[#93A3B5] mt-1 block">
+                      <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] mt-1 block">
                         4 camadas curbside rastreadas
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30">
-                      <span className="text-[10px] text-[#12B886] uppercase font-bold block">
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/30">
+                      <span className="text-[10px] text-emerald-700 dark:text-[#059669] uppercase font-bold block">
                         Emissões Evitadas (Estimativa)
                       </span>
-                      <div className="font-heading font-black text-2xl text-[#12B886] mt-1">
+                      <div className="font-heading font-black text-2xl text-emerald-600 dark:text-[#059669] mt-1">
                         {cdv.total_tco2e_evitado_estimado.toFixed(2)}{' '}
-                        <span className="text-xs font-normal text-[#93A3B5]">tCO₂e</span>
+                        <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">
+                          tCO₂e
+                        </span>
                       </div>
-                      <span className="text-[10px] text-[#D9B36C] mt-1 block">
+                      <span className="text-[10px] text-amber-700 dark:text-[#D9B36C] mt-1 block">
                         Sujeito a validação do VVB
                       </span>
                     </div>
@@ -617,18 +641,18 @@ export function BureauACP() {
                   {/* Tabela de Composição de Materiais e Destinações (GS 448) */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#F4F7FA]">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-[#F8FAFC]">
                         Composição de Materiais & Fatores de Substituição (GS 448)
                       </span>
-                      <span className="text-[11px] font-mono text-[#D9B36C]">
+                      <span className="text-[11px] font-mono text-amber-700 dark:text-[#D9B36C]">
                         Substituição Reciclado × Primário
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto rounded-xl border border-[rgba(244,247,250,0.08)] bg-[#0A0E12]">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0A1628]">
                       <table className="w-full text-left text-xs">
                         <thead>
-                          <tr className="border-b border-[rgba(244,247,250,0.08)] bg-[#16202B]/60 text-[#93A3B5]">
+                          <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#111827]/60 text-slate-600 dark:text-[#94A3B8]">
                             <th className="py-2.5 px-4 font-semibold">Fração / Material</th>
                             <th className="py-2.5 px-4 font-semibold text-right">Peso (kg)</th>
                             <th className="py-2.5 px-4 font-semibold text-right">% Veículo</th>
@@ -638,27 +662,32 @@ export function BureauACP() {
                             <th className="py-2.5 px-4 font-semibold">Evidência / Destinação</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[rgba(244,247,250,0.05)] text-[#F4F7FA]">
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-900 dark:text-[#F8FAFC]">
                           {cdv.composicao_materiais.map((mat, i) => (
-                            <tr key={i} className="hover:bg-[#16202B]/30 transition-colors">
+                            <tr
+                              key={i}
+                              className="hover:bg-slate-100/50 dark:hover:bg-[#111827]/40 transition-colors"
+                            >
                               <td className="py-2.5 px-4 font-medium">{mat.material}</td>
                               <td className="py-2.5 px-4 text-right font-mono">
                                 {mat.peso_kg.toFixed(1)} kg
                               </td>
-                              <td className="py-2.5 px-4 text-right font-mono text-[#D9B36C]">
+                              <td className="py-2.5 px-4 text-right font-mono text-amber-700 dark:text-[#D9B36C]">
                                 {mat.percentual}%
                               </td>
-                              <td className="py-2.5 px-4 text-right font-mono text-[#12B886]">
+                              <td className="py-2.5 px-4 text-right font-mono text-emerald-700 dark:text-[#059669]">
                                 -{mat.fator_substituicao_kgco2e_por_kg.toFixed(2)}
                               </td>
-                              <td className="py-2.5 px-4 text-xs text-[#93A3B5]">
+                              <td className="py-2.5 px-4 text-xs text-slate-600 dark:text-[#94A3B8]">
                                 {cdv.vfv_processados_registrados > 0 ? (
-                                  <span className="inline-flex items-center gap-1 text-[#12B886]">
+                                  <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-[#059669]">
                                     <Check className="w-3.5 h-3.5" />
                                     DPP Lote + MTR-SINIR
                                   </span>
                                 ) : (
-                                  <span className="text-[#93A3B5] italic">Aguardando lote</span>
+                                  <span className="text-slate-500 dark:text-[#94A3B8] italic">
+                                    Aguardando lote
+                                  </span>
                                 )}
                               </td>
                             </tr>
@@ -669,10 +698,10 @@ export function BureauACP() {
                   </div>
 
                   {/* Rodapé do Card com Hash Canônico e Reserva */}
-                  <div className="pt-3 border-t border-[rgba(244,247,250,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2 max-w-xl">
-                      <Lock className="w-3.5 h-3.5 text-[#12B886] flex-shrink-0" />
-                      <span className="text-[#93A3B5] truncate font-mono text-[11px]">
+                      <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669] flex-shrink-0" />
+                      <span className="text-slate-600 dark:text-[#94A3B8] truncate font-mono text-[11px]">
                         Hash Canônico: {cdv.hash_canonical_programa}
                       </span>
                     </div>
@@ -684,10 +713,10 @@ export function BureauACP() {
                           setCopiadoHash(cdv.cdv_id)
                           setTimeout(() => setCopiadoHash(null), 3000)
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-xs flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] text-xs flex items-center gap-1.5"
                       >
                         {copiadoHash === cdv.cdv_id ? (
-                          <Check className="w-3 h-3 text-[#12B886]" />
+                          <Check className="w-3 h-3 text-emerald-600 dark:text-[#059669]" />
                         ) : (
                           <Copy className="w-3 h-3" />
                         )}
@@ -697,7 +726,7 @@ export function BureauACP() {
                       {cdv.vfv_processados_registrados > 0 && (
                         <Link
                           to="/passaporte-lote/PR-BX-2026-1240105"
-                          className="px-3.5 py-1.5 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold text-xs uppercase hover:bg-[#0CA678] inline-flex items-center gap-1.5 shadow-emerald-glow"
+                          className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#2563EB] dark:hover:bg-blue-600 text-white font-bold text-xs uppercase inline-flex items-center gap-1.5 shadow-sm"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Ver DPP do Lote</span>
@@ -716,24 +745,24 @@ export function BureauACP() {
           <div>
             {isLoading ? (
               <div className="text-center py-16">
-                <div className="w-10 h-10 border-4 border-[#12B886] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-xs text-[#93A3B5]">
+                <div className="w-10 h-10 border-4 border-emerald-600 dark:border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-xs text-slate-600 dark:text-[#94A3B8]">
                   Carregando carteira de fornecedores do Bureau...
                 </p>
               </div>
             ) : passaportesFiltrados.length === 0 ? (
-              <div className="text-center py-16 border border-dashed border-[rgba(244,247,250,0.15)] rounded-2xl bg-[#111820] space-y-3">
-                <Building2 className="w-10 h-10 text-[#93A3B5] mx-auto opacity-50" />
-                <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+              <div className="text-center py-16 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-white dark:bg-[#0E1A2E] space-y-3 shadow-sm">
+                <Building2 className="w-10 h-10 text-slate-400 dark:text-[#94A3B8] mx-auto opacity-50" />
+                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-[#F8FAFC]">
                   Nenhum fornecedor encontrado
                 </h3>
-                <p className="text-xs text-[#93A3B5]">
+                <p className="text-xs text-slate-600 dark:text-[#94A3B8]">
                   Crie o primeiro passaporte do fornecedor para gerar links de consulta para os
                   compradores.
                 </p>
                 <button
                   onClick={handleAbrirNovoPassaporte}
-                  className="px-5 py-2.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] text-xs uppercase"
+                  className="px-5 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 dark:bg-[#2563EB] text-white text-xs uppercase"
                 >
                   Criar Passaporte Demonstrativo
                 </button>
@@ -743,28 +772,28 @@ export function BureauACP() {
                 {passaportesFiltrados.map((pass) => (
                   <div
                     key={pass.id}
-                    className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] hover:border-[#12B886]/40 transition-all space-y-4"
+                    className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 transition-all space-y-4 shadow-sm"
                   >
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.06)] pb-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                       <div>
                         <div className="flex items-center gap-3">
-                          <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                          <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F8FAFC]">
                             {pass.empresa_nome}
                           </h2>
-                          <span className="px-2.5 py-0.5 rounded bg-[#16202B] text-[#D9B36C] font-mono font-bold text-xs">
+                          <span className="px-2.5 py-0.5 rounded bg-amber-50 dark:bg-[#111827] text-amber-700 dark:text-[#D9B36C] font-mono font-bold text-xs">
                             CNPJ: {pass.empresa_cnpj}
                           </span>
                         </div>
-                        <div className="text-xs text-[#93A3B5] mt-1 flex flex-wrap gap-4">
+                        <div className="text-xs text-slate-600 dark:text-[#94A3B8] mt-1 flex flex-wrap gap-4">
                           <span>
                             Setor:{' '}
-                            <strong className="text-[#F4F7FA]">
+                            <strong className="text-slate-900 dark:text-[#F8FAFC]">
                               {pass.setor_atuacao || 'Industrial'}
                             </strong>
                           </span>
                           <span>
                             Inventário Origem:{' '}
-                            <strong className="text-[#12B886]">
+                            <strong className="text-emerald-700 dark:text-[#059669]">
                               {pass.data_inventario_origem || '2026-02-15'}
                             </strong>
                           </span>
@@ -774,37 +803,41 @@ export function BureauACP() {
                       {/* Score & Indicadores Resumidos */}
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
+                          <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] block uppercase font-bold">
                             Intensidade
                           </span>
-                          <span className="font-heading font-black text-xl text-[#12B886]">
+                          <span className="font-heading font-black text-xl text-emerald-600 dark:text-[#059669]">
                             {pass.kg_co2e_por_kg_produzido?.toFixed(2) || '1.84'}{' '}
-                            <span className="text-xs font-normal text-[#93A3B5]">kg CO₂e/kg</span>
+                            <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">
+                              kg CO₂e/kg
+                            </span>
                           </span>
                         </div>
 
-                        <div className="text-right border-l border-[rgba(244,247,250,0.08)] pl-6">
-                          <span className="text-[10px] text-[#93A3B5] block uppercase font-bold">
+                        <div className="text-right border-l border-slate-200 dark:border-slate-800 pl-6">
+                          <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] block uppercase font-bold">
                             Score ESG
                           </span>
-                          <span className="font-heading font-black text-2xl text-[#D9B36C]">
+                          <span className="font-heading font-black text-2xl text-amber-700 dark:text-[#D9B36C]">
                             {pass.score_esg || 88}
-                            <span className="text-xs font-normal text-[#93A3B5]">/100</span>
+                            <span className="text-xs font-normal text-slate-500 dark:text-[#94A3B8]">
+                              /100
+                            </span>
                           </span>
                         </div>
                       </div>
                     </div>
 
                     {/* Sub-painel: Acesso Comprador via Link Tokenizado */}
-                    <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
                       <div className="space-y-1 max-w-xl">
                         <div className="flex items-center gap-2">
-                          <Lock className="w-3.5 h-3.5 text-[#12B886]" />
-                          <strong className="text-[#F4F7FA]">
+                          <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
+                          <strong className="text-slate-900 dark:text-[#F8FAFC]">
                             Link Público Tokenizado do Comprador:
                           </strong>
                         </div>
-                        <div className="font-mono text-[11px] text-[#93A3B5] truncate">
+                        <div className="font-mono text-[11px] text-slate-600 dark:text-[#94A3B8] truncate">
                           {window.location.origin}/passaporte-fornecedor/{pass.token_consulta}
                         </div>
                       </div>
@@ -813,10 +846,10 @@ export function BureauACP() {
                         <button
                           type="button"
                           onClick={() => handleCopiarLink(pass.token_consulta, pass.id)}
-                          className="px-3.5 py-2 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA] text-xs flex items-center gap-1.5"
+                          className="px-3.5 py-2 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] text-xs flex items-center gap-1.5"
                         >
                           {copiadoId === pass.id ? (
-                            <Check className="w-3.5 h-3.5 text-[#12B886]" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -829,9 +862,9 @@ export function BureauACP() {
                           to={`/passaporte-fornecedor/${pass.token_consulta}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-3.5 py-2 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] font-medium text-xs flex items-center gap-1.5 transition-all"
+                          className="px-3.5 py-2 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] hover:bg-slate-100 dark:hover:bg-[#1F2C3A] font-medium text-xs flex items-center gap-1.5 transition-all"
                         >
-                          <Eye className="w-3.5 h-3.5 text-[#93A3B5]" />
+                          <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-[#94A3B8]" />
                           <span>Abrir Visão do Comprador</span>
                           <ExternalLink className="w-3 h-3 ml-0.5" />
                         </Link>
@@ -842,7 +875,7 @@ export function BureauACP() {
                             setPassaporteEdicao(pass)
                             setIsModalOpen(true)
                           }}
-                          className="p-2 rounded-lg bg-[#16202B] text-[#93A3B5] hover:text-[#F4F7FA]"
+                          className="p-2 rounded-lg bg-white dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC]"
                           title="Editar configurações de revelação"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -859,13 +892,13 @@ export function BureauACP() {
         {/* MODAL DE CRIAÇÃO / EDIÇÃO DO PASSAPORTE */}
         {isModalOpen && passaporteEdicao && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-            <div className="max-w-2xl w-full my-8 p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.15)] shadow-2xl space-y-6 text-xs animate-fade-in max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between border-b border-[rgba(244,247,250,0.1)] pb-4">
+            <div className="max-w-2xl w-full my-8 p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 text-xs animate-fade-in max-h-[90vh] overflow-y-auto text-slate-900 dark:text-[#F8FAFC]">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-[#12B886] block">
+                  <span className="text-[10px] font-bold uppercase text-emerald-700 dark:text-[#059669] block">
                     Cockpit Bureau ACP
                   </span>
-                  <h2 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
+                  <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F8FAFC]">
                     {passaporteEdicao.id
                       ? 'EDITAR PASSAPORTE DO FORNECEDOR'
                       : 'CRIAR NOVO PASSAPORTE'}
@@ -873,7 +906,7 @@ export function BureauACP() {
                 </div>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="text-[#93A3B5] hover:text-[#F4F7FA] text-lg font-bold"
+                  className="text-slate-500 hover:text-slate-900 dark:text-[#94A3B8] dark:hover:text-[#F8FAFC] text-lg font-bold"
                 >
                   ✕
                 </button>
@@ -883,7 +916,9 @@ export function BureauACP() {
                 {/* Dados Principais */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] text-[#93A3B5] mb-1">Razão Social *</label>
+                    <label className="block text-[11px] text-slate-600 dark:text-[#94A3B8] mb-1">
+                      Razão Social *
+                    </label>
                     <input
                       type="text"
                       required
@@ -891,11 +926,13 @@ export function BureauACP() {
                       onChange={(e) =>
                         setPassaporteEdicao({ ...passaporteEdicao, empresa_nome: e.target.value })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-[#93A3B5] mb-1">CNPJ *</label>
+                    <label className="block text-[11px] text-slate-600 dark:text-[#94A3B8] mb-1">
+                      CNPJ *
+                    </label>
                     <input
                       type="text"
                       required
@@ -903,11 +940,11 @@ export function BureauACP() {
                       onChange={(e) =>
                         setPassaporteEdicao({ ...passaporteEdicao, empresa_cnpj: e.target.value })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] font-mono"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-[#93A3B5] mb-1">
+                    <label className="block text-[11px] text-slate-600 dark:text-[#94A3B8] mb-1">
                       Setor de Atuação
                     </label>
                     <input
@@ -916,11 +953,11 @@ export function BureauACP() {
                       onChange={(e) =>
                         setPassaporteEdicao({ ...passaporteEdicao, setor_atuacao: e.target.value })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA]"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-[#93A3B5] mb-1">
+                    <label className="block text-[11px] text-slate-600 dark:text-[#94A3B8] mb-1">
                       Token de Consulta Pública
                     </label>
                     <input
@@ -930,15 +967,15 @@ export function BureauACP() {
                       onChange={(e) =>
                         setPassaporteEdicao({ ...passaporteEdicao, token_consulta: e.target.value })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#D9B36C] font-mono"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-amber-700 dark:text-[#D9B36C] font-mono"
                     />
                   </div>
                 </div>
 
                 {/* Métricas Técnicas */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800">
                   <div>
-                    <label className="block text-[10px] text-[#93A3B5] mb-1">
+                    <label className="block text-[10px] text-slate-600 dark:text-[#94A3B8] mb-1">
                       kg CO₂e/kg Produzido
                     </label>
                     <input
@@ -951,11 +988,13 @@ export function BureauACP() {
                           kg_co2e_por_kg_produzido: parseFloat(e.target.value) || 0,
                         })
                       }
-                      className="w-full px-3 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.15)] text-[#12B886] font-mono font-bold"
+                      className="w-full px-3 py-1.5 rounded bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-emerald-600 dark:text-[#059669] font-mono font-bold"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-[#93A3B5] mb-1">Volume kg/ano</label>
+                    <label className="block text-[10px] text-slate-600 dark:text-[#94A3B8] mb-1">
+                      Volume kg/ano
+                    </label>
                     <input
                       type="number"
                       value={passaporteEdicao.peso_produzido_kg_ano ?? 300000}
@@ -965,11 +1004,11 @@ export function BureauACP() {
                           peso_produzido_kg_ano: parseFloat(e.target.value) || 0,
                         })
                       }
-                      className="w-full px-3 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono"
+                      className="w-full px-3 py-1.5 rounded bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] font-mono"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-[#93A3B5] mb-1">
+                    <label className="block text-[10px] text-slate-600 dark:text-[#94A3B8] mb-1">
                       Score ESG (0-100)
                     </label>
                     <input
@@ -983,24 +1022,24 @@ export function BureauACP() {
                           score_esg: parseInt(e.target.value) || 0,
                         })
                       }
-                      className="w-full px-3 py-1.5 rounded bg-[#111820] border border-[rgba(244,247,250,0.15)] text-[#D9B36C] font-mono font-bold"
+                      className="w-full px-3 py-1.5 rounded bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 text-amber-700 dark:text-[#D9B36C] font-mono font-bold"
                     />
                   </div>
                 </div>
 
                 {/* Configuração de Revelação Seletiva */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-3">
-                  <div className="flex items-center gap-2 text-[#12B886] font-bold">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/30 space-y-3">
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-[#059669] font-bold">
                     <ShieldCheck className="w-4 h-4" />
                     <span>Configuração de Revelação Seletiva (O que o Comprador Pode Ver)</span>
                   </div>
-                  <p className="text-[11px] text-[#93A3B5]">
+                  <p className="text-[11px] text-slate-600 dark:text-[#94A3B8]">
                     Os dados sensíveis da sua empresa nunca são expostos. Marque os blocos técnicos
                     que serão projetados na URL do comprador:
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                    <label className="flex items-center gap-2 text-[#F4F7FA] cursor-pointer">
+                    <label className="flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={
@@ -1015,12 +1054,12 @@ export function BureauACP() {
                             },
                           })
                         }
-                        className="accent-[#12B886]"
+                        className="accent-emerald-600 dark:accent-[#2563EB]"
                       />
                       <span>Intensidade de Emissão (kg CO₂e/kg)</span>
                     </label>
 
-                    <label className="flex items-center gap-2 text-[#F4F7FA] cursor-pointer">
+                    <label className="flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={passaporteEdicao.config_revelacao_json?.mostrar_score_esg ?? true}
@@ -1033,12 +1072,12 @@ export function BureauACP() {
                             },
                           })
                         }
-                        className="accent-[#12B886]"
+                        className="accent-emerald-600 dark:accent-[#2563EB]"
                       />
                       <span>Score ESG Calculado (0-100)</span>
                     </label>
 
-                    <label className="flex items-center gap-2 text-[#F4F7FA] cursor-pointer">
+                    <label className="flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={passaporteEdicao.config_revelacao_json?.mostrar_curva_mac ?? true}
@@ -1051,12 +1090,12 @@ export function BureauACP() {
                             },
                           })
                         }
-                        className="accent-[#12B886]"
+                        className="accent-emerald-600 dark:accent-[#2563EB]"
                       />
                       <span>Curva MAC (Custo de Abatimento)</span>
                     </label>
 
-                    <label className="flex items-center gap-2 text-[#F4F7FA] cursor-pointer">
+                    <label className="flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={
@@ -1072,12 +1111,12 @@ export function BureauACP() {
                             },
                           })
                         }
-                        className="accent-[#12B886]"
+                        className="accent-emerald-600 dark:accent-[#2563EB]"
                       />
                       <span>Dossiê BRDE / Fomento Paraná</span>
                     </label>
 
-                    <label className="flex items-center gap-2 text-[#F4F7FA] cursor-pointer">
+                    <label className="flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={passaporteEdicao.config_revelacao_json?.mostrar_certidoes ?? true}
@@ -1090,12 +1129,12 @@ export function BureauACP() {
                             },
                           })
                         }
-                        className="accent-[#12B886]"
+                        className="accent-emerald-600 dark:accent-[#2563EB]"
                       />
                       <span>Certidões Fiscais e Ambientais</span>
                     </label>
 
-                    <label className="flex items-center gap-2 text-[#F4F7FA] cursor-pointer">
+                    <label className="flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={passaporteEdicao.config_revelacao_json?.mostrar_matriz_gri ?? true}
@@ -1108,14 +1147,14 @@ export function BureauACP() {
                             },
                           })
                         }
-                        className="accent-[#12B886]"
+                        className="accent-emerald-600 dark:accent-[#2563EB]"
                       />
                       <span>Matriz GRI Simplificada</span>
                     </label>
                   </div>
 
-                  <div className="pt-2 border-t border-[rgba(244,247,250,0.06)] flex items-center gap-2 text-[10px] text-[#93A3B5]">
-                    <Lock className="w-3 h-3 text-[#D9B36C]" />
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 text-[10px] text-slate-600 dark:text-[#94A3B8]">
+                    <Lock className="w-3 text-amber-700 dark:text-[#D9B36C]" />
                     <span>
                       Sigilo Absoluto: Preços unitários, margens de lucro e faturamento NUNCA são
                       revelados na API pública.
@@ -1127,14 +1166,14 @@ export function BureauACP() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-lg border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#F4F7FA]"
+                    className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC]"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isSalvando}
-                    className="px-6 py-2.5 rounded-lg bg-[#12B886] text-[#0A0E12] font-bold uppercase tracking-wider shadow-emerald-glow"
+                    className="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-[#2563EB] dark:hover:bg-blue-600 text-white font-bold uppercase tracking-wider shadow-sm"
                   >
                     {isSalvando ? 'Salvando...' : 'Salvar Passaporte'}
                   </button>
