@@ -113,7 +113,11 @@ describe('Página Pública /fatores - DM-ORB-001 v1.1', () => {
     expect(
       screen.getByText(/Apêndice B: Citação de Fontes Oficiais e Status de Validação/i),
     ).not.toBeNull()
-    expect(screen.getAllByText(/\[Pendente de verificação de fonte\]/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/Verificado worldsteel 2025/i)).not.toBeNull()
+    expect(screen.getByText(/Verificado IAI 2023 \/ Revisão de Magnitude/i)).not.toBeNull()
+    expect(screen.getByText(/Verificado CopperMark 2024 \/ ICA/i)).not.toBeNull()
+    expect(screen.getByText(/Verificado PlasticsEurope Eco-profiles/i)).not.toBeNull()
+    expect(screen.getByText(/Derivação Interna Conservadora/i)).not.toBeNull()
     expect(
       screen.getByText(/Apêndice E: Glossário das 8 Métricas, Unidades e Convenção de Sinal/i),
     ).not.toBeNull()
@@ -163,7 +167,7 @@ describe('Página Pública /fatores - DM-ORB-001 v1.1', () => {
     expect(screen.getByText('PART-GOL-CAPO-01 (Capô Motor)')).not.toBeNull()
     expect(screen.getByText('PART-GOL-RODA-01 (Roda Liga Leve)')).not.toBeNull()
     expect(screen.getByText('FLUID-R134A (Carga Climatização)')).not.toBeNull()
-    expect(screen.getByText('799,56 kgCO₂e')).not.toBeNull()
+    expect(screen.getByText('817,71 kgCO₂e')).not.toBeNull()
   })
 
   it('deve conter links para a documentação da API e verificador de selos', () => {

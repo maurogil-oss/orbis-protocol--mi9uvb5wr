@@ -19,18 +19,18 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
   it('deve ser 100% fiel aos fatores curados de materiais CDV da plataforma', () => {
     const aco = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-aco')
     expect(aco).toBeDefined()
-    expect(aco?.valorFator).toBe(FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg) // 2.85
-    expect(aco?.fonteOficial).toContain('WorldSteel')
+    expect(aco?.valorFator).toBe(FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg) // 2.18
+    expect(aco?.fonteOficial).toContain('worldsteel')
 
     const aluminio = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-aluminio')
     expect(aluminio).toBeDefined()
-    expect(aluminio?.valorFator).toBe(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg) // 8.2
-    expect(aluminio?.fonteOficial).toContain('IAI')
+    expect(aluminio?.valorFator).toBe(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg) // 16.6
+    expect(aluminio?.fonteOficial).toContain('International Aluminium Institute')
 
     const cobre = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-cobre')
     expect(cobre).toBeDefined()
     expect(cobre?.valorFator).toBe(FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg) // 5.4
-    expect(cobre?.fonteOficial).toContain('ICA')
+    expect(cobre?.fonteOficial).toContain('CopperMark')
 
     const polimeros = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-polimeros')
     expect(polimeros).toBeDefined()

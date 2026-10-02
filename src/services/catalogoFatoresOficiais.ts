@@ -75,16 +75,17 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     nomeMaterial: 'Aço Laminado / Estampado',
     descricao:
       'Chapas de carroceria, partes estruturais, portas, capôs e componentes de estampagem veicular.',
-    valorFator: 2.85,
+    valorFator: 2.18,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
-    fonteOficial: 'WorldSteel Association / IED / MCTI [Pendente de verificação de fonte]',
+    fonteOficial:
+      'worldsteel "Sustainability Indicators Report 2025" (Indicador 1a GHG emissions intensity 2024)',
     anoReferencia: 2024,
-    normaPadrao: 'ISO 14040/14044 (ACV de Aço Virgem Primário)',
+    normaPadrao: 'worldsteel CO2 data collection methodology • Escopos 1, 2 e 3 Categoria 1',
     tierIncerteza: 'Tier 3',
     incertezaPct: 3.5,
     detalheTecnico:
-      'Emissão evitada na reciclagem ou reúso direto: evita a rota primária de alto-forno a carvão fóssil/coque metalúrgico (~2,85 kgCO₂e/kg). [Flag de auditoria: magnitude sob investigação perante média global ~1,9 tCO₂e/t aço bruto].',
+      'Emissão evitada na reciclagem ou reúso direto: substitui a produção primária de aço bruto (média ponderada global 2024 de 2,18 tCO₂e/t das rotas BF-BOF, scrap-EAF e DRI-EAF; intensidade de CO₂ direta = 1,92 tCO₂/t). Ajustado conservadoramente de 2,85 para 2,18 kgCO₂e/kg.',
   },
   {
     id: 'mat-aluminio',
@@ -92,16 +93,17 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     nomeMaterial: 'Alumínio Primário Automotivo',
     descricao:
       'Rodas de liga leve, blocos de motor, cabeçotes, braços de suspensão e carcaças de transmissão.',
-    valorFator: 8.2,
+    valorFator: 16.6,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
-    fonteOficial: 'International Aluminium Institute (IAI) [Pendente de verificação de fonte]',
+    fonteOficial:
+      'International Aluminium Institute (IAI) "Aluminium Carbon Footprint FAQs" (Média global 2023)',
     anoReferencia: 2023,
-    normaPadrao: 'IAI LCA Guidelines • ISO 14067',
+    normaPadrao: 'IAI Cradle-to-Gate Guidance • ISO 14067',
     tierIncerteza: 'Tier 3',
     incertezaPct: 4.0,
     detalheTecnico:
-      'Evita o refino eletrolítico primário de bauxita. [Flag de auditoria: média primária global IAI é ~16,6 kgCO₂e/kg; o valor de 8,20 kgCO₂e/kg permanece como piso conservador provisório pendente de verificação].',
+      'Evita o refino eletrolítico primário e cadeia completa berço-ao-portão da bauxita (faixa típica IAI 4,5–22 tCO₂e/t Al; média global 2023 de 16,6 tCO₂e/t Al [com checklist detalhado de 14,8 tCO₂e/t Al]). Ajustado a partir de 8,20 sob revisão de magnitude pelo titular.',
   },
   {
     id: 'mat-cobre',
@@ -112,13 +114,14 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     valorFator: 5.4,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
-    fonteOficial: 'International Copper Association (ICA) [Pendente de verificação de fonte]',
-    anoReferencia: 2023,
-    normaPadrao: 'ICA Life Cycle Assessment Report',
+    fonteOficial:
+      'CopperMark "Decarbonizing the Copper Sector" (2024, base ICA, rota pirometalúrgica)',
+    anoReferencia: 2024,
+    normaPadrao: 'ICA Life Cycle Assessment • Rota Pirometalúrgica Berço-ao-Portão',
     tierIncerteza: 'Tier 3',
     incertezaPct: 4.5,
     detalheTecnico:
-      'Evita mineração e pirometalurgia primária de sulfeto de cobre (fator médio global virgem de 5,40 kgCO₂e por kg de catodo refinado).',
+      'Evita mineração e pirometalurgia primária de sulfeto de cobre: intensidade berço-ao-portão de catodo de cobre refinado é 5,3 tCO₂e/t; o valor adotado de 5,40 kgCO₂e/kg incorpora margem conservadora de refino final e estamparia elétrica.',
   },
   {
     id: 'mat-polimeros',
@@ -129,13 +132,13 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     valorFator: 1.9,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
-    fonteOficial: 'PlasticsEurope LCA Dataset [Pendente de verificação de fonte]',
+    fonteOficial: 'PlasticsEurope Eco-profiles (PCR ISO 14025, declared unit 1 kg resina at gate)',
     anoReferencia: 2023,
-    normaPadrao: 'Eco-profiles of the European Plastics Industry',
+    normaPadrao: 'Eco-profiles of the European Plastics Industry • ISO 14025 / ISO 14040/44',
     tierIncerteza: 'Tier 2',
     incertezaPct: 5.0,
     detalheTecnico:
-      'Substitui a síntese de resinas petroquímicas virgens derivadas de nafta ou gás natural em craqueadores térmicos. Nota de geografia: dataset representativo da União Europeia, adotado provisoriamente para o parque nacional.',
+      'Substitui a síntese de resinas petroquímicas virgens at gate. Literatura revisada PlasticsEurope apresenta faixa de 1,91 a 5,70 kgCO₂e/kg por polímero automotivo; o fator 1,90 kgCO₂e/kg corresponde à ponta inferior mais conservadora da classe (polipropileno - PP). Dataset EU adotado como proxy internacional defensável.',
   },
   {
     id: 'mat-outros',
@@ -146,13 +149,14 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     valorFator: 1.5,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
-    fonteOficial: 'Orbis dMRV Baseline Conservadora (Derivação no Apêndice B do DM-ORB-001 v1.1)',
+    fonteOficial:
+      'Orbis dMRV Baseline Conservadora (derivação interna conservadora — procedimento sob publicação)',
     anoReferencia: 2024,
     normaPadrao: 'Diretiva de Conservadorismo dMRV • ISO 14064-1',
     tierIncerteza: 'Tier 1',
     incertezaPct: 10.0,
     detalheTecnico:
-      'Procedimento de derivação documentado no Apêndice B: média harmônica ponderada de insumos industriais secundários com margem de segurança conservadora de 25% para evitar superestimação.',
+      'Derivação interna conservadora (procedimento metodológico sob publicação formal): piso protetivo calculado sobre média harmônica ponderada de insumos industriais automotivos secundários com margem de segurança conservadora de 25% para evitar superestimação de peças compósitas ou sem identificação material inequívoca.',
   },
   {
     id: 'mat-r134a-refrigerante',

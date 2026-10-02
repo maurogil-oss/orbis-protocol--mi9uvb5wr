@@ -49,43 +49,46 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
   aco: {
     material: 'aco',
     nome: 'Aço Laminado / Estampado',
-    fe_ref: 2.85,
+    fe_ref: 2.18,
     u_fe: 0.035, // ±3.5%
-    fonte: 'WorldSteel / IED / MCTI 2024 (pendente de verificação de fonte vs média global ~1.9)',
+    fonte:
+      'worldsteel Sustainability Indicators Report 2025 (Indicador 1a GHG intensity 2024: 2,18 tCO₂e/t aço bruto; Escopos 1+2+3 Cat. 1)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T3',
-    pendente_verificacao: true,
+    pendente_verificacao: false,
   },
   aluminio: {
     material: 'aluminio',
     nome: 'Alumínio Primário Automotivo',
-    fe_ref: 8.2,
+    fe_ref: 16.6,
     u_fe: 0.04, // ±4.0%
     fonte:
-      'International Aluminium Institute (IAI 2023) (pendente de verificação de fonte vs média primária global ~16.6)',
+      'International Aluminium Institute (IAI 2023 Aluminium Carbon Footprint FAQs; média global 16,6 tCO₂e/t Al cradle-to-gate; revisão de magnitude pelo titular)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T3',
-    pendente_verificacao: true,
+    pendente_verificacao: false,
   },
   cobre: {
     material: 'cobre',
     nome: 'Cobre / Bobinamentos Elétricos',
     fe_ref: 5.4,
     u_fe: 0.045, // ±4.5%
-    fonte: 'International Copper Association (ICA 2023)',
+    fonte:
+      'CopperMark Decarbonizing the Copper Sector 2024 (base ICA, rota pirometalúrgica 5,3 tCO₂e/t com margem conservadora)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T3',
-    pendente_verificacao: true,
+    pendente_verificacao: false,
   },
   polimeros: {
     material: 'polimeros',
     nome: 'Polímeros Automotivos (PP / EPDM / ABS)',
     fe_ref: 1.9,
     u_fe: 0.05, // ±5.0%
-    fonte: 'PlasticsEurope LCA Dataset 2023 (nota geográfica: EU dataset vs BR)',
+    fonte:
+      'PlasticsEurope Eco-profiles 2023 (PCR ISO 14025, declared unit 1 kg resina at gate, menor valor da faixa 1,91-5,70 correspondente a PP)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T2',
-    pendente_verificacao: true,
+    pendente_verificacao: false,
   },
   outros: {
     material: 'outros',
@@ -93,7 +96,7 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     fe_ref: 1.5,
     u_fe: 0.1, // ±10.0%
     fonte:
-      'Orbis dMRV Baseline Conservadora (derivação publicada no Apêndice B do DM-ORB-001 v1.1)',
+      'Orbis dMRV Baseline Conservadora (derivação interna conservadora — procedimento sob publicação formal)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T1',
     pendente_verificacao: false,

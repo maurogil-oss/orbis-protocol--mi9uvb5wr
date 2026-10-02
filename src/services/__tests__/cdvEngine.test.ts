@@ -7,18 +7,18 @@ import {
 
 describe('Módulo CDV Operacional & DPP Engine', () => {
   it('deve possuir fatores curados de CO2e evitado corretos por material', () => {
-    expect(FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg).toBe(2.85)
-    expect(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg).toBe(8.2)
+    expect(FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg).toBe(2.18)
+    expect(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg).toBe(16.6)
     expect(FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg).toBe(5.4)
     expect(FATORES_CDV_MATERIAIS.polimeros.fatorKgCO2ePorKg).toBe(1.9)
     expect(FATORES_CDV_MATERIAIS.outros.fatorKgCO2ePorKg).toBe(1.5)
   })
 
   it('deve calcular corretamente o CO2e evitado para as peças do veículo de teste Gol 1.6', () => {
-    // Capô 14,5 kg Aço -> 14.5 * 2.85 = 41.325 -> 41.33 kg
+    // Capô 14,5 kg Aço -> 14.5 * 2.18 = 31.61 kg
     const capoPeso = 14.5
     const capoCo2e = Number((capoPeso * FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg).toFixed(2))
-    expect(capoCo2e).toBe(41.33)
+    expect(capoCo2e).toBe(31.61)
 
     // Alternador 5,2 kg Cobre -> 5.2 * 5.4 = 28.08 kg
     const altPeso = 5.2
@@ -34,7 +34,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
 
     // Total evitado no lote
     const totalEvitado = capoCo2e + altCo2e + paraCo2e
-    expect(totalEvitado).toBe(76.63)
+    expect(totalEvitado).toBe(66.91)
   })
 
   it('deve gerar hash SHA-256 canônico consistente e determinístico', async () => {
