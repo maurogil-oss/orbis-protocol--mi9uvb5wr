@@ -1186,39 +1186,88 @@ export default function FatoresEmissaoPublicoPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
                     <strong className="text-[#F4F7FA] font-mono">
-                      Alumínio Primário Automotivo: 16,60 kgCO₂e/kg (Tier 3)
+                      Alumínio Primário Automotivo: Estruturado em Dois Cenários (Tier 3)
                     </strong>
                     <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Verificado IAI 2023 / Revisão de Magnitude
+                      Dois Cenários: Global Fallback 14,40 × Regional BR ~10,00
                     </span>
                   </div>
-                  <p className="text-[#93A3B5]">
-                    Citação formal: International Aluminium Institute (IAI), &quot;Aluminium Carbon
-                    Footprint FAQs&quot; (2023). Footprint cradle-to-gate do primário situa-se na
-                    faixa global de 4,5–22 tCO₂e/t Al, com média global 2023 de aproximadamente 16,6
-                    tCO₂e/t Al (eletricidade 0,2–18, energia térmica 1,2–3,8, fundição e processos
-                    diretos; checklist consolidado de 14,8 tCO₂e/t). URL:{' '}
-                    <a
-                      href="https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#12B886] underline font-mono"
-                    >
-                      https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/
-                    </a>
-                    .
-                    <span className="block mt-1 text-[#D9B36C]">
-                      Nota formal de revisão de magnitude pelo titular: O valor histórico de 8,20
-                      kgCO₂e/kg não possuía sustentação documental como alumínio primário nas
-                      publicações IAI. O fator foi atualizado para o valor verificado IAI de 16,60
-                      kgCO₂e/kg com a devida flag de revisão de magnitude pelo titular, tendo como
-                      impacto direto a duplicação do CO₂e evitado de componentes de alumínio
-                      reaproveitados.
+
+                  {/* Sub-bloco Cenário 1: Global Fallback (Padrão do Motor) */}
+                  <div className="p-3 rounded-lg bg-[#111820] border border-[#12B886]/30 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-bold text-[#12B886] text-[11px]">
+                        1. Fator Global Fallback (Padrão do Motor): 14,40 kgCO₂e/kg
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] font-mono text-[9px] font-bold">
+                        DEFAULT DO MOTOR
+                      </span>
+                    </div>
+                    <p className="text-[#93A3B5] leading-relaxed">
+                      <strong className="text-[#F4F7FA]">Citação formal:</strong> International
+                      Aluminium Institute (IAI), &quot;Primary Aluminium Greenhouse Gas Emissions
+                      Intensity&quot;, emissão 2024, tabela Primary Aluminium — Total
+                      Cradle-to-Gate: eletricidade-indireta 8,5 + PFC-direto 0,9 + processo
+                      CO₂-direto 1,5 + materiais auxiliares-indireto 1,3 + energia térmica 1,6 +
+                      transporte 0,5 = <strong className="text-[#12B886]">14,4 tCO₂e/t Al</strong>{' '}
+                      (14,40 kgCO₂e/kg). URL oficial:{' '}
+                      <a
+                        href="https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity-primary-aluminium/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#12B886] underline font-mono break-all"
+                      >
+                        https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity-primary-aluminium/
+                      </a>
+                      .
+                    </p>
+                  </div>
+
+                  {/* Sub-bloco Cenário 2: Regional BR Hidrelétrica (Não-default) */}
+                  <div className="p-3 rounded-lg bg-[#111820] border border-[#D9B36C]/30 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-bold text-[#D9B36C] text-[11px]">
+                        2. Cenário Regional BR (Hidrelétrica): ~10,00 kgCO₂e/kg (Indicativo)
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded bg-[#D9B36C]/15 text-[#D9B36C] font-mono text-[9px] font-bold">
+                        NÃO-DEFAULT • CONDICIONADO A EVIDÊNCIA
+                      </span>
+                    </div>
+                    <p className="text-[#93A3B5] leading-relaxed">
+                      <strong className="text-[#F4F7FA]">Derivação e status:</strong> Derivado do
+                      gráfico indicativo por fonte de eletricidade das IAI &quot;Aluminium Carbon
+                      Footprint FAQs&quot; (hidrelétrica ~10, gás ~13, carvão ~30 tCO₂e/t). URL:{' '}
+                      <a
+                        href="https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#D9B36C] underline font-mono break-all"
+                      >
+                        https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/
+                      </a>
+                      . Valor estritamente <strong className="text-[#F4F7FA]">INDICATIVO</strong> —
+                      o IAI não publica fator regional Brasil formal em fonte aberta com
+                      página/tabela. Este cenário{' '}
+                      <strong className="text-[#D9B36C]">NÃO é o default do motor</strong>; só pode
+                      ser ativado com evidência documental própria por peça/lote (EPD de fundição ou
+                      LCI regional), em estrito cumprimento da hierarquia de fatores do §7 do
+                      DM-ORB-001 (fator específico com laudo &gt; fator oficial &gt; default).
+                    </p>
+                  </div>
+
+                  {/* Nota de Decisão do Titular */}
+                  <div className="p-2.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.08)] text-[11px] text-[#93A3B5]">
+                    <span className="text-[#12B886] font-bold font-mono block mb-0.5">
+                      Nota de Decisão do Titular:
                     </span>
-                  </p>
+                    &quot;Ancorado na produção global média IAI 2024 (fallback conservador 14,40
+                    kgCO₂e/kg); cenário regional hidrelétrico BR (~10,0, IAI FAQs indicativo)
+                    ativável somente com evidência documental própria por peça/lote.&quot; Substitui
+                    o número 16,60 anterior derivado de leitura secundária de FAQs.
+                  </div>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
@@ -1852,12 +1901,12 @@ export default function FatoresEmissaoPublicoPage() {
                       <td className="py-2.5 px-3 font-semibold text-[#F4F7FA]">
                         PART-GOL-RODA-01 (Roda Liga Leve)
                       </td>
-                      <td className="py-2.5 px-3 text-[#93A3B5]">Alumínio (16,60)</td>
+                      <td className="py-2.5 px-3 text-[#93A3B5]">Alumínio (14,40)</td>
                       <td className="py-2.5 px-3 text-right">8,0</td>
-                      <td className="py-2.5 px-3 text-right">16,60</td>
-                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">39,84</td>
+                      <td className="py-2.5 px-3 text-right">14,40</td>
+                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">34,56</td>
                       <td className="py-2.5 px-3 text-right text-[#EF4444]">0,00</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">39,84</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">34,56</td>
                       <td className="py-2.5 px-3 text-center text-[#12B886]">NF-e 1235</td>
                       <td className="py-2.5 px-3 text-center">
                         <span className="px-2 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] text-[10px] font-bold">
@@ -1927,7 +1976,7 @@ export default function FatoresEmissaoPublicoPage() {
                     Total Evitado Líquido
                   </span>
                   <span className="font-mono text-base font-bold text-[#12B886]">
-                    817,71 kgCO₂e
+                    812,43 kgCO₂e
                   </span>
                   <span className="text-[10px] text-[#93A3B5] block">Floor 2 casas</span>
                 </div>
@@ -1936,7 +1985,7 @@ export default function FatoresEmissaoPublicoPage() {
                     Claim Confirmado
                   </span>
                   <span className="font-mono text-base font-bold text-[#12B886]">
-                    815,43 kgCO₂e
+                    810,15 kgCO₂e
                   </span>
                   <span className="text-[10px] text-[#93A3B5] block">Com NF-e / MTR</span>
                 </div>
@@ -1952,7 +2001,7 @@ export default function FatoresEmissaoPublicoPage() {
                     Incerteza do Lote (Quadratura)
                   </span>
                   <span className="font-mono text-base font-bold text-[#F4F7FA]">
-                    ±17,37 kg (±2,1%)
+                    ±17,36 kg (±2,1%)
                   </span>
                   <span className="text-[10px] text-[#93A3B5] block">u_massa = 1,0%</span>
                 </div>

@@ -139,20 +139,26 @@ routerAdd('POST', '/backend/v2/cdv/lotes', (e) => {
   const li = typeof body.li_config === 'number' ? body.li_config : 1.0
 
   const fatoresCo2e = {
-    aco: { fe: 2.85, u_fe: 0.035, fonte: 'WorldSteel / IED / MCTI 2024', tier: 'T3' },
+    aco: { fe: 2.18, u_fe: 0.035, fonte: 'worldsteel 2025 (GHG 2024: 2,18 tCO₂e/t)', tier: 'T3' },
     aluminio: {
-      fe: 8.2,
+      fe: 14.4,
       u_fe: 0.04,
-      fonte: 'International Aluminium Institute (IAI 2023)',
+      fonte:
+        'International Aluminium Institute (IAI 2024 Emissions Intensity; 14,4 tCO₂e/t Al fallback global)',
       tier: 'T3',
     },
     cobre: {
       fe: 5.4,
       u_fe: 0.045,
-      fonte: 'International Copper Association (ICA 2023)',
+      fonte: 'CopperMark Decarbonizing Copper / ICA 2024 (5,3 tCO₂e/t + margem)',
       tier: 'T3',
     },
-    polimeros: { fe: 1.9, u_fe: 0.05, fonte: 'PlasticsEurope LCA Dataset 2023', tier: 'T2' },
+    polimeros: {
+      fe: 1.9,
+      u_fe: 0.05,
+      fonte: 'PlasticsEurope Eco-profiles 2023 (PP at gate)',
+      tier: 'T2',
+    },
     outros: {
       fe: 1.5,
       u_fe: 0.1,

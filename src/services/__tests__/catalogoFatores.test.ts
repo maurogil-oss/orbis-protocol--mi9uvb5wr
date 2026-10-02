@@ -24,8 +24,12 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
 
     const aluminio = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-aluminio')
     expect(aluminio).toBeDefined()
-    expect(aluminio?.valorFator).toBe(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg) // 16.6
+    expect(aluminio?.valorFator).toBe(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg) // 14.4
+    expect(aluminio?.valorFator).toBe(14.4)
     expect(aluminio?.fonteOficial).toContain('International Aluminium Institute')
+    expect(aluminio?.detalheTecnico).toContain('14,40 kgCO₂e/kg')
+    expect(aluminio?.detalheTecnico).toContain('REGIONAL BR')
+    expect(aluminio?.detalheTecnico).toContain('~10,00')
 
     const cobre = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-cobre')
     expect(cobre).toBeDefined()

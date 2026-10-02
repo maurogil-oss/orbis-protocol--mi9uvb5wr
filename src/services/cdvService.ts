@@ -24,10 +24,11 @@ export const FATORES_CDV_MATERIAIS: Record<string, FatorCdvMaterial> = {
   },
   aluminio: {
     categoria: 'aluminio',
-    nome: 'Alumínio Primário Automotivo',
-    fatorKgCO2ePorKg: 16.6,
-    fonte: 'International Aluminium Institute (IAI 2023 FAQs)',
-    ano: 2023,
+    nome: 'Alumínio Primário Automotivo (Fallback Global)',
+    fatorKgCO2ePorKg: 14.4,
+    fonte:
+      'International Aluminium Institute (IAI 2024 Emissions Intensity; 14,4 tCO₂e/t Al cradle-to-gate fallback global)',
+    ano: 2024,
   },
   cobre: {
     categoria: 'cobre',

@@ -94,7 +94,7 @@ describe('Motor de Cálculo Orbis v2 & DM-ORB-001 v1.1', () => {
   })
 
   it('Critério de aceite (d): Peça mista sem decomposição adota o menor fator entre as opções (conservador)', () => {
-    // Comparando aço (2.18), alumínio (16.6), cobre (5.4) e polímeros (1.9)
+    // Comparando aço (2.18), alumínio (14.4), cobre (5.4) e polímeros (1.9)
     const conservador = obterFatorConservadorParaPecaMista(['aco', 'polimeros'])
     expect(conservador.material).toBe('polimeros')
     expect(conservador.fe_ref).toBe(1.9)
@@ -195,7 +195,7 @@ describe('Motor de Cálculo Orbis v2 & DM-ORB-001 v1.1', () => {
           sku: 'P2',
           descricao: 'Peça Alumínio',
           material: 'Alumínio',
-          peso_kg: 5.0, // Evitado = 5 * 16.60 * 0.3 = 24.90, u_fe = 0.040
+          peso_kg: 5.0, // Evitado = 5 * 14.40 * 0.3 = 21.60, u_fe = 0.040
         },
       ],
     }
@@ -204,9 +204,9 @@ describe('Motor de Cálculo Orbis v2 & DM-ORB-001 v1.1', () => {
 
     const e1 = 13.08
     const u1 = FATORES_MATERIAIS_V2.aco.u_fe // 0.035
-    const e2 = 24.9
+    const e2 = 21.6
     const u2 = FATORES_MATERIAIS_V2.aluminio.u_fe // 0.040
-    const totalE = 37.98
+    const totalE = 34.68
     const uMassa = 0.01
 
     const somaQuadrados = Math.pow(e1 * u1, 2) + Math.pow(e2 * u2, 2) + Math.pow(totalE * uMassa, 2)

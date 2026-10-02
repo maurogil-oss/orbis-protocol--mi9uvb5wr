@@ -110,9 +110,9 @@ routerAdd('POST', '/backend/v1/cdv/lotes', (e) => {
 
   // Fatores de emissão evitada por material (curados)
   const fatoresCo2e = {
-    aco: 2.85, // kg CO2e/kg — Aço laminado a frio, IED/MCTI 2024
-    aluminio: 8.2, // kg CO2e/kg — Alumínio primário, IAI 2023
-    cobre: 5.4, // kg CO2e/kg — Cobre catódico, ICA/Cobre 2023
+    aco: 2.18, // kg CO2e/kg — worldsteel 2025 (GHG 2024)
+    aluminio: 14.4, // kg CO2e/kg — Alumínio primário fallback global, IAI 2024
+    cobre: 5.4, // kg CO2e/kg — Cobre catódico, ICA/CopperMark 2024
     polimeros: 1.9, // kg CO2e/kg — Polipropileno virgem, PlasticsEurope 2023
   }
   const fatorConservador = 1.5 // kg CO2e/kg estimativa conservadora p/ materiais não listados

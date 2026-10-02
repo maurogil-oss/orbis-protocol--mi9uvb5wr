@@ -8,7 +8,7 @@ import {
 describe('Módulo CDV Operacional & DPP Engine', () => {
   it('deve possuir fatores curados de CO2e evitado corretos por material', () => {
     expect(FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg).toBe(2.18)
-    expect(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg).toBe(16.6)
+    expect(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg).toBe(14.4)
     expect(FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg).toBe(5.4)
     expect(FATORES_CDV_MATERIAIS.polimeros.fatorKgCO2ePorKg).toBe(1.9)
     expect(FATORES_CDV_MATERIAIS.outros.fatorKgCO2ePorKg).toBe(1.5)

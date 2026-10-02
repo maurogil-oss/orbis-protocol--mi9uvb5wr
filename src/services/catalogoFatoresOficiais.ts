@@ -90,20 +90,20 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
   {
     id: 'mat-aluminio',
     categoria: 'cdv_materiais',
-    nomeMaterial: 'Alumínio Primário Automotivo',
+    nomeMaterial: 'Alumínio Primário Automotivo (Fallback Global)',
     descricao:
       'Rodas de liga leve, blocos de motor, cabeçotes, braços de suspensão e carcaças de transmissão.',
-    valorFator: 16.6,
+    valorFator: 14.4,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
     fonteOficial:
-      'International Aluminium Institute (IAI) "Aluminium Carbon Footprint FAQs" (Média global 2023)',
-    anoReferencia: 2023,
-    normaPadrao: 'IAI Cradle-to-Gate Guidance • ISO 14067',
+      'International Aluminium Institute (IAI), Primary Aluminium Greenhouse Gas Emissions Intensity (emissão 2024, tabela Primary Aluminium — Total Cradle-to-Gate: 14,4 tCO₂e/t Al)',
+    anoReferencia: 2024,
+    normaPadrao: 'IAI Cradle-to-Gate Guidance • ISO 14067 / ISO 14040/44',
     tierIncerteza: 'Tier 3',
     incertezaPct: 4.0,
     detalheTecnico:
-      'Evita o refino eletrolítico primário e cadeia completa berço-ao-portão da bauxita (faixa típica IAI 4,5–22 tCO₂e/t Al; média global 2023 de 16,6 tCO₂e/t Al [com checklist detalhado de 14,8 tCO₂e/t Al]). Ajustado a partir de 8,20 sob revisão de magnitude pelo titular.',
+      'Fallback global citável e conservador aplicado como padrão do motor v2: 14,40 kgCO₂e/kg. Decomposição verificada IAI 2024 berço-ao-portão: eletricidade-indireta 8,5 + PFC-direto 0,9 + processo CO₂-direto 1,5 + materiais auxiliares-indireto 1,3 + energia térmica 1,6 + transporte 0,5 = 14,4 tCO₂e/t Al. URL: https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity-primary-aluminium/. CENÁRIO ALTERNATIVO REGIONAL BR (HIDRELÉTRICA): ~10,00 kgCO₂e/kg (IAI Aluminium Carbon Footprint FAQs, gráfico indicativo por fonte de eletricidade hidrelétrica ~10 tCO₂e/t; URL: https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/). O cenário regional é INDICATIVO, não-default do motor, ativável exclusivamente com evidência documental própria por lote/peça (EPD de fundição ou LCI regional), respeitando a hierarquia de fatores (§7 DM-ORB-001). Nota de decisão do titular: "Ancorado na produção global média IAI 2024 (fallback conservador); cenário regional hidrelétrico BR (~10,0, IAI FAQs indicativo) ativável somente com evidência documental própria por peça/lote."',
   },
   {
     id: 'mat-cobre',

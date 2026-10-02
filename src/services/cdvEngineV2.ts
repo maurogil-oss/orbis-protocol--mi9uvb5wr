@@ -59,11 +59,11 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
   },
   aluminio: {
     material: 'aluminio',
-    nome: 'Alumínio Primário Automotivo',
-    fe_ref: 16.6,
+    nome: 'Alumínio Primário Automotivo (Fallback Global)',
+    fe_ref: 14.4,
     u_fe: 0.04, // ±4.0%
     fonte:
-      'International Aluminium Institute (IAI 2023 Aluminium Carbon Footprint FAQs; média global 16,6 tCO₂e/t Al cradle-to-gate; revisão de magnitude pelo titular)',
+      'International Aluminium Institute (IAI), Primary Aluminium Greenhouse Gas Emissions Intensity 2024 (14,4 tCO₂e/t Al cradle-to-gate; fallback conservador padrão do motor. Cenário regional BR hidrelétrica ~10,0 indicativo ativável com evidência documental)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T3',
     pendente_verificacao: false,
