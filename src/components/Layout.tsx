@@ -217,7 +217,7 @@ export default function Layout() {
     'Programa MOVER Lei 14.902/2024: Desmontagem veicular e circularidade homologada',
     'Reforma Tributária LC 227/2026 & Decreto 12.955/2026: Novo IVA Dual',
     'IFRS S1/S2: relato de sustentabilidade e riscos climáticos',
-    'Crédito Bacen 4.945: lastro de depósitos ambientais',
+    'Res. BCB 4.945/2021: Políticas de Responsabilidade Social, Ambiental e Climática (PRSAC)',
   ]
 
   return (

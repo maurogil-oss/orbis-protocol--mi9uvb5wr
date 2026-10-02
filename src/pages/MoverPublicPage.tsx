@@ -118,16 +118,20 @@ export function MoverPublicPage() {
               </h2>
             </div>
             <span className="px-3 py-1 rounded-full bg-[#16202B] border border-[#3B82F6]/40 text-[#3B82F6] font-mono text-xs font-bold self-start sm:self-auto">
-              Metodologia GS 448 • Versão V2.1
+              GS 448 v1.0 (mai/2025) — Recovery and Recycling of Materials from Solid Wastes
             </span>
           </div>
 
           <div className="prose prose-invert max-w-none text-xs sm:text-sm text-[#93A3B5] leading-relaxed space-y-4">
             <p>
-              A metodologia <strong>GS 448</strong> define critérios para quantificação de reduções
-              de emissões decorrentes de atividades de reciclagem e reaproveitamento de materiais em
-              fim de vida. A plataforma Orbis Protocol foi desenhada para atender rigorosamente aos
-              critérios dessa norma, aplicando:
+              A metodologia{' '}
+              <strong>
+                GS 448 v1.0 (mai/2025) — Recovery and Recycling of Materials from Solid Wastes
+              </strong>{' '}
+              define critérios técnicos para quantificação de emissões evitadas em atividades de
+              reciclagem e recuperação de materiais pós-consumo. A plataforma Orbis Protocol foi
+              estruturada como camada de prova documental em conformidade com as diretrizes desse
+              referencial, aplicando:
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
@@ -235,7 +239,7 @@ export function MoverPublicPage() {
                 Integridade Criptográfica Imutável
               </span>
               <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                HASH SHA-256 CANÔNICO DO DESENHO METODOLÓGICO GS 448
+                HASH SHA-256 DO DESENHO METODOLÓGICO DO PROTOCOLO INTERNO ORBIS
               </h3>
             </div>
             <button
@@ -255,8 +259,8 @@ export function MoverPublicPage() {
             {canonicalHashPublico}
           </div>
           <p className="text-[11px] text-[#93A3B5]">
-            Consolidação matemática do escopo, regras de baseline e parâmetros de substituição
-            declarados na v0.0.41 do protocolo.
+            Consolidação matemática do escopo, regras de baseline e parâmetros de substituição do
+            protocolo interno Orbis alinhado à GS 448 v1.0.
           </p>
         </section>
 

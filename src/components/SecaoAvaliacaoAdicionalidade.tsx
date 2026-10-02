@@ -58,7 +58,7 @@ export const VALOR_PADRAO_ADICIONALIDADE: AvaliacaoAdicionalidadeData = {
   justificativa_pericial:
     'A atividade de desmonte técnico com descaracterização rastreada, descontaminação integral de fluidos e inventário digital berço-ao-portão demanda custos adicionais operacionais de mão de obra especializada e infraestrutura de rastreabilidade dMRV não remunerados pela venda convencional de sucata mista ferrosa. Há clara barreira tecnológica superada pela adoção de etiquetagem criptográfica de peças verdes e rastreamento de balanço de massa curbside. Adicionalmente, inexiste obrigatoriedade legal compulsória no ordenamento jurídico nacional para a segregação de 77 subsistemas catalogados e quantificação de emissões evitadas para além da baixa cadastral pura no sistema DETRAN.',
   data_avaliacao: new Date().toISOString(),
-  avaliador_nome: 'VVB independente acreditado',
+  avaliador_nome: 'Autoavaliação pericial pré-VVB — pendente de validação por terceira parte',
   status_parecer: 'conforme_declarado',
 }
 
@@ -231,17 +231,19 @@ export const SecaoAvaliacaoAdicionalidade: React.FC<SecaoAvaliacaoAdicionalidade
             {conformidadePlena ? (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Adicionalidade Atestada (3/3)</span>
+                <span>Autoavaliação pericial pré-VVB (3/3)</span>
               </>
             ) : (
               <>
                 <AlertCircle className="w-4 h-4" />
-                <span>Em Análise Pericial ({totalCriteriosAtendidos}/3)</span>
+                <span>Autoavaliação pericial em análise ({totalCriteriosAtendidos}/3)</span>
               </>
             )}
           </span>
           <span className="text-[10px] font-mono text-[#93A3B5] print:text-slate-500">
-            Avaliador: {dados.avaliador_nome || 'VVB independente acreditado'}
+            Status:{' '}
+            {dados.avaliador_nome ||
+              'Autoavaliação pericial pré-VVB — pendente de validação por terceira parte'}
           </span>
         </div>
       </div>

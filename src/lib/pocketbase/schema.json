@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T20:43:12.054Z",
+  "generatedAt": "2026-10-02T12:37:55.225Z",
   "collections": [
     {
       "name": "users",
@@ -4997,6 +4997,112 @@
         "CREATE INDEX idx_nfs_log_usuario ON nfs_api_lotes_log (usuario)",
         "CREATE INDEX idx_nfs_log_cnpj ON nfs_api_lotes_log (cnpj_vinculado)",
         "CREATE INDEX idx_nfs_log_created ON nfs_api_lotes_log (created)"
+      ]
+    },
+    {
+      "name": "cdv_claims",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "chave_dedup",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "chassi",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "sku",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "data_baixa",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_cnpj",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cdv_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "lote_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "selo_dpp",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_claim",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["confirmado", "potencial", "conflito", "anulado"]
+        },
+        {
+          "name": "destinacao_tipo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "destinacao_evidencia",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_cdv_claims_chave ON cdv_claims (chave_dedup)",
+        "CREATE INDEX idx_cdv_claims_chassi ON cdv_claims (chassi)",
+        "CREATE INDEX idx_cdv_claims_hash ON cdv_claims (hash_claim)",
+        "CREATE INDEX idx_cdv_claims_status ON cdv_claims (status)"
       ]
     }
   ]

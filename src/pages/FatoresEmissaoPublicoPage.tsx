@@ -447,7 +447,7 @@ export default function FatoresEmissaoPublicoPage() {
                           )}
                           {item.tipoImpacto === 'emissao_indireta' && (
                             <span className="px-2 py-0.5 rounded bg-purple-500/15 border border-purple-500/40 text-purple-300 font-mono text-[10px] font-bold">
-                              Escopo 2/3 (Indireta)
+                              {item.id.includes('energia') ? 'Escopo 2' : 'Escopo 3'}
                             </span>
                           )}
                         </td>
@@ -541,8 +541,8 @@ export default function FatoresEmissaoPublicoPage() {
             <p className="text-xs text-[#93A3B5] leading-relaxed">
               O motor de emissões da Orbis Protocol utiliza obrigatoriamente as métricas do{' '}
               <strong className="text-[#F4F7FA]">IPCC Sexto Relatório de Avaliação (AR6)</strong>{' '}
-              para consolidação de tCO₂e. Padrão exigido para auditorias do SBCE (Lei nº
-              15.042/2024) e conformidade de reporte corporativo no Brasil:
+              para consolidação de tCO₂e, alinhado às diretrizes do SBCE (Lei nº 15.042/2024) e
+              conformidade de reporte corporativo no Brasil:
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

@@ -55,9 +55,13 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
     expect(irec).toBeDefined()
     expect(irec?.valorFator).toBe(0.0)
 
-    const insetting = CATALOGO_FATORES_CO2E.find((f) => f.id === 'insetting-peca')
-    expect(insetting).toBeDefined()
-    expect(insetting?.valorFator).toBe(-24.5)
+    const r134a = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-r134a-refrigerante')
+    expect(r134a).toBeDefined()
+    expect(r134a?.valorFator).toBe(1530.0)
+
+    // O fator insetting fixo foi removido do catálogo (§3: cálculo agora é por massa)
+    const insettingFixo = CATALOGO_FATORES_CO2E.find((f) => f.id === 'insetting-peca')
+    expect(insettingFixo).toBeUndefined()
   })
 
   it('deve conter as métricas oficiais de GWP do IPCC AR6', () => {
