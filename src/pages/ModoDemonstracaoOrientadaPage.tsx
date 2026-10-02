@@ -224,7 +224,7 @@ export default function ModoDemonstracaoOrientadaPage() {
           cartelaDesmontagem: loteClio?.cartela_desmontagem || '12401050711',
           totalPecas: loteClio?.total_pecas || (pecasClio.length > 0 ? pecasClio.length : 77),
           totalPesoKg: loteClio?.total_peso_kg || 437.7,
-          totalCo2eEvitadoKg: loteClio?.total_co2e_evitado_kg || 1584.81,
+          totalCo2eEvitadoKg: loteClio?.total_co2e_evitado_kg || 629.4,
           cdvNome: loteClio?.cdv_nome || 'Centro de Desmontagem Veicular Modelo Ltda.',
           cdvCnpj: loteClio?.cdv_cnpj || '28.149.882/0001-40',
           pecas611Count: pecas611.length > 0 ? pecas611.length : 49,

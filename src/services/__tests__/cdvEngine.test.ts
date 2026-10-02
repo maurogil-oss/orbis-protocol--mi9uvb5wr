@@ -110,8 +110,14 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     expect(hashLoteAlterado).not.toBe(hashLote1)
   })
 
-  it('deve validar consistência do Lote Demo Renault Clio (49 peças, 437,7 kg, 1.584,81 kgCO2e)', async () => {
-    // 49 peças distribuídas pelos 9 subsistemas
+  it('deve validar consistência do Lote Demo Renault Clio (49 peças 611, 437,7 kg) sob metodologia DM-ORB-001 v1.1 (v2: DF=0,30, L_i=1,0)', async () => {
+    // 49 peças 611 recalculadas sob o motor v2:
+    // Aço: 2,18 (worldsteel 2025)
+    // Alumínio: 14,40 (IAI 2024 global default)
+    // Cobre: 5,40 (CopperMark/ICA 2024)
+    // Polímeros: 1,90 (PlasticsEurope)
+    // Outros: 1,50
+    // Fórmula: floor(Q * FE_ref * 1.0 * 0.30)
     const pecasDemo = [
       // Motor (8 peças)
       {
@@ -121,8 +127,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Motor',
         peso: 42.0,
-        fator: 2.85,
-        co2e: 119.7,
+        fator: 2.18,
+        co2e: Math.floor(42.0 * 2.18 * 1.0 * 0.3 * 100) / 100, // 27.46
       },
       {
         selo: 'PR-SEAL-2026-000102',
@@ -131,8 +137,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Motor',
         peso: 16.5,
-        fator: 8.2,
-        co2e: 135.3,
+        fator: 14.4,
+        co2e: Math.floor(16.5 * 14.4 * 1.0 * 0.3 * 100) / 100, // 71.28
       },
       {
         selo: 'PR-SEAL-2026-000103',
@@ -141,8 +147,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Motor',
         peso: 13.0,
-        fator: 2.85,
-        co2e: 37.05,
+        fator: 2.18,
+        co2e: Math.floor(13.0 * 2.18 * 1.0 * 0.3 * 100) / 100, // 8.50
       },
       {
         selo: 'PR-SEAL-2026-000104',
@@ -151,8 +157,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Motor',
         peso: 6.8,
-        fator: 2.85,
-        co2e: 19.38,
+        fator: 2.18,
+        co2e: Math.floor(6.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 4.44
       },
       {
         selo: 'PR-SEAL-2026-000105',
@@ -161,8 +167,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Motor',
         peso: 4.2,
-        fator: 8.2,
-        co2e: 34.44,
+        fator: 14.4,
+        co2e: Math.floor(4.2 * 14.4 * 1.0 * 0.3 * 100) / 100, // 18.14
       },
       {
         selo: 'PR-SEAL-2026-000106',
@@ -172,7 +178,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Motor',
         peso: 3.5,
         fator: 1.9,
-        co2e: 6.65,
+        co2e: Math.floor(3.5 * 1.9 * 1.0 * 0.3 * 100) / 100, // 1.99
       },
       {
         selo: 'PR-SEAL-2026-000107',
@@ -181,8 +187,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Motor',
         peso: 9.8,
-        fator: 2.85,
-        co2e: 27.93,
+        fator: 2.18,
+        co2e: Math.floor(9.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 6.40
       },
       {
         selo: 'PR-SEAL-2026-000108',
@@ -191,8 +197,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Motor',
         peso: 2.4,
-        fator: 8.2,
-        co2e: 19.68,
+        fator: 14.4,
+        co2e: Math.floor(2.4 * 14.4 * 1.0 * 0.3 * 100) / 100, // 10.36
       },
       // Câmbio (4 peças)
       {
@@ -202,8 +208,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Câmbio',
         peso: 18.0,
-        fator: 8.2,
-        co2e: 147.6,
+        fator: 14.4,
+        co2e: Math.floor(18.0 * 14.4 * 1.0 * 0.3 * 100) / 100, // 77.76
       },
       {
         selo: 'PR-SEAL-2026-000110',
@@ -212,8 +218,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Câmbio',
         peso: 15.6,
-        fator: 2.85,
-        co2e: 44.46,
+        fator: 2.18,
+        co2e: Math.floor(15.6 * 2.18 * 1.0 * 0.3 * 100) / 100, // 10.20
       },
       {
         selo: 'PR-SEAL-2026-000111',
@@ -222,8 +228,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Câmbio',
         peso: 11.2,
-        fator: 2.85,
-        co2e: 31.92,
+        fator: 2.18,
+        co2e: Math.floor(11.2 * 2.18 * 1.0 * 0.3 * 100) / 100, // 7.32
       },
       {
         selo: 'PR-SEAL-2026-000112',
@@ -232,8 +238,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Câmbio',
         peso: 2.8,
-        fator: 2.85,
-        co2e: 7.98,
+        fator: 2.18,
+        co2e: Math.floor(2.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 1.83
       },
       // Elétrica (6 peças)
       {
@@ -244,7 +250,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Elétrica',
         peso: 5.6,
         fator: 5.4,
-        co2e: 30.24,
+        co2e: Math.floor(5.6 * 5.4 * 1.0 * 0.3 * 100) / 100, // 9.07
       },
       {
         selo: 'PR-SEAL-2026-000114',
@@ -254,7 +260,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Elétrica',
         peso: 4.8,
         fator: 5.4,
-        co2e: 25.92,
+        co2e: Math.floor(4.8 * 5.4 * 1.0 * 0.3 * 100) / 100, // 7.77
       },
       {
         selo: 'PR-SEAL-2026-000115',
@@ -264,7 +270,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Elétrica',
         peso: 7.2,
         fator: 5.4,
-        co2e: 38.88,
+        co2e: Math.floor(7.2 * 5.4 * 1.0 * 0.3 * 100) / 100, // 11.66
       },
       {
         selo: 'PR-SEAL-2026-000116',
@@ -274,7 +280,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Elétrica',
         peso: 1.2,
         fator: 1.5,
-        co2e: 1.8,
+        co2e: Math.floor(1.2 * 1.5 * 1.0 * 0.3 * 100) / 100, // 0.54
       },
       {
         selo: 'PR-SEAL-2026-000117',
@@ -284,7 +290,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Elétrica',
         peso: 1.9,
         fator: 5.4,
-        co2e: 10.26,
+        co2e: Math.floor(1.9 * 5.4 * 1.0 * 0.3 * 100) / 100, // 3.07
       },
       {
         selo: 'PR-SEAL-2026-000118',
@@ -294,7 +300,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Elétrica',
         peso: 2.1,
         fator: 1.9,
-        co2e: 3.99,
+        co2e: Math.floor(2.1 * 1.9 * 1.0 * 0.3 * 100) / 100, // 1.19
       },
       // Direção (3 peças)
       {
@@ -304,8 +310,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Direção',
         peso: 7.5,
-        fator: 2.85,
-        co2e: 21.38,
+        fator: 2.18,
+        co2e: Math.floor(7.5 * 2.18 * 1.0 * 0.3 * 100) / 100, // 4.90
       },
       {
         selo: 'PR-SEAL-2026-000120',
@@ -314,8 +320,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Direção',
         peso: 3.2,
-        fator: 8.2,
-        co2e: 26.24,
+        fator: 14.4,
+        co2e: Math.floor(3.2 * 14.4 * 1.0 * 0.3 * 100) / 100, // 13.82
       },
       {
         selo: 'PR-SEAL-2026-000121',
@@ -324,8 +330,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Direção',
         peso: 4.8,
-        fator: 2.85,
-        co2e: 13.68,
+        fator: 2.18,
+        co2e: Math.floor(4.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 3.13
       },
       // Suspensão (6 peças)
       {
@@ -335,8 +341,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Suspensão',
         peso: 19.5,
-        fator: 2.85,
-        co2e: 55.58,
+        fator: 2.18,
+        co2e: Math.floor(19.5 * 2.18 * 1.0 * 0.3 * 100) / 100, // 12.75
       },
       {
         selo: 'PR-SEAL-2026-000123',
@@ -345,8 +351,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Suspensão',
         peso: 22.0,
-        fator: 2.85,
-        co2e: 62.7,
+        fator: 2.18,
+        co2e: Math.floor(22.0 * 2.18 * 1.0 * 0.3 * 100) / 100, // 14.38
       },
       {
         selo: 'PR-SEAL-2026-000124',
@@ -355,8 +361,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Suspensão',
         peso: 7.8,
-        fator: 2.85,
-        co2e: 22.23,
+        fator: 2.18,
+        co2e: Math.floor(7.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 5.10
       },
       {
         selo: 'PR-SEAL-2026-000125',
@@ -365,8 +371,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Suspensão',
         peso: 6.4,
-        fator: 2.85,
-        co2e: 18.24,
+        fator: 2.18,
+        co2e: Math.floor(6.4 * 2.18 * 1.0 * 0.3 * 100) / 100, // 4.18
       },
       {
         selo: 'PR-SEAL-2026-000126',
@@ -375,8 +381,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Suspensão',
         peso: 5.6,
-        fator: 2.85,
-        co2e: 15.96,
+        fator: 2.18,
+        co2e: Math.floor(5.6 * 2.18 * 1.0 * 0.3 * 100) / 100, // 3.66
       },
       {
         selo: 'PR-SEAL-2026-000127',
@@ -385,8 +391,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Suspensão',
         peso: 8.2,
-        fator: 2.85,
-        co2e: 23.37,
+        fator: 2.18,
+        co2e: Math.floor(8.2 * 2.18 * 1.0 * 0.3 * 100) / 100, // 5.36
       },
       // Freios (4 peças)
       {
@@ -396,8 +402,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Freios',
         peso: 10.4,
-        fator: 2.85,
-        co2e: 29.64,
+        fator: 2.18,
+        co2e: Math.floor(10.4 * 2.18 * 1.0 * 0.3 * 100) / 100, // 6.80
       },
       {
         selo: 'PR-SEAL-2026-000129',
@@ -406,8 +412,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Freios',
         peso: 5.8,
-        fator: 8.2,
-        co2e: 47.56,
+        fator: 14.4,
+        co2e: Math.floor(5.8 * 14.4 * 1.0 * 0.3 * 100) / 100, // 25.05
       },
       {
         selo: 'PR-SEAL-2026-000130',
@@ -416,8 +422,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Freios',
         peso: 9.6,
-        fator: 2.85,
-        co2e: 27.36,
+        fator: 2.18,
+        co2e: Math.floor(9.6 * 2.18 * 1.0 * 0.3 * 100) / 100, // 6.27
       },
       {
         selo: 'PR-SEAL-2026-000131',
@@ -426,8 +432,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Freios',
         peso: 4.2,
-        fator: 2.85,
-        co2e: 11.97,
+        fator: 2.18,
+        co2e: Math.floor(4.2 * 2.18 * 1.0 * 0.3 * 100) / 100, // 2.74
       },
       // Arrefecimento (4 peças)
       {
@@ -437,8 +443,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Arrefecimento',
         peso: 3.9,
-        fator: 8.2,
-        co2e: 31.98,
+        fator: 14.4,
+        co2e: Math.floor(3.9 * 14.4 * 1.0 * 0.3 * 100) / 100, // 16.84
       },
       {
         selo: 'PR-SEAL-2026-000133',
@@ -447,8 +453,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aluminio',
         sub: 'Arrefecimento',
         peso: 3.4,
-        fator: 8.2,
-        co2e: 27.88,
+        fator: 14.4,
+        co2e: Math.floor(3.4 * 14.4 * 1.0 * 0.3 * 100) / 100, // 14.68
       },
       {
         selo: 'PR-SEAL-2026-000134',
@@ -458,7 +464,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Arrefecimento',
         peso: 2.8,
         fator: 1.9,
-        co2e: 5.32,
+        co2e: Math.floor(2.8 * 1.9 * 1.0 * 0.3 * 100) / 100, // 1.59
       },
       {
         selo: 'PR-SEAL-2026-000135',
@@ -468,7 +474,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Arrefecimento',
         peso: 1.6,
         fator: 1.9,
-        co2e: 3.04,
+        co2e: Math.floor(1.6 * 1.9 * 1.0 * 0.3 * 100) / 100, // 0.91
       },
       // Escape (3 peças)
       {
@@ -478,8 +484,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Escape',
         peso: 5.2,
-        fator: 2.85,
-        co2e: 14.82,
+        fator: 2.18,
+        co2e: Math.floor(5.2 * 2.18 * 1.0 * 0.3 * 100) / 100, // 3.40
       },
       {
         selo: 'PR-SEAL-2026-000137',
@@ -488,8 +494,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Escape',
         peso: 6.8,
-        fator: 2.85,
-        co2e: 19.38,
+        fator: 2.18,
+        co2e: Math.floor(6.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 4.44
       },
       {
         selo: 'PR-SEAL-2026-000138',
@@ -498,8 +504,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Escape',
         peso: 7.4,
-        fator: 2.85,
-        co2e: 21.09,
+        fator: 2.18,
+        co2e: Math.floor(7.4 * 2.18 * 1.0 * 0.3 * 100) / 100, // 4.83
       },
       // Carroceria (11 peças)
       {
@@ -509,8 +515,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 15.2,
-        fator: 2.85,
-        co2e: 43.32,
+        fator: 2.18,
+        co2e: Math.floor(15.2 * 2.18 * 1.0 * 0.3 * 100) / 100, // 9.94
       },
       {
         selo: 'PR-SEAL-2026-000140',
@@ -519,8 +525,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 14.5,
-        fator: 2.85,
-        co2e: 41.33,
+        fator: 2.18,
+        co2e: Math.floor(14.5 * 2.18 * 1.0 * 0.3 * 100) / 100, // 9.48
       },
       {
         selo: 'PR-SEAL-2026-000141',
@@ -529,8 +535,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 18.2,
-        fator: 2.85,
-        co2e: 51.87,
+        fator: 2.18,
+        co2e: Math.floor(18.2 * 2.18 * 1.0 * 0.3 * 100) / 100, // 11.90
       },
       {
         selo: 'PR-SEAL-2026-000142',
@@ -539,8 +545,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 18.2,
-        fator: 2.85,
-        co2e: 51.87,
+        fator: 2.18,
+        co2e: Math.floor(18.2 * 2.18 * 1.0 * 0.3 * 100) / 100, // 11.90
       },
       {
         selo: 'PR-SEAL-2026-000143',
@@ -549,8 +555,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 16.5,
-        fator: 2.85,
-        co2e: 47.03,
+        fator: 2.18,
+        co2e: Math.floor(16.5 * 2.18 * 1.0 * 0.3 * 100) / 100, // 10.79
       },
       {
         selo: 'PR-SEAL-2026-000144',
@@ -559,8 +565,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 16.5,
-        fator: 2.85,
-        co2e: 47.03,
+        fator: 2.18,
+        co2e: Math.floor(16.5 * 2.18 * 1.0 * 0.3 * 100) / 100, // 10.79
       },
       {
         selo: 'PR-SEAL-2026-000145',
@@ -569,8 +575,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 4.8,
-        fator: 2.85,
-        co2e: 13.68,
+        fator: 2.18,
+        co2e: Math.floor(4.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 3.13
       },
       {
         selo: 'PR-SEAL-2026-000146',
@@ -579,8 +585,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 4.8,
-        fator: 2.85,
-        co2e: 13.68,
+        fator: 2.18,
+        co2e: Math.floor(4.8 * 2.18 * 1.0 * 0.3 * 100) / 100, // 3.13
       },
       {
         selo: 'PR-SEAL-2026-000147',
@@ -590,7 +596,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Carroceria',
         peso: 4.2,
         fator: 1.9,
-        co2e: 7.98,
+        co2e: Math.floor(4.2 * 1.9 * 1.0 * 0.3 * 100) / 100, // 2.39
       },
       {
         selo: 'PR-SEAL-2026-000148',
@@ -600,7 +606,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         sub: 'Carroceria',
         peso: 4.6,
         fator: 1.9,
-        co2e: 8.74,
+        co2e: Math.floor(4.6 * 1.9 * 1.0 * 0.3 * 100) / 100, // 2.62
       },
       {
         selo: 'PR-SEAL-2026-000149',
@@ -609,8 +615,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'aco',
         sub: 'Carroceria',
         peso: 5.5,
-        fator: 2.85,
-        co2e: 15.68,
+        fator: 2.18,
+        co2e: Math.floor(5.5 * 2.18 * 1.0 * 0.3 * 100) / 100, // 3.59
       },
     ]
 
@@ -636,9 +642,9 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     const massaTotal = pecasDemo.reduce((acc, p) => acc + p.peso, 0)
     expect(massaTotal).toBeCloseTo(437.7, 1)
 
-    // 4. Soma de CO2e evitado fecha em 1.584,81 kgCO2e
+    // 4. Soma de CO2e evitado sob motor v2 fecha em 451,97 kgCO2e
     const co2eTotal = pecasDemo.reduce((acc, p) => acc + p.co2e, 0)
-    expect(co2eTotal).toBeCloseTo(1584.81, 1)
+    expect(co2eTotal).toBeCloseTo(451.97, 1)
 
     // 5. Todos os selos seguem o padrão PR-SEAL-2026-XXXXXX e são únicos
     const selosSet = new Set(pecasDemo.map((p) => p.selo))

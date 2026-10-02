@@ -391,7 +391,7 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
                         CO2e Evitado
                       </span>
                       <span className="font-heading font-black text-lg sm:text-xl text-[#059669]">
-                        1.584,81 kg
+                        629,40 kg
                       </span>
                     </div>
                     <div className="p-3.5 rounded-xl bg-[#111827] border border-slate-800 text-center">

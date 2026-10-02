@@ -89,7 +89,7 @@ function CodeBlock({ title, language = 'json', code }: CodeBlockProps) {
 export default function ApiDocsCdvPage() {
   const [activeTab, setActiveTab] = useState<'payload' | 'curl'>('payload')
 
-  const curlExemplo = `curl -X POST "https://www.orbis-protocol.com/backend/v1/cdv/lotes" \\
+  const curlExemplo = `curl -X POST "https://www.orbis-protocol.com/backend/v2/cdv/lotes" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: orb_cdv_live_SEU_TOKEN_HEX_32_CHARS" \\
   -d '{
@@ -110,24 +110,28 @@ export default function ApiDocsCdvPage() {
       {
         "sku": "PART-GOL-CAPO-01",
         "descricao": "Capô Dianteiro Original com Vedação Acústica",
-        "material": "Aço Laminado Automotivo",
-        "peso_kg": 14.5,
+        "material": "Aço",
+        "peso_kg": 10.0,
         "ncm": "8708.29.99"
       },
       {
         "sku": "PART-GOL-ALT-02",
         "descricao": "Alternador 90A com Bobinamento de Cobre",
-        "material": "Cobre / Alumínio Elétrico",
-        "peso_kg": 5.2,
+        "material": "Cobre",
+        "peso_kg": 2.5,
         "ncm": "8511.50.10"
       },
       {
         "sku": "PART-GOL-PARA-03",
         "descricao": "Parachoque Dianteiro Termoplástico Injetado",
-        "material": "Polipropileno Automotivo (PP/EPDM)",
-        "peso_kg": 3.8,
+        "material": "Polímeros",
+        "peso_kg": 4.0,
         "ncm": "8708.10.00"
       }
+    ],
+    "destinacao": [
+      { "sku": "PART-GOL-CAPO-01", "status": "vendida", "evidencia": "NF-e 1234" },
+      { "sku": "PART-GOL-ALT-02", "status": "reciclada", "evidencia": "MTR 4410" }
     ],
     "origem": "erp"
   }'`
@@ -180,58 +184,48 @@ export default function ApiDocsCdvPage() {
   "veiculo_doador": {
     "marca_modelo": "Volkswagen Gol 1.6 8V Total Flex",
     "baixa_detran": "PR-BX-2026-991204",
-    "chassi_mascarado": "***********991204",
+    "chassi_mascarado": "9BWAA05U***204",
     "seguradora_sinistro": "Porto Seguro Cia de Seguros"
   },
-  "total_processado": 3,
-  "total_pecas_criadas": 3,
-  "total_peso_kg": 23.5,
-  "total_co2e_evitado_kg": 76.63,
+  "totais": {
+    "peso_kg": 16.5,
+    "co2e_evitado_liquido_total_kg": 12.87,
+    "evitado_confirmado_kg": 10.59,
+    "evitado_potencial_kg": 2.28,
+    "incerteza_analitica_pct": 2.64,
+    "metodologia": "DM-ORB-001 v1.1 (DF=0,30, L_i=1,0)"
+  },
   "pecas": [
     {
-      "indice": 0,
-      "sku_interno": "PART-GOL-CAPO-01",
+      "sku": "PART-GOL-CAPO-01",
       "selo_dpp": "PR-SEAL-2026-991823",
-      "descricao": "Capô Dianteiro Original com Vedação Acústica",
-      "peso_kg": 14.5,
-      "material_categoria": "aco",
-      "fator_aplicado": 2.85,
-      "incerteza_material": false,
-      "ncm": "8708.29.99",
-      "co2e_evitado_kg": 41.33,
-      "hash_sha256": "4b2e56cf988df0a1ca5d844c8c7f938fae5c3e03889104faee13fef7946927d3",
-      "passaporte_url": "/passaporte/PR-SEAL-2026-991823"
+      "peso_kg": 10.0,
+      "evitado_liquido_kg": 6.54,
+      "status_claim": "confirmado",
+      "hash_sha256": "a35639641ad5c2cbfb275bfbb04d607fe13d07bf83be0ea3413da747d95d10b7"
     },
     {
-      "indice": 1,
-      "sku_interno": "PART-GOL-ALT-02",
+      "sku": "PART-GOL-ALT-02",
       "selo_dpp": "PR-SEAL-2026-991824",
-      "descricao": "Alternador 90A com Bobinamento de Cobre",
-      "peso_kg": 5.2,
-      "material_categoria": "cobre",
-      "fator_aplicado": 5.4,
-      "incerteza_material": false,
-      "ncm": "8511.50.10",
-      "co2e_evitado_kg": 28.08,
-      "hash_sha256": "6d987cf31215b497bca31a0e88c03164a6d252fe0e4879261a8cc2851ecfc234",
-      "passaporte_url": "/passaporte/PR-SEAL-2026-991824"
+      "peso_kg": 2.5,
+      "evitado_liquido_kg": 4.05,
+      "status_claim": "confirmado",
+      "hash_sha256": "a4b75ebff3a5ffccf90e9d6d5c64b5478440cc077755f1f77432f8373b9e4ec3"
     },
     {
-      "indice": 2,
-      "sku_interno": "PART-GOL-PARA-03",
+      "sku": "PART-GOL-PARA-03",
       "selo_dpp": "PR-SEAL-2026-991825",
-      "descricao": "Parachoque Dianteiro Termoplástico Injetado",
-      "peso_kg": 3.8,
-      "material_categoria": "polimeros",
-      "fator_aplicado": 1.9,
-      "incerteza_material": false,
-      "ncm": "8708.10.00",
-      "co2e_evitado_kg": 7.22,
-      "hash_sha256": "e21c327517c2445cbfbb1f13b19280d9adba28e0e181182cba972e21b162704c",
-      "passaporte_url": "/passaporte/PR-SEAL-2026-991825"
+      "peso_kg": 4.0,
+      "evitado_liquido_kg": 2.28,
+      "status_claim": "potencial",
+      "hash_sha256": "439223bbaf4ceb996843c0d7f9509df6eb10f225576a7e0cc96236b2837bc216"
     }
   ],
-  "erros_por_item": []
+  "claims": [
+    { "sku": "PART-GOL-CAPO-01", "status": "confirmado" },
+    { "sku": "PART-GOL-ALT-02", "status": "confirmado" },
+    { "sku": "PART-GOL-PARA-03", "status": "potencial" }
+  ]
 }`
 
   const erro400Exemplo = `{
@@ -331,13 +325,16 @@ export default function ApiDocsCdvPage() {
               CDVerde
             </Link>
             <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-            <span className="text-[#12B886] font-semibold">Documentação da API v1</span>
+            <span className="text-[#12B886] font-semibold">Documentação da API v2</span>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-[#12B886]/15 border border-[#12B886]/40 text-[#12B886] text-[11px] font-mono font-bold flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
-              API v1 • PRODUÇÃO ONLINE
+              API v2 • VIGENTE (DM-ORB-001 v1.1)
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-400 text-[11px] font-mono font-bold">
+              v1 DEPRECADA (410 GONE)
             </span>
             <Link
               to="/painel"
@@ -360,7 +357,7 @@ export default function ApiDocsCdvPage() {
             </div>
 
             <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#F4F7FA] tracking-tight">
-              API v1 — Desmontagem Veicular
+              API v2 — Desmontagem Veicular
             </h1>
 
             <p className="text-base sm:text-lg text-[#12B886] font-medium leading-relaxed">
@@ -564,7 +561,13 @@ export default function ApiDocsCdvPage() {
                 <span className="px-2.5 py-1 rounded bg-[#12B886] text-[#0A0E12] font-black text-xs">
                   POST
                 </span>
-                <span className="text-sm font-bold text-[#F4F7FA]">/backend/v1/cdv/lotes</span>
+                <span className="text-sm font-bold text-[#F4F7FA]">/backend/v2/cdv/lotes</span>
+              </div>
+              <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-200 text-xs">
+                <strong>Atenção:</strong> O endpoint legado <code>POST /backend/v1/cdv/lotes</code>{' '}
+                foi <span className="font-bold underline">descontinuado com HTTP 410 Gone</span>.
+                Migre todas as integrações de ERP para a rota <code>/backend/v2/cdv/lotes</code>{' '}
+                (motor DM-ORB-001 v1.1 com DF=0,30, L_i=1,0 e proteção inter-CDVs).
               </div>
               <div className="flex items-center gap-2 text-xs font-mono text-[#93A3B5]">
                 <span>Content-Type:</span>

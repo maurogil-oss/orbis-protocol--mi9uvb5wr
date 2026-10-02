@@ -213,7 +213,7 @@ export function GerenciadorLastrosTab() {
             </Badge>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Certificação de Lastro de Circularidade
+            Registro de Lastro de Circularidade
           </h2>
           <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
             Consolidação da massa confirmada de frações de Logística Reversa obrigatória (OLUC,
@@ -450,7 +450,7 @@ export function GerenciadorLastrosTab() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg">
               <FileCheck2 className="h-5 w-5 text-amber-600" />
-              Emitir Certificação de Lastro de Circularidade
+              Emitir Atestado de Lastro de Circularidade
             </DialogTitle>
             <DialogDescription className="text-xs">
               Conforme o Decreto Federal nº 11.413/2023. O documento gerado possui hash SHA-256
@@ -698,7 +698,7 @@ export function GerenciadorLastrosTab() {
 
             <div className="p-3 rounded-lg bg-muted/60 border border-border text-[11px] text-muted-foreground leading-relaxed">
               <strong>Aviso Legal Vinculante:</strong> Este documento emitido constitui estritamente
-              Certificação de LASTRO de Circularidade e destinação pericial. A emissão do CCRLR
+              Registro/Atestado de LASTRO de Circularidade e destinação pericial. A emissão do CCRLR
               oficial é ato privativo da Entidade Gestora homologada perante o órgão ambiental.
             </div>
 

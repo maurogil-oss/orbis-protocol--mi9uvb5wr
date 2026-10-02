@@ -358,7 +358,7 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
     return { total, qr, web, embed, conferidos, divergentes, porLote }
   }, [consultasDpp])
 
-  const curlExemplo = `curl -X POST "${window.location.origin}/backend/v1/cdv/lotes" \\
+  const curlExemplo = `curl -X POST "${window.location.origin}/backend/v2/cdv/lotes" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: ${chaveParaEnvio}" \\
   -d '${payloadJsonStr.replace(/\n/g, '').replace(/\s+/g, ' ')}'`
@@ -455,10 +455,10 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
           <div className="lg:col-span-4 p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 flex flex-col justify-between text-xs">
             <div>
               <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-[#D9B36C] block mb-1">
-                Endpoint REST de Ingestão:
+                Endpoint REST Vigente (DM-ORB-001 v1.1):
               </span>
               <div className="font-mono text-[11px] text-slate-900 dark:text-[#F8FAFC] bg-white dark:bg-[#0E1A2E] p-1.5 rounded border border-slate-200 dark:border-slate-800 truncate shadow-sm">
-                POST /backend/v1/cdv/lotes
+                POST /backend/v2/cdv/lotes
               </div>
             </div>
             <div className="pt-2 text-[10px] text-slate-500 dark:text-[#94A3B8] flex justify-between border-t border-slate-200 dark:border-slate-800 mt-2">
@@ -709,7 +709,7 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
           <div className="flex items-center gap-2">
             <Terminal className="w-5 h-5 text-[#059669]" />
             <h3 className="font-heading font-bold text-base text-slate-900 dark:text-[#F8FAFC]">
-              TESTADOR EM TEMPO REAL (DISPARAR POST /backend/v1/cdv/lotes)
+              TESTADOR EM TEMPO REAL (DISPARAR POST /backend/v2/cdv/lotes)
             </h3>
           </div>
           <div className="flex items-center gap-2">
