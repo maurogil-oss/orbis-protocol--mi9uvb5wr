@@ -72,7 +72,9 @@ describe('Faixa regulatória rolante (marquee) no Layout global', () => {
       screen.getAllByText('IFRS S1/S2: relato de sustentabilidade e riscos climáticos').length,
     ).toBeGreaterThanOrEqual(1)
     expect(
-      screen.getAllByText('Crédito Bacen 4.945: lastro de depósitos ambientais').length,
+      screen.getAllByText(
+        'Res. BCB 4.945/2021: Políticas de Responsabilidade Social, Ambiental e Climática (PRSAC)',
+      ).length,
     ).toBeGreaterThanOrEqual(1)
   })
 })

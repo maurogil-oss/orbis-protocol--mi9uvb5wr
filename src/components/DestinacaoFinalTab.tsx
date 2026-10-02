@@ -439,7 +439,7 @@ export function DestinacaoFinalTab({
                           {item.razao_social_destinador}
                         </div>
                         <div className="font-mono text-[10px] text-slate-500 dark:text-[#94A3B8]">
-                          CNPJ: {item.cnpj_destinador}
+                          CNPJ: {item.cnpj_destinador} {dados.is_demo ? '(DEMO)' : ''}
                         </div>
                       </td>
                       <td className="py-3 px-3 text-center">
@@ -577,7 +577,7 @@ export function DestinacaoFinalTab({
                         {item.razao_social_destinador}
                       </div>
                       <div className="font-mono text-[10px] text-slate-500 dark:text-[#94A3B8]">
-                        CNPJ: {item.cnpj_destinador}
+                        CNPJ: {item.cnpj_destinador} {dados.is_demo ? '(DEMO)' : ''}
                       </div>
                     </td>
                     <td className="py-3 px-3 text-right">
@@ -714,7 +714,7 @@ export function DestinacaoFinalTab({
                         {item.razao_social_destinador}
                       </div>
                       <div className="font-mono text-[10px] text-slate-500 dark:text-[#94A3B8]">
-                        CNPJ: {item.cnpj_destinador}
+                        CNPJ: {item.cnpj_destinador} {dados.is_demo ? '(DEMO)' : ''}
                       </div>
                     </td>
                     <td className="py-3 px-3 text-right font-mono font-bold text-sm text-emerald-700 dark:text-[#059669]">

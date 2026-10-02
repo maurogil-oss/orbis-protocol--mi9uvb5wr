@@ -625,7 +625,13 @@ export default function PassaporteLotePublicoPage() {
                       </span>
                       <p className="font-semibold text-[#F4F7FA] truncate">{lote.cdv_nome}</p>
                       <p className="text-[11px] font-mono text-[#D9B36C] font-semibold mt-0.5">
-                        CNPJ {lote.cdv_cnpj} • {lote.cdv_codigo || 'DETRAN-CDV'}
+                        CNPJ {lote.cdv_cnpj}{' '}
+                        {lote.is_demo ||
+                        lote.id === 'h1dpr8wniludemh' ||
+                        lote.veiculo_baixa_detran === 'PR-BX-2026-991204'
+                          ? '(DEMO)'
+                          : ''}{' '}
+                        • {lote.cdv_codigo || 'DETRAN-CDV'}
                       </p>
                     </div>
                   </div>
@@ -1271,8 +1277,15 @@ export default function PassaporteLotePublicoPage() {
                           <span className="text-[#93A3B5] print:text-slate-600">
                             CNPJ Homologado:
                           </span>
-                          <span className="font-mono text-[#D9B36C] print:text-amber-800 font-bold">
+                          <span className="font-mono text-[#D9B36C] print:text-amber-800 font-bold inline-flex items-center gap-1.5">
                             {lote.cdv_cnpj}
+                            {(lote.is_demo ||
+                              lote.id === 'h1dpr8wniludemh' ||
+                              lote.veiculo_baixa_detran === 'PR-BX-2026-991204') && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40">
+                                DEMO
+                              </span>
+                            )}
                           </span>
                         </div>
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
