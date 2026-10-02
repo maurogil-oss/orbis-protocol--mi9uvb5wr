@@ -1439,17 +1439,17 @@ export default function PassaporteLotePublicoPage() {
                           </span>
                           <div
                             className={`font-mono font-black text-sm mt-0.5 ${
-                              dadosDestinacao.balancoMassa.percentualReusoReciclagemTotalPct >= 85
+                              dadosDestinacao.balancoMassa.atingiuMetaReusoReciclagem
                                 ? 'text-[#12B886] print:text-emerald-700'
                                 : 'text-[#F59E0B] print:text-amber-700'
                             }`}
                           >
-                            {dadosDestinacao.balancoMassa.percentualReusoReciclagemTotalPct >= 85
+                            {dadosDestinacao.balancoMassa.atingiuMetaReusoReciclagem
                               ? 'Atingida ✓'
-                              : `Não Atingida (${dadosDestinacao.balancoMassa.percentualReusoReciclagemTotalPct.toFixed(1)}%)`}
+                              : `Não Atingida (${dadosDestinacao.balancoMassa.percentualValorizacaoTotalPct.toFixed(1)}%)`}
                           </div>
                           <span className="text-[10px] text-[#93A3B5] print:text-slate-500 font-mono">
-                            {dadosDestinacao.balancoMassa.percentualReusoReciclagemTotalPct >= 85
+                            {dadosDestinacao.balancoMassa.atingiuMetaReusoReciclagem
                               ? 'Supera meta diretiva ELV'
                               : 'Reuso + reciclagem em progresso'}
                           </span>
