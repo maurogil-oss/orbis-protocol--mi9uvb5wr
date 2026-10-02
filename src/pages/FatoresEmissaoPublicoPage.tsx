@@ -146,7 +146,7 @@ export default function FatoresEmissaoPublicoPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 md:py-14 bg-[#0A0E12] text-[#F4F7FA]">
+    <div className="min-h-screen py-8 md:py-14 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-10">
         {/* Top Breadcrumb & Status Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
@@ -181,7 +181,7 @@ export default function FatoresEmissaoPublicoPage() {
         </div>
 
         {/* HERO INSTITUCIONAL DO DOCUMENTO METODOLÓGICO */}
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-[#111820] via-[#111820] to-[#16202B] border border-[#12B886]/40 shadow-2xl relative overflow-hidden">
+        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-white via-slate-50 to-white dark:from-[#0E1A2E] dark:via-[#111827] dark:to-[#0E1A2E] border border-emerald-300 dark:border-[#059669]/40 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#12B886]/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-4xl space-y-4">
@@ -209,7 +209,7 @@ export default function FatoresEmissaoPublicoPage() {
 
             {/* Metadados Técnicos em Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
-              <div className="p-3.5 rounded-xl bg-[#0A0E12]/80 border border-[rgba(244,247,250,0.08)]">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A1628]/80 border border-slate-200 dark:border-slate-800">
                 <span className="text-[10px] uppercase font-mono text-[#93A3B5] flex items-center gap-1">
                   <FileCheck className="w-3 h-3 text-[#12B886]" />
                   Código Metodológico
@@ -295,14 +295,14 @@ export default function FatoresEmissaoPublicoPage() {
         {abaAtiva === 'documento' && (
           <div className="space-y-10">
             {/* ÍNDICE RÁPIDO DO DOCUMENTO */}
-            <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)]">
+            <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm">
               <span className="text-[11px] font-mono uppercase tracking-wider text-[#12B886] font-bold block mb-3">
                 Sumário do Documento Metodológico DM-ORB-001 v1.1
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                 <a
                   href="#sec-1"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
+                  className="p-2 rounded-lg bg-slate-100 dark:bg-[#111827] hover:bg-slate-200 dark:hover:bg-[#111827]/80 text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors flex items-center gap-1.5 font-mono"
                 >
                   <span>§1</span>
                   <span className="truncate">Objetivo, Gatilho SBCE & Art. 6</span>
@@ -390,7 +390,7 @@ export default function FatoresEmissaoPublicoPage() {
             {/* SEÇÃO 1: OBJETIVO E ESCOPO RESTROITO */}
             <section
               id="sec-1"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
+              className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
             >
               <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
                 <BookOpen className="w-4 h-4" />
@@ -416,7 +416,7 @@ export default function FatoresEmissaoPublicoPage() {
                   §3-A. Nenhum lote, componente ou material que descumpra qualquer dos requisitos do
                   §3-A será admitido pelo motor de cálculo ou receberá chancela dMRV.
                 </p>
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/40 space-y-2">
+                <div className="p-4 rounded-xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/40 space-y-2">
                   <div className="flex items-center gap-2 text-[#D9B36C] font-mono text-xs font-bold uppercase">
                     <ShieldAlert className="w-4 h-4 shrink-0" />
                     <span>
@@ -445,7 +445,7 @@ export default function FatoresEmissaoPublicoPage() {
             {/* SEÇÃO 3-A: 5 CONDIÇÕES DE APLICABILIDADE */}
             <section
               id="sec-3a"
-              className="p-8 rounded-3xl bg-[#111820] border border-[#12B886]/30 space-y-4"
+              className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
             >
               <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
                 <CheckCircle2 className="w-4 h-4" />
@@ -461,7 +461,7 @@ export default function FatoresEmissaoPublicoPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 {/* Condição 1 */}
-                <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] space-y-2">
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-[#12B886]">CONDIÇÃO (i)</span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
@@ -590,9 +590,9 @@ export default function FatoresEmissaoPublicoPage() {
               </p>
 
               {/* Tabela de Materiais Oficial 1:1 */}
-              <div className="overflow-x-auto rounded-xl border border-[rgba(244,247,250,0.1)] bg-[#0A0E12]">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1628]">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b border-[rgba(244,247,250,0.1)] bg-[#16202B] text-[#93A3B5] font-mono text-[10px] uppercase">
+                  <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] font-mono text-[10px] uppercase">
                     <tr>
                       <th className="py-3 px-4">Material (Chave API)</th>
                       <th className="py-3 px-4">Nome Normativo</th>
@@ -631,7 +631,7 @@ export default function FatoresEmissaoPublicoPage() {
                 </table>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-2">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/30 space-y-2">
                 <span className="text-xs font-mono font-bold text-[#12B886] uppercase block">
                   Regra Conservadora para Peças Mistas sem Laudo de Decomposição
                 </span>
@@ -677,7 +677,7 @@ export default function FatoresEmissaoPublicoPage() {
                 </p>
 
                 {/* Bloco de Chave Canônica */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#3B82F6]/30 space-y-2">
+                <div className="p-4 rounded-xl bg-blue-50 dark:bg-[#0A1628] border border-blue-200 dark:border-[#2563EB]/30 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-mono text-[#3B82F6] font-bold uppercase">
                       Chave Canônica de Deduplicação Inter-CDV
@@ -694,7 +694,7 @@ export default function FatoresEmissaoPublicoPage() {
                       <span>{copiouChave ? 'Copiado' : 'Copiar Exemplo'}</span>
                     </button>
                   </div>
-                  <pre className="font-mono text-xs sm:text-sm text-[#12B886] bg-[#111820] p-3 rounded-lg overflow-x-auto">
+                  <pre className="font-mono text-xs sm:text-sm text-emerald-700 dark:text-[#059669] bg-white dark:bg-[#111827] p-3 rounded-lg overflow-x-auto border border-slate-200 dark:border-slate-800">
                     CHASSI + "_" + SKU + "_" + DATA_BAIXA_DETRAN
                   </pre>
                   <p className="text-[11px] text-[#93A3B5]">
@@ -706,7 +706,7 @@ export default function FatoresEmissaoPublicoPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2">
                     <strong className="text-xs font-mono font-bold text-[#EF4444] block uppercase">
                       Rejeição HTTP 409 CONFLITO_DE_CUSTODIA
                     </strong>
@@ -758,7 +758,7 @@ export default function FatoresEmissaoPublicoPage() {
                   aquecimento global em etapas subsequentes da cadeia.
                 </p>
 
-                <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[#12B886]/40 space-y-3">
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/40 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-[#12B886] uppercase">
                       Fluxo de Gás Refrigerante Veicular R-134a (HFC-134a)
@@ -778,11 +778,11 @@ export default function FatoresEmissaoPublicoPage() {
                     </strong>
                     .
                   </p>
-                  <div className="p-3 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.06)] font-mono text-xs text-[#12B886]">
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 font-mono text-xs text-emerald-700 dark:text-[#059669]">
                     Evitado_refrigerante = Massa_R134a_kg × 1.530 × DF_refrig (onde DF_refrig ={' '}
                     {DF_REFRIGERANTE_PADRAO.toFixed(1)})
                   </div>
-                  <div className="p-3 rounded-lg bg-[#111820] border border-[#D9B36C]/30 text-xs text-[#93A3B5]">
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-amber-200 dark:border-[#D9B36C]/30 text-xs text-slate-600 dark:text-[#94A3B8]">
                     <strong className="text-[#D9B36C]">
                       Declaração Mandatória de Subestimação Conservadora:
                     </strong>{' '}
@@ -819,7 +819,7 @@ export default function FatoresEmissaoPublicoPage() {
                 </p>
 
                 {/* Fórmula Central em Destaque */}
-                <div className="p-6 rounded-2xl bg-[#0A0E12] border-2 border-[#12B886] text-center space-y-3">
+                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border-2 border-emerald-500 dark:border-[#059669] text-center space-y-3">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-[#93A3B5]">
                     Equação Fundamental de Emissão Evitada por Peça
                   </span>
@@ -827,7 +827,7 @@ export default function FatoresEmissaoPublicoPage() {
                     Evitado_peça = (Q × FE_ref × L_i × DF) − PE_peça
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px] font-mono text-[#93A3B5] pt-2 border-t border-[rgba(244,247,250,0.06)]">
-                    <div className="p-2 rounded bg-[#111820]">
+                    <div className="p-2 rounded bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800">
                       <strong className="text-[#12B886] block">Q</strong> Massa medida (kg)
                     </div>
                     <div className="p-2 rounded bg-[#111820]">

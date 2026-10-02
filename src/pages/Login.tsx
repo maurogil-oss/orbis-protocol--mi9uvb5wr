@@ -70,8 +70,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen py-16 flex items-center justify-center bg-[#0A0E12] px-4">
-      <div className="w-full max-w-md p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-2xl relative">
+    <div className="min-h-screen py-16 flex items-center justify-center bg-slate-50 dark:bg-[#0A1628] px-4 transition-colors">
+      <div className="w-full max-w-md p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-2xl relative">
         <div className="flex flex-col items-center text-center mb-8">
           <div className="relative mb-3">
             <div className="absolute inset-0 rounded-full bg-[#12B886]/25 blur-lg scale-125" />
@@ -147,7 +147,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu.email@empresa.com.br"
-                className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
+                className="w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-[#0A1628] border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                 required
               />
             </div>
@@ -168,14 +168,13 @@ export default function Login() {
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
                 required
-              />
-            </div>
+                className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+              />            </div>
           </div>
 
           <button
