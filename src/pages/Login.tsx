@@ -2,11 +2,21 @@ import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
-import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
+import {
+  ShieldCheck,
+  Lock,
+  Mail,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+} from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isEmailNotFound, setIsEmailNotFound] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -173,8 +183,17 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-              />            </div>
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <button

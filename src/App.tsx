@@ -1,8 +1,6 @@
 /* Main App Component - Handles routing (using react-router-dom), query client and other providers */
-import { BrowserRouter,
-Routes,
-Route, Navigate } from 'react-router-dom'
-import RevisorExternoF6Page from '@/pages/RevisorExternoF6Page';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import RevisorExternoF6Page from '@/pages/RevisorExternoF6Page'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -188,6 +186,7 @@ const App = () => (
             />
           </Route>
           {/* Pacote do Revisor Externo F6 — Acessível por link direto fora da navegação pública */}
+          <Route path="/auditoria-f6" element={<RevisorExternoF6Page />} />
           <Route path="/revisor-f6" element={<RevisorExternoF6Page />} />
           {/* Proposta Comercial Reminera — Rota dedicada independente de Layout/Menu/Rodapé */}
           <Route path="/proposta-reminera" element={<PropostaRemineraPage />} />

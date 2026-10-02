@@ -964,7 +964,7 @@ export default function AdminConsolePage() {
   })
 
   return (
-    <div className="min-h-screen py-10 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
+    <div className="min-h-screen py-10 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
         {/* Header Admin */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
@@ -997,7 +997,7 @@ export default function AdminConsolePage() {
             <button
               onClick={carregarTodosDados}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:border-[#12B886] transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:border-emerald-500 transition-colors shadow-sm"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#12B886]' : ''}`}
@@ -1033,7 +1033,7 @@ export default function AdminConsolePage() {
         {/* Top Cards Resumo Geral */}
         {kpis && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-            <div className="p-4 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm">
+            <div className="p-4 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm">
               <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] uppercase block">
                 Receita Faturada
               </span>
@@ -1284,7 +1284,7 @@ export default function AdminConsolePage() {
               {cobrancasFiltradas.map((c) => (
                 <div
                   key={c.id}
-                  className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-2 text-xs"
+                  className="p-4 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 text-xs"
                 >
                   <div className="flex items-center justify-between">
                     <strong className="text-[#F4F7FA]">{c.tomador_nome}</strong>
@@ -2132,7 +2132,7 @@ export default function AdminConsolePage() {
             </div>
 
             {/* Tabela de Consultas InfoSimples */}
-            <div className="rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-hidden">
+            <div className="rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
               <div className="p-4 border-b border-[rgba(244,247,250,0.08)]">
                 <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-[#93A3B5]">
                   Histórico Recente de Consultas InfoSimples

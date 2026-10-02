@@ -318,7 +318,7 @@ export default function ApiDocsCdvPage() {
 }`
 
   return (
-    <div className="min-h-screen py-10 md:py-16 bg-[#0A0E12] text-[#F4F7FA]">
+    <div className="min-h-screen py-10 md:py-16 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-12">
         {/* Breadcrumb / Top Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
@@ -350,7 +350,7 @@ export default function ApiDocsCdvPage() {
         </div>
 
         {/* 1. HERO INSTITUCIONAL & VISÃO GERAL */}
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-[#111820] via-[#111820] to-[#16202B] border border-[#12B886]/40 shadow-2xl relative overflow-hidden">
+        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-white via-slate-50 to-white dark:from-[#0E1A2E] dark:via-[#111827] dark:to-[#0E1A2E] border border-emerald-300 dark:border-[#059669]/40 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#12B886]/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-3xl space-y-4">
@@ -425,7 +425,7 @@ export default function ApiDocsCdvPage() {
             </div>
           </div>
 
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4 text-xs leading-relaxed text-[#93A3B5]">
+          <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 text-xs leading-relaxed text-slate-600 dark:text-[#94A3B8]">
             <p>
               Toda chamada à API deve incluir a chave no cabeçalho HTTP{' '}
               <code className="px-1.5 py-0.5 rounded bg-[#0A0E12] border border-[#12B886]/40 font-mono text-[#12B886] font-bold">
@@ -440,7 +440,7 @@ export default function ApiDocsCdvPage() {
               <span className="text-[10px] uppercase font-mono text-[#D9B36C] font-bold block">
                 Exemplo de Cabeçalho HTTP:
               </span>
-              <div className="font-mono text-xs text-[#F4F7FA] bg-[#111820] p-2.5 rounded-lg border border-[rgba(244,247,250,0.06)]">
+              <div className="font-mono text-xs text-slate-900 dark:text-[#F8FAFC] bg-slate-50 dark:bg-[#0A1628] p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
                 X-API-Key: orb_cdv_live_a1b2c3d4e5f60718293a4b5c6d7e8f90
               </div>
             </div>
@@ -494,7 +494,7 @@ export default function ApiDocsCdvPage() {
             </div>
           </div>
 
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4 text-xs text-[#93A3B5]">
+          <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 text-xs text-slate-600 dark:text-[#94A3B8]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
               <div>
                 <span className="text-[10px] uppercase font-mono text-[#D9B36C] font-bold block">
@@ -557,7 +557,7 @@ export default function ApiDocsCdvPage() {
             </div>
           </div>
 
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-6">
+          <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
             {/* Endpoint Method & URL */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30">
               <div className="flex items-center gap-3 font-mono">

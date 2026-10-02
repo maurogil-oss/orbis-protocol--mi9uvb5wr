@@ -193,7 +193,7 @@ export default function Capital() {
   const linhaDetalhada = LINHAS_CREDITO_VERDE.find((l) => l.id === linhaSelecionadaId)
 
   return (
-    <div className="min-h-screen py-10 md:py-16 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
+    <div className="min-h-screen py-10 md:py-16 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         {/* Cabeçalho da Página / Breadcrumb */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
@@ -286,7 +286,7 @@ export default function Capital() {
         {/* GRID: CONTROLES DO SIMULADOR (ESQUERDA) x CARDS DE ECONOMIA (DIREITA) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
           {/* Coluna 1..5: Controles do Simulador */}
-          <div className="lg:col-span-5 p-6 sm:p-7 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-sm space-y-6">
+          <div className="lg:col-span-5 p-6 sm:p-7 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
             <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] pb-4">
               <Sliders className="w-5 h-5 text-[#12B886]" />
               <h2 className="font-heading font-bold text-base text-slate-900 dark:text-[#F4F7FA]">
@@ -435,7 +435,7 @@ export default function Capital() {
 
             {/* Destaque da Melhor Linha */}
             {resultadoSimulacao.melhorLinha && (
-              <div className="p-6 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-sm">
+              <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-[#93A3B5]">
                     Linha com Maior Potencial de Bonificação
@@ -527,7 +527,7 @@ export default function Capital() {
         </div>
 
         {/* TABELA COMPARATIVA COMPLETA DAS 8 LINHAS DE CRÉDITO VERDE */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-sm mb-10">
+        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm mb-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="flex items-center gap-2">
@@ -637,7 +637,7 @@ export default function Capital() {
         {/* MODAL / DRAWER DE DETALHES DA LINHA E EVIDÊNCIAS QUE O ORBIS ATENDE */}
         {linhaDetalhada && (
           <div className="fixed inset-0 z-50 bg-[#0A0E12]/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="flex items-start justify-between border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] pb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">

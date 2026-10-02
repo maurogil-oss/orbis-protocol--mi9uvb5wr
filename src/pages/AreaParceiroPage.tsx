@@ -261,7 +261,7 @@ export default function AreaParceiroPage() {
   }
 
   return (
-    <div className="min-h-screen py-10 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
+    <div className="min-h-screen py-10 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-8">
         {/* Header do Parceiro */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
@@ -292,7 +292,7 @@ export default function AreaParceiroPage() {
           <div className="flex items-center gap-3">
             <Link
               to="/painel"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] shadow-sm"
             >
               <span>Painel Geral</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -346,7 +346,7 @@ export default function AreaParceiroPage() {
 
         {/* 4 Cards de Métricas do Parceiro */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] space-y-1 shadow-sm">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
             <span className="text-xs text-slate-600 dark:text-[#93A3B5] uppercase block">
               Saldo a Receber
             </span>
@@ -406,7 +406,7 @@ export default function AreaParceiroPage() {
               </h2>
 
               {/* Versão Desktop (Tabela) */}
-              <div className="hidden sm:block rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] overflow-hidden shadow-sm">
+              <div className="hidden sm:block rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100/70 dark:bg-[#0D1217] text-slate-600 dark:text-[#93A3B5] uppercase text-[10px] border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
                     <tr>

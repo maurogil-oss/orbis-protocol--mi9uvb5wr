@@ -1969,6 +1969,31 @@ export default function FatoresEmissaoPublicoPage() {
                 </table>
               </div>
 
+              {/* Nota de Auditoria Externa F6 — Link Direto para Revisores */}
+              <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-blue-50 dark:bg-[#0A1628] text-blue-600 dark:text-[#2563EB]">
+                    <Scale className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-heading font-bold text-slate-900 dark:text-[#F8FAFC] block">
+                      Pacote do Revisor Externo (Auditoria de Reprodução F6)
+                    </span>
+                    <span className="text-slate-500 dark:text-[#94A3B8] text-[11px]">
+                      Dossiê pericial cego para recálculo independente do lote Gol real (disponível
+                      por link direto).
+                    </span>
+                  </div>
+                </div>
+                <Link
+                  to="/auditoria-f6"
+                  className="px-3.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-[#0A1628] dark:hover:bg-[#16202B] border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-mono text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors shrink-0"
+                >
+                  <span>Acessar Pacote F6</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
               {/* Consolidado do Lote Demo */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40">
