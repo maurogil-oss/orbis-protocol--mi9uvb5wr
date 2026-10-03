@@ -114,6 +114,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
             <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
+            <Route path="/redefinir-senha/:token" element={<RedefinirSenhaPage />} />
             <Route path="/registro" element={<RegistroPage />} />
             <Route path="/cadastro" element={<Navigate to="/registro" replace />} />
             <Route path="/teste" element={<TestCatalog />} />
