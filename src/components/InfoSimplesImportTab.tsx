@@ -506,7 +506,7 @@ export const InfoSimplesImportTab: React.FC<InfoSimplesImportTabProps> = ({
               </label>
               {termoVersaoAceitaLocal && (
                 <div className="text-[10px] text-[#12B886] font-mono">
-                  ✓ Versão homologada: {termoVersaoAceitaLocal}
+                  ✓ Versão vigente: {termoVersaoAceitaLocal}
                 </div>
               )}
             </div>

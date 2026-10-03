@@ -38,6 +38,7 @@ import {
   type ItemCatalogoComPecaLote,
   type SituacaoChecklistPeca,
 } from '@/services/cdvService'
+import pb from '@/lib/pocketbase/client'
 import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService'
 import { ShieldCheck, Info } from 'lucide-react'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
@@ -418,6 +419,35 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
           acima. O domínio do frontend SPA (<code>www.orbis-protocol.com</code>) serve apenas a
           aplicação web React e responderá o HTML do SPA caso chamado diretamente com rotas de API.
         </p>
+
+        {/* NOTA HONESTA SOBRE ROTA LEGADA V1 (410 GONE) E CORS */}
+        <div className="pt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200">
+            <div className="font-mono font-bold text-[11px] uppercase flex items-center gap-1.5 text-rose-700 dark:text-rose-300 mb-1">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              Rota Legada v1 Descontinuada (HTTP 410 Gone)
+            </div>
+            <p className="leading-relaxed">
+              O endpoint legado <code>POST /backend/v1/cdv/lotes</code> retorna HTTP 410 Gone. Todas
+              as integrações de ERP/TMS devem utilizar a rota vigente{' '}
+              <strong className="font-mono">POST /backend/v2/cdv/lotes</strong> (motor DM-ORB-001
+              v1.1 com DF=0,30, L_i=1,0 e proteção contra conflito inter-CDVs).
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-100 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-[#94A3B8]">
+            <div className="font-mono font-bold text-[11px] uppercase flex items-center gap-1.5 text-slate-900 dark:text-[#F8FAFC] mb-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
+              CORS Server-to-Server vs Client-Side Browser
+            </div>
+            <p className="leading-relaxed">
+              Integrações <strong>server-to-server</strong> (backend/ERP/cURL) não estão sujeitas a
+              restrições de CORS e operam diretamente contra a URL base. Requisições client-side
+              disparadas diretamente do browser sofrerão bloqueio de CORS, devendo passar pelo
+              backend próprio ou páginas públicas nativas.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* 1. PAINEL DE CREDENCIAIS & CHAVE DE API DO CDV */}
@@ -514,6 +544,21 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
               </span>
               <div className="font-mono text-[11px] text-slate-900 dark:text-[#F8FAFC] bg-white dark:bg-[#0E1A2E] p-1.5 rounded border border-slate-200 dark:border-slate-800 truncate shadow-sm">
                 POST /backend/v2/cdv/lotes
+              </div>
+              <div className="mt-2 text-[10px] space-y-0.5 text-slate-500 dark:text-[#94A3B8]">
+                <div>
+                  • Método:{' '}
+                  <strong className="font-mono text-emerald-600 dark:text-[#059669]">POST</strong>
+                </div>
+                <div>
+                  • Autenticação: <strong className="font-mono">Header X-API-Key</strong>
+                </div>
+                <div>
+                  • Rate Limit:{' '}
+                  <strong className="font-mono text-amber-600 dark:text-[#D9B36C]">
+                    60 lotes / minuto
+                  </strong>
+                </div>
               </div>
             </div>
             <div className="pt-2 text-[10px] text-slate-500 dark:text-[#94A3B8] flex justify-between border-t border-slate-200 dark:border-slate-800 mt-2">

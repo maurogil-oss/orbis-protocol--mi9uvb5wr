@@ -200,6 +200,29 @@ export function ApiDocsNfsPage() {
             <code>www.orbis-protocol.com</code> serve a SPA frontend em React e não responderá
             chamadas de API JSON.
           </p>
+
+          {/* NOTA HONESTA SOBRE CORS SERVER-TO-SERVER VS CLIENT-SIDE */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#0A1628] border border-amber-300 dark:border-slate-800 space-y-2 text-xs">
+            <div className="flex items-center gap-2 font-mono font-bold text-slate-900 dark:text-[#F8FAFC]">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+              <span>CORS & Arquitetura de Integração Fiscal: Server-to-Server vs Client-Side</span>
+            </div>
+            <div className="space-y-1.5 text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+              <p>
+                <strong>Integração Server-to-Server (ERP / Faturamento / TMS):</strong> Qualquer
+                chamada disparada a partir do backend da sua aplicação ou de ferramentas como cURL e
+                Postman <strong>não sofre restrição de CORS</strong> e comunica-se de ponta a ponta
+                com a URL base do backend PocketBase.
+              </p>
+              <p>
+                <strong>Acesso Client-Side via Navegador:</strong> Requisições diretas via
+                JavaScript no browser (<code>fetch</code>/<code>axios</code>) a partir de domínios
+                externos sofrerão bloqueio de CORS por razões de conformidade e segurança da
+                infraestrutura fiscal. Para alimentar aplicações web, conecte seu próprio backend
+                como proxy ou utilize o Hub de Conexão Fiscal integrado ao Orbis Protocol.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* HERO INSTITUCIONAL */}
@@ -265,7 +288,7 @@ export function ApiDocsNfsPage() {
           <ShieldCheck className="w-6 h-6 text-[#12B886] shrink-0 mt-0.5" />
           <div className="space-y-1 text-xs text-[#93A3B5] leading-relaxed">
             <strong className="text-[#F4F7FA] block text-sm font-heading font-bold">
-              Escopo Homologado — Versão 1: Recepção de XMLs Próprios
+              Escopo Operacional Vigente — Versão 1: Recepção de XMLs Próprios
             </strong>
             <p>
               Nesta versão 1, a API opera estritamente no modelo de{' '}
@@ -426,8 +449,19 @@ export function ApiDocsNfsPage() {
                   /backend/v1/nfs/lotes
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[#93A3B5]">Content-Type: application/json</span>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-[#93A3B5]">
+                <span>
+                  Método: <strong className="text-white">POST</strong>
+                </span>
+                <span>
+                  • Auth: <strong className="text-[#12B886]">X-API-Key</strong>
+                </span>
+                <span>
+                  • Rate Limit: <strong className="text-[#D9B36C]">60 lotes / min</strong>
+                </span>
+                <span>
+                  • Content-Type: <strong className="text-white">application/json</strong>
+                </span>
               </div>
             </div>
 

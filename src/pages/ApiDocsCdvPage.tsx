@@ -442,10 +442,10 @@ export default function ApiDocsCdvPage() {
 
             <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
               Esta é a primeira especificação do <strong>Hub de APIs Orbis Protocol</strong>,
-              desenhada sob medida para os Centros de Desmontagem Veicular (CDVs homologados pelo
-              DETRAN/Lei Mover) e seus ERPs de desmontagem e lojas virtuais. No futuro, o hub
-              expandirá para os demais setores produtivos certificados (têxtil, embalagens, metais e
-              baterias).
+              desenhada sob medida para os Centros de Desmontagem Veicular (CDVs credenciados pelo
+              DETRAN e enquadrados no Programa Mover) e seus ERPs de desmontagem e lojas virtuais.
+              No futuro, o hub expandirá para os demais setores produtivos certificados (têxtil,
+              embalagens, metais e baterias).
             </p>
 
             {/* Badges de Destaque */}
@@ -504,7 +504,7 @@ export default function ApiDocsCdvPage() {
               </code>
               . As chaves de acesso começam com o prefixo{' '}
               <code className="font-mono text-[#D9B36C]">orb_cdv_live_</code> e são vinculadas
-              estritamente ao CNPJ do CDV homologado.
+              estritamente ao CNPJ do CDV credenciado.
             </p>
 
             <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-2">
@@ -1026,7 +1026,7 @@ export default function ApiDocsCdvPage() {
                         GET
                       </span>
                       <code className="text-slate-900 dark:text-white font-bold">
-                        /backend/v2/cdv/claim
+                        /backend/v2/verificador/claim/:chassi
                       </code>
                     </td>
                     <td className="py-3 px-4">
@@ -1041,8 +1041,9 @@ export default function ApiDocsCdvPage() {
                       200 OK (JSON)
                     </td>
                     <td className="py-3 px-4 text-xs text-slate-600 dark:text-[#94A3B8]">
-                      Consulta de claim ambiental por chassi (<code>?chassi=...</code>) ou documento
-                      de baixa (<code>?doc=...</code>).
+                      Consulta pública de custódia e claims por chassi (LGPD: dados pessoais
+                      mascarados). Também aceita rota compatível{' '}
+                      <code>/backend/v2/cdv/claim?chassi=...</code>.
                     </td>
                   </tr>
 
@@ -1363,7 +1364,7 @@ export default function ApiDocsCdvPage() {
                 </span>
                 <h4 className="font-heading font-bold text-xs text-[#F4F7FA]">Credenciamento</h4>
                 <p className="text-[11px] text-[#93A3B5] leading-relaxed">
-                  Cadastro do CNPJ do CDV homologado pelo DETRAN com responsável técnico CREA.
+                  Cadastro do CNPJ do CDV credenciado pelo DETRAN com responsável técnico CREA.
                 </p>
               </div>
 

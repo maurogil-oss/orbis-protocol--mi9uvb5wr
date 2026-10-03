@@ -26,6 +26,7 @@ import {
   Copy,
   Code2,
 } from 'lucide-react'
+import pb from '@/lib/pocketbase/client'
 import {
   TermoCustodiaA1Modal,
   TERMO_CUSTODIA_VERSAO_ATUAL,
@@ -465,7 +466,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
               HUB DE CONEXÃO FISCAL ACP • 4 ROTAS DE INTEGRAÇÃO
             </div>
             <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#F4F7FA]">
-              INTEGRAÇÃO & CUSTÓDIA FISCAL HOMOLOGADA
+              INTEGRAÇÃO & CUSTÓDIA FISCAL AUDITÁVEL
             </h2>
             <p className="text-xs sm:text-sm text-[#93A3B5] max-w-3xl mt-2 leading-relaxed">
               O Bureau ACP disponibiliza{' '}
