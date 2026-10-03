@@ -81,7 +81,7 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
   const payloadExemploInicial: IngestaoLoteInput = {
     cdv: {
       nome: cdvNome || 'CDVerde Centro de Desmontagem Veicular',
-      cnpj: cdvCnpj || '76.123.456/0001-12',
+      cnpj: cdvCnpj || '76.123.456/0001-00',
       codigo: cdvCodigo || 'DETRAN-PR-CDV-0089',
       responsavel_crea: 'CREA-PR 182.940/D - Eng. Marcelo Brandão',
     },
@@ -132,7 +132,7 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
     try {
       const res = await obterOuCriarApiKeyCdv({
         cdvNome: cdvNome || 'CDVerde Centro de Desmontagem Veicular',
-        cdvCnpj: cdvCnpj || '76.123.456/0001-12',
+        cdvCnpj: cdvCnpj || '76.123.456/0001-00',
         cdvCodigo: cdvCodigo || 'DETRAN-PR-CDV-0089',
       })
       setApiKeyData({ record: res.record, chaveVisivel: res.chaveCompleta })
@@ -190,7 +190,7 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
     setIsGerandoChave(true)
     try {
       const res = await regenerarApiKeyCdv(
-        cdvCnpj || '76.123.456/0001-12',
+        cdvCnpj || '76.123.456/0001-00',
         cdvNome || 'CDVerde Centro de Desmontagem Veicular',
         cdvCodigo || 'DETRAN-PR-CDV-0089',
       )

@@ -42,12 +42,13 @@ export function NumerosVerificaveisSection() {
   const itens = [
     {
       id: 'selos',
-      titulo: 'Selos no Ambiente Demo',
-      subtitulo: 'Atestados Orbis com hash canônico, no ambiente demo',
+      titulo: 'Atestados Orbis Emitidos',
+      subtitulo:
+        'Atestados de Conformidade Orbis (com ART/RRT) com hash canônico, no ambiente demo',
       valor: metricas.selosEmitidos,
       icon: Award,
       link: '/verificador',
-      rotuloLink: 'Verificar selo',
+      rotuloLink: 'Verificar atestado',
       corDestaque: 'text-[#059669]',
       bordaCor: 'border-[#059669]/30',
       badgeCor: 'bg-emerald-50 dark:bg-[#059669]/15 text-[#059669]',

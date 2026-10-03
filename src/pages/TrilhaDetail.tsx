@@ -206,8 +206,8 @@ export default function TrilhaDetail() {
                 Chancela e Emissão de Laudos:
               </span>
               <p>
-                Os certificados e relatórios gerados a partir desta trilha contam com hash único e
-                assinatura digital válida perante órgãos fiscalizadores federais e auditores
+                Os atestados e relatórios periciais gerados a partir desta trilha contam com hash
+                único e assinatura digital válida perante órgãos fiscalizadores federais e auditores
                 independentes.
               </p>
             </div>

@@ -58,7 +58,8 @@ export const VALOR_PADRAO_ADICIONALIDADE: AvaliacaoAdicionalidadeData = {
   justificativa_pericial:
     'A atividade de desmonte técnico com descaracterização rastreada, descontaminação integral de fluidos e inventário digital berço-ao-portão demanda custos adicionais operacionais de mão de obra especializada e infraestrutura de rastreabilidade dMRV não remunerados pela venda convencional de sucata mista ferrosa. Há clara barreira tecnológica superada pela adoção de etiquetagem criptográfica de peças verdes e rastreamento de balanço de massa curbside. Adicionalmente, inexiste obrigatoriedade legal compulsória no ordenamento jurídico nacional para a segregação de 77 subsistemas catalogados e quantificação de emissões evitadas para além da baixa cadastral pura no sistema DETRAN.',
   data_avaliacao: new Date().toISOString(),
-  avaliador_nome: 'Autoavaliação pericial pré-VVB — pendente de validação por terceira parte',
+  avaliador_nome:
+    'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)',
   status_parecer: 'conforme_declarado',
 }
 
@@ -77,7 +78,8 @@ export const SecaoAvaliacaoAdicionalidade: React.FC<SecaoAvaliacaoAdicionalidade
     nao_obrigatoriedade_legal: false,
     justificativa_pericial: '',
     data_avaliacao: undefined,
-    avaliador_nome: 'VVB independente acreditado',
+    avaliador_nome:
+      'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)',
   })
   const [carregando, setCarregando] = useState<boolean>(true)
   const [salvando, setSalvando] = useState<boolean>(false)
@@ -118,7 +120,8 @@ export const SecaoAvaliacaoAdicionalidade: React.FC<SecaoAvaliacaoAdicionalidade
             barreira_tecnologica: false,
             nao_obrigatoriedade_legal: false,
             justificativa_pericial: '',
-            avaliador_nome: 'VVB independente acreditado',
+            avaliador_nome:
+              'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)',
           })
           setTemDadosRegistrados(false)
         }
@@ -167,7 +170,9 @@ export const SecaoAvaliacaoAdicionalidade: React.FC<SecaoAvaliacaoAdicionalidade
       const payload: AvaliacaoAdicionalidadeData = {
         ...dados,
         data_avaliacao: new Date().toISOString(),
-        avaliador_nome: dados.avaliador_nome || 'VVB independente acreditado',
+        avaliador_nome:
+          dados.avaliador_nome ||
+          'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)',
       }
 
       await salvarAvaliacaoAdicionalidade(id, payload, lote)
@@ -243,7 +248,7 @@ export const SecaoAvaliacaoAdicionalidade: React.FC<SecaoAvaliacaoAdicionalidade
           <span className="text-[10px] font-mono text-[#93A3B5] print:text-slate-500">
             Status:{' '}
             {dados.avaliador_nome ||
-              'Autoavaliação pericial pré-VVB — pendente de validação por terceira parte'}
+              'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)'}
           </span>
         </div>
       </div>

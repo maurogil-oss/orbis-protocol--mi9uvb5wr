@@ -98,7 +98,7 @@ routerAdd('POST', '/backend/v1/revisor-pericial/triagem', (e) => {
           'O inventário demonstrativo das Indústrias & Logística Integrada Brasil S.A. atinge Score Pericial 84/100 (equivalente a 840/1000 no Dossiê ESG dMRV). A base de dados demonstra alta consistência nos 10 modelos fiscais com fatores MCTI e métricas IPCC AR6. As fragilidades identificadas são leves e passíveis de saneamento com o Laudo Pericial com ART.',
         is_demo: true,
         empresa_nome: 'Indústrias & Logística Integrada Brasil S.A.',
-        cnpj: '76.123.456/0001-12',
+        cnpj: '76.123.456/0001-00',
         ano_base: 2025,
         metodologias_auditadas:
           'GHG Protocol BR, MCTI/SIN 2025, GLEC v3.0, ISO 14067, IPCC AR6, Lei 15.042/2024',

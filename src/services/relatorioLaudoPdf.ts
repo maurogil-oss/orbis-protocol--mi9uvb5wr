@@ -1156,7 +1156,7 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
 
     <div class="card" style="margin-bottom: 12px; border-left: 4px solid #12B886;">
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 8pt; color: #4B5563;">
-        <span><strong>Avaliador Responsável:</strong> ${dados.identificacao.avaliacaoAdicionalidade.avaliador_nome || 'VVB independente acreditado'}</span>
+        <span><strong>Avaliador Responsável:</strong> ${dados.identificacao.avaliacaoAdicionalidade.avaliador_nome || 'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)'}</span>
         <span><strong>Status do Parecer:</strong> ${dados.identificacao.avaliacaoAdicionalidade.adicionalidade_investimento && dados.identificacao.avaliacaoAdicionalidade.barreira_tecnologica && dados.identificacao.avaliacaoAdicionalidade.nao_obrigatoriedade_legal ? '<span style="color:#059669; font-weight:700;">CONFORME DECLARADO ✓</span>' : '<span style="color:#B45309; font-weight:700;">EM ANÁLISE</span>'}</span>
       </div>
 

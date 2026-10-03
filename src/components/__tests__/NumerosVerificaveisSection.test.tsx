@@ -40,9 +40,13 @@ describe('NumerosVerificaveisSection Component', () => {
       </MemoryRouter>,
     )
 
-    // 1. Selos no Ambiente Demo
-    expect(screen.getByText('Selos no Ambiente Demo')).toBeDefined()
-    expect(screen.getByText('Atestados Orbis com hash canônico, no ambiente demo')).toBeDefined()
+    // 1. Atestados Orbis Emitidos
+    expect(screen.getByText('Atestados Orbis Emitidos')).toBeDefined()
+    expect(
+      screen.getByText(
+        'Atestados de Conformidade Orbis (com ART/RRT) com hash canônico, no ambiente demo',
+      ),
+    ).toBeDefined()
 
     // 2. Peças no Ambiente Demo
     expect(screen.getByText('Peças no Ambiente Demo')).toBeDefined()

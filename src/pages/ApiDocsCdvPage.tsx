@@ -95,7 +95,7 @@ export default function ApiDocsCdvPage() {
   -d '{
     "cdv": {
       "nome": "CDVerde Centro de Desmontagem Veicular",
-      "cnpj": "76.123.456/0001-12",
+      "cnpj": "76.123.456/0001-00",
       "codigo": "DETRAN-PR-CDV-0089",
       "responsavel_crea": "CREA-PR 182.940/D - Eng. Marcelo Brandão"
     },
@@ -139,7 +139,7 @@ export default function ApiDocsCdvPage() {
   const payloadCompleto = `{
   "cdv": {
     "nome": "CDVerde Centro de Desmontagem Veicular",
-    "cnpj": "76.123.456/0001-12",
+    "cnpj": "76.123.456/0001-00",
     "codigo": "DETRAN-PR-CDV-0089",
     "responsavel_crea": "CREA-PR 182.940/D - Eng. Marcelo Brandão"
   },
@@ -232,7 +232,7 @@ export default function ApiDocsCdvPage() {
   "sucesso": false,
   "erro": "Payload incompleto. Campos obrigatórios: cdv, veiculo_doador (marca_modelo, baixa_detran) e pecas (array não vazio).",
   "payload_exemplo": {
-    "cdv": { "nome": "CDVerde", "cnpj": "76.123.456/0001-12", "codigo": "DETRAN-PR-CDV-0089" },
+    "cdv": { "nome": "CDVerde", "cnpj": "76.123.456/0001-00", "codigo": "DETRAN-PR-CDV-0089" },
     "veiculo_doador": {
       "marca_modelo": "Volkswagen Gol 1.6 8V",
       "chassi": "9BWAA05U0DP999204",
@@ -654,7 +654,7 @@ export default function ApiDocsCdvPage() {
                       <td className="py-2 px-3 text-[#93A3B5]">string</td>
                       <td className="py-2 px-3 text-[#12B886] font-bold">Opcional</td>
                       <td className="py-2 px-3 text-[#F4F7FA] font-sans">
-                        CNPJ do CDV com ou sem pontuação (ex: 76.123.456/0001-12).
+                        CNPJ do CDV com ou sem pontuação (ex: 76.123.456/0001-00).
                       </td>
                     </tr>
                     <tr>

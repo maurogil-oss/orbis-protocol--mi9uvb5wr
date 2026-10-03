@@ -147,7 +147,7 @@ export default function PassaporteFornecedorPublicoPage() {
             <div className="lg:col-span-2 space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#D9B36C]/40 text-[#D9B36C] text-[10px] font-bold tracking-wider uppercase">
                 <Award className="w-3.5 h-3.5" />
-                PASSAPORTE DO FORNECEDOR CERTIFICADO
+                PASSAPORTE DO FORNECEDOR VERIFICADO
               </div>
               <h1 className="font-heading font-black text-2xl sm:text-3xl text-[#F4F7FA]">
                 {passaporte.empresa_nome}

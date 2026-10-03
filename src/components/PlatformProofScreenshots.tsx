@@ -23,7 +23,7 @@ export interface PlatformProofScreenshotsProps {
  * Seção de prova real da plataforma (Item 2 do pacote aprovado):
  * Mockups interativos fiéis das 3 interfaces reais da plataforma:
  * 1. Central de Radar Regulatório (acervo de normas estruturadas por segmento)
- * 2. Verificador de Selos Oficiais (validação de hash SHA-256 dMRV ao vivo)
+ * 2. Verificador de Atestados de Conformidade (validação de hash SHA-256 dMRV ao vivo)
  * 3. Passaporte Digital de Produto (DPP lote veicular com peças rastreadas e balanço de massa)
  * Renderizados em molduras refinadas estilo Linear com barra de janela macOS/dark,
  * perspectiva sutil, sombra suave e glow esmeralda/dourado sem fotos de banco de imagens.
@@ -85,7 +85,7 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
               }`}
             >
               <Search className="w-3.5 h-3.5" />
-              <span>Verificador de Selos</span>
+              <span>Verificador de Atestados</span>
             </button>
             <button
               type="button"
@@ -263,7 +263,7 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
                 </div>
               )}
 
-              {/* TELA 2: VERIFICADOR DE SELOS OFICIAIS */}
+              {/* TELA 2: VERIFICADOR DE ATESTADOS DE CONFORMIDADE */}
               {activeTab === 'verificador' && (
                 <div className="space-y-6 animate-fade-in">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
@@ -275,7 +275,7 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
                         </span>
                       </div>
                       <h3 className="font-heading font-black text-xl sm:text-2xl text-[#F8FAFC]">
-                        Conferência Criptográfica de Selos e Laudos
+                        Conferência Criptográfica de Atestados e Laudos
                       </h3>
                       <p className="text-xs text-[#94A3B8] mt-0.5">
                         Hash canônico recalculado no momento da consulta via Web Crypto API
@@ -288,7 +288,7 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
                     </span>
                   </div>
 
-                  {/* Card do Selo Auditado */}
+                  {/* Card do Atestado Auditado */}
                   <div className="p-5 sm:p-6 rounded-2xl bg-[#111827] border border-[#059669]/40 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
                       <div>

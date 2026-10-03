@@ -769,6 +769,10 @@ export default function PassaporteLotePublicoPage() {
                             : 'Parcial'}
                         </span>
                       </div>
+                      <div className="text-[9px] text-amber-500/90 leading-tight">
+                        Referência internacional (Diretiva 2000/53/CE) — não há ELV obrigatória no
+                        Brasil (Res. CONAMA e Contran 611/2016 regem a desmontagem).
+                      </div>
                     </div>
                   )}
 
@@ -1454,7 +1458,14 @@ export default function PassaporteLotePublicoPage() {
                               : 'Reuso + reciclagem em progresso'}
                           </span>
                         </div>
+                      </div>
 
+                      <div className="text-[10px] text-amber-700 dark:text-[#D9B36C] bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg leading-relaxed print:text-amber-800 print:bg-amber-50 print:border-amber-200">
+                        Referência internacional (Diretiva 2000/53/CE) — não há ELV obrigatória no
+                        Brasil (Res. CONAMA e Contran 611/2016 regem a desmontagem).
+                      </div>
+
+                      <div className="hidden">
                         <div className="p-3 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.06)] print:bg-white print:border-slate-200">
                           <span className="text-[10px] uppercase font-bold text-[#93A3B5] block">
                             Perdas / Processo

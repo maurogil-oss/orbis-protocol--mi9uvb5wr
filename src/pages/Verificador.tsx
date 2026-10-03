@@ -518,7 +518,7 @@ export default function Verificador() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="font-heading font-bold text-lg text-[#F4F7FA]">
-                SELOS OFICIAIS RECENTES (EM TEMPO REAL)
+                Registros recentes (ambiente de demonstração)
               </h3>
               <p className="text-xs text-[#93A3B5]">
                 Status recalculados por vigência de validade e hash dMRV.
@@ -547,7 +547,12 @@ export default function Verificador() {
                   return (
                     <tr key={s.id} className="hover:bg-[#16202B]/60 transition-colors">
                       <td className="py-3 px-4 font-mono font-bold text-[#12B886]">
-                        {s.codigo_selo}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span>{s.codigo_selo}</span>
+                          <span className="text-[10px] font-sans font-normal px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                            Demonstração
+                          </span>
+                        </div>
                       </td>
                       <td className="py-3 px-4 font-medium">{s.empresa}</td>
                       <td className="py-3 px-4 font-mono text-[#93A3B5]">{s.cnpj}</td>

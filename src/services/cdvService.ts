@@ -797,7 +797,9 @@ export async function salvarAvaliacaoAdicionalidade(
     nao_obrigatoriedade_legal: !!dados.nao_obrigatoriedade_legal,
     justificativa_pericial: (dados.justificativa_pericial || '').trim(),
     data_avaliacao: dados.data_avaliacao || new Date().toISOString(),
-    avaliador_nome: dados.avaliador_nome || 'VVB independente acreditado',
+    avaliador_nome:
+      dados.avaliador_nome ||
+      'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)',
     avaliador_registro: dados.avaliador_registro || '',
     status_parecer:
       dados.adicionalidade_investimento &&

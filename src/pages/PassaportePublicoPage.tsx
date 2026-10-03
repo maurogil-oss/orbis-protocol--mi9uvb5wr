@@ -394,7 +394,7 @@ export default function PassaportePublicoPage() {
                             {peca.cdv_origem || 'DETRAN-PR-CDV-0089'}
                           </div>
                           <div className="font-mono text-[11px] text-[#D9B36C]">
-                            CNPJ: {peca.cdv_cnpj || '76.123.456/0001-12'}
+                            CNPJ: {peca.cdv_cnpj || '76.123.456/0001-00'}
                           </div>
                         </div>
 

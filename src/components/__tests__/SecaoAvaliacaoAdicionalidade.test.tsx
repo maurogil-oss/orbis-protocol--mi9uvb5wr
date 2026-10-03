@@ -110,7 +110,9 @@ describe('SecaoAvaliacaoAdicionalidade Component', () => {
     expect(chamadas[1].adicionalidade_investimento).toBe(true)
     expect(chamadas[1].barreira_tecnologica).toBe(true)
     expect(chamadas[1].nao_obrigatoriedade_legal).toBe(true)
-    expect(chamadas[1].avaliador_nome).toBe('VVB independente acreditado')
+    expect(chamadas[1].avaliador_nome).toBe(
+      'Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)',
+    )
   })
 
   it('deve renderizar em modo somente leitura quando readOnly for true', async () => {
@@ -130,15 +132,19 @@ describe('SecaoAvaliacaoAdicionalidade Component', () => {
     expect(screen.queryByTestId('botao-salvar-adicionalidade')).toBeNull()
   })
 
-  it('deve conter menção a tom pericial e VVB independente acreditado sem instituições validadoras fixas', async () => {
+  it('deve conter menção a tom pericial e autoavaliação pré-VVB com validação pendente sem instituições validadoras fixas', async () => {
     render(<SecaoAvaliacaoAdicionalidade loteId="lote-tom-pericial" forceExibir={true} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('secao-avaliacao-adicionalidade')).toBeDefined()
     })
 
-    // Deve citar VVB independente acreditado
-    expect(screen.getAllByText(/VVB independente acreditado/i).length).toBeGreaterThan(0)
+    // Deve citar Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente (em seleção)
+    expect(
+      screen.getAllByText(
+        /Autoavaliação pericial pré-VVB concluída — validação por VVB acreditado pendente \(em seleção\)/i,
+      ).length,
+    ).toBeGreaterThan(0)
     // Não deve citar nomes institucionais como RINA, Bureau Veritas, SGS ou TÜV
     expect(screen.queryByText(/Bureau Veritas/i)).toBeNull()
     expect(screen.queryByText(/RINA/i)).toBeNull()

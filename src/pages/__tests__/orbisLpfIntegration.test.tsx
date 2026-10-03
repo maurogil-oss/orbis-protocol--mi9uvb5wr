@@ -178,7 +178,7 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
     const submitBtn = screen.getByRole('button', { name: /Enviar solicitação/i })
 
     // Preenche com CNPJ válido matematicamente
-    fireEvent.change(cnpjInput, { target: { value: '14.882.310/0001-44' } })
+    fireEvent.change(cnpjInput, { target: { value: '14.882.310/0001-91' } })
     fireEvent.change(razaoInput, { target: { value: 'Metalúrgica Teste S.A.' } })
     fireEvent.change(emailInput, { target: { value: 'contato@metalurgicateste.com' } })
     fireEvent.change(setorSelect, { target: { value: 'aço' } })
@@ -216,7 +216,7 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
     const setorSelect = screen.getByLabelText(/Setor/i)
     const submitBtn = screen.getByRole('button', { name: /Enviar solicitação/i })
 
-    fireEvent.change(cnpjInput, { target: { value: '14.882.310/0001-44' } })
+    fireEvent.change(cnpjInput, { target: { value: '14.882.310/0001-91' } })
     fireEvent.change(razaoInput, { target: { value: 'Indústria Nova S.A.' } })
     fireEvent.change(emailInput, { target: { value: 'export@industrianova.com.br' } })
     fireEvent.change(setorSelect, { target: { value: 'alumínio' } })

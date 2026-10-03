@@ -385,7 +385,7 @@ export function RevisorExternoF6Page() {
                         CDVerde Centro de Desmontagem Veicular
                       </strong>
                       <span className="text-[11px] text-slate-500 block font-mono">
-                        CNPJ: 76.123.456/0001-12
+                        CNPJ: 76.123.456/0001-00
                       </span>
                     </div>
                     <div>

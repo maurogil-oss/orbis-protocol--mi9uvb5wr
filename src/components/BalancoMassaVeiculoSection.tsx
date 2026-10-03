@@ -315,6 +315,11 @@ export function BalancoMassaVeiculoSection({
             (incluindo recuperação energética).
           </p>
 
+          <p className="text-[11px] text-amber-700 dark:text-[#D9B36C] bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg font-medium leading-relaxed">
+            Referência internacional (Diretiva 2000/53/CE) — não há ELV obrigatória no Brasil (Res.
+            CONAMA e Contran 611/2016 regem a desmontagem).
+          </p>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
             {/* Meta 1: 85% Reúso + Reciclagem */}
             <div className="p-4 rounded-xl bg-white dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
