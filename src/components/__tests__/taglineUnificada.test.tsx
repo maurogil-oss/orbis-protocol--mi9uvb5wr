@@ -5,15 +5,15 @@ import { describe, it, expect } from 'vitest'
 import Layout from '@/components/Layout'
 
 describe('Layout - Tagline Unificada da Marca', () => {
-  it('exibe a tagline limpa no cabeçalho desktop e drawer mobile', () => {
+  it('exibe no cabeçalho desktop e drawer mobile a tagline curta "Prova de Economia Circular — dMRV" com travessão eme', () => {
     const { container } = render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
       </MemoryRouter>,
     )
 
-    // Tagline do cabeçalho limpa: "Prova Documental da Economia Circular"
-    const headerTaglines = screen.getAllByText('Prova Documental da Economia Circular')
+    // Tagline do cabeçalho curta: "Prova de Economia Circular — dMRV"
+    const headerTaglines = screen.getAllByText('Prova de Economia Circular — dMRV')
     expect(headerTaglines.length).toBeGreaterThanOrEqual(1)
 
     // Cabeçalho desktop tem a classe de 10px e tracking largo
@@ -21,7 +21,10 @@ describe('Layout - Tagline Unificada da Marca', () => {
       'header span.text-\\[10px\\].tracking-\\[0\\.2em\\]',
     )
     expect(desktopTagline).not.toBeNull()
-    expect(desktopTagline?.textContent?.trim()).toBe('Prova Documental da Economia Circular')
+    expect(desktopTagline?.textContent?.trim()).toBe('Prova de Economia Circular — dMRV')
+    expect(desktopTagline?.textContent).toContain('—')
+    expect(desktopTagline?.textContent).not.toContain('(')
+    expect(desktopTagline?.textContent).not.toContain(')')
   })
 
   it('exibe no rodapé "Prova Documental da Economia Circular — dMRV" com travessão eme', () => {

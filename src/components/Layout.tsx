@@ -255,8 +255,8 @@ export default function Layout() {
                 <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors">
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
-                <span className="text-[10px] tracking-[0.2em] uppercase text-slate-500 dark:text-[#94A3B8] font-semibold -mt-1">
-                  Prova Documental da Economia Circular
+                <span className="text-[10px] tracking-[0.2em] uppercase text-slate-500 dark:text-[#94A3B8] font-semibold -mt-1 whitespace-nowrap">
+                  Prova de Economia Circular — dMRV
                 </span>
               </div>
             </Link>
@@ -523,8 +523,8 @@ export default function Layout() {
                     <span className="font-heading font-black text-lg tracking-wider text-[#F8FAFC]">
                       ORBIS PROTOCOL
                     </span>
-                    <span className="text-[10px] tracking-[0.18em] uppercase text-[#94A3B8] font-semibold">
-                      Prova Documental da Economia Circular
+                    <span className="text-[10px] tracking-[0.18em] uppercase text-[#94A3B8] font-semibold whitespace-nowrap">
+                      Prova de Economia Circular — dMRV
                     </span>
                   </div>
                 </div>
