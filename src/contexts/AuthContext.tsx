@@ -47,7 +47,8 @@ interface AuthContextType {
   confirmPasswordReset: (
     token: string,
     password: string,
-  ) => Promise<{ success: boolean; error?: string }>
+    passwordConfirm?: string,
+  ) => Promise<{ success: boolean; error?: string; status?: number }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -138,10 +139,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const confirmPasswordReset = async (token: string, password: string) => {
+  const confirmPasswordReset = async (
+    token: string,
+    password: string,
+    passwordConfirm?: string,
+  ) => {
+    const trimmedToken = String(token || '').trim()
+    const finalPasswordConfirm = passwordConfirm !== undefined ? passwordConfirm : password
+
+    if (!trimmedToken) {
+      return {
+        success: false,
+        error: 'Token de redefinição ausente ou inválido. Solicite um novo link de recuperação.',
+      }
+    }
+
     try {
-      const res = await pb.collection('users').confirmPasswordReset(token, password, password)
-      // PocketBase retorna true ou status 204/200; se falhar ou se não for true (em SDK PocketBase v0.36 confirmPasswordReset retorna boolean)
+      const res = await pb
+        .collection('users')
+        .confirmPasswordReset(trimmedToken, password, finalPasswordConfirm)
+
+      // PocketBase retorna true ou status 204/200 (em SDK PocketBase v0.36 confirmPasswordReset retorna boolean)
       if (res === false) {
         return {
           success: false,
@@ -151,14 +169,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return { success: true }
     } catch (err: any) {
-      // Extrair mensagem detalhada caso venha de erro de validação do hook/backend
-      const backendMsg =
+      console.error('[AuthContext] Erro ao executar confirmPasswordReset:', err)
+
+      const status = err?.status || err?.response?.status || err?.data?.code || 0
+
+      // Mensagem direta de campo do PocketBase
+      const fieldError =
         err?.data?.data?.password?.message ||
         err?.data?.data?.passwordConfirm?.message ||
-        err?.data?.message ||
-        err?.message ||
-        'Não foi possível redefinir a senha. O link pode ter expirado ou a senha foi recusada pelo servidor.'
-      return { success: false, error: backendMsg }
+        err?.data?.data?.token?.message ||
+        err?.response?.data?.password?.message ||
+        err?.response?.data?.passwordConfirm?.message ||
+        err?.response?.data?.token?.message
+
+      if (fieldError) {
+        return { success: false, error: fieldError, status }
+      }
+
+      // Mensagens customizadas ou do hook server-side (ex: BadRequestError)
+      const message = err?.data?.message || err?.response?.message || err?.message || ''
+
+      if (
+        status === 400 ||
+        message.toLowerCase().includes('token') ||
+        message.toLowerCase().includes('invalid')
+      ) {
+        return {
+          success: false,
+          status,
+          error:
+            message ||
+            'Link de redefinição expirado ou inválido (código 400). Por favor, solicite um novo link de recuperação.',
+        }
+      }
+
+      if (
+        status === 0 ||
+        err?.name === 'TypeError' ||
+        message.includes('Failed to fetch') ||
+        message.includes('NetworkError')
+      ) {
+        return {
+          success: false,
+          status,
+          error:
+            'Erro de conexão ao comunicar com o servidor. Verifique sua rede e tente novamente.',
+        }
+      }
+
+      return {
+        success: false,
+        status,
+        error:
+          message ||
+          'Não foi possível redefinir a senha. O link pode ter expirado ou a solicitação foi recusada pelo servidor.',
+      }
     }
   }
 

@@ -15,9 +15,61 @@ import { validarSenhaForte } from '@/lib/passwordPolicy'
 
 export default function RedefinirSenhaPage() {
   const [searchParams] = useSearchParams()
-  // PocketBase links de reset padrão usam ?token=... ou o link redirecionado
-  const tokenParam = (searchParams.get('token') || '').trim()
 
+  // Extração robusta do token: aceita ?token=, ?t=, ?key=, ?reset_token= e também parâmetros vindos no hash
+  const extractToken = (): string => {
+    const fromSearch =
+      searchParams.get('token') ||
+      searchParams.get('t') ||
+      searchParams.get('key') ||
+      searchParams.get('reset_token')
+    if (fromSearch) return fromSearch.trim()
+
+    // Suporte caso o token venha no hash da URL (#token=... ou #/redefinir-senha?token=...)
+    try {
+      if (typeof window !== 'undefined' && window.location) {
+        const hash = window.location.hash || ''
+        const hashQueryIdx = hash.indexOf('?')
+        if (hashQueryIdx !== -1) {
+          const hashParams = new URLSearchParams(hash.slice(hashQueryIdx + 1))
+          const hashToken =
+            hashParams.get('token') ||
+            hashParams.get('t') ||
+            hashParams.get('key') ||
+            hashParams.get('reset_token')
+          if (hashToken) return hashToken.trim()
+        }
+        if (hash.includes('=')) {
+          const cleanHash = hash.startsWith('#') ? hash.slice(1) : hash
+          const directParams = new URLSearchParams(cleanHash)
+          const directToken =
+            directParams.get('token') ||
+            directParams.get('t') ||
+            directParams.get('key') ||
+            directParams.get('reset_token')
+          if (directToken) return directToken.trim()
+        }
+
+        // Fallback para window.location.search direto caso o router não tenha sincronizado
+        if (window.location.search) {
+          const directSearch = new URLSearchParams(window.location.search)
+          const searchTok =
+            directSearch.get('token') ||
+            directSearch.get('t') ||
+            directSearch.get('key') ||
+            directSearch.get('reset_token')
+          if (searchTok) return searchTok.trim()
+        }
+      }
+    } catch {
+      /* fallback silencioso para string vazia */
+    }
+
+    return ''
+  }
+
+  const [tokenParam, setTokenParam] = useState<string>(() => extractToken())
+  const [manualToken, setManualToken] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -28,17 +80,29 @@ export default function RedefinirSenhaPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!tokenParam) {
-      setError('Token de redefinição não fornecido ou link incompleto. Solicite um novo link.')
+    const tok = extractToken()
+    if (tok) {
+      setTokenParam(tok)
+      setError('')
+    } else {
+      setTokenParam('')
+      setError(
+        'Token de redefinição não fornecido ou link incompleto. Solicite um novo link ou informe o token.',
+      )
     }
-  }, [tokenParam])
+  }, [searchParams])
+
+  const activeToken = (manualToken.trim() || tokenParam).trim()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    if (!tokenParam) {
-      setError('Token de redefinição ausente. Utilize o link enviado ao seu e-mail.')
+    const currentToken = activeToken
+    if (!currentToken) {
+      setError(
+        'Token de redefinição ausente. Utilize o link enviado ao seu e-mail ou cole o token recebido.',
+      )
       return
     }
 
@@ -54,16 +118,23 @@ export default function RedefinirSenhaPage() {
     }
 
     setIsLoading(true)
-    let res: { success: boolean; error?: string }
+    let res: { success: boolean; error?: string; status?: number }
+
+    console.info('[RedefinirSenha] Iniciando submissão de confirmação de reset de senha...')
 
     try {
-      res = await confirmPasswordReset(tokenParam, password)
+      res = await confirmPasswordReset(currentToken, password, confirmPassword)
+      console.info('[RedefinirSenha] Resposta recebida da confirmação de reset:', res)
     } catch (err: any) {
+      console.error('[RedefinirSenha] Exceção não capturada ao confirmar senha:', err)
+      const msg =
+        err?.data?.message ||
+        err?.response?.message ||
+        err?.message ||
+        'Falha de comunicação ou erro no servidor ao confirmar nova senha.'
       res = {
         success: false,
-        error:
-          err?.message ||
-          'Falha de comunicação com o servidor ao confirmar nova senha. Tente novamente.',
+        error: msg,
       }
     } finally {
       setIsLoading(false)
@@ -78,10 +149,17 @@ export default function RedefinirSenhaPage() {
       }, 3500)
     } else {
       setConcluido(false)
-      setError(
-        res?.error ||
-          'Não foi possível redefinir a senha. O servidor recusou a requisição (o link pode ter expirado ou já ter sido utilizado).',
-      )
+      const rawError = res?.error || ''
+      let finalMessage = rawError
+
+      if (!finalMessage) {
+        finalMessage =
+          'Não foi possível redefinir a senha. O servidor recusou a requisição (o link pode ter expirado ou já ter sido utilizado).'
+      } else if (res?.status === 400 && !finalMessage.toLowerCase().includes('política')) {
+        finalMessage = `Falha na redefinição: ${finalMessage} (link expirado ou token já utilizado). Solicite um novo link de recuperação.`
+      }
+
+      setError(finalMessage)
     }
   }
 
@@ -120,17 +198,42 @@ export default function RedefinirSenhaPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!tokenParam && (
+            {!activeToken && (
               <div className="p-3.5 mb-4 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 shrink-0" />
-                <span>Link inválido ou sem token. Solicite nova recuperação de senha.</span>
+                <span>
+                  Link inválido ou sem token. Verifique o link recebido por e-mail ou informe o
+                  token manualmente abaixo.
+                </span>
+              </div>
+            )}
+
+            {!tokenParam && (
+              <div className="p-3 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.12)] space-y-1.5">
+                <label className="block text-[11px] font-semibold text-[#93A3B5] uppercase tracking-wider">
+                  Inserir Token de Redefinição Manualmente
+                </label>
+                <input
+                  type="text"
+                  value={manualToken}
+                  onChange={(e) => {
+                    setManualToken(e.target.value)
+                    if (e.target.value.trim()) setError('')
+                  }}
+                  placeholder="Cole aqui o token recebido no e-mail"
+                  className="w-full px-3 py-2 rounded-md bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] text-xs placeholder-[#93A3B5]/40 focus:outline-none focus:ring-1 focus:ring-[#12B886]"
+                />
               </div>
             )}
 
             {error && (
-              <div className="p-3.5 mb-4 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div
+                role="alert"
+                data-testid="redefinir-senha-erro"
+                className="p-3.5 mb-4 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-start gap-2"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{error}</span>
               </div>
             )}
 
@@ -288,8 +391,8 @@ export default function RedefinirSenhaPage() {
 
             <button
               type="submit"
-              disabled={isLoading || !tokenParam}
-              className="w-full py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm mt-2"
+              disabled={isLoading || !activeToken}
+              className="w-full py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm mt-2 cursor-pointer disabled:cursor-not-allowed"
             >
               {isLoading ? 'Redefinindo...' : 'Salvar Nova Senha'}
               <ArrowRight className="w-4 h-4" />

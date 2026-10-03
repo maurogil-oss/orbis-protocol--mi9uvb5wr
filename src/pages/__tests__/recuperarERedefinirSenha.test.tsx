@@ -86,7 +86,7 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
     })
   })
 
-  it('RedefinirSenhaPage deve ler ?token= da URL e alertar se o token estiver ausente', () => {
+  it('RedefinirSenhaPage deve ler ?token= da URL e alertar se o token estiver ausente, permitindo inserção manual', () => {
     render(
       <MemoryRouter initialEntries={['/redefinir-senha']}>
         <AuthProvider>
@@ -97,6 +97,42 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
 
     expect(screen.getByText(/REDEFINIR SENHA/i)).toBeDefined()
     expect(screen.getByText(/Token de redefinição não fornecido ou link incompleto/i)).toBeDefined()
+    expect(screen.getByPlaceholderText(/Cole aqui o token recebido no e-mail/i)).toBeDefined()
+  })
+
+  it('RedefinirSenhaPage deve permitir inserir token manualmente se o link vier sem query param', async () => {
+    const mockConfirmPasswordReset = vi.fn().mockResolvedValue(true)
+    vi.mocked(pb.collection).mockReturnValue({
+      confirmPasswordReset: mockConfirmPasswordReset,
+    } as any)
+
+    render(
+      <MemoryRouter initialEntries={['/redefinir-senha']}>
+        <AuthProvider>
+          <RedefinirSenhaPage />
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+
+    const inputManualToken = screen.getByPlaceholderText(/Cole aqui o token recebido no e-mail/i)
+    fireEvent.change(inputManualToken, { target: { value: 'TOKEN_MANUAL_123' } })
+
+    const inputs = screen.getAllByPlaceholderText('••••••••••')
+    fireEvent.change(inputs[0], { target: { value: 'OrbisProtocol@2026' } })
+    fireEvent.change(inputs[1], { target: { value: 'OrbisProtocol@2026' } })
+
+    const btnSalvar = screen.getByRole('button', { name: /Salvar Nova Senha/i })
+    expect(btnSalvar).not.toBeDisabled()
+    fireEvent.click(btnSalvar)
+
+    await waitFor(() => {
+      expect(mockConfirmPasswordReset).toHaveBeenCalledWith(
+        'TOKEN_MANUAL_123',
+        'OrbisProtocol@2026',
+        'OrbisProtocol@2026',
+      )
+      expect(screen.getByText(/Senha Redefinida com Sucesso!/i)).toBeDefined()
+    })
   })
 
   it('RedefinirSenhaPage deve validar política de senha e chamar confirmPasswordReset(token, senha)', async () => {
@@ -138,6 +174,15 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
       expect(screen.getByText(/pelo menos 1 caractere especial ou símbolo/i)).toBeDefined()
     })
 
+    // Testar senhas divergentes
+    fireEvent.change(novaSenhaInput, { target: { value: 'OrbisProtocol@2026' } })
+    fireEvent.change(confirmarSenhaInput, { target: { value: 'OrbisDiferente@2026' } })
+    fireEvent.click(btnSalvar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/As senhas digitadas não coincidem/i)).toBeDefined()
+    })
+
     // Testar senha forte atendendo todos os requisitos (letras, números e símbolo)
     fireEvent.change(novaSenhaInput, { target: { value: 'OrbisProtocol@2026' } })
     fireEvent.change(confirmarSenhaInput, { target: { value: 'OrbisProtocol@2026' } })
@@ -153,10 +198,17 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
     })
   })
 
-  it('RedefinirSenhaPage JAMAIS deve exibir sucesso falso se o backend rejeitar a redefinição', async () => {
-    const mockConfirmPasswordReset = vi
-      .fn()
-      .mockRejectedValue(new Error('Token inválido ou expirado.'))
+  it('RedefinirSenhaPage deve exibir erro 400 visível na tela em caso de token expirado ou inválido', async () => {
+    const error400: any = new Error('Failed to confirm password reset.')
+    error400.status = 400
+    error400.data = {
+      code: 400,
+      message: 'Failed to confirm password reset.',
+      data: {
+        token: { code: 'validation_invalid_token', message: 'Token inválido ou expirado.' },
+      },
+    }
+    const mockConfirmPasswordReset = vi.fn().mockRejectedValue(error400)
     vi.mocked(pb.collection).mockReturnValue({
       confirmPasswordReset: mockConfirmPasswordReset,
     } as any)
@@ -179,9 +231,35 @@ describe('Fluxo de Recuperação e Redefinição de Senha - Orbis Protocol', () 
     fireEvent.click(btnSalvar)
 
     await waitFor(() => {
-      // Deve exibir erro explícito retornado pelo backend
-      expect(screen.getByText(/Token inválido ou expirado/i)).toBeDefined()
-      // NUNCA deve exibir tela de sucesso falso
+      const erroBox = screen.getByTestId('redefinir-senha-erro')
+      expect(erroBox.textContent).toMatch(/Token inválido ou expirado/i)
+      expect(screen.queryByText(/Senha Redefinida com Sucesso!/i)).toBeNull()
+    })
+  })
+
+  it('RedefinirSenhaPage deve exibir mensagem de erro clara de rede ou falha de conexão', async () => {
+    const netError: any = new TypeError('Failed to fetch')
+    const mockConfirmPasswordReset = vi.fn().mockRejectedValue(netError)
+    vi.mocked(pb.collection).mockReturnValue({
+      confirmPasswordReset: mockConfirmPasswordReset,
+    } as any)
+
+    render(
+      <MemoryRouter initialEntries={['/redefinir-senha?token=TOKEN_REDE']}>
+        <AuthProvider>
+          <RedefinirSenhaPage />
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+
+    const inputs = screen.getAllByPlaceholderText('••••••••••')
+    fireEvent.change(inputs[0], { target: { value: 'OrbisProtocol@2026' } })
+    fireEvent.change(inputs[1], { target: { value: 'OrbisProtocol@2026' } })
+    fireEvent.click(screen.getByRole('button', { name: /Salvar Nova Senha/i }))
+
+    await waitFor(() => {
+      const erroBox = screen.getByTestId('redefinir-senha-erro')
+      expect(erroBox.textContent).toMatch(/Erro de conexão ao comunicar com o servidor/i)
       expect(screen.queryByText(/Senha Redefinida com Sucesso!/i)).toBeNull()
     })
   })
