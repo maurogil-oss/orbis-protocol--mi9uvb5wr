@@ -25,9 +25,9 @@ import {
   Code2,
 } from 'lucide-react'
 import {
-  buscarLoteComPecasPorParametro,
+  consultarLoteConsolidado,
   calcularHashCanonicalLote,
-  registrarConsultaPublicaDpp,
+  registrarConsultaDpp,
   obterHistoricoConsultasDpp,
   FATORES_CDV_MATERIAIS,
   type CdvLoteRecord,
