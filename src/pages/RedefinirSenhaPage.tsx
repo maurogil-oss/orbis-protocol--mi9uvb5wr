@@ -17,17 +17,50 @@ import {
 } from 'lucide-react'
 import { validarSenhaForte } from '@/lib/passwordPolicy'
 
+/**
+ * Função de limpeza e normalização robusta de tokens:
+ * Suporta tokens decodificados, codificados em percentual (%2F, %2B, %3D etc.),
+ * links reescritos por serviços de proteção (Hotmail SafeLinks, Proofpoint etc.)
+ * e fragmentos de hash.
+ */
+export function sanitizeToken(raw: string | null | undefined): string {
+  if (!raw) return ''
+  let val = String(raw).trim()
+
+  // Se o token contiver parâmetros residuais de URL colados (ex: token=XYZ&email=...)
+  if (val.includes('&')) {
+    const firstPart = val.split('&')[0]
+    if (firstPart) val = firstPart.trim()
+  }
+
+  // Decodifica URI components se estiver codificado
+  try {
+    if (val.includes('%')) {
+      val = decodeURIComponent(val).trim()
+    }
+  } catch {
+    // Mantém val caso decodeURIComponent falhe em sequências anômalas
+  }
+
+  // Remove aspas ou delimitadores que clientes de e-mail porventura anexem
+  val = val.replace(/^["'<([]+|["'>)\]]+$/g, '').trim()
+
+  return val
+}
+
 export default function RedefinirSenhaPage() {
   const [searchParams] = useSearchParams()
   const routeParams = useParams<{ token?: string }>()
   const navigate = useNavigate()
   const { refreshAuth } = useAuth()
 
-  // Extração robusta do token: aceita params de rota, query string (?token=, ?t=, ?key=, etc.) e hash
+  // Extração robusta do token: aceita params de rota (/redefinir-senha/:token),
+  // query string (?token=, ?t=, etc.) e fragmento de hash (#token=...)
   const extractToken = (): string => {
     // 1. Parâmetro de rota (/redefinir-senha/:token)
     if (routeParams?.token && routeParams.token.trim()) {
-      return routeParams.token.trim()
+      const sanitized = sanitizeToken(routeParams.token)
+      if (sanitized) return sanitized
     }
 
     // 2. Parâmetros de query string padrão do PocketBase e variações
@@ -40,9 +73,12 @@ export default function RedefinirSenhaPage() {
       searchParams.get('tokenKey') ||
       searchParams.get('code') ||
       searchParams.get('auth_token')
-    if (fromSearch) return fromSearch.trim()
+    if (fromSearch) {
+      const sanitized = sanitizeToken(fromSearch)
+      if (sanitized) return sanitized
+    }
 
-    // 3. Fallback lendo diretamente window.location (evita atrasos de sincronização do router)
+    // 3. Fallback lendo diretamente window.location (evita atrasos ou reescritas de URL no cliente)
     try {
       if (typeof window !== 'undefined' && window.location) {
         if (window.location.search) {
@@ -55,7 +91,10 @@ export default function RedefinirSenhaPage() {
             directSearch.get('resetToken') ||
             directSearch.get('tokenKey') ||
             directSearch.get('code')
-          if (searchTok) return searchTok.trim()
+          if (searchTok) {
+            const sanitized = sanitizeToken(searchTok)
+            if (sanitized) return sanitized
+          }
         }
 
         // 4. Suporte caso o link venha com hash fragment (#token=... ou #/redefinir-senha?token=...)
@@ -68,7 +107,10 @@ export default function RedefinirSenhaPage() {
             hashParams.get('t') ||
             hashParams.get('key') ||
             hashParams.get('reset_token')
-          if (hashToken) return hashToken.trim()
+          if (hashToken) {
+            const sanitized = sanitizeToken(hashToken)
+            if (sanitized) return sanitized
+          }
         }
         if (hash.includes('=')) {
           const cleanHash = hash.startsWith('#') ? hash.slice(1) : hash
@@ -78,7 +120,10 @@ export default function RedefinirSenhaPage() {
             directParams.get('t') ||
             directParams.get('key') ||
             directParams.get('reset_token')
-          if (directToken) return directToken.trim()
+          if (directToken) {
+            const sanitized = sanitizeToken(directToken)
+            if (sanitized) return sanitized
+          }
         }
       }
     } catch {
@@ -95,7 +140,7 @@ export default function RedefinirSenhaPage() {
       searchParams.get('user') ||
       searchParams.get('usuario') ||
       searchParams.get('u')
-    if (emailParam) return emailParam.trim()
+    if (emailParam) return sanitizeToken(emailParam)
     try {
       if (typeof window !== 'undefined' && window.location && window.location.search) {
         const directSearch = new URLSearchParams(window.location.search)
@@ -104,7 +149,7 @@ export default function RedefinirSenhaPage() {
           directSearch.get('user') ||
           directSearch.get('usuario') ||
           directSearch.get('u')
-        if (directEmail) return directEmail.trim()
+        if (directEmail) return sanitizeToken(directEmail)
       }
     } catch {
       /* fallback */
@@ -133,32 +178,42 @@ export default function RedefinirSenhaPage() {
     } else {
       setTokenParam('')
       setError(
-        'Token de redefinição não detectado na URL. Verifique se copiou o link completo recebido no e-mail ou informe o token manualmente.',
+        'Token de redefinição não detectado na URL. Verifique se copiou o link completo recebido no e-mail ou informe o token manualmente no campo abaixo.',
       )
       setIsTokenError(true)
     }
   }, [searchParams, routeParams?.token])
 
-  const activeToken = (manualToken.trim() || tokenParam).trim()
+  const activeToken = sanitizeToken(manualToken) || tokenParam
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsTokenError(false)
 
+    // Token ativo normalizado
     const currentToken = activeToken
+
+    // Se o token estiver completamente ausente, NUNCA abortar silenciosamente:
+    // exibir erro claro e visível em destaque orientando a solicitar novo link.
     if (!currentToken) {
       setError(
-        'Token de redefinição ausente. O link do e-mail pode estar incompleto. Solicite um novo link de recuperação.',
+        'Token de redefinição ausente. O link do e-mail pode estar incompleto ou foi corrompido pelo provedor de e-mail. Solicite um novo link de recuperação.',
       )
       setIsTokenError(true)
       return
     }
 
-    // Validação de senhas coincidentes
+    // Validação de preenchimento dos dois campos
+    if (!password || !confirmPassword) {
+      setError('Por favor, preencha os dois campos de senha para prosseguir.')
+      return
+    }
+
+    // Validação client-side: senhas coincidentes
     if (password !== confirmPassword) {
       setError(
-        'As senhas digitadas não coincidem. Certifique-se de digitar a mesma senha em ambos os campos.',
+        'As senhas digitadas não coincidem. Certifique-se de digitar exatamente a mesma senha em ambos os campos.',
       )
       return
     }
@@ -170,16 +225,15 @@ export default function RedefinirSenhaPage() {
       return
     }
 
+    // Início da submissão com estado de carregamento ativo para evitar cliques repetidos
     setIsLoading(true)
-    console.info('[RedefinirSenha] Disparando chamada confirmPasswordReset ao SDK PocketBase...')
 
     try {
-      // Chamada obrigatória e direta ao método confirmPasswordReset do SDK PocketBase
+      // Chamada OBRIGATÓRIA ao SDK PocketBase.
+      // Se houver qualquer dúvida quanto ao token, deixamos o backend avaliar e retornar a resposta.
       const res = await pb
         .collection('users')
         .confirmPasswordReset(currentToken, password, confirmPassword)
-
-      console.info('[RedefinirSenha] Resposta do backend:', res)
 
       // Se retornou false (PocketBase retorna boolean true em sucesso ou status 204/200)
       if (res === false) {
@@ -192,12 +246,10 @@ export default function RedefinirSenhaPage() {
         navigate('/login', { replace: true })
       }, 3500)
     } catch (err: any) {
-      console.error('[RedefinirSenha] Erro recebido ao confirmar senha no backend:', err)
-
       const status = err?.status || err?.response?.status || err?.data?.code || 0
       const errData = err?.data?.data || err?.response?.data || {}
 
-      // 1. Mensagem de campo específica do PocketBase
+      // Extração das mensagens granulares de campo retornadas pelo PocketBase
       const tokenFieldMsg = errData?.token?.message || errData?.token?.code
       const passwordFieldMsg = errData?.password?.message
       const passwordConfirmFieldMsg = errData?.passwordConfirm?.message
@@ -220,11 +272,14 @@ export default function RedefinirSenhaPage() {
         )
       } else if (passwordFieldMsg || passwordConfirmFieldMsg) {
         setError(
-          `Requisito de senha não atendido: ${passwordFieldMsg || passwordConfirmFieldMsg}. Verifique as regras de segurança e tente novamente.`,
+          `Requisito de senha não atendido pelo servidor: ${
+            passwordFieldMsg || passwordConfirmFieldMsg
+          }. Verifique as regras de segurança e tente novamente.`,
         )
       } else if (
         rawMessage.toLowerCase().includes('política') ||
-        rawMessage.toLowerCase().includes('falta:')
+        rawMessage.toLowerCase().includes('falta:') ||
+        rawMessage.toLowerCase().includes('requisito')
       ) {
         setError(rawMessage)
       } else if (
@@ -235,7 +290,7 @@ export default function RedefinirSenhaPage() {
         rawMessage.includes('Network request failed')
       ) {
         setError(
-          'Erro de conexão ao comunicar com o servidor. Verifique sua conexão com a internet e tente novamente.',
+          'Erro de conexão ao comunicar com o servidor da Orbis Protocol. Verifique sua conexão com a internet e tente novamente.',
         )
       } else {
         setError(
@@ -301,10 +356,11 @@ export default function RedefinirSenhaPage() {
               >
                 <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                 <div className="leading-relaxed space-y-1">
-                  <p className="font-bold">Link de redefinição sem token</p>
+                  <p className="font-bold">Link de redefinição sem token detectado</p>
                   <p>
-                    O link aberto não contém o parâmetro do token. Verifique se o endereço do e-mail
-                    foi aberto por completo ou informe o token manualmente abaixo.
+                    O link aberto não contém o token de segurança ou foi truncado pelo provedor de
+                    e-mail. Verifique se copiou o endereço completo ou informe o token manualmente
+                    no campo abaixo.
                   </p>
                 </div>
               </div>
@@ -564,7 +620,7 @@ export default function RedefinirSenhaPage() {
 
             <button
               type="submit"
-              disabled={isLoading || !activeToken}
+              disabled={isLoading}
               className="w-full py-3.5 rounded-xl font-bold bg-[#12B886] text-white hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm mt-2 cursor-pointer disabled:cursor-not-allowed"
             >
               {isLoading ? (
