@@ -16,9 +16,9 @@ describe('Layout - Tagline Unificada da Marca', () => {
     const taglines = screen.getAllByText('Economia Circular — dMRV')
     expect(taglines.length).toBeGreaterThanOrEqual(2)
 
-    // Cabeçalho desktop tem a classe de 10px e tracking largo
+    // Cabeçalho desktop tem a classe de 11px centralizada e tracking largo
     const desktopTagline = container.querySelector(
-      'header span.text-\\[10px\\].tracking-\\[0\\.2em\\]',
+      'header span.text-\\[11px\\].tracking-\\[0\\.22em\\]',
     )
     expect(desktopTagline).not.toBeNull()
     expect(desktopTagline?.textContent?.trim()).toBe('Economia Circular — dMRV')
@@ -28,17 +28,24 @@ describe('Layout - Tagline Unificada da Marca', () => {
     expect(desktopTagline?.textContent).not.toContain(')')
   })
 
-  it('exibe no rodapé "Economia Circular — dMRV" com travessão eme e sem hífen simples nem parênteses', () => {
+  it('exibe no rodapé "Economia Circular — dMRV" com o mesmo formato do cabeçalho na cor branca', () => {
     const { container } = render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
       </MemoryRouter>,
     )
 
-    // Rodapé bloco da marca com classes específicas do rodapé
-    const footerTagline = container.querySelector('footer span.tracking-\\[0\\.25em\\]')
+    // Rodapé bloco da marca com classes centralizadas e cor branca
+    const footerTagline = container.querySelector(
+      'footer span.text-\\[11px\\].tracking-\\[0\\.22em\\]',
+    )
     expect(footerTagline).not.toBeNull()
     expect(footerTagline?.textContent?.trim()).toBe('Economia Circular — dMRV')
+    // Não deve usar cor laranja/âmbar
+    expect(footerTagline?.className).not.toContain('text-amber-700')
+    expect(footerTagline?.className).not.toContain('text-[#D9B36C]')
+    // Deve incluir dark:text-white
+    expect(footerTagline?.className).toContain('dark:text-white')
     // Garante que usa travessão eme —, não hífen simples nem parênteses
     expect(footerTagline?.textContent).toContain('—')
     expect(footerTagline?.textContent).not.toContain('-')

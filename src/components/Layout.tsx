@@ -251,11 +251,11 @@ export default function Layout() {
             {/* Brand Logo & Name */}
             <Link to="/" className="flex items-center gap-3.5 group" title="Orbis Protocol">
               <OrbisGlobe size={42} />
-              <div className="flex flex-col">
-                <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors">
+              <div className="flex flex-col items-center text-center">
+                <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors text-center w-full">
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
-                <span className="text-[10px] tracking-[0.2em] uppercase text-slate-500 dark:text-[#94A3B8] font-semibold -mt-1 whitespace-nowrap">
+                <span className="text-[11px] tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 whitespace-nowrap text-center w-full">
                   Economia Circular — dMRV
                 </span>
               </div>
@@ -519,11 +519,11 @@ export default function Layout() {
               <div className="flex items-center justify-between pb-6 border-b border-slate-800">
                 <div className="flex items-center gap-3">
                   <OrbisGlobe size={34} />
-                  <div className="flex flex-col">
-                    <span className="font-heading font-black text-lg tracking-wider text-[#F8FAFC]">
+                  <div className="flex flex-col items-center text-center">
+                    <span className="font-heading font-black text-lg tracking-wider text-[#F8FAFC] text-center w-full">
                       ORBIS PROTOCOL
                     </span>
-                    <span className="text-[10px] tracking-[0.18em] uppercase text-[#94A3B8] font-semibold whitespace-nowrap">
+                    <span className="text-[11px] tracking-[0.2em] uppercase text-[#94A3B8] font-semibold whitespace-nowrap text-center w-full -mt-0.5">
                       Economia Circular — dMRV
                     </span>
                   </div>
@@ -756,11 +756,11 @@ export default function Layout() {
                   <div className="relative flex items-center justify-center">
                     <OrbisGlobe size={40} />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors">
+                  <div className="flex flex-col items-center text-center">
+                    <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors text-center w-full">
                       ORBIS PROTOCOL
                     </span>
-                    <span className="text-[10px] tracking-[0.25em] text-amber-700 dark:text-[#D9B36C] font-mono uppercase font-bold">
+                    <span className="text-[11px] tracking-[0.22em] uppercase text-slate-900 dark:text-white font-semibold -mt-0.5 whitespace-nowrap text-center w-full">
                       Economia Circular — dMRV
                     </span>
                   </div>
