@@ -63,6 +63,20 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
     expect(r134a).toBeDefined()
     expect(r134a?.valorFator).toBe(1530.0)
 
+    const r1234yf = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-r1234yf-refrigerante')
+    expect(r1234yf).toBeDefined()
+    expect(r1234yf?.valorFator).toBe(0.5)
+    expect(r1234yf?.fonteOficial).toContain('IPCC AR6 WG1')
+    expect(r1234yf?.fonteOficial).toContain('7.SM.7')
+
+    const bateria = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-bateria-tracao-fora-escopo')
+    expect(bateria).toBeDefined()
+    expect(bateria?.valorFator).toBe(0.0)
+    expect(bateria?.descricao).toContain('Fora de escopo v2.1')
+    expect(bateria?.detalheTecnico).toContain('Chalmers 2024')
+    expect(bateria?.detalheTecnico).toContain('ABNT NBR 10004')
+    expect(bateria?.detalheTecnico).toContain('art. 33 da PNRS')
+
     // O fator insetting fixo foi removido do catálogo (§3: cálculo agora é por massa)
     const insettingFixo = CATALOGO_FATORES_CO2E.find((f) => f.id === 'insetting-peca')
     expect(insettingFixo).toBeUndefined()
@@ -75,6 +89,11 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
 
     const n2o = GWP_IPCC_AR6_OFICIAL.gases.find((g) => g.formula === 'N₂O')
     expect(n2o?.gwp).toBe(273)
+
+    const r1234yfGwp = GWP_IPCC_AR6_OFICIAL.gases.find((g) => g.formula.includes('CF₃CF=CH₂'))
+    expect(r1234yfGwp).toBeDefined()
+    expect(r1234yfGwp?.gwp).toBe(0.5)
+    expect(r1234yfGwp?.fonte).toContain('Tabela 7.SM.7')
   })
 
   it('não deve conter menções indevidas a marcas de terceiros sem contrato ("Renova")', () => {

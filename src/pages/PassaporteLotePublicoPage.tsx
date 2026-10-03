@@ -25,15 +25,16 @@ import {
   Code2,
 } from 'lucide-react'
 import {
-  consultarLoteConsolidado,
+  buscarLoteComPecasPorParametro,
   calcularHashCanonicalLote,
-  registrarConsultaDpp,
+  registrarConsultaPublicaDpp,
   obterHistoricoConsultasDpp,
   FATORES_CDV_MATERIAIS,
   type CdvLoteRecord,
   type CdvPecaRecord,
   type DppConsultaRecord,
 } from '@/services/cdvService'
+import { FATORES_MATERIAIS_V2, round2 } from '@/services/cdvEngineV2'
 import {
   consultarDestinacaoFinalLote,
   type DestinacaoFinalLoteResponse,
@@ -291,11 +292,37 @@ export default function PassaporteLotePublicoPage() {
     const pecasComPassaporte = pecas.filter((p) => Boolean(p.selo_dpp)).length
     const pctEmitidas = totalPecas > 0 ? (pecasComPassaporte / totalPecas) * 100 : 100
 
+    // Cálculo da incerteza consolidada por quadratura conforme DM-ORB-001 v1.1 §6.3:
+    // Incerteza_lote = √(Σ (Evitado_peça × u_FE)² + (Evitado_lote × u_massa)²)
+    // u_massa padrão = 1% (balança calibrada INMETRO)
+    const uMassa = 0.01
+    let somaQuadradosIncerteza = 0
+
+    if (pecas.length > 0) {
+      for (const p of pecas) {
+        const fatorMaterial =
+          FATORES_MATERIAIS_V2[p.categoria_material as keyof typeof FATORES_MATERIAIS_V2] ||
+          FATORES_MATERIAIS_V2.outros
+        const evitadoPeca = Number(p.co2e_evitado_kg) || 0
+        const uFePeca = fatorMaterial.u_fe
+        somaQuadradosIncerteza += Math.pow(evitadoPeca * uFePeca, 2)
+      }
+    }
+
+    const termoMassa = Math.pow(totalCO2e * uMassa, 2)
+    const incertezaLoteKg = round2(Math.sqrt(somaQuadradosIncerteza + termoMassa))
+    const incertezaPct =
+      totalCO2e > 0
+        ? round2((incertezaLoteKg / totalCO2e) * 100)
+        : Number((lote as any)?.incerteza_pct) || 2.64
+
     return {
       totalPecas,
       totalPeso,
       totalCO2e,
       pctEmitidas,
+      incertezaLoteKg,
+      incertezaPct,
     }
   }, [pecas, lote])
 
@@ -1876,6 +1903,10 @@ export default function PassaporteLotePublicoPage() {
                                   const fatorInfo =
                                     FATORES_CDV_MATERIAIS[peca.categoria_material] ||
                                     FATORES_CDV_MATERIAIS.outros
+                                  const fatorMaterialV2 =
+                                    FATORES_MATERIAIS_V2[
+                                      peca.categoria_material as keyof typeof FATORES_MATERIAIS_V2
+                                    ] || FATORES_MATERIAIS_V2.outros
                                   const pesoKg = Number(peca.peso_kg) || 0
                                   const feRef =
                                     Number(peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg) || 1.5
@@ -1887,7 +1918,8 @@ export default function PassaporteLotePublicoPage() {
                                       Math.max(0, pesoKg * feRef * li * df - peAlloc) * 100,
                                     ) / 100
                                   const tier = 'T3'
-                                  const incerteza = '±3.5%'
+                                  const uFePct = (fatorMaterialV2.u_fe * 100).toFixed(1)
+                                  const incerteza = `±${uFePct}%`
 
                                   return (
                                     <tr
@@ -2130,19 +2162,31 @@ export default function PassaporteLotePublicoPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[10px] text-[#93A3B5] print:text-slate-500 gap-2">
-                      <span>
-                        Cálculo conforme DM-ORB-001 v1.1 §6.3: Evitado = Q×FE×L_i×DF − PE. Fatores
-                        congelados no hash. Incerteza ±3.5%.
-                      </span>
-                      <span className="font-mono">
-                        Hash Único do Registro:{' '}
-                        <span className="text-[#D9B36C] print:text-slate-700">
-                          {hashCalculado
-                            ? `${hashCalculado.slice(0, 16)}...${hashCalculado.slice(-16)}`
-                            : '—'}
+                    <div className="space-y-1.5 text-[10px] text-[#93A3B5] print:text-slate-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span>
+                          Cálculo conforme DM-ORB-001 v1.1 §6.3: Evitado = Q×FE×L_i×DF − PE. Fatores
+                          congelados no hash. Incerteza consolidada por quadratura:{' '}
+                          <strong className="text-[#12B886] font-mono">
+                            ±{metricas.incertezaPct.toFixed(2)}%
+                          </strong>{' '}
+                          (±{metricas.incertezaLoteKg.toFixed(2)} kgCO₂e).
                         </span>
-                      </span>
+                        <span className="font-mono">
+                          Hash Único do Registro:{' '}
+                          <span className="text-[#D9B36C] print:text-slate-700">
+                            {hashCalculado
+                              ? `${hashCalculado.slice(0, 16)}...${hashCalculado.slice(-16)}`
+                              : '—'}
+                          </span>
+                        </span>
+                      </div>
+                      <div className="text-[9px] text-[#93A3B5] print:text-slate-500 italic">
+                        * Nota metodológica: PE = 0,00 quando não há faturas de energia elétrica ou
+                        combustíveis do CDV vinculadas ao lote (conservador). A incerteza individual
+                        (u_FE) varia por material (Aço ±3,5%, Alumínio ±4,0%, Cobre ±4,5%, Polímeros
+                        ±5,0%, Outros ±10,0%) e é combinada quadraticamente com u_massa (±1,0%).
+                      </div>
                     </div>
                   </div>
 

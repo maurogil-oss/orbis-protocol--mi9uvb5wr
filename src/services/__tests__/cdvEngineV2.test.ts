@@ -3,6 +3,8 @@ import {
   calcularLoteOrbisV2,
   FATORES_MATERIAIS_V2,
   GWP_AR6_R134A,
+  GWP_AR6_R1234YF,
+  REFRIGERANTES_CATALOGO_V2,
   obterFatorConservadorParaPecaMista,
   LoteInputV2,
 } from '../cdvEngineV2'
@@ -159,6 +161,35 @@ describe('Motor de Cálculo Orbis v2 & DM-ORB-001 v1.1', () => {
     expect(res.evitado_refrigerante_kg).toBe(994.5)
     expect(res.evitado_liquido_kg).toBe(994.5)
     expect(res.refrigerante_declaracao).toContain('1.530')
+  })
+
+  it('adiciona fluxo de refrigerante moderno R-1234yf com GWP 0.50 do IPCC AR6 WG1 Tab. 7.SM.7', () => {
+    expect(GWP_AR6_R1234YF).toBe(0.5)
+    expect(REFRIGERANTES_CATALOGO_V2.r1234yf.gwp100).toBe(0.5)
+    expect(REFRIGERANTES_CATALOGO_V2.r1234yf.fonte).toContain('7.SM.7')
+
+    const loteComR1234yf: LoteInputV2 = {
+      cdv: { nome: 'CDV Teste Moderno', cnpj: '11.222.333/0001-44' },
+      veiculo_doador: {
+        marca_modelo: 'Toyota Corolla 2022',
+        baixa_detran: 'PR-BX-2026-COROLLA',
+        fluidos: [
+          {
+            tipo: 'R1234yf',
+            massa_kg: 0.5,
+            evidencia: 'MTR-SINIR-R1234-01',
+          },
+        ],
+      },
+      pecas: [],
+    }
+
+    const res = calcularLoteOrbisV2(loteComR1234yf)
+    // 0.50 kg * 0.50 GWP * 1.0 DF = 0.25 kgCO2e
+    expect(res.evitado_refrigerante_kg).toBe(0.25)
+    expect(res.evitado_liquido_kg).toBe(0.25)
+    expect(res.refrigerante_declaracao).toContain('R-1234yf')
+    expect(res.refrigerante_declaracao).toContain('0,50')
   })
 
   it('declara refrigerante não capturado quando não houver drenagem documentada (§1.3)', () => {

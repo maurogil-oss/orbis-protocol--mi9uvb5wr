@@ -163,7 +163,7 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     categoria: 'cdv_materiais',
     nomeMaterial: 'Gás Refrigerante R-134a (HFC-134a Recuperado)',
     descricao:
-      'Fluido halogenado recuperado na drenagem obrigatória do sistema de climatização veicular (despoluição prévia).',
+      'Fluido halogenado recuperado na drenagem obrigatória do sistema de climatização veicular (veículos anteriores a ~2017).',
     valorFator: 1530.0,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
@@ -174,6 +174,42 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     incertezaPct: 2.0,
     detalheTecnico:
       'Evita emissão fugitiva direta e demanda de fluido virgem. Fator GWP100 oficial fixado em 1.530 kgCO₂e/kg com fator de deslocamento DF=1,0 quando comprovada a regeneração ou incineração em parque licenciado.',
+  },
+  {
+    id: 'mat-r1234yf-refrigerante',
+    categoria: 'cdv_materiais',
+    nomeMaterial: 'Gás Refrigerante R-1234yf (HFO-1234yf Recuperado)',
+    descricao:
+      'Fluido hidrofluoroolefina (HFO) de ultra-baixo GWP adotado como padrão veicular moderno em veículos pós-~2017.',
+    valorFator: 0.5,
+    unidade: 'kgCO₂e/kg',
+    tipoImpacto: 'emissao_evitada',
+    fonteOficial:
+      'IPCC AR6 WG1 Capítulo 7 Tabela 7.SM.7 (HFO-1234yf / CF3CF=CH2; GWP100 com feedback = 0,501; adotado valor conservador 0,50)',
+    anoReferencia: 2023,
+    normaPadrao: 'IPCC AR6 WG1 Tab. 7.SM.7 • Resolução CONAMA 267/2000',
+    tierIncerteza: 'Tier 3',
+    incertezaPct: 2.0,
+    detalheTecnico:
+      'Evita emissão fugitiva de fluido automotivo moderno. Vida atmosférica curta de 0,033 anos (~12 dias); GWP100 oficial IPCC AR6 de 0,501 (adotado 0,50 kgCO₂e/kg, ponta conservadora) com DF=1,0 na comprovação de drenagem. Não confere créditos além das regras estritas do DM-ORB-001 v1.1.',
+  },
+  {
+    id: 'mat-bateria-tracao-fora-escopo',
+    categoria: 'cdv_materiais',
+    nomeMaterial: 'Baterias de Tração Li-ion (NMC/LFP) • [Fora de Escopo v2.1]',
+    descricao:
+      'Pack de bateria de tração veicular (veículos elétricos e híbridos). Fora de escopo v2.1 — sem fator verificável; tratado estritamente como massa residual com segregação obrigatória e custódia.',
+    valorFator: 0.0,
+    unidade: 'kgCO₂e/kg',
+    tipoImpacto: 'emissao_evitada',
+    fonteOficial:
+      'Fora de Escopo v2.1 • ABNT NBR 10004 (Resíduo Perigoso Classe I) • PNRS Lei 12.305/2010 art. 33',
+    anoReferencia: 2025,
+    normaPadrao: 'DM-ORB-001 v1.1 §1.4 • ABNT NBR 10004 • PNRS Art. 33 • Chalmers 2024 / ICCT',
+    tierIncerteza: 'Tier 4',
+    incertezaPct: 0.0,
+    detalheTecnico:
+      'FORA DE ESCOPO v2.1: A pegada de fabricação da literatura para packs Li-ion varia amplamente (~28 a ~118 kgCO₂e/kWh conforme química LFP vs NMC e matriz do país fabricante — Chalmers 2024; ICCT adota 175 kgCO₂e/kWh como estimativa histórica central). Traduzir em fator de emissão evitada por kg de material recuperado exigiria metodologia de alocação e decomposição de células ainda não verificada formalmente. Baterias são resíduo perigoso (ABNT NBR 10004) e setor prioritário do art. 33 da PNRS (logística reversa obrigatória). A plataforma registra massa e cadeia de custódia, vedando terminantemente qualquer claim ou crédito de carbono sobre a fração até homologação metodológica específica.',
   },
 
   // 2. Combustíveis de Frota e Instalações (Escopo 1)
@@ -408,6 +444,13 @@ export const GWP_IPCC_AR6_OFICIAL = {
       gwp: 1530,
       vidaAtmosfericaAnos: '14.0 anos',
       fonte: 'IPCC AR6 WGI (Tabela 7.15 com feedbacks)',
+    },
+    {
+      gas: '2,3,3,3-Tetrafluoropropeno (HFO-1234yf / R-1234yf)',
+      formula: 'CF₃CF=CH₂ (R-1234yf)',
+      gwp: 0.5,
+      vidaAtmosfericaAnos: '0.033 anos (12 dias)',
+      fonte: 'IPCC AR6 WGI (Tabela 7.SM.7 com feedbacks; GWP100 = 0,501)',
     },
   ],
 } as const

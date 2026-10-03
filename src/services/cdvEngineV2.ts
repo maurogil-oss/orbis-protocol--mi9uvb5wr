@@ -29,9 +29,43 @@
 
 export const VERSAO_METODOLOGIA_CDV_V2 = 'DM-ORB-001-v1.1'
 
-// GWP 100 oficial IPCC AR6 WG1 Tabela 7.15 para HFC-134a (R-134a)
+// GWP 100 oficial IPCC AR6 WG1 Capítulo 7 (Tabela 7.15 e Tabela 7.SM.7 com feedbacks de carbono)
 export const GWP_AR6_R134A = 1530
+// HFO-1234yf (R-1234yf): IPCC AR6 WG1 Ch. 7 Tab. 7.SM.7 (CF3CF=CH2, Lifetime 0.033 anos; GWP100 = 0.501; conservador de catálogo = 0.50)
+export const GWP_AR6_R1234YF = 0.5
 export const DF_REFRIGERANTE_PADRAO = 1.0
+
+export interface FatorRefrigeranteV2 {
+  tipo: string
+  nome: string
+  formula: string
+  gwp100: number
+  df: number
+  fonte: string
+  aplicacao: string
+}
+
+export const REFRIGERANTES_CATALOGO_V2: Record<string, FatorRefrigeranteV2> = {
+  r134a: {
+    tipo: 'R134a',
+    nome: '1,1,1,2-Tetrafluoroetano (HFC-134a / R-134a)',
+    formula: 'CH₂FCF₃ (R-134a)',
+    gwp100: 1530,
+    df: 1.0,
+    fonte: 'IPCC AR6 WG1 Capítulo 7 Tabela 7.15 (com feedbacks de carbono)',
+    aplicacao: 'Veículos anteriores a ~2017 e HVAC comercial',
+  },
+  r1234yf: {
+    tipo: 'R1234yf',
+    nome: '2,3,3,3-Tetrafluoropropeno (HFO-1234yf / R-1234yf)',
+    formula: 'CF₃CF=CH₂ (R-1234yf)',
+    gwp100: 0.5,
+    df: 1.0,
+    fonte:
+      'IPCC AR6 WG1 Capítulo 7 Tabela 7.SM.7 (HFO-1234yf, GWP100 = 0,501 com feedbacks; adotado 0,50 conservador)',
+    aplicacao: 'Veículos pós-~2017 (padrão automotivo global moderno)',
+  },
+}
 
 // Fatores de referência e incertezas relativas u_FE
 export interface FatorMaterialV2 {
@@ -135,7 +169,7 @@ export interface EvidenciaDestinacaoInput {
 }
 
 export interface FluidoInput {
-  tipo: 'R134a' | string
+  tipo: 'R134a' | 'R1234yf' | string
   massa_kg: number
   evidencia?: string
 }
@@ -486,23 +520,51 @@ export function calcularLoteOrbisV2(input: LoteInputV2): LoteCalculoResultadoV2 
     })
   }
 
-  // 4. Refrigerante R-134a (§1.3)
+  // 4. Refrigerantes (§1.3: R-134a, R-1234yf)
   let evitadoRefrigeranteKg = 0
   let refrigeranteDeclaracao =
     'Refrigerante não capturado no gate de despoluição — evitado subestimado por conservativeness.'
   const fluidos = input.veiculo_doador?.fluidos || []
-  const fluidoR134a = fluidos.find(
-    (f) =>
-      f &&
-      String(f.tipo)
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '') === 'r134a',
-  )
+  const fluidosValidos: Array<{ tipo: string; massa: number; evitado: number; evidencia: string }> =
+    []
 
-  if (fluidoR134a && Number(fluidoR134a.massa_kg) > 0) {
-    const massaR134 = Number(fluidoR134a.massa_kg)
-    evitadoRefrigeranteKg = floor2(massaR134 * GWP_AR6_R134A * DF_REFRIGERANTE_PADRAO)
-    refrigeranteDeclaracao = `Drenagem documentada de R-134a (${massaR134.toFixed(2)} kg) com GWP AR6 de 1.530 e DF 1,0 (${fluidoR134a.evidencia || 'evidência registrada'}).`
+  for (const f of fluidos) {
+    if (!f || !(Number(f.massa_kg) > 0)) continue
+    const tipoNorm = String(f.tipo)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+    const massa = Number(f.massa_kg)
+
+    let gwp = 0
+    let rotulo = ''
+    if (tipoNorm === 'r134a') {
+      gwp = GWP_AR6_R134A
+      rotulo = 'R-134a'
+    } else if (tipoNorm === 'r1234yf') {
+      gwp = GWP_AR6_R1234YF
+      rotulo = 'R-1234yf'
+    }
+
+    if (gwp > 0) {
+      const evitadoFluido = floor2(massa * gwp * DF_REFRIGERANTE_PADRAO)
+      evitadoRefrigeranteKg = floor2(evitadoRefrigeranteKg + evitadoFluido)
+      fluidosValidos.push({
+        tipo: rotulo,
+        massa,
+        evitado: evitadoFluido,
+        evidencia: f.evidencia || 'evidência registrada',
+      })
+    }
+  }
+
+  if (fluidosValidos.length > 0) {
+    const partes = fluidosValidos.map(
+      (fv) =>
+        `Drenagem documentada de ${fv.tipo} (${fv.massa.toFixed(2)} kg) com GWP AR6 de ${
+          fv.tipo === 'R-134a' ? '1.530' : '0,50'
+        } e DF 1,0 (${fv.evidencia})`,
+    )
+    refrigeranteDeclaracao = partes.join(' | ')
   }
 
   // Total líquido consolidado do lote

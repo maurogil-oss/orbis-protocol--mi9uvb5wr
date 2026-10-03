@@ -377,20 +377,26 @@ routerAdd('POST', '/backend/v2/cdv/lotes', (e) => {
     })
   }
 
-  // 5. Refrigerante R-134a
+  // 5. Refrigerantes (R-134a GWP 1530; R-1234yf GWP 0.50 conforme IPCC AR6 WG1 Tab. 7.15 / 7.SM.7)
   let evitadoRefrigerante = 0
   const fluidos = veiculoInfo.fluidos || []
   for (let f of fluidos) {
-    if (
-      f &&
-      String(f.tipo)
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '') === 'r134a'
-    ) {
-      const m = Number(f.massa_kg) || 0
-      if (m > 0) {
-        evitadoRefrigerante += Math.floor(m * 1530 * 1.0 * 100) / 100
-      }
+    if (!f) continue
+    const tipoNorm = String(f.tipo)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+    const m = Number(f.massa_kg) || 0
+    if (m <= 0) continue
+
+    let gwp = 0
+    if (tipoNorm === 'r134a') {
+      gwp = 1530
+    } else if (tipoNorm === 'r1234yf') {
+      gwp = 0.5
+    }
+
+    if (gwp > 0) {
+      evitadoRefrigerante += Math.floor(m * gwp * 1.0 * 100) / 100
     }
   }
 

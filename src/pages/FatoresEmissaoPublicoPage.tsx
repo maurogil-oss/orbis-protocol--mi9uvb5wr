@@ -39,6 +39,7 @@ import {
 import {
   FATORES_MATERIAIS_V2,
   GWP_AR6_R134A,
+  GWP_AR6_R1234YF,
   DF_REFRIGERANTE_PADRAO,
   VERSAO_METODOLOGIA_CDV_V2,
 } from '@/services/cdvEngineV2'
@@ -333,7 +334,7 @@ export default function FatoresEmissaoPublicoPage() {
                   className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
                 >
                   <span>§6.1</span>
-                  <span className="truncate">Refrigerantes R-134a & GWP AR6</span>
+                  <span className="truncate">Refrigerantes R-134a, R-1234yf & GWP AR6</span>
                 </a>
                 <a
                   href="#sec-63"
@@ -437,6 +438,64 @@ export default function FatoresEmissaoPublicoPage() {
                     </strong>{' '}
                     pela autoridade climática nacional competente ou entidade de acreditação oficial
                     (INMETRO / UNFCCC).
+                  </p>
+                </div>
+
+                {/* NOTA 1.4: Bateria de Tração Fora de Escopo v2.1 */}
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-blue-300 dark:border-[#2563EB]/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-[#3B82F6] uppercase flex items-center gap-1.5">
+                      <ShieldAlert className="w-4 h-4 shrink-0 text-[#3B82F6]" />
+                      §1.4 Delimitação de Escopo • Pack de Baterias de Tração Li-ion (NMC / LFP)
+                      Fora de Escopo v2.1
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-[#3B82F6]/15 text-[#3B82F6] font-mono text-[10px] font-bold">
+                      FORA DE ESCOPO v2.1
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                    <strong className="text-[#F4F7FA]">
+                      Tratamento como Informação e Custódia (Sem Fator de Carbono):
+                    </strong>{' '}
+                    Packs de baterias de tração de veículos elétricos e híbridos (químicas NMC, LFP
+                    e congêneres) estão{' '}
+                    <strong className="text-[#D9B36C]">
+                      estritamente fora do escopo de cálculo de emissão evitada da versão 2.1
+                    </strong>{' '}
+                    do DM-ORB-001. A plataforma trata esses componentes exclusivamente como{' '}
+                    <strong className="text-[#F4F7FA]">
+                      massa residual com segregação obrigatória e cadeia de custódia
+                    </strong>
+                    , com fator fixado em{' '}
+                    <code className="text-[#12B886] font-mono">0,00 kgCO₂e/kg</code>.
+                  </p>
+                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                    <strong className="text-[#F4F7FA]">
+                      Fundamentação Técnica e Variabilidade da Literatura:
+                    </strong>{' '}
+                    A pegada de fabricação de baterias Li-ion na literatura acadêmica varia de{' '}
+                    <strong className="text-[#D9B36C]">~28 a ~118 kgCO₂e/kWh</strong> conforme a
+                    química da célula (LFP vs. NMC) e a matriz energética do país de manufatura
+                    (Chalmers University of Technology 2024; o ICCT utiliza 175 kgCO₂e/kWh como
+                    estimativa histórica central para frotas de ciclo misto). Traduzir essa
+                    amplitude em um fator por quilograma de material recuperado exigiria metodologia
+                    de alocação de massa e balanço celular que ainda não possui norma de consenso
+                    verificada para desmanches.
+                  </p>
+                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                    <strong className="text-[#F4F7FA]">
+                      Conexão Regulatória PNRS e Resíduo Perigoso:
+                    </strong>{' '}
+                    Baterias são classificadas como resíduo perigoso Classe I segundo a{' '}
+                    <strong className="text-[#F4F7FA]">ABNT NBR 10004</strong> e pilhas/baterias
+                    constituem setor de logística reversa prioritário mandatório pelo{' '}
+                    <strong className="text-[#F4F7FA]">
+                      artigo 33 da Lei Federal nº 12.305/2010 (PNRS)
+                    </strong>
+                    . A plataforma Orbis opera o módulo de logística reversa e custódia documental
+                    &quot;em estruturação&quot; para registro do MTR e destinação a recicladores
+                    credenciados, sem promessa de emissão de créditos ou compromisso com prazos
+                    regulatórios externos.
                   </p>
                 </div>
               </div>
@@ -737,7 +796,7 @@ export default function FatoresEmissaoPublicoPage() {
               </div>
             </section>
 
-            {/* SEÇÃO 6.1: FATORES E REFRIGERANTE R-134a */}
+            {/* SEÇÃO 6.1: FATORES E REFRIGERANTES R-134a & R-1234yf */}
             <section
               id="sec-61"
               className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
@@ -747,9 +806,9 @@ export default function FatoresEmissaoPublicoPage() {
                 <span>Seção 6.1 • Gases de Efeito Estufa e Drenagem de Climatização</span>
               </div>
               <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §6.1 Fatores Consolidados em CO₂e e Tratamento Mandatório do R-134a
+                §6.1 Fatores Consolidados em CO₂e e Tratamento Mandatório do R-134a e R-1234yf
               </h2>
-              <div className="space-y-3 text-sm text-[#93A3B5] leading-relaxed">
+              <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
                 <p>
                   <strong className="text-[#F4F7FA]">Consolidação em CO₂e sem Duplo GWP:</strong> Os
                   fatores aplicados pelo motor já consolidam a cesta de GEE da norma (CO₂, CH₄, N₂O)
@@ -758,43 +817,79 @@ export default function FatoresEmissaoPublicoPage() {
                   aquecimento global em etapas subsequentes da cadeia.
                 </p>
 
-                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/40 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#12B886] uppercase">
-                      Fluxo de Gás Refrigerante Veicular R-134a (HFC-134a)
-                    </span>
-                    <span className="font-mono text-[11px] text-[#D9B36C]">
-                      GWP = {GWP_AR6_R134A}
-                    </span>
+                {/* Grade dos dois refrigerantes veiculares oficiais */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* R-134a */}
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/40 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-[#12B886] uppercase">
+                        R-134a (HFC-134a) • Veículos até ~2017
+                      </span>
+                      <span className="font-mono text-[11px] text-[#D9B36C]">
+                        GWP = {GWP_AR6_R134A}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Fluido tradicional de ar-condicionado veicular. O DM-ORB-001 v1.1 adota o
+                      valor oficial do{' '}
+                      <strong className="text-[#F4F7FA]">
+                        IPCC AR6 WG1 Capítulo 7, Tabela 7.15 (GWP100 = 1.530 com feedbacks de
+                        carbono)
+                      </strong>
+                      . Fator de deslocamento DF_refrig = {DF_REFRIGERANTE_PADRAO.toFixed(1)}.
+                    </p>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-emerald-700 dark:text-[#059669]">
+                      Evitado = m_R134a × 1.530 × DF_refrig
+                    </div>
                   </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    A climatização veicular constitui um ponto crítico de emissão fugitiva na
-                    despoluição. O DM-ORB-001 v1.1 e o motor adotam como métrica de potencial de
-                    aquecimento global em 100 anos o valor{' '}
-                    <strong className="text-[#12B886] font-mono">GWP = 1.530</strong>, extraído do{' '}
-                    <strong className="text-[#F4F7FA]">
-                      IPCC Sexto Relatório de Avaliação (AR6 WG1 Capítulo 7, Tabela 7.15, incluindo
-                      feedbacks climáticos de carbono)
-                    </strong>
-                    .
-                  </p>
-                  <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 font-mono text-xs text-emerald-700 dark:text-[#059669]">
-                    Evitado_refrigerante = Massa_R134a_kg × 1.530 × DF_refrig (onde DF_refrig ={' '}
-                    {DF_REFRIGERANTE_PADRAO.toFixed(1)})
+
+                  {/* R-1234yf */}
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-blue-300 dark:border-[#2563EB]/40 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-[#3B82F6] uppercase">
+                        R-1234yf (HFO-1234yf) • Veículos pós-~2017
+                      </span>
+                      <span className="font-mono text-[11px] text-[#D9B36C]">
+                        GWP = {GWP_AR6_R1234YF.toFixed(2)} (IPCC AR6)
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Padrão automotivo global moderno (hidrofluoroolefina) introduzido para
+                      substituir o HFC-134a. Fonte oficial:{' '}
+                      <strong className="text-[#F4F7FA]">
+                        IPCC AR6 WG1 Capítulo 7, Tabela 7.SM.7 (HFO-1234yf, CF₃CF=CH₂, Lifetime
+                        0,033 anos; GWP100 = 0,501 com feedbacks; adotado valor conservador de 0,50
+                        kgCO₂e/kg)
+                      </strong>
+                      . Literatura cita GWP &lt; 1; adota-se a ponta conservadora documentada.
+                    </p>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-blue-700 dark:text-[#60A5FA]">
+                      Evitado = m_R1234yf × 0,50 × DF_refrig
+                    </div>
                   </div>
-                  <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-amber-200 dark:border-[#D9B36C]/30 text-xs text-slate-600 dark:text-[#94A3B8]">
-                    <strong className="text-[#D9B36C]">
-                      Declaração Mandatória de Subestimação Conservadora:
-                    </strong>{' '}
-                    Caso o lote veicular não apresente comprovante de drenagem técnica (com peso e
-                    MTR de recolhimento), o benefício do gás refrigerante é fixado em{' '}
-                    <strong className="text-[#F4F7FA]">0,00 kgCO₂e</strong> com a declaração
-                    expressa:
-                    <em className="text-[#D9B36C] block mt-1">
-                      &quot;Refrigerante não capturado no gate de despoluição — evitado subestimado
-                      por conservativeness.&quot;
-                    </em>
-                  </div>
+                </div>
+
+                {/* Nota de aplicação e disciplina regulatória */}
+                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-amber-200 dark:border-[#D9B36C]/30 text-xs text-slate-600 dark:text-[#94A3B8]">
+                  <strong className="text-[#D9B36C]">
+                    Declaração Mandatória de Subestimação Conservadora:
+                  </strong>{' '}
+                  Caso o lote veicular não apresente comprovante de drenagem técnica (com peso e MTR
+                  de recolhimento), o benefício do gás refrigerante é fixado em{' '}
+                  <strong className="text-[#F4F7FA]">0,00 kgCO₂e</strong> com a declaração expressa:
+                  <em className="text-[#D9B36C] block mt-1">
+                    &quot;Refrigerante não capturado no gate de despoluição — evitado subestimado
+                    por conservativeness.&quot;
+                  </em>
+                  <span className="block mt-2 text-[11px] text-[#93A3B5]">
+                    Nota regulatória: A inserção do R-1234yf e do R-134a segue estritamente como
+                    fator de catálogo do motor dMRV sob o regime do DM-ORB-001 v1.1. É
+                    terminantemente vedada a promessa de créditos de carbono adicionais sobre esses
+                    fluidos além da infraestrutura probatória documental já estabelecida. Fluidos de
+                    HVAC industrial (como R-407C e R-410A) permanecem documentados como misturas
+                    específicas sob demanda e entram no inventário apenas com EPD/laudo verificado
+                    por instalação.
+                  </span>
                 </div>
               </div>
             </section>
@@ -1365,6 +1460,44 @@ export default function FatoresEmissaoPublicoPage() {
                     Citação completa: IPCC AR6 WG1 Capítulo 7, Tabela 7.15 (GWP 100 anos com
                     feedbacks de carbono = 1.530). Fator de deslocamento DF_refrig = 1,0 quando
                     comprovada a despoluição e destinação ambiental.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-[#F4F7FA] font-mono">
+                      Fluido Refrigerante R-1234yf (HFO-1234yf): 0,50 kgCO₂e/kg (Tier 3)
+                    </strong>
+                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
+                      Oficial IPCC AR6 WG1 Tab. 7.SM.7
+                    </span>
+                  </div>
+                  <p className="text-[#93A3B5]">
+                    Citação completa: IPCC AR6 WG1 Capítulo 7 Supplementary Material, Tabela 7.SM.7
+                    (Greenhouse gas lifetimes, radiative efficiencies, Global Warming Potentials:
+                    HFO-1234yf, fórmula CF₃CF=CH₂, CAS 754-12-1, Lifetime 0,033 anos; GWP100 com
+                    feedbacks = 0,501; adotado o valor conservador de 0,50 kgCO₂e/kg). Aplicação em
+                    veículos de passeio modernos pós-~2017. Fator de deslocamento DF_refrig = 1,0 na
+                    despoluição com MTR.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#3B82F6]/40 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-[#F4F7FA] font-mono">
+                      Bateria de Tração Li-ion (NMC/LFP): 0,00 kgCO₂e/kg • Fora de Escopo v2.1
+                    </strong>
+                    <span className="px-2 py-0.5 rounded bg-[#3B82F6]/20 text-[#3B82F6] font-mono text-[10px]">
+                      Custódia / PNRS Art. 33 • Sem Fator
+                    </span>
+                  </div>
+                  <p className="text-[#93A3B5]">
+                    Citação e fundamentação: Fora de escopo v2.1 — sem fator verificável; tratado
+                    como massa residual com segregação obrigatória. Pegada de fabricação varia ~28 a
+                    ~118 kgCO₂e/kWh (Chalmers 2024; ICCT referência histórica 175 kgCO₂e/kWh).
+                    Classificação de resíduo perigoso sob ABNT NBR 10004 e setor prioritário do art.
+                    33 da PNRS (Lei 12.305/2010). Não confere créditos ou frações evitadas no
+                    DM-ORB-001 v1.1.
                   </p>
                 </div>
               </div>
