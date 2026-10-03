@@ -410,13 +410,14 @@ export async function consultarPassaportePorSelo(selo: string): Promise<CdvPecaR
 }
 
 /**
- * Dispara ingestão via endpoint REST /backend/v1/cdv/lotes
+ * Dispara ingestão via endpoint REST vigente /backend/v2/cdv/lotes
+ * (A rota legada /backend/v1/cdv/lotes foi descontinuada com HTTP 410 Gone).
  */
 export async function enviarLoteCdvApi(
   payload: IngestaoLoteInput,
   apiKey: string,
 ): Promise<IngestaoLoteResponse> {
-  const res = await fetch(`${pb.baseUrl}/backend/v1/cdv/lotes`, {
+  const res = await fetch(`${pb.baseUrl}/backend/v2/cdv/lotes`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -26,6 +26,7 @@ import {
   Info,
 } from 'lucide-react'
 import { FATORES_CDV_MATERIAIS } from '@/services/cdvService'
+import pb from '@/lib/pocketbase/client'
 
 interface CodeBlockProps {
   title?: string
@@ -88,8 +89,12 @@ function CodeBlock({ title, language = 'json', code }: CodeBlockProps) {
 
 export default function ApiDocsCdvPage() {
   const [activeTab, setActiveTab] = useState<'payload' | 'curl'>('payload')
+  const [copiedBaseUrl, setCopiedBaseUrl] = useState(false)
 
-  const curlExemplo = `curl -X POST "https://www.orbis-protocol.com/backend/v2/cdv/lotes" \\
+  // URL Base real do backend PocketBase (Skip Cloud) obtida do client
+  const backendBaseUrl = pb.baseUrl || window.location.origin
+
+  const curlExemplo = `curl -X POST "${backendBaseUrl}/backend/v2/cdv/lotes" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: orb_cdv_live_SEU_TOKEN_HEX_32_CHARS" \\
   -d '{
@@ -343,6 +348,75 @@ export default function ApiDocsCdvPage() {
               <KeyRound className="w-3.5 h-3.5 text-[#12B886]" />
               <span>Console de APIs</span>
             </Link>
+          </div>
+        </div>
+
+        {/* BLOCO DESTACADO: URL BASE REAL DO BACKEND POCKETBASE */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-amber-500/10 border-2 border-amber-500/40 dark:bg-[#0E1A2E] dark:border-amber-400/40 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 dark:text-[#D9B36C] flex items-center justify-center shrink-0">
+                <Server className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono uppercase font-bold text-amber-800 dark:text-[#D9B36C] tracking-wider block">
+                  Configuração Obrigatória de Integração • Achado P1-7
+                </span>
+                <h2 className="text-base sm:text-lg font-heading font-black text-slate-900 dark:text-[#F8FAFC]">
+                  URL Base Real do Backend PocketBase (pb.baseUrl)
+                </h2>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(backendBaseUrl)
+                setCopiedBaseUrl(true)
+                setTimeout(() => setCopiedBaseUrl(false), 2500)
+              }}
+              className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-white dark:bg-[#16202B] border border-amber-400/50 hover:border-amber-500 text-slate-800 dark:text-[#F8FAFC] flex items-center gap-2 transition-all self-start sm:self-auto shadow-sm"
+            >
+              {copiedBaseUrl ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+                  <span className="text-emerald-700 dark:text-[#059669]">URL Copiada!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 text-amber-600 dark:text-[#D9B36C]" />
+                  <span>Copiar URL Base</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-white dark:bg-[#0A1628] border border-amber-300 dark:border-slate-800 font-mono text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 overflow-x-auto">
+            <span className="text-slate-500 dark:text-[#94A3B8] text-xs font-sans shrink-0 font-medium">
+              Host do Backend de Produção:
+            </span>
+            <code className="text-emerald-700 dark:text-[#059669] font-bold select-all break-all">
+              {backendBaseUrl}
+            </code>
+          </div>
+
+          <div className="space-y-2 text-xs sm:text-sm text-slate-700 dark:text-[#94A3B8] leading-relaxed">
+            <p>
+              ⚠️ <strong>Atenção Desenvolvedores & Integradores de ERP:</strong> Os endpoints de API
+              sob{' '}
+              <code className="text-emerald-700 dark:text-[#059669] font-mono font-bold">
+                /backend/v2/...
+              </code>{' '}
+              são servidos <strong>exclusivamente pela instância do PocketBase</strong> na URL base
+              acima.
+            </p>
+            <p>
+              O domínio institucional do frontend (<code>https://www.orbis-protocol.com</code>) é
+              uma Single Page Application (SPA) hospedada na CDN. Qualquer requisição HTTP disparada
+              contra <code>https://www.orbis-protocol.com/backend/...</code> retornará o documento
+              HTML da SPA (status 200 com <code>&lt;!doctype html&gt;</code>) em vez da resposta
+              JSON da API.
+            </p>
           </div>
         </div>
 
@@ -886,6 +960,211 @@ export default function ApiDocsCdvPage() {
                 </p>
               </div>
               <CodeBlock title="erro-429.json" language="json" code={erro429Exemplo} />
+            </div>
+          </div>
+        </section>
+
+        {/* TABELA DE ENDPOINTS PRINCIPAIS V2 (ACHADO P1-7) */}
+        <section id="endpoints-v2" className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#16202B] border border-[#12B886]/30 flex items-center justify-center text-[#12B886]">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F8FAFC]">
+                Tabela de Endpoints da API v2 (DM-ORB-001 v1.1)
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-[#94A3B8]">
+                Visão consolidada dos endpoints públicos e autenticados servidos pelo backend
+                PocketBase.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0A1628]">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-[#94A3B8] uppercase font-semibold text-[10px]">
+                  <tr>
+                    <th className="py-3 px-4">Método & Rota</th>
+                    <th className="py-3 px-4">Autenticação</th>
+                    <th className="py-3 px-4">Rate Limit</th>
+                    <th className="py-3 px-4">Status / Resposta</th>
+                    <th className="py-3 px-4">Descrição</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-[#F8FAFC]">
+                  <tr className="hover:bg-slate-100/50 dark:hover:bg-[#111827]/40 transition-colors">
+                    <td className="py-3 px-4 font-mono">
+                      <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px] mr-2">
+                        POST
+                      </span>
+                      <code className="text-slate-900 dark:text-white font-bold">
+                        /backend/v2/cdv/lotes
+                      </code>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-[#D9B36C] font-mono text-[10px] font-bold">
+                        X-API-Key
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-slate-600 dark:text-[#94A3B8]">
+                      60 req / min / key
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-emerald-700 dark:text-[#059669] font-bold">
+                      201 Created (JSON)
+                    </td>
+                    <td className="py-3 px-4 text-xs text-slate-600 dark:text-[#94A3B8]">
+                      Ingestão de lote de desmontagem (veículo + peças), cálculo dMRV conservador e
+                      emissão de DPPs.
+                    </td>
+                  </tr>
+
+                  <tr className="hover:bg-slate-100/50 dark:hover:bg-[#111827]/40 transition-colors">
+                    <td className="py-3 px-4 font-mono">
+                      <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10px] mr-2">
+                        GET
+                      </span>
+                      <code className="text-slate-900 dark:text-white font-bold">
+                        /backend/v2/cdv/claim
+                      </code>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-[#94A3B8] font-mono text-[10px]">
+                        Pública (sem auth)
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-slate-600 dark:text-[#94A3B8]">
+                      120 req / min / IP
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-emerald-700 dark:text-[#059669] font-bold">
+                      200 OK (JSON)
+                    </td>
+                    <td className="py-3 px-4 text-xs text-slate-600 dark:text-[#94A3B8]">
+                      Consulta de claim ambiental por chassi (<code>?chassi=...</code>) ou documento
+                      de baixa (<code>?doc=...</code>).
+                    </td>
+                  </tr>
+
+                  <tr className="hover:bg-slate-100/50 dark:hover:bg-[#111827]/40 transition-colors">
+                    <td className="py-3 px-4 font-mono">
+                      <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10px] mr-2">
+                        GET
+                      </span>
+                      <code className="text-slate-900 dark:text-white font-bold">
+                        /backend/v2/cdv/lotes/:id
+                      </code>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-[#D9B36C] font-mono text-[10px] font-bold">
+                        X-API-Key
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-slate-600 dark:text-[#94A3B8]">
+                      60 req / min / key
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-emerald-700 dark:text-[#059669] font-bold">
+                      200 OK (JSON)
+                    </td>
+                    <td className="py-3 px-4 text-xs text-slate-600 dark:text-[#94A3B8]">
+                      Consulta detalhada do lote emitido pelo próprio CDV (validação de escopo de
+                      posse).
+                    </td>
+                  </tr>
+
+                  <tr className="hover:bg-slate-100/50 dark:hover:bg-[#111827]/40 transition-colors bg-rose-50/50 dark:bg-rose-950/20">
+                    <td className="py-3 px-4 font-mono">
+                      <span className="px-2 py-0.5 rounded bg-rose-600 text-white font-bold text-[10px] mr-2">
+                        POST
+                      </span>
+                      <code className="line-through text-rose-700 dark:text-rose-400">
+                        /backend/v1/cdv/lotes
+                      </code>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-mono text-[10px]">
+                        Descontinuada
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-slate-500">-</td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-rose-600 font-bold">
+                      410 Gone (JSON)
+                    </td>
+                    <td className="py-3 px-4 text-xs text-rose-700 dark:text-rose-300">
+                      Rota v1 encerrada. Responde HTTP 410 instruindo migração imediata para a rota
+                      v2.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Exemplo de Resposta de Consulta de Claim */}
+            <div className="space-y-2">
+              <span className="text-xs font-heading font-bold text-slate-900 dark:text-[#F8FAFC]">
+                Exemplo de Resposta da Consulta de Claim (GET /backend/v2/cdv/claim?chassi=...):
+              </span>
+              <CodeBlock
+                title="resposta-claim-chassi-200.json"
+                language="json"
+                code={`{
+  "sucesso": true,
+  "consulta": {
+    "tipo": "chassi",
+    "parametro_anonimizado": "9BD178226G8123456"
+  },
+  "claim_encontrado": true,
+  "resultado": {
+    "lote_id": "h1dpr8wniludemh",
+    "codigo_lote": "PR-BX-2026-991204",
+    "veiculo_modelo": "Volkswagen Gol 1.6 8V Total Flex",
+    "data_desmontagem": "2026-04-18",
+    "status_conformidade": "auditoria_concluida",
+    "total_pecas_recuperadas": 3,
+    "total_kg_evitados_co2": 76.63,
+    "hash_sha256_integridade": "c1f7da379120c99a63200be64917d23a41bf372134e79247f12eef47d3c01823",
+    "url_passaporte_publico": "https://www.orbis-protocol.com/passaporte-lote/h1dpr8wniludemh"
+  }
+}`}
+              />
+            </div>
+
+            {/* NOTA HONESTA SOBRE CORS (§5.3 DM-ORB-001) */}
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex items-center gap-2.5 text-slate-900 dark:text-[#F8FAFC]">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+                <h3 className="text-sm font-heading font-bold">
+                  Comportamento Honesto sobre CORS & Integração Programática do Comprador (§5.3
+                  DM-ORB-001)
+                </h3>
+              </div>
+
+              <div className="text-xs text-slate-600 dark:text-[#94A3B8] leading-relaxed space-y-2">
+                <p>
+                  <strong>Chamadas Server-to-Server (Backend / ERP / TMS):</strong> Qualquer
+                  integração executada via backend próprio (Node.js, Python, Java, PHP, C#, Go) ou
+                  ferramentas de linha de comando (cURL)
+                  <strong>não está sujeita a restrições de CORS</strong> e opera normalmente contra
+                  a URL base do PocketBase.
+                </p>
+                <p>
+                  <strong>
+                    Limitação Conhecida para Chamadas Diretas via Browser (Client-side fetch):
+                  </strong>{' '}
+                  O hook de claims por chassi atualmente não possui cabeçalhos{' '}
+                  <code>Access-Control-Allow-Origin: *</code> configurados para origens de terceiros
+                  no backend PocketBase. Portanto, aplicações frontend de compradores que façam
+                  chamadas via JavaScript no navegador diretamente para o host da API sofrerão
+                  bloqueio de CORS.
+                </p>
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/30 text-amber-900 dark:text-[#D9B36C] text-[11px]">
+                  <strong>Recomendação de Integração:</strong> Recomenda-se que o comprador ou
+                  integrador consulte a API através do seu próprio serviço de backend (BFF / proxy
+                  reverso) ou utilize a página pública de verificação e passaporte da Orbis Protocol
+                  (<code>/passaporte-lote/:id</code> e <code>/verificador</code>), que consomem a
+                  API de forma autenticada pelo ecossistema nativo.
+                </div>
+              </div>
             </div>
           </div>
         </section>

@@ -768,13 +768,19 @@ export default function Layout() {
                 </p>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
                 <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-[11px] text-amber-700 dark:text-[#D9B36C] shadow-xs">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-600 dark:text-[#D9B36C] shrink-0" />
                   <span className="font-mono tracking-tight text-slate-700 dark:text-[#94A3B8]">
                     MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.598.964/0001-01
                   </span>
                 </div>
+                <Link
+                  to="/equipe"
+                  className="text-[11px] text-emerald-600 dark:text-[#059669] hover:underline font-semibold transition-colors inline-flex items-center gap-1"
+                >
+                  <span>Estrutura & Operação →</span>
+                </Link>
               </div>
             </div>
 
@@ -874,9 +880,9 @@ export default function Layout() {
                     to="/api-docs-cdv"
                     className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
                   >
-                    <span>API v1 — Desmontagem Veicular</span>
-                    <span className="text-[9px] bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-slate-800 px-1 py-0.5 rounded font-mono">
-                      v1
+                    <span>API v2 — Desmontagem Veicular</span>
+                    <span className="text-[9px] bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 px-1 py-0.5 rounded font-mono font-semibold">
+                      v2
                     </span>
                   </Link>
                 </li>
@@ -1014,6 +1020,17 @@ export default function Layout() {
                     Green Capital Engine
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/equipe"
+                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                  >
+                    <span>Equipe & Governança</span>
+                    <span className="text-[9px] bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-slate-800 px-1 py-0.5 rounded font-mono">
+                      MGM
+                    </span>
+                  </Link>
+                </li>
                 {isAdminOrPerito && (
                   <li>
                     <Link
@@ -1072,6 +1089,13 @@ export default function Layout() {
                 Auditoria dMRV. Todos os direitos reservados.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-5">
+                <Link
+                  to="/equipe"
+                  className="text-[11px] text-slate-500 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors font-medium"
+                >
+                  Equipe & Operação
+                </Link>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
                 <Link
                   to="/titular-dados"
                   className="text-[11px] text-slate-500 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors"

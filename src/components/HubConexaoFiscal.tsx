@@ -914,7 +914,7 @@ export const HubConexaoFiscal: React.FC<HubConexaoFiscalProps> = ({
 
             <div className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] overflow-x-auto">
               <pre className="text-xs text-[#12B886] font-mono leading-relaxed select-all">
-                {`curl -X POST "https://www.orbis-protocol.com/backend/v1/nfs/lotes" \\
+                {`curl -X POST "${pb.baseUrl || window.location.origin}/backend/v1/nfs/lotes" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: ${chaveNfsRecemCriada || apiKeyNfsAtiva?.chave_mascarada || 'orb_nfs_live_SEU_TOKEN_AQUI'}" \\
   -d '{

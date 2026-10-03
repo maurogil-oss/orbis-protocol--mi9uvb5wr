@@ -358,13 +358,68 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
     return { total, qr, web, embed, conferidos, divergentes, porLote }
   }, [consultasDpp])
 
-  const curlExemplo = `curl -X POST "${window.location.origin}/backend/v2/cdv/lotes" \\
+  const backendBaseUrl = pb.baseUrl || window.location.origin
+  const [copiedBaseUrl, setCopiedBaseUrl] = useState(false)
+
+  const curlExemplo = `curl -X POST "${backendBaseUrl}/backend/v2/cdv/lotes" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: ${chaveParaEnvio}" \\
   -d '${payloadJsonStr.replace(/\n/g, '').replace(/\s+/g, ' ')}'`
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* AVISO DE URL BASE REAL DO BACKEND POCKETBASE */}
+      <div className="p-5 sm:p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 dark:bg-[#0E1A2E] dark:border-amber-400/30 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-700 dark:text-[#D9B36C] flex items-center justify-center">
+              <Database className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] font-mono uppercase font-bold text-amber-800 dark:text-[#D9B36C] tracking-wider">
+                Configuração Crítica de Infraestrutura
+              </span>
+              <h3 className="text-sm font-heading font-bold text-slate-900 dark:text-[#F8FAFC]">
+                URL Base Real do Backend PocketBase (pb.baseUrl)
+              </h3>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => copyToClip(backendBaseUrl, setCopiedBaseUrl)}
+            className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-white dark:bg-[#16202B] border border-amber-400/40 hover:border-amber-500 text-slate-800 dark:text-[#F8FAFC] flex items-center gap-1.5 transition-all self-start sm:self-auto"
+          >
+            {copiedBaseUrl ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
+                <span className="text-emerald-700 dark:text-[#059669]">Copiado!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-amber-600 dark:text-[#D9B36C]" />
+                <span>Copiar URL Base</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="p-2.5 rounded-xl bg-white dark:bg-[#0A1628] border border-amber-300 dark:border-slate-800 font-mono text-xs flex items-center justify-between gap-3 overflow-x-auto">
+          <span className="text-slate-500 dark:text-[#94A3B8] text-[11px] shrink-0 font-sans">
+            Host de Execução:
+          </span>
+          <code className="text-emerald-700 dark:text-[#059669] font-bold select-all break-all">
+            {backendBaseUrl}
+          </code>
+        </div>
+
+        <p className="text-xs text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+          ⚠️ <strong>Atenção Desenvolvedor / ERP:</strong> As chamadas aos endpoints REST da API v2{' '}
+          (<code>/backend/v2/...</code>) devem obrigatoriamente ser feitas contra a URL base real
+          acima. O domínio do frontend SPA (<code>www.orbis-protocol.com</code>) serve apenas a
+          aplicação web React e responderá o HTML do SPA caso chamado diretamente com rotas de API.
+        </p>
+      </div>
+
       {/* 1. PAINEL DE CREDENCIAIS & CHAVE DE API DO CDV */}
       <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -389,10 +444,10 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
               target="_blank"
               rel="noreferrer"
               className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-[#059669]/10 border border-emerald-300 dark:border-[#059669]/30 text-[#059669] hover:bg-emerald-100 dark:hover:bg-[#059669]/20 flex items-center gap-1.5 transition-all"
-              title="Abrir documentação técnica da API v1 de Desmontagem Veicular"
+              title="Abrir documentação técnica da API v2 de Desmontagem Veicular"
             >
               <FileCode className="w-3.5 h-3.5" />
-              <span>Documentação da API v1</span>
+              <span>Documentação da API v2</span>
               <ExternalLink className="w-3 h-3 opacity-70" />
             </a>
             <button

@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Copy,
+  Check,
   ChevronRight,
   ExternalLink,
   Sparkles,
@@ -17,6 +18,7 @@ import {
   FileCode,
   Layers,
 } from 'lucide-react'
+import pb from '@/lib/pocketbase/client'
 
 export function ApiDocsNfsPage() {
   const [copiado, setCopiado] = useState<string | null>(null)
@@ -27,9 +29,10 @@ export function ApiDocsNfsPage() {
     setTimeout(() => setCopiado(null), 2500)
   }
 
+  const backendBaseUrl = pb.baseUrl || window.location.origin
   const endpointUrl = 'POST /backend/v1/nfs/lotes'
 
-  const curlExemplo = `curl -X POST "https://www.orbis-protocol.com/backend/v1/nfs/lotes" \\
+  const curlExemplo = `curl -X POST "${backendBaseUrl}/backend/v1/nfs/lotes" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: orb_nfs_live_a1b2c3d4e5f60718293a4b5c6d7e8f90" \\
   -d '{
@@ -141,6 +144,62 @@ export function ApiDocsNfsPage() {
               <span>Gerenciar Chaves no Hub</span>
             </Link>
           </div>
+        </div>
+
+        {/* BLOCO DESTACADO: URL BASE REAL DO BACKEND */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-amber-500/10 border-2 border-amber-500/40 dark:bg-[#0E1A2E] dark:border-amber-400/40 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 dark:text-[#D9B36C] flex items-center justify-center shrink-0">
+                <Server className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono uppercase font-bold text-amber-800 dark:text-[#D9B36C] tracking-wider block">
+                  Configuração Obrigatória de Integração • Achado P1-7
+                </span>
+                <h2 className="text-base sm:text-lg font-heading font-black text-slate-900 dark:text-[#F8FAFC]">
+                  URL Base Real do Backend PocketBase (pb.baseUrl)
+                </h2>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleCopiar(backendBaseUrl, 'baseUrl')}
+              className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-white dark:bg-[#16202B] border border-amber-400/50 hover:border-amber-500 text-slate-800 dark:text-[#F8FAFC] flex items-center gap-2 transition-all self-start sm:self-auto shadow-sm"
+            >
+              {copiado === 'baseUrl' ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+                  <span className="text-emerald-700 dark:text-[#059669]">URL Copiada!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 text-amber-600 dark:text-[#D9B36C]" />
+                  <span>Copiar URL Base</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-white dark:bg-[#0A1628] border border-amber-300 dark:border-slate-800 font-mono text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 overflow-x-auto">
+            <span className="text-slate-500 dark:text-[#94A3B8] text-xs font-sans shrink-0 font-medium">
+              Host do Backend de Produção:
+            </span>
+            <code className="text-emerald-700 dark:text-[#059669] font-bold select-all break-all">
+              {backendBaseUrl}
+            </code>
+          </div>
+
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-[#94A3B8] leading-relaxed">
+            ⚠️ <strong>Atenção ERP / Emissores de NF-e:</strong> As requisições REST{' '}
+            <code className="text-emerald-700 dark:text-[#059669] font-mono font-bold">
+              POST /backend/v1/nfs/lotes
+            </code>{' '}
+            devem ser enviadas para a URL base real acima. O domínio{' '}
+            <code>www.orbis-protocol.com</code> serve a SPA frontend em React e não responderá
+            chamadas de API JSON.
+          </p>
         </div>
 
         {/* HERO INSTITUCIONAL */}
