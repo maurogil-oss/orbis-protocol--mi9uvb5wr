@@ -21,10 +21,10 @@ describe('Hero Section - Home (Index)', () => {
     expect(h1.textContent).toContain('Lemos cada nota fiscal da sua cadeia e geramos a')
     expect(h1.textContent).toContain('prova de descarbonização')
 
-    // Subtítulo atualizado sem repetição da palavra descarbonização
+    // Subtítulo atualizado com a nova tagline como contexto de mercado mantendo descarbonização e Lei 15.042/2024
     expect(
       screen.getByText(
-        'Conformidade com a Lei 15.042, rastreabilidade da cadeia e circularidade — a prova que reguladores, auditorias e sistema financeiro exigem',
+        'Prova documental da economia circular para descarbonização verificável e conformidade regulatória (Lei 15.042/2024, SBCE)',
       ),
     ).toBeDefined()
 

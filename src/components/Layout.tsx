@@ -256,7 +256,7 @@ export default function Layout() {
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
                 <span className="text-[10px] tracking-[0.2em] uppercase text-slate-500 dark:text-[#94A3B8] font-semibold -mt-1">
-                  Auditoria & Rastreabilidade
+                  Prova Documental da Economia Circular
                 </span>
               </div>
             </Link>
@@ -519,9 +519,14 @@ export default function Layout() {
               <div className="flex items-center justify-between pb-6 border-b border-slate-800">
                 <div className="flex items-center gap-3">
                   <OrbisGlobe size={34} />
-                  <span className="font-heading font-black text-lg tracking-wider text-[#F8FAFC]">
-                    ORBIS PROTOCOL
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-heading font-black text-lg tracking-wider text-[#F8FAFC]">
+                      ORBIS PROTOCOL
+                    </span>
+                    <span className="text-[10px] tracking-[0.18em] uppercase text-[#94A3B8] font-semibold">
+                      Prova Documental da Economia Circular
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -756,7 +761,7 @@ export default function Layout() {
                       ORBIS PROTOCOL
                     </span>
                     <span className="text-[10px] tracking-[0.25em] text-amber-700 dark:text-[#D9B36C] font-mono uppercase font-bold">
-                      Carbono & Circularidade
+                      Prova Documental da Economia Circular — dMRV
                     </span>
                   </div>
                 </Link>{' '}
@@ -1085,8 +1090,8 @@ export default function Layout() {
             {/* Linha 2: Copyright institucional & Links complementares */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-center sm:text-left text-[11px] text-slate-500 dark:text-[#94A3B8]/70">
-                © {new Date().getFullYear()} Orbis Protocol • Infraestrutura de Prova Documental &
-                Auditoria dMRV. Todos os direitos reservados.
+                © 2026 Orbis Protocol — Infraestrutura de Prova Documental da Economia Circular —
+                dMRV. Todos os direitos reservados.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-5">
                 <Link

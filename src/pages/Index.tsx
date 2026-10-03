@@ -179,8 +179,8 @@ export default function Index() {
 
             {/* Sub-headline Linear: pequena, espaçada, elegante */}
             <p className="font-heading text-sm sm:text-base md:text-lg text-slate-600 dark:text-[#94A3B8] font-semibold tracking-[0.08em] uppercase mb-8">
-              Conformidade com a Lei 15.042, rastreabilidade da cadeia e circularidade — a prova que
-              reguladores, auditorias e sistema financeiro exigem
+              Prova documental da economia circular para descarbonização verificável e conformidade
+              regulatória (Lei 15.042/2024, SBCE)
             </p>
 
             {/* Descrição em parágrafo */}
