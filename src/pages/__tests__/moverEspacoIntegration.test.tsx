@@ -57,8 +57,7 @@ describe('Espaço MOVER — Camadas 1, 2 e 3 (Regras e Alinhamento Metodológico
 
     // 3. Pioneirismo defensável
     expect(
-      screen.getAllByText(/1ª infraestrutura brasileira de dados alinhada à metodologia GS 448/i)
-        .length,
+      screen.getAllByText(/Estruturada para atender aos requisitos da metodologia GS 448/i).length,
     ).toBeGreaterThan(0)
     expect(
       screen.getAllByText(

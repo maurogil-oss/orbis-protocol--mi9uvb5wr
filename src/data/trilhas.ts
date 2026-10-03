@@ -43,10 +43,10 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     modulos: [
       {
         numero: 'Módulo 01',
-        titulo: 'Fundamentos da Lei 14.902/2024 e Requisitos do MOVER',
+        titulo: 'Fundamentos da Lei 14.902/2024, Decreto 12.435/2025 e Requisitos do MOVER',
         duracao: '45 min',
         conteudo:
-          'Visão geral da legislação do Programa Mobilidade Verde e Inovação. Requisitos de descarbonização do berço ao túmulo, metas de eficiência energética e benefícios tributários previstos para a cadeia automotiva nacional.',
+          'Visão geral da legislação do Programa Mobilidade Verde e Inovação (Lei 14.902/2024 regulamentada pelo Decreto nº 12.435/2025). Requisitos de descarbonização do berço ao túmulo, metas de eficiência energética e benefícios tributários previstos para a cadeia automotiva nacional.',
         requerLogin: false,
       },
       {
@@ -219,7 +219,7 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
         titulo: 'Fundamentos da Mineração Urbana e Marco Regulatório',
         duracao: '45 min',
         conteudo:
-          'Conceituação de mineração urbana versus extração primária. Marco regulatório da Política Nacional de Resíduos Sólidos (Lei 12.305/2010), resoluções CONAMA e diretrizes da Agência Nacional de Mineração (ANM) para aproveitamento de frações estratégicas.',
+          'Conceituação de mineração urbana versus extração primária. Marco regulatório da Política Nacional de Resíduos Sólidos (Lei 12.305/2010 atualizada pelo Decreto nº 12.451/2025), resoluções CONAMA e diretrizes da Agência Nacional de Mineração (ANM) para aproveitamento de frações estratégicas.',
         requerLogin: false,
       },
       {

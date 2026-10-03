@@ -59,7 +59,7 @@ export default function CaseCDVerde() {
             </h1>
 
             <p className="text-base sm:text-lg text-[#12B886] font-medium mb-4">
-              A maior rede de comprovação probatória de peças verdes e baterias reaproveitadas do
+              A única infraestrutura com passaporte público de lote verificável por chassi no
               Brasil.
             </p>
 

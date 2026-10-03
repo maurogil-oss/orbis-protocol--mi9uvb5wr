@@ -578,8 +578,8 @@ export default function Index() {
 
                 <p className="text-sm sm:text-base text-slate-600 dark:text-[#94A3B8] leading-relaxed">
                   Conectamos a baixa oficial de veículos no DETRAN, balanço de massa, emissões de
-                  CO2e evitadas e destinação final homologada no SINIR. Sem declarações corporativas
-                  vazias.
+                  CO2e evitadas e destinação final em integração com o SINIR. Sem declarações
+                  corporativas vazias.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">

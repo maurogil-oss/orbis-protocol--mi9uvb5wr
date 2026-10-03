@@ -184,8 +184,10 @@ export default function Privacidade() {
                   Logs Técnicos e Rastreabilidade de Consultas: 12 Meses
                 </span>
                 <p className="text-[#93A3B5]">
-                  Guarda obrigatória nos termos do Art. 15 da Lei 12.965/2014 (Marco Civil da
-                  Internet) com descarte cíclico automatizado.
+                  Guarda pelo prazo de 12 meses (mínimo legal de 6 meses nos termos do art. 15 da
+                  Lei 12.965/2014 — Marco Civil da Internet, estendido a 12 meses por política
+                  interna de integridade e segurança da informação), com descarte cíclico
+                  automatizado.
                 </p>
               </div>
             </div>

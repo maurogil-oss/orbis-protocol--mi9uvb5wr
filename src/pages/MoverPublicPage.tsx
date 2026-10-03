@@ -55,7 +55,7 @@ export function MoverPublicPage() {
           <div className="max-w-3xl space-y-5">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-[#12B886]" />
-              ESPAÇO MOVER • LEI FEDERAL 14.902/2024 & METODOLOGIA GS 448
+              ESPAÇO MOVER • LEI FEDERAL 14.902/2024, DECRETO 12.435/2025 & METODOLOGIA GS 448
             </div>
 
             <h1 className="font-heading font-black text-2xl sm:text-4xl md:text-5xl leading-tight text-[#F4F7FA]">
@@ -66,8 +66,8 @@ export function MoverPublicPage() {
             <div className="p-4 rounded-xl bg-[#12B886]/10 border border-[#12B886]/30 text-xs sm:text-sm text-[#F4F7FA] leading-relaxed space-y-2">
               <div className="flex items-center gap-2 font-bold text-[#12B886] uppercase tracking-wide">
                 <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-                1ª infraestrutura brasileira de dados alinhada à metodologia GS 448 — emissão de
-                créditos, quando houver, exclusivamente via VVB independente
+                Estruturada para atender aos requisitos da metodologia GS 448 — emissão de créditos,
+                quando houver, exclusivamente via VVB independente
               </div>
               <p className="text-[#93A3B5]">
                 A Orbis está estruturando a cadeia completa de validação com entidade

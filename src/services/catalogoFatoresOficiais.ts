@@ -57,7 +57,7 @@ export interface MetadadosCatalogoFatores {
 
 export const METADADOS_CATALOGO_FATORES: MetadadosCatalogoFatores = {
   versao: 'v2025.2',
-  dataVigencia: '01 de Janeiro de 2025',
+  dataVigencia: '01 de Outubro de 2026 (Revisão v1.1; v1.0 histórica desde 01/01/2025)',
   dataPublicacao: '15 de Janeiro de 2025',
   orgaoResponsavel: 'Comitê Técnico Metodológico dMRV & Conselho Consultivo Orbis Protocol',
   notaSnapshotCongelamento:
@@ -169,11 +169,11 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     tipoImpacto: 'emissao_evitada',
     fonteOficial: 'IPCC AR6 WG1 Capítulo 7 Tabela 7.15 (GWP 100 com feedbacks de carbono)',
     anoReferencia: 2023,
-    normaPadrao: 'IPCC AR6 WG1 Tab. 7.15 • Resolução CONAMA 267/2000',
+    normaPadrao: 'IPCC AR6 WG1 Tab. 7.15 • Resoluções CONAMA 267/2000 e 340/2003',
     tierIncerteza: 'Tier 3',
     incertezaPct: 2.0,
     detalheTecnico:
-      'Evita emissão fugitiva direta e demanda de fluido virgem. Fator GWP100 oficial fixado em 1.530 kgCO₂e/kg com fator de deslocamento DF=1,0 quando comprovada a regeneração ou incineração em parque licenciado.',
+      'Evita emissão fugitiva direta e demanda de fluido virgem. Fator GWP100 oficial fixado em 1.530 kgCO₂e/kg com fator de deslocamento DF=1,0 quando comprovada a regeneração ou destinação adequada em conformidade com as Resoluções CONAMA nº 267/2000 e nº 340/2003.',
   },
   {
     id: 'mat-r1234yf-refrigerante',
@@ -187,11 +187,11 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     fonteOficial:
       'IPCC AR6 WG1 Capítulo 7 Tabela 7.SM.7 (HFO-1234yf / CF3CF=CH2; GWP100 com feedback = 0,501; adotado valor conservador 0,50)',
     anoReferencia: 2023,
-    normaPadrao: 'IPCC AR6 WG1 Tab. 7.SM.7 • Resolução CONAMA 267/2000',
+    normaPadrao: 'IPCC AR6 WG1 Tab. 7.SM.7 • Resoluções CONAMA 267/2000 e 340/2003',
     tierIncerteza: 'Tier 3',
     incertezaPct: 2.0,
     detalheTecnico:
-      'Evita emissão fugitiva de fluido automotivo moderno. Vida atmosférica curta de 0,033 anos (~12 dias); GWP100 oficial IPCC AR6 de 0,501 (adotado 0,50 kgCO₂e/kg, ponta conservadora) com DF=1,0 na comprovação de drenagem. Não confere créditos além das regras estritas do DM-ORB-001 v1.1.',
+      'Evita emissão fugitiva de fluido automotivo moderno. Vida atmosférica curta de 0,033 anos (~12 dias); GWP100 oficial IPCC AR6 de 0,501 (adotado 0,50 kgCO₂e/kg, ponta conservadora) com DF=1,0 na comprovação de drenagem e destinação técnica (CONAMA 267/2000 e 340/2003). Não confere créditos além das regras estritas do DM-ORB-001 v1.1.',
   },
   {
     id: 'mat-bateria-tracao-fora-escopo',

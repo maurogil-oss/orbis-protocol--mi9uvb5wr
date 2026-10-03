@@ -59,7 +59,7 @@ describe('Faixa regulatória rolante (marquee) no Layout global', () => {
     ).toBeGreaterThanOrEqual(1)
     expect(
       screen.getAllByText(
-        /Programa MOVER Lei 14\.902\/2024: Desmontagem veicular e circularidade homologada/i,
+        /Programa MOVER Lei 14\.902\/2024: Desmontagem veicular e circularidade estruturadas conforme Lei 14\.902\/2024/i,
       ).length,
     ).toBeGreaterThanOrEqual(1)
     expect(

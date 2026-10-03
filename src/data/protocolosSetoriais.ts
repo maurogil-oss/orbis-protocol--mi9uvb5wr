@@ -915,7 +915,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       'Protocolo exclusivo para montadoras, fabricantes de autopeças e Centrais de Desmontagem Veicular credenciadas (CDV). Emissão do Passaporte Digital de Peça Automotiva (DPP) com QR Code inviolável, cálculo de emissões evitadas e lastro probatório para abatimento de IPI.',
     principaisIndicadores: [
       'Índice de Reciclabilidade Veicular (%)',
-      'Passaportes Digitais de Peças (DPP) homologados',
+      'Passaportes Digitais de Peças (DPP) estruturados',
       'kg CO2e evitado por peça automotiva reutilizada',
       'Créditos fiscais de IPI gerados no Programa MOVER',
     ],

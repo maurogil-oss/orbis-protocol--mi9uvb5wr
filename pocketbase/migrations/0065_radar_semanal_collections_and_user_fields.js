@@ -253,7 +253,7 @@ migrate(
       rec2.set('itens_normas_json', [
         {
           id: 'bacen-586',
-          norma: 'Resolução CMN/Bacen nº 586/2026',
+          norma: 'Resolução BCB nº 586/2026',
           segmento: 'Financeiro',
           o_que_e:
             'Atualização mandatória dos relatórios de gerenciamento de riscos e oportunidades sociais, ambientais e climáticas (GRSAC).',
@@ -264,7 +264,7 @@ migrate(
           prazo: 'Vigência imediata no ciclo de reporte 2026',
           o_que_fazer_agora:
             'Estruturar dossiês fiscais comprobatórios antes de submeter pleitos de crédito sustentável.',
-          base_legal: 'Resolução CMN/Bacen nº 586/2026',
+          base_legal: 'Resolução BCB nº 586/2026',
         },
         {
           id: 'previc-728',

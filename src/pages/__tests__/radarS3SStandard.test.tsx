@@ -76,18 +76,20 @@ describe('Radar Regulatório: Verra Scope 3 Standard (S3S) Program', () => {
     expect(cvmItem?.descricaoCurta).toContain('pratique-ou-explique')
     expect(cvmItem?.descricaoCurta).toContain('greenwashing por associação')
 
-    // 2. Resolução CMN/Bacen 586/2026
+    // 2. Resolução BCB 586/2026
     const bacenItem = ITENS_RADAR_REGULATORIO.find((item) => item.id === 'resolucao_bacen_586_2026')
     expect(bacenItem).toBeDefined()
-    expect(bacenItem?.norma).toContain('586/2026')
+    expect(bacenItem?.norma).toBe('Resolução BCB nº 586/2026')
+    expect(bacenItem?.baseLegal).toContain('5.185/2024')
     expect(bacenItem?.descricaoCurta).toContain('GRSAC')
 
-    // 3. Portaria Previc 728/2026
+    // 3. Portaria Previc 728/2026 & Resolução PREVIC 26/2025
     const previcItem = ITENS_RADAR_REGULATORIO.find(
       (item) => item.id === 'portaria_previc_728_2026',
     )
     expect(previcItem).toBeDefined()
     expect(previcItem?.norma).toContain('728/2026')
+    expect(previcItem?.baseLegal).toContain('PREVIC nº 26/2025')
     expect(previcItem?.descricaoCurta).toContain('Plano ASG')
     expect(previcItem?.descricaoCurta).toContain('dupla materialidade')
 
@@ -131,6 +133,9 @@ describe('Radar Regulatório: Verra Scope 3 Standard (S3S) Program', () => {
     expect(safItem?.descricaoCurta).toContain('SBCE')
     expect(safItem?.descricaoCurta).toContain('consulta pública da ANAC')
     expect(safItem?.descricaoCurta).toContain('ISO 22095-3:2026')
+    expect(safItem?.descricaoCurta).toContain(
+      'primeira parte da série internacional ISO 22095 dedicada integralmente ao modelo de book and claim',
+    )
     expect(safItem?.descricaoCurta).toContain('TIEC')
 
     // Trava de não-emissor na ação recomendada

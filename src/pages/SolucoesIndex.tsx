@@ -57,7 +57,7 @@ export default function SolucoesIndex() {
       subtitulo:
         'Rastreabilidade completa de desmontagem VFV, peças verdes reaproveitadas e baterias elétricas.',
       descricao:
-        'Plataforma homologada para CDVs DETRAN com emissão do Passaporte Digital de Produto (DPP), rastreio por QR Code inviolável e lastro para redução de IPI no Programa MOVER.',
+        'Plataforma integrada ao fluxo documental de baixa de veículos DETRAN com emissão do Passaporte Digital de Produto (DPP), rastreio por QR Code inviolável e lastro para redução de IPI no Programa MOVER.',
       link: '/solucoes/case-cdverde',
       ctaText: 'Ver Detalhes do Case CDVerde',
     },
@@ -233,7 +233,7 @@ export default function SolucoesIndex() {
               <div className="flex items-start justify-between pb-4 border-b border-[rgba(244,247,250,0.1)]">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#D9B36C] block mb-1">
-                    SETOR HOMOLOGADO
+                    SETOR MAPEADO
                   </span>
                   <h3 className="font-heading font-bold text-xl text-[#F4F7FA]">
                     {selectedCadeia.nome}

@@ -9,7 +9,9 @@ import { FATORES_CDV_MATERIAIS } from '@/services/cdvService'
 describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
   it('deve possuir metadados válidos com versão, vigência e nota de snapshot congelado', () => {
     expect(METADADOS_CATALOGO_FATORES.versao).toBe('v2025.2')
-    expect(METADADOS_CATALOGO_FATORES.dataVigencia).toContain('2025')
+    expect(METADADOS_CATALOGO_FATORES.dataVigencia).toContain('01 de Outubro de 2026')
+    expect(METADADOS_CATALOGO_FATORES.dataVigencia).toContain('v1.1')
+    expect(METADADOS_CATALOGO_FATORES.dataVigencia).toContain('v1.0 histórica desde 01/01/2025')
     expect(METADADOS_CATALOGO_FATORES.notaSnapshotCongelamento).toContain('Snapshot Imutável')
     expect(METADADOS_CATALOGO_FATORES.notaSnapshotCongelamento).toContain('congelado')
     expect(METADADOS_CATALOGO_FATORES.reservaPreLaudo).toContain('Reserva Metodológica Pré-Laudo')

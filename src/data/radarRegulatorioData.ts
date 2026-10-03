@@ -38,11 +38,11 @@ export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
     id: 'resolucao_bacen_586_2026',
     dataMarco: '2026',
     ano: '2026',
-    norma: 'Resolução CMN/Bacen nº 586/2026',
+    norma: 'Resolução BCB nº 586/2026',
     status: 'Vigente',
     titulo: 'Bacen 586/2026: Atualização dos Relatórios GRSAC nas Instituições Financeiras',
     descricaoCurta:
-      'Atualiza as diretrizes para elaboração e divulgação do Relatório de Gerenciamento de Riscos e Oportunidades Sociais, Ambientais e Climáticas (GRSAC) pelas instituições autorizadas a funcionar pelo Banco Central, intensificando a exigência de dados primários e rastreabilidade na concessão de crédito.',
+      'Atualiza as diretrizes para elaboração e divulgação do Relatório de Gerenciamento de Riscos e Oportunidades Sociais, Ambientais e Climáticas (GRSAC) pelas instituições autorizadas a funcionar pelo Banco Central, intensificando a exigência de dados primários e rastreabilidade na concessão de crédito, em coordenação com a Res. CMN nº 5.185/2024.',
     quemAfeta: [
       'Bancos múltiplos, comerciais, de investimento e cooperativas de crédito',
       'Empresas tomadoras de crédito bancário e financiamentos verdes (Green Capital)',
@@ -50,7 +50,8 @@ export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
     ],
     acaoRecomendada:
       'Estruturar inventários com prova documental e rastreabilidade fiscal para apresentar aos bancos credores demonstrativos defensáveis de risco climático e aderência às métricas GRSAC.',
-    baseLegal: 'Resolução CMN/Bacen nº 586/2026 e aprimoramento da Res. BCB 4.945/2021',
+    baseLegal:
+      'Resolução BCB nº 586/2026, Res. CMN nº 5.185/2024 e aprimoramento da Res. BCB 4.945/2021',
     tagSetorial: 'Carbono/SBCE',
   },
   {
@@ -70,7 +71,7 @@ export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
     ],
     acaoRecomendada:
       'Disponibilizar dossiês técnicos com indicadores de dupla materialidade e conformidade de governança climática para qualificar empresas como ativos elegíveis aos mandatos dos fundos de pensão.',
-    baseLegal: 'Portaria Previc nº 728/2026 e Resolução Previc nº 23/2023',
+    baseLegal: 'Portaria Previc nº 728/2026 e Resolução PREVIC nº 26/2025',
     tagSetorial: 'Ambiental/ESG',
   },
   {
@@ -81,7 +82,7 @@ export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
     status: 'Vigente',
     titulo: 'Decreto 13.094/2026: ProBioQAV, CS-SAF e Regime Formal de Book and Claim',
     descricaoCurta:
-      'Regulamenta o Programa Nacional de Combustível Sustentável de Aviação (ProBioQAV) no âmbito da Lei do Combustível do Futuro, criando o Certificado de Combustível Sustentável de Aviação (CS-SAF). Trata-se do primeiro certificado brasileiro estruturado em regime formal de book and claim, operando com estrita separação do atributo ambiental da entrega física do combustível e vedando terminantemente a dupla contagem (o mesmo litro não pode gerar CBIO e CS-SAF). Estabelece interoperabilidade mandatória com o programa internacional CORSIA (ICAO) e com o Sistema Brasileiro de Comércio de Emissões (SBCE / Lei 15.042/2024), com consulta pública da ANAC em curso. O arcabouço adota como referência a norma ISO 22095-3:2026 (primeira norma internacional de book and claim para cadeia de custódia), fundamentada no conceito de TIEC (Transferrable Instrument with Entitlement to Claim — a menor unidade transferível).',
+      'Regulamenta o Programa Nacional de Combustível Sustentável de Aviação (ProBioQAV) no âmbito da Lei do Combustível do Futuro, criando o Certificado de Combustível Sustentável de Aviação (CS-SAF). Trata-se do primeiro certificado brasileiro estruturado em regime formal de book and claim, operando com estrita separação do atributo ambiental da entrega física do combustível e vedando terminantemente a dupla contagem (o mesmo litro não pode gerar CBIO e CS-SAF). Estabelece interoperabilidade mandatória com o programa internacional CORSIA (ICAO) e com o Sistema Brasileiro de Comércio de Emissões (SBCE / Lei 15.042/2024), com consulta pública da ANAC em curso. O arcabouço adota como referência a norma ISO 22095-3:2026 (primeira parte da série internacional ISO 22095 dedicada integralmente ao modelo de book and claim para cadeia de custódia), fundamentada no conceito de TIEC (Transferrable Instrument with Entitlement to Claim — a menor unidade transferível).',
     quemAfeta: [
       'Operadores aéreos regulares e aviação comercial e geral com metas mandatórias de redução de emissões',
       'Produtores e importadores de combustível sustentável de aviação (SAF) e agentes da cadeia de suprimentos',
@@ -300,17 +301,17 @@ export const ITENS_RADAR_REGULATORIO: ItemRadarRegulatorio[] = [
     id: 'pnrs_logistica_reversa',
     dataMarco: 'Em vigor',
     ano: '2026',
-    norma: 'Lei Federal nº 12.305/2010 (PNRS) & Decretos 11.044 e 11.413',
+    norma: 'Lei Federal nº 12.305/2010 (PNRS) & Decretos 11.044, 11.413 e 12.451/2025',
     status: 'Vigente',
     titulo: 'PNRS: Política Nacional de Resíduos Sólidos & Certificados de Reciclagem',
     descricaoCurta:
-      'Obrigatoriedade de estruturação e implementação de sistemas de logística reversa e comprovação de reciclagem de embalagens em geral, eletroeletrônicos, baterias e pneus através de Certificados de Crédito de Reciclagem (CCRR).',
+      'Obrigatoriedade de estruturação e implementação de sistemas de logística reversa e comprovação de reciclagem de embalagens em geral, eletroeletrônicos, baterias e pneus através de Certificados de Crédito de Reciclagem (CCRR), atualizada pelo Decreto nº 12.451/2025.',
     quemAfeta: [
       'Fabricantes, importadores, distribuidores e comerciantes de embalagens, bens de consumo e eletrônicos',
     ],
     acaoRecomendada:
       'Garantir notas fiscais eletrônicas de destinação ambiental e aquisição de certificados de crédito de reciclagem ou insetting com rastreabilidade probatória.',
-    baseLegal: 'Lei Federal 12.305/2010 e Decretos 11.044/2022 e 11.413/2023',
+    baseLegal: 'Lei Federal 12.305/2010 e Decretos 11.044/2022, 11.413/2023 e 12.451/2025',
     tagSetorial: 'Ambiental/ESG',
   },
   {

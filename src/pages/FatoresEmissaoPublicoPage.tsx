@@ -621,10 +621,11 @@ export default function FatoresEmissaoPublicoPage() {
                   </h3>
                   <p className="text-xs text-[#93A3B5] leading-relaxed">
                     A fronteira do sistema abrange desde a entrada do veículo sinistrado ou em fim
-                    de vida no pátio do CDV, despoluição de fluidos obrigatória (CONAMA 267/2000),
-                    desmontagem, triagem, estocagem, eventual recondicionamento elétrico/mecânico
-                    até o portão de expedição comercial (gate). Emissões da fase de uso posterior
-                    pelo comprador e reciclagem pós-reúso ficam fora da fronteira imediata do DPP.
+                    de vida no pátio do CDV, despoluição de fluidos obrigatória (Resoluções CONAMA
+                    267/2000 e 340/2003), desmontagem, triagem, estocagem, eventual
+                    recondicionamento elétrico/mecânico até o portão de expedição comercial (gate).
+                    Emissões da fase de uso posterior pelo comprador e reciclagem pós-reúso ficam
+                    fora da fronteira imediata do DPP.
                   </p>
                 </div>
               </div>
@@ -883,7 +884,9 @@ export default function FatoresEmissaoPublicoPage() {
                   </em>
                   <span className="block mt-2 text-[11px] text-[#93A3B5]">
                     Nota regulatória: A inserção do R-1234yf e do R-134a segue estritamente como
-                    fator de catálogo do motor dMRV sob o regime do DM-ORB-001 v1.1. É
+                    fator de catálogo do motor dMRV sob o regime do DM-ORB-001 v1.1, tendo por
+                    fundamento técnico as Resoluções CONAMA nº 267/2000 e nº 340/2003 (recolhimento,
+                    acondicionamento e destinação de fluidos frigoríficos automotivos). É
                     terminantemente vedada a promessa de créditos de carbono adicionais sobre esses
                     fluidos além da infraestrutura probatória documental já estabelecida. Fluidos de
                     HVAC industrial (como R-407C e R-410A) permanecem documentados como misturas

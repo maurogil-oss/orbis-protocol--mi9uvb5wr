@@ -383,11 +383,11 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
           </div>
         )}
 
-        {/* Parâmetros e Fatores Peculiares Homologados nos 15 Protocolos Setoriais */}
+        {/* Parâmetros e Fatores Peculiares Estruturados nos 15 Protocolos Setoriais */}
         <div className="mt-6 pt-5 border-t border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-[#D9B36C] uppercase tracking-wider">
-              FATORES PECULIARES SETORIAIS DISPONÍVEIS NO MOTOR (15 PROTOCOLOS HOMOLOGADOS)
+              FATORES PECULIARES SETORIAIS DISPONÍVEIS NO MOTOR (15 PROTOCOLOS ESTRUTURADOS)
             </span>
             <span className="text-[10px] text-[#12B886] font-semibold">
               Tier 1 & Tier 2 IPCC / GLEC
