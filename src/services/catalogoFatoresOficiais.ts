@@ -35,7 +35,7 @@ export interface FatorCatalogoItem {
   fonteOficial: string
   anoReferencia: number
   normaPadrao: string
-  tierIncerteza: 'Tier 1' | 'Tier 2' | 'Tier 3'
+  tierIncerteza: 'Tier 1' | 'Tier 2' | 'Tier 3' | 'Tier 4'
   incertezaPct: number
   detalheTecnico: string
   gasesCobertos?: {

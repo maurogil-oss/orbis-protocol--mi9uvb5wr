@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { TRILHAS_DATA } from '@/data/trilhas'
 import { useAuth } from '@/contexts/AuthContext'
+import { TabelaPublicaHonorariosSection } from '@/components/TabelaPublicaHonorariosSection'
 import {
   ShieldCheck,
   ChevronDown,
@@ -70,6 +71,13 @@ export default function TrilhaDetail() {
             </div>
           </div>
         </div>
+
+        {/* Seção de Honorários de Peritos configurável — exibida na Trilha de Peritos Técnicos */}
+        {slug === 'peritos-tecnicos' && (
+          <div className="mb-10">
+            <TabelaPublicaHonorariosSection />
+          </div>
+        )}
 
         {/* Two-column layout: Objectives & Modules */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">

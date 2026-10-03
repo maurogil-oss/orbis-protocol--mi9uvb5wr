@@ -72,6 +72,7 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
     const bateria = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-bateria-tracao-fora-escopo')
     expect(bateria).toBeDefined()
     expect(bateria?.valorFator).toBe(0.0)
+    expect(bateria?.tierIncerteza).toBe('Tier 4')
     expect(bateria?.descricao).toContain('Fora de escopo v2.1')
     expect(bateria?.detalheTecnico).toContain('Chalmers 2024')
     expect(bateria?.detalheTecnico).toContain('ABNT NBR 10004')

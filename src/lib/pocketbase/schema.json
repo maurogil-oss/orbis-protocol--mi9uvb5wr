@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T16:08:41.780Z",
+  "generatedAt": "2026-10-03T16:15:18.947Z",
   "collections": [
     {
       "name": "users",
@@ -5103,6 +5103,98 @@
         "CREATE INDEX idx_cdv_claims_chassi ON cdv_claims (chassi)",
         "CREATE INDEX idx_cdv_claims_hash ON cdv_claims (hash_claim)",
         "CREATE INDEX idx_cdv_claims_status ON cdv_claims (status)"
+      ]
+    },
+    {
+      "name": "cdv_honorarios",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')"
+      },
+      "fields": [
+        {
+          "name": "tipo_perito",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["CREA", "CAU", "CFT", "CRC", "CRQ", "CRBio", "OUTRO"]
+        },
+        {
+          "name": "tipo_laudo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "titulo_laudo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "valor_base",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "unidade",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "vigencia_inicio",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "vigencia_fim",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "observacoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "atualizado_por",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_cdv_honorarios_vigencia ON cdv_honorarios (ativo, tipo_perito, tipo_laudo)"
       ]
     }
   ]

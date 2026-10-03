@@ -99,6 +99,7 @@ import {
 } from '@/services/businessSettingsService'
 import { useSearchParams } from 'react-router-dom'
 import { ConsoleRadarSemanalTab } from '@/components/ConsoleRadarSemanalTab'
+import { ConsoleHonorariosTab } from '@/components/ConsoleHonorariosTab'
 
 type AdminTab =
   | 'receita'
@@ -110,6 +111,7 @@ type AdminTab =
   | 'assinaturas'
   | 'comissoes'
   | 'peritos'
+  | 'honorarios_peritos'
   | 'auditoria'
   | 'lastro_conformidade'
   | 'ccrlr_sinir'
@@ -131,6 +133,7 @@ export default function AdminConsolePage() {
     if (qTab === 'governanca' && isMaster) return 'governanca'
     if (qTab === 'parametros_negocio') return 'parametros_negocio'
     if (qTab === 'receita') return 'receita'
+    if (qTab === 'honorarios_peritos') return 'honorarios_peritos'
     if (qTab === 'auditoria') return 'auditoria'
     if (qTab === 'clientes') return 'clientes'
     return isMaster ? 'governanca' : 'receita'
@@ -933,6 +936,7 @@ export default function AdminConsolePage() {
     { id: 'assinaturas', label: '6. Assinaturas', icon: CreditCard },
     { id: 'comissoes', label: '7. Comissões & Parceiros', icon: Percent },
     { id: 'peritos', label: '8. Rede Pericial & Conselhos', icon: Award },
+    { id: 'honorarios_peritos', label: 'Honorários de Peritos (Mercado)', icon: DollarSign },
     { id: 'auditoria', label: '9. Auditoria & Trilha Imutável', icon: ShieldCheck },
     {
       id: 'lastro_conformidade',
@@ -3254,6 +3258,9 @@ export default function AdminConsolePage() {
             </div>
           </div>
         )}
+
+        {/* HONORÁRIOS DE PERITOS CONFIGURÁVEL CONFORME MERCADO */}
+        {activeTab === 'honorarios_peritos' && <ConsoleHonorariosTab isReadOnly={isReadOnly} />}
 
         {/* 8. REDE PERICIAL & CONSELHOS */}
         {activeTab === 'peritos' && (

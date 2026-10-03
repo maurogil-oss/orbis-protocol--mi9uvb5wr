@@ -7,6 +7,7 @@ import {
   SolicitarCredenciamentoInput,
 } from '@/services/peritoService'
 import { LISTA_PROTOCOLOS_SETORIAIS } from '@/data/protocolosSetoriais'
+import { TabelaPublicaHonorariosSection } from '@/components/TabelaPublicaHonorariosSection'
 import {
   ShieldCheck,
   CheckCircle2,
@@ -120,9 +121,12 @@ export default function CredenciamentoPeritoPage() {
           <p className="text-xs sm:text-sm text-[#93A3B5] max-w-xl mx-auto leading-relaxed">
             Habilite-se para assinar laudos periciais dMRV, inventários de emissões GHG, pareceres
             SBCE e dossiês de conformidade do Orbis Protocol perante conselhos de classe (CREA / CRC
-            / CRQ).
+            / CRQ / CFT / CAU).
           </p>
         </div>
+
+        {/* Tabela Pública de Honorários Vigente e Responsabilidade/Seguro */}
+        <TabelaPublicaHonorariosSection />
 
         {success ? (
           <div className="p-8 sm:p-10 rounded-3xl bg-[#111820] border border-[#12B886] shadow-2xl text-center space-y-6">
