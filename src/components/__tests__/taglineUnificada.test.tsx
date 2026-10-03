@@ -5,42 +5,45 @@ import { describe, it, expect } from 'vitest'
 import Layout from '@/components/Layout'
 
 describe('Layout - Tagline Unificada da Marca', () => {
-  it('exibe no cabeçalho desktop e drawer mobile a tagline curta "Prova de Economia Circular — dMRV" com travessão eme', () => {
+  it('exibe no cabeçalho desktop e drawer mobile a tagline "Economia Circular — dMRV" com travessão eme', () => {
     const { container } = render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
       </MemoryRouter>,
     )
 
-    // Tagline do cabeçalho curta: "Prova de Economia Circular — dMRV"
-    const headerTaglines = screen.getAllByText('Prova de Economia Circular — dMRV')
-    expect(headerTaglines.length).toBeGreaterThanOrEqual(1)
+    // Taglines no cabeçalho e rodapé: "Economia Circular — dMRV"
+    const taglines = screen.getAllByText('Economia Circular — dMRV')
+    expect(taglines.length).toBeGreaterThanOrEqual(2)
 
     // Cabeçalho desktop tem a classe de 10px e tracking largo
     const desktopTagline = container.querySelector(
       'header span.text-\\[10px\\].tracking-\\[0\\.2em\\]',
     )
     expect(desktopTagline).not.toBeNull()
-    expect(desktopTagline?.textContent?.trim()).toBe('Prova de Economia Circular — dMRV')
+    expect(desktopTagline?.textContent?.trim()).toBe('Economia Circular — dMRV')
     expect(desktopTagline?.textContent).toContain('—')
+    expect(desktopTagline?.textContent).not.toContain('-') // não deve ter hífen simples
     expect(desktopTagline?.textContent).not.toContain('(')
     expect(desktopTagline?.textContent).not.toContain(')')
   })
 
-  it('exibe no rodapé "Prova Documental da Economia Circular — dMRV" com travessão eme', () => {
-    render(
+  it('exibe no rodapé "Economia Circular — dMRV" com travessão eme e sem hífen simples nem parênteses', () => {
+    const { container } = render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
       </MemoryRouter>,
     )
 
-    // Rodapé bloco da marca
-    const footerTagline = screen.getByText('Prova Documental da Economia Circular — dMRV')
-    expect(footerTagline).toBeDefined()
-    // Garante que usa travessão eme —, não hífen nem parênteses
-    expect(footerTagline.textContent).toContain('—')
-    expect(footerTagline.textContent).not.toContain('(')
-    expect(footerTagline.textContent).not.toContain(')')
+    // Rodapé bloco da marca com classes específicas do rodapé
+    const footerTagline = container.querySelector('footer span.tracking-\\[0\\.25em\\]')
+    expect(footerTagline).not.toBeNull()
+    expect(footerTagline?.textContent?.trim()).toBe('Economia Circular — dMRV')
+    // Garante que usa travessão eme —, não hífen simples nem parênteses
+    expect(footerTagline?.textContent).toContain('—')
+    expect(footerTagline?.textContent).not.toContain('-')
+    expect(footerTagline?.textContent).not.toContain('(')
+    expect(footerTagline?.textContent).not.toContain(')')
   })
 
   it('exibe copyright no formato exato com ano e travessão eme', () => {

@@ -256,7 +256,7 @@ export default function Layout() {
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
                 <span className="text-[10px] tracking-[0.2em] uppercase text-slate-500 dark:text-[#94A3B8] font-semibold -mt-1 whitespace-nowrap">
-                  Prova de Economia Circular — dMRV
+                  Economia Circular — dMRV
                 </span>
               </div>
             </Link>
@@ -524,7 +524,7 @@ export default function Layout() {
                       ORBIS PROTOCOL
                     </span>
                     <span className="text-[10px] tracking-[0.18em] uppercase text-[#94A3B8] font-semibold whitespace-nowrap">
-                      Prova de Economia Circular — dMRV
+                      Economia Circular — dMRV
                     </span>
                   </div>
                 </div>
@@ -761,7 +761,7 @@ export default function Layout() {
                       ORBIS PROTOCOL
                     </span>
                     <span className="text-[10px] tracking-[0.25em] text-amber-700 dark:text-[#D9B36C] font-mono uppercase font-bold">
-                      Prova Documental da Economia Circular — dMRV
+                      Economia Circular — dMRV
                     </span>
                   </div>
                 </Link>{' '}
