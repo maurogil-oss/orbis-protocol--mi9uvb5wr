@@ -888,7 +888,7 @@ export default function PainelCliente() {
         {/* CONTEÚDO DAS ABAS */}
         {abaFiscalAtiva === 'dmrv_emissoes' && (
           <div className="mb-10">
-            <PainelDmrvEmissoesEvitadas />
+            <PainelDmrvEmissoesEvitadas permitirSimulador={false} />
           </div>
         )}
 

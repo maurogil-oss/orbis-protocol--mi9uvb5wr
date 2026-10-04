@@ -16,6 +16,10 @@
  */
 
 import pb from '@/lib/pocketbase/client'
+import {
+  calcularSimuladorReferencial,
+  type SimuladorReferencialResultado,
+} from './simuladorReferencialService'
 
 export type FiltroOrigemDmrv = 'producao' | 'sintetico'
 export type ModoFiltroOrigem = 'real' | 'sandbox'
@@ -148,6 +152,8 @@ export interface DadosDmrvEmpresa {
   kpiCards?: CardKpiRenderizavel[]
   /** Relatório com a decomposição analítica completa em 3 níveis */
   relatorioEstratificado?: RelatorioEstratificadoDmrv
+  /** Simulador Referencial de Potencial de Crédito (Informativo - sem validade, não emissível) */
+  simuladorReferencial?: SimuladorReferencialResultado
 }
 
 export interface ResumoDmrvSegregado {
@@ -1270,6 +1276,14 @@ export async function carregarDadosDmrvEmpresa(
     protocoloDominanteNome: dom.nome,
   })
 
+  const simuladorReferencial = calcularSimuladorReferencial({
+    lotes,
+    pecas,
+    cnpj: cnpjEmpresa || '33.000.168/0001-09',
+    origem,
+    protocoloDominanteSlug: dom.slug,
+  })
+
   return {
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
     origem_filtro: origem,
@@ -1288,6 +1302,7 @@ export async function carregarDadosDmrvEmpresa(
     protocoloDominanteNome: dom.nome,
     kpiCards,
     relatorioEstratificado,
+    simuladorReferencial,
   }
 }
 

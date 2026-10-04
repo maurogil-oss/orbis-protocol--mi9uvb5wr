@@ -3915,7 +3915,7 @@ export default function AdminConsolePage() {
         {/* 12. dMRV EMISSÕES EVITADAS (SBCE / GHG PROTOCOL) */}
         {activeTab === 'dmrv_todas_empresas' && (
           <div className="space-y-6">
-            <PainelDmrvEmissoesEvitadas />
+            <PainelDmrvEmissoesEvitadas permitirSimulador={true} />
           </div>
         )}
 
