@@ -113,8 +113,9 @@ export async function carregarDadosDmrvEmpresa(
         if (isSintetico) return false
       }
 
-      // Se o usuário não for admin, filtra por CNPJ se couber
-      if (user?.role !== 'admin' && cnpj) {
+      // Se o usuário não for admin/master, filtra por CNPJ se couber
+      const isAdminOuMaster = user?.role === 'admin' || user?.role === 'master'
+      if (!isAdminOuMaster && cnpj) {
         return (l.cdv_cnpj || '').replace(/[^0-9]/g, '') === cleanCnpj
       }
       return true
@@ -130,6 +131,7 @@ export async function carregarDadosDmrvEmpresa(
       sort: '-created',
     })
 
+    const isAdminOuMaster = user?.role === 'admin' || user?.role === 'master'
     const pecasFiltradas = pecas.filter((p) => {
       const isSintetico = p.origem === 'sintetico'
       if (filtroOrigem === 'sintetico') {
@@ -138,7 +140,7 @@ export async function carregarDadosDmrvEmpresa(
         if (isSintetico) return false
       }
 
-      if (user?.role !== 'admin' && cnpj) {
+      if (!isAdminOuMaster && cnpj) {
         return (p.cdv_cnpj || '').replace(/[^0-9]/g, '') === cleanCnpj
       }
       return true

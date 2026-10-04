@@ -10,17 +10,16 @@ import {
 import {
   Sparkles,
   Download,
-  Database,
   FileCode,
   ShieldAlert,
   CheckCircle2,
   AlertTriangle,
   Play,
-  Layers,
-  ArrowRight,
   Eye,
   RefreshCw,
+  XCircle,
 } from 'lucide-react'
+import { getErrorMessage } from '@/lib/pocketbase/errors'
 
 export interface PipelineIngestaoResultado {
   sucesso: boolean
@@ -31,7 +30,10 @@ export interface PipelineIngestaoResultado {
   registroSeloId?: string
   registroLoteId?: string
   registroPecaId?: string
+  pecasGravadas?: number
+  pecasTotal?: number
   erro?: string
+  detalhesErro?: string
 }
 
 export function ConsoleSandboxIngestaoTab() {
@@ -203,9 +205,15 @@ export function ConsoleSandboxIngestaoTab() {
         .toISOString()
         .slice(0, 10)
 
+      let regSeloId = ''
+      let regLoteId = ''
+      let regPecaId = ''
+      let pecasGravadasContador = 0
+      let pecasTotalContador = 0
+
       try {
         // 1. Gravar na coleção 'selos' com origem: 'sintetico'
-        let regSeloId = ''
+        // Falha no selo É BLOQUEANTE: não engolir o erro.
         try {
           const regSelo = await pb.collection('selos').create({
             codigo_selo: codigoSelo,
@@ -219,13 +227,12 @@ export function ConsoleSandboxIngestaoTab() {
           })
           regSeloId = regSelo.id
         } catch (seloErr: any) {
-          console.warn('Gravação em selos falhou ou requer permissão:', seloErr)
+          const msg = getErrorMessage(seloErr) || seloErr?.message || 'Falha ao criar selo'
+          throw new Error(`[Coleção selos]: ${msg}`)
         }
 
-        // 2. Se for segmento com peças/itens rastreáveis (desmanche_cdv, varejo_reverso, construcao_rcd, mineracao_urbana_criticos)
+        // 2. Se for segmento com peças/itens rastreáveis
         // calcular CO₂e com motor real por material e gravar cdv_lotes + cdv_pecas por item
-        let regLoteId = ''
-        let regPecaId = ''
         const segmentosComRastreabilidade = [
           'desmanche_cdv',
           'varejo_reverso',
@@ -234,64 +241,65 @@ export function ConsoleSandboxIngestaoTab() {
         ]
 
         if (segmentosComRastreabilidade.includes(doc.segmento)) {
+          // Processamento peça a peça com cálculo oficial de carbono
+          const itensProcessados = await Promise.all(
+            doc.itens.map(async (it, itemIdx) => {
+              const infoMat = obterFatorECategoriaMaterial(it, doc.segmento)
+              const pesoKg = Number(it.pesoKg || 0)
+              const seloItem = doc.itens.length === 1 ? codigoSelo : `${codigoSelo}-${itemIdx + 1}`
+
+              const co2eEvitadoKg =
+                infoMat.statusCalculo === 'em_estruturacao_de_catalogo'
+                  ? 0
+                  : Math.round(pesoKg * infoMat.fatorCo2eKg * 100) / 100
+
+              const textoHashPeca = `${seloItem}|${it.cProd}|${it.xProd}|${pesoKg.toFixed(2)}|${co2eEvitadoKg.toFixed(2)}|${formatarCnpj(doc.cnpjEmitente)}|${doc.chaveAcesso}`
+              let hashPeca = ''
+              if (typeof crypto !== 'undefined' && crypto.subtle) {
+                const enc = new TextEncoder()
+                const hb = await crypto.subtle.digest('SHA-256', enc.encode(textoHashPeca))
+                hashPeca = Array.from(new Uint8Array(hb))
+                  .map((b) => b.toString(16).padStart(2, '0'))
+                  .join('')
+              } else {
+                hashPeca = doc.hashSha256
+              }
+
+              return {
+                item: it,
+                seloDpp: seloItem,
+                categoriaSelect: infoMat.categoriaSelect,
+                categoriaDescritiva: infoMat.categoriaDescritiva,
+                fatorCo2eKg: infoMat.fatorCo2eKg,
+                statusCalculo: infoMat.statusCalculo,
+                pesoKg,
+                co2eEvitadoKg,
+                hashPeca,
+              }
+            }),
+          )
+
+          pecasTotalContador = itensProcessados.length
+
+          // Agregação no lote
+          const totalPesoLote =
+            Math.round(itensProcessados.reduce((acc, p) => acc + p.pesoKg, 0) * 100) / 100
+          const totalCo2eLote =
+            Math.round(itensProcessados.reduce((acc, p) => acc + p.co2eEvitadoKg, 0) * 100) / 100
+
+          const descricaoVeiculo =
+            doc.segmento === 'desmanche_cdv'
+              ? 'Veículo Teste Sandbox Orbis (Sintético)'
+              : doc.segmento === 'varejo_reverso'
+                ? 'Lote Varejo Reverso & Eletroeletrônicos (Sintético)'
+                : doc.segmento === 'construcao_rcd'
+                  ? 'Lote Agregados Reciclados de Concreto RCD (Sintético)'
+                  : 'Lote Mineração Urbana & Materiais Críticos (Sintético)'
+
+          // Gravação do lote (bloqueante)
+          let regLote: any
           try {
-            // Processamento peça a peça com cálculo oficial de carbono
-            const itensProcessados = await Promise.all(
-              doc.itens.map(async (it, itemIdx) => {
-                const infoMat = obterFatorECategoriaMaterial(it, doc.segmento)
-                const pesoKg = Number(it.pesoKg || 0)
-                const seloItem =
-                  doc.itens.length === 1 ? codigoSelo : `${codigoSelo}-${itemIdx + 1}`
-
-                // co2e_evitado_kg = round(pesoKg * fator * 100)/100
-                const co2eEvitadoKg =
-                  infoMat.statusCalculo === 'em_estruturacao_de_catalogo'
-                    ? 0
-                    : Math.round(pesoKg * infoMat.fatorCo2eKg * 100) / 100
-
-                // Hash canônico por peça incluindo o CO2e calculado
-                const textoHashPeca = `${seloItem}|${it.cProd}|${it.xProd}|${pesoKg.toFixed(2)}|${co2eEvitadoKg.toFixed(2)}|${formatarCnpj(doc.cnpjEmitente)}|${doc.chaveAcesso}`
-                let hashPeca = ''
-                if (typeof crypto !== 'undefined' && crypto.subtle) {
-                  const enc = new TextEncoder()
-                  const hb = await crypto.subtle.digest('SHA-256', enc.encode(textoHashPeca))
-                  hashPeca = Array.from(new Uint8Array(hb))
-                    .map((b) => b.toString(16).padStart(2, '0'))
-                    .join('')
-                } else {
-                  hashPeca = doc.hashSha256
-                }
-
-                return {
-                  item: it,
-                  seloDpp: seloItem,
-                  categoriaSelect: infoMat.categoriaSelect,
-                  categoriaDescritiva: infoMat.categoriaDescritiva,
-                  fatorCo2eKg: infoMat.fatorCo2eKg,
-                  statusCalculo: infoMat.statusCalculo,
-                  pesoKg,
-                  co2eEvitadoKg,
-                  hashPeca,
-                }
-              }),
-            )
-
-            // Agregação no lote
-            const totalPesoLote =
-              Math.round(itensProcessados.reduce((acc, p) => acc + p.pesoKg, 0) * 100) / 100
-            const totalCo2eLote =
-              Math.round(itensProcessados.reduce((acc, p) => acc + p.co2eEvitadoKg, 0) * 100) / 100
-
-            const descricaoVeiculo =
-              doc.segmento === 'desmanche_cdv'
-                ? 'Veículo Teste Sandbox Orbis (Sintético)'
-                : doc.segmento === 'varejo_reverso'
-                  ? 'Lote Varejo Reverso & Eletroeletrônicos (Sintético)'
-                  : doc.segmento === 'construcao_rcd'
-                    ? 'Lote Agregados Reciclados de Concreto RCD (Sintético)'
-                    : 'Lote Mineração Urbana & Materiais Críticos (Sintético)'
-
-            const regLote = await pb.collection('cdv_lotes').create({
+            regLote = await pb.collection('cdv_lotes').create({
               cdv_nome: doc.razaoSocialEmitente,
               cdv_cnpj: formatarCnpj(doc.cnpjEmitente),
               cdv_codigo: `SANDBOX-${doc.segmento.toUpperCase().slice(0, 10)}`,
@@ -317,15 +325,21 @@ export function ConsoleSandboxIngestaoTab() {
               },
             })
             regLoteId = regLote.id
+          } catch (loteErr: any) {
+            const msg = getErrorMessage(loteErr) || loteErr?.message || 'Falha ao criar cdv_lotes'
+            throw new Error(`[Coleção cdv_lotes]: ${msg}`)
+          }
 
-            // Grava TODAS as peças no banco com seu respectivo cálculo oficial
-            for (let pIdx = 0; pIdx < itensProcessados.length; pIdx++) {
-              const p = itensProcessados[pIdx]
-              const materialDeclaradoTexto =
-                p.statusCalculo === 'em_estruturacao_de_catalogo'
-                  ? `${p.categoriaDescritiva} [STATUS: EM ESTRUTURAÇÃO DE CATÁLOGO - ZERO CRÉDITO]`
-                  : p.categoriaDescritiva
+          // Grava TODAS as peças no banco com seu respectivo cálculo oficial
+          const errosPecas: string[] = []
+          for (let pIdx = 0; pIdx < itensProcessados.length; pIdx++) {
+            const p = itensProcessados[pIdx]
+            const materialDeclaradoTexto =
+              p.statusCalculo === 'em_estruturacao_de_catalogo'
+                ? `${p.categoriaDescritiva} [STATUS: EM ESTRUTURAÇÃO DE CATÁLOGO - ZERO CRÉDITO]`
+                : p.categoriaDescritiva
 
+            try {
               const regPeca = await pb.collection('cdv_pecas').create({
                 lote: regLote.id,
                 sku_interno: p.item.cProd,
@@ -345,12 +359,21 @@ export function ConsoleSandboxIngestaoTab() {
                 situacao_checklist: 'etiquetada',
                 origem: 'sintetico',
               })
+              pecasGravadasContador++
               if (pIdx === 0) {
                 regPecaId = regPeca.id
               }
+            } catch (pecaErr: any) {
+              const msg = getErrorMessage(pecaErr) || pecaErr?.message || 'Falha ao criar peça'
+              errosPecas.push(`Item #${pIdx + 1} (${p.item.xProd}): ${msg}`)
             }
-          } catch (cdvErr: any) {
-            console.warn('Gravação em cdv_lotes/pecas falhou:', cdvErr)
+          }
+
+          // Se alguma peça falhou, o documento é tratado como erro no resultado
+          if (errosPecas.length > 0) {
+            throw new Error(
+              `[Coleção cdv_pecas]: ${errosPecas.length} de ${itensProcessados.length} peças falharam: ${errosPecas[0]}`,
+            )
           }
         }
 
@@ -363,15 +386,25 @@ export function ConsoleSandboxIngestaoTab() {
           registroSeloId: regSeloId,
           registroLoteId: regLoteId,
           registroPecaId: regPecaId,
+          pecasGravadas: pecasGravadasContador,
+          pecasTotal: pecasTotalContador,
         })
       } catch (err: any) {
+        const mensagemErro =
+          err?.message || getErrorMessage(err) || 'Erro durante processamento no pipeline'
         resultados.push({
           sucesso: false,
           documentoId: doc.id,
           chaveAcesso: doc.chaveAcesso,
           seloDpp: codigoSelo,
           hashIntegridade: doc.hashSha256,
-          erro: err.message || 'Erro durante processamento no pipeline',
+          registroSeloId: regSeloId || undefined,
+          registroLoteId: regLoteId || undefined,
+          registroPecaId: regPecaId || undefined,
+          pecasGravadas: pecasGravadasContador,
+          pecasTotal: pecasTotalContador,
+          erro: mensagemErro,
+          detalhesErro: String(err?.stack || err),
         })
       }
     }
@@ -572,24 +605,79 @@ export function ConsoleSandboxIngestaoTab() {
           </div>
 
           {/* Feedback de Progresso e Ingestão */}
-          {resultadosIngestao.length > 0 && (
-            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  Ingestão de {resultadosIngestao.filter((r) => r.sucesso).length} documentos
-                  concluída com sucesso!
-                </span>
-                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400">
-                  Carimbo permanente: origem = &apos;sintetico&apos;
-                </span>
-              </div>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                Os hashes SHA-256 e os selos foram gravados no banco de dados isolados de qualquer
-                consulta pública externa.
-              </p>
-            </div>
-          )}
+          {resultadosIngestao.length > 0 &&
+            (() => {
+              const sucessos = resultadosIngestao.filter((r) => r.sucesso)
+              const falhas = resultadosIngestao.filter((r) => !r.sucesso)
+              const todosComSucesso = falhas.length === 0
+              const todosComFalha = sucessos.length === 0
+
+              return (
+                <div
+                  className={`p-4 rounded-xl border space-y-2 ${
+                    todosComSucesso
+                      ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200'
+                      : todosComFalha
+                        ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/50 text-rose-900 dark:text-rose-200'
+                        : 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs flex-wrap gap-2">
+                    <span className="font-bold flex items-center gap-1.5">
+                      {todosComSucesso ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                      )}
+                      {todosComSucesso
+                        ? `Ingestão concluída: ${sucessos.length} documento(s) gravado(s) com sucesso no backend!`
+                        : todosComFalha
+                          ? `Falha na ingestão: todos os ${falhas.length} documento(s) foram recusados pelo backend.`
+                          : `Ingestão parcial: ${sucessos.length} gravado(s) com sucesso e ${falhas.length} falhado(s).`}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                        Gravados: {sucessos.length}
+                      </span>
+                      {falhas.length > 0 && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-700 dark:text-rose-300">
+                          Falhados: {falhas.length}
+                        </span>
+                      )}
+                      <span className="text-[11px] font-mono opacity-80">
+                        Carimbo: origem = &apos;sintetico&apos;
+                      </span>
+                    </div>
+                  </div>
+
+                  {falhas.length > 0 && (
+                    <div className="p-3 rounded-lg bg-rose-100/60 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 text-[11px] space-y-1">
+                      <strong className="block font-semibold text-rose-900 dark:text-rose-200">
+                        Erros reportados pelo servidor:
+                      </strong>
+                      <ul className="list-disc list-inside space-y-0.5 font-mono text-[10px] text-rose-800 dark:text-rose-300">
+                        {falhas.slice(0, 3).map((f) => (
+                          <li key={f.documentoId} className="truncate" title={f.erro}>
+                            Doc {f.documentoId}: {f.erro}
+                          </li>
+                        ))}
+                        {falhas.length > 3 && (
+                          <li className="italic">...e mais {falhas.length - 3} falhas similares</li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
+                  {sucessos.length > 0 && (
+                    <p className="text-[11px] opacity-90">
+                      Os registros foram persistidos nas coleções do backend com origem sintetico e
+                      já podem ser auditados na aba dMRV na posição &apos;Sandbox
+                      (Demonstração)&apos;.
+                    </p>
+                  )}
+                </div>
+              )
+            })()}
 
           {/* Tabela do Lote */}
           <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
@@ -597,6 +685,7 @@ export function ConsoleSandboxIngestaoTab() {
               <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="p-3">Doc & Modelo</th>
+                  <th className="p-3">Status Ingestão</th>
                   <th className="p-3">Chave de Acesso (44 Dígitos)</th>
                   <th className="p-3">Emitente & CNPJ</th>
                   <th className="p-3">Valor Total</th>
@@ -607,10 +696,17 @@ export function ConsoleSandboxIngestaoTab() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
                 {loteGerado.map((doc, idx) => {
                   const resultado = resultadosIngestao.find((r) => r.documentoId === doc.id)
+                  const teveTentativa = Boolean(resultado)
+                  const falhou = teveTentativa && !resultado?.sucesso
+
                   return (
                     <tr
                       key={doc.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                      className={`transition-colors ${
+                        falhou
+                          ? 'bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-100/40'
+                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                      }`}
                     >
                       <td className="p-3">
                         <div className="flex items-center gap-1.5">
@@ -627,11 +723,45 @@ export function ConsoleSandboxIngestaoTab() {
                         </span>
                       </td>
 
+                      {/* Coluna Status Ingestão */}
+                      <td className="p-3">
+                        {!teveTentativa ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                            Aguardando
+                          </span>
+                        ) : resultado?.sucesso ? (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                              Sucesso
+                            </span>
+                            {resultado.pecasTotal ? (
+                              <span className="block text-[9px] font-mono text-emerald-600 dark:text-emerald-400">
+                                {resultado.pecasGravadas}/{resultado.pecasTotal} peças gravadas
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <div className="space-y-1 max-w-[200px]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/40">
+                              <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                              ERRO BACKEND
+                            </span>
+                            <span
+                              className="block text-[10px] font-mono text-rose-700 dark:text-rose-300 leading-tight truncate"
+                              title={resultado?.erro}
+                            >
+                              {resultado?.erro}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+
                       <td className="p-3 font-mono text-[11px] text-slate-600 dark:text-slate-400">
-                        <div className="truncate max-w-[220px]" title={doc.chaveAcesso}>
+                        <div className="truncate max-w-[200px]" title={doc.chaveAcesso}>
                           {doc.chaveAcesso}
                         </div>
-                        {resultado?.seloDpp && (
+                        {resultado?.seloDpp && resultado.sucesso && (
                           <span className="inline-block mt-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-500/30">
                             {resultado.seloDpp}
                           </span>
