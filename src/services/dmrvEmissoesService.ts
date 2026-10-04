@@ -260,8 +260,7 @@ export function normalizarSlugSegmento(raw?: string | null): string {
     }
   }
   if (r.startsWith('mineracao') && !r.includes('urbana')) return 'mineracao'
-  if (r.startsWith('agro') || r.includes('pecuaria') || r.includes('florestal'))
-    return 'agronegocio'
+  if (r.startsWith('agro') || r.includes('pecuaria') || r.includes('florestal')) return 'agro'
   if (r.startsWith('siderurgia') || r.includes('metalurg') || r.includes('aco')) return 'siderurgia'
   if (r.startsWith('quimica') || r.includes('fertiliz')) return 'quimica'
   if (r.startsWith('alimento') || r.includes('bebida')) return 'alimentos'

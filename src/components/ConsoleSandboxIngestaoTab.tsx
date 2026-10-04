@@ -37,6 +37,8 @@ export interface PipelineIngestaoResultado {
   registroInventarioId?: string
   pecasGravadas?: number
   pecasTotal?: number
+  totalPesoKg?: number
+  totalCo2eEvitadoKg?: number
   erro?: string
   detalhesErro?: string
 }
@@ -208,7 +210,10 @@ export function ConsoleSandboxIngestaoTab() {
   })
 
   // Helper para identificar fator e categoria do material com base no catálogo canônico
-  // Aço 2,18; Alumínio 14,40; Cobre 5,40; Polímeros 1,90; Concreto/agregado reciclado 0,12; outros/genérico 1,50
+  // Aço 2,18; Alumínio 14,40; Cobre 5,40; Polímeros 1,90; Concreto/agregado reciclado 0,12;
+  // Refrigerante R-134a 1530; R-1234yf 0,50.
+  // Sem fator oficial = fator 0, CO₂e 0 e status 'em_estruturacao_de_catalogo' ("massa rastreada sem crédito de carbono").
+  // NUNCA inventar número nem usar estimativa fictícia.
   const obterFatorECategoriaMaterial = (
     item: any,
     segmentoDoc: SegmentoSandbox,
@@ -219,21 +224,49 @@ export function ConsoleSandboxIngestaoTab() {
     statusCalculo: 'calculado' | 'em_estruturacao_de_catalogo'
   } => {
     const slugCanonico = normalizarSegmento(segmentoDoc)
+    const cat = String(item.categoriaMaterial || '').toLowerCase()
+    const descItem = String(item.xProd || '').toLowerCase()
+
+    // Fluidos refrigerantes com fatores oficiais DM-ORB-001 / IPCC AR6
+    if (
+      descItem.includes('r-134a') ||
+      descItem.includes('r134a') ||
+      descItem.includes('hfc-134a')
+    ) {
+      return {
+        categoriaSelect: 'outros',
+        categoriaDescritiva: 'Fluido Refrigerante R-134a (GWP 1530 IPCC AR6)',
+        fatorCo2eKg: 1530.0,
+        statusCalculo: 'calculado',
+      }
+    }
+    if (
+      descItem.includes('r-1234yf') ||
+      descItem.includes('r1234yf') ||
+      descItem.includes('hfo-1234yf')
+    ) {
+      return {
+        categoriaSelect: 'outros',
+        categoriaDescritiva: 'Fluido Refrigerante R-1234yf (GWP 0,50 IPCC AR6)',
+        fatorCo2eKg: 0.5,
+        statusCalculo: 'calculado',
+      }
+    }
 
     // Regra crítica para mineração urbana: ouro/paládio/prata/terras raras ficam "em estruturação de catálogo"
     if (
       item.statusCalculo === 'em_estruturacao_de_catalogo' ||
-      (slugCanonico === 'materiais-criticos-recuperados' && item.categoriaMaterial !== 'cobre')
+      (slugCanonico === 'materiais-criticos-recuperados' && cat !== 'cobre')
     ) {
       return {
         categoriaSelect: 'outros',
-        categoriaDescritiva: 'Minerais Críticos & Metais Nobres (Em estruturação de catálogo)',
+        categoriaDescritiva:
+          item.xProd || 'Minerais Críticos & Metais Nobres (Em estruturação de catálogo)',
         fatorCo2eKg: 0,
         statusCalculo: 'em_estruturacao_de_catalogo',
       }
     }
 
-    const cat = item.categoriaMaterial || ''
     if (cat === 'aco') {
       return {
         categoriaSelect: 'aco',
@@ -274,11 +307,28 @@ export function ConsoleSandboxIngestaoTab() {
         statusCalculo: 'calculado',
       }
     }
+
+    // Se o item tiver fator explicitamente declarado oficial e status 'calculado'
+    if (
+      item.statusCalculo === 'calculado' &&
+      typeof item.fatorCo2eKg === 'number' &&
+      item.fatorCo2eKg > 0
+    ) {
+      return {
+        categoriaSelect: 'outros',
+        categoriaDescritiva: item.xProd || 'Material com Fator Oficial Declarado',
+        fatorCo2eKg: item.fatorCo2eKg,
+        statusCalculo: 'calculado',
+      }
+    }
+
+    // SEM FATOR OFICIAL: zero crédito, status em estruturação de catálogo (massa rastreada sem crédito)
     return {
       categoriaSelect: 'outros',
-      categoriaDescritiva: 'Outros Materiais (Estimativa Conservadora)',
-      fatorCo2eKg: 1.5,
-      statusCalculo: 'calculado',
+      categoriaDescritiva:
+        item.xProd || 'Massa Rastreada sem Crédito de Carbono (Em estruturação de catálogo)',
+      fatorCo2eKg: 0,
+      statusCalculo: 'em_estruturacao_de_catalogo',
     }
   }
 
@@ -426,13 +476,16 @@ export function ConsoleSandboxIngestaoTab() {
           throw new Error(`[Coleção selos]: ${msg}`)
         }
 
-        // 2. Se for segmento com itens/materiais rastreáveis, gravar cdv_lotes + cdv_pecas
+        // 2. GRAVAÇÃO UNIVERSAL dMRV: TODOS os 16 segmentos gravam cdv_lotes e cdv_pecas
+        // Massa agregada do documento via doc.itens.reduce(...), CO₂e só com fator oficial, sem fator = rastreado sem crédito
         const opcaoSetorial = SEGMENTOS_SANDBOX_CATALOGO.find(
           (s) => s.chave === doc.segmento || s.slugCanonico === normalizarSegmento(doc.segmento),
         )
-        const temRastreabilidade = opcaoSetorial?.rastreabilidadePecas ?? true
 
-        if (temRastreabilidade && doc.itens.length > 0) {
+        let totalPesoDoc = 0
+        let totalCo2eDoc = 0
+
+        if (doc.itens && doc.itens.length > 0) {
           const itensProcessados = await Promise.all(
             doc.itens.map(async (it, itemIdx) => {
               const infoMat = obterFatorECategoriaMaterial(it, doc.segmento)
@@ -472,9 +525,9 @@ export function ConsoleSandboxIngestaoTab() {
 
           pecasTotalContador = itensProcessados.length
 
-          const totalPesoLote =
+          totalPesoDoc =
             Math.round(itensProcessados.reduce((acc, p) => acc + p.pesoKg, 0) * 100) / 100
-          const totalCo2eLote =
+          totalCo2eDoc =
             Math.round(itensProcessados.reduce((acc, p) => acc + p.co2eEvitadoKg, 0) * 100) / 100
 
           const descricaoLote = `${opcaoSetorial?.titulo || 'Lote Sintético Setorial'} (Demonstração)`
@@ -491,8 +544,8 @@ export function ConsoleSandboxIngestaoTab() {
               origem_envio: 'erp',
               status: 'processado',
               total_pecas: doc.itens.length,
-              total_peso_kg: totalPesoLote,
-              total_co2e_evitado_kg: totalCo2eLote,
+              total_peso_kg: totalPesoDoc,
+              total_co2e_evitado_kg: totalCo2eDoc,
               is_demo: true,
               origem: 'sintetico',
               payload_bruto_json: {
@@ -503,8 +556,8 @@ export function ConsoleSandboxIngestaoTab() {
                 hashSha256: doc.hashSha256,
                 marca: MARCA_SANDBOX_OBRIGATORIA,
                 totalItens: doc.itens.length,
-                totalPesoKg: totalPesoLote,
-                totalCo2eKg: totalCo2eLote,
+                totalPesoKg: totalPesoDoc,
+                totalCo2eKg: totalCo2eDoc,
                 inventarioGhgId: inventarioGhgId || null,
               },
             })
@@ -571,6 +624,8 @@ export function ConsoleSandboxIngestaoTab() {
           registroInventarioId: inventarioGhgId || undefined,
           pecasGravadas: pecasGravadasContador,
           pecasTotal: pecasTotalContador,
+          totalPesoKg: totalPesoDoc,
+          totalCo2eEvitadoKg: totalCo2eDoc,
         })
       } catch (err: any) {
         const mensagemErro =
@@ -859,13 +914,37 @@ export function ConsoleSandboxIngestaoTab() {
                     </div>
                   )}
 
-                  {sucessos.length > 0 && (
-                    <p className="text-[11px] opacity-90">
-                      Os registros foram persistidos nas coleções do backend com origem sintetico e
-                      já podem ser auditados na aba &quot;12. dMRV Emissões Evitadas (SBCE)&quot; na
-                      posição &apos;Sandbox (Demonstração)&apos;.
-                    </p>
-                  )}
+                  {sucessos.length > 0 &&
+                    (() => {
+                      const totalPecasGravadas = sucessos.reduce(
+                        (acc, r) => acc + (r.pecasGravadas || 0),
+                        0,
+                      )
+                      const totalMassaLotes =
+                        Math.round(
+                          sucessos.reduce((acc, r) => acc + (r.totalPesoKg || 0), 0) * 100,
+                        ) / 100
+                      const totalCo2eLotes =
+                        Math.round(
+                          sucessos.reduce((acc, r) => acc + (r.totalCo2eEvitadoKg || 0), 0) * 100,
+                        ) / 100
+                      const temLotesGravados = sucessos.some((r) => Boolean(r.registroLoteId))
+
+                      return (
+                        <div className="space-y-1 text-[11px] opacity-95">
+                          <p className="font-semibold text-emerald-800 dark:text-emerald-300">
+                            {temLotesGravados
+                              ? `Selo gravado ✓ · Lote dMRV gravado ✓ (${totalPecasGravadas} item(ns), ${totalMassaLotes.toLocaleString('pt-BR')} kg massa, ${totalCo2eLotes.toLocaleString('pt-BR')} kg CO₂e evitado)`
+                              : 'Selo gravado ✓ · Lote dMRV não gerado'}
+                          </p>
+                          <p className="opacity-90">
+                            Os registros foram persistidos nas coleções do backend com origem
+                            sintetico e já podem ser auditados na aba &quot;12. dMRV Emissões
+                            Evitadas (SBCE)&quot; na posição &apos;Sandbox (Demonstração)&apos;.
+                          </p>
+                        </div>
+                      )
+                    })()}
                 </div>
               )
             })()}
@@ -926,11 +1005,18 @@ export function ConsoleSandboxIngestaoTab() {
                               <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                               Sucesso
                             </span>
-                            {resultado.pecasTotal ? (
-                              <span className="block text-[9px] font-mono text-emerald-600 dark:text-emerald-400">
-                                {resultado.pecasGravadas}/{resultado.pecasTotal} peças gravadas
+                            {resultado.registroLoteId ? (
+                              <span className="block text-[9px] font-mono text-emerald-700 dark:text-emerald-300 font-medium leading-tight">
+                                Selo gravado ✓ · Lote dMRV gravado ✓ ({resultado.pecasGravadas ?? 0}{' '}
+                                item(ns), {(resultado.totalPesoKg ?? 0).toLocaleString('pt-BR')} kg
+                                massa, {(resultado.totalCo2eEvitadoKg ?? 0).toLocaleString('pt-BR')}{' '}
+                                kg CO₂e evitado)
                               </span>
-                            ) : null}
+                            ) : (
+                              <span className="block text-[9px] font-mono text-amber-600 dark:text-amber-400">
+                                Selo gravado ✓ · Lote dMRV não gerado
+                              </span>
+                            )}
                           </div>
                         ) : (
                           <div className="space-y-1 max-w-[200px]">
