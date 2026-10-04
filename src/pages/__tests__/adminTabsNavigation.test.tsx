@@ -165,12 +165,16 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
 
     const tabsContainer = screen.getByTestId('admin-tabs-scroll-container')
     const tabButtons = tabsContainer.querySelectorAll('button[data-testid^="admin-tab-"]')
-    // 17 abas para Gestor Master (incluindo Histórico de Consultas)
-    expect(tabButtons.length).toBe(17)
+    // 18 abas para Gestor Master (incluindo Histórico de Consultas e Reativação)
+    expect(tabButtons.length).toBe(18)
 
     // Confirma presença da aba Histórico de Consultas
     const historicoTab = screen.getByTestId('admin-tab-historico_consultas')
     expect(historicoTab.textContent).toContain('13. Histórico de Consultas')
+
+    // Confirma presença da aba Reativação
+    const reativacaoTab = screen.getByTestId('admin-tab-reativacao')
+    expect(reativacaoTab.textContent).toContain('Reativação')
 
     // Confirma presença da aba Sandbox de Ingestão e da aba de Auditoria de Integridade
     const sandboxTab = screen.getByTestId('admin-tab-sandbox')

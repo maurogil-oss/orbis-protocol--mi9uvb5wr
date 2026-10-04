@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-04T14:06:18.646Z",
+  "generatedAt": "2026-10-04T14:20:45.221Z",
   "collections": [
     {
       "name": "users",
@@ -133,6 +133,18 @@
         },
         {
           "name": "radar_ref_origem",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "opt_out_reativacao",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "opt_out_reativacao_data",
           "type": "text",
           "required": false,
           "system": false
@@ -5225,6 +5237,96 @@
       ],
       "indexes": [
         "CREATE INDEX idx_cdv_honorarios_vigencia ON cdv_honorarios (ativo, tipo_perito, tipo_laudo)"
+      ]
+    },
+    {
+      "name": "reativacao_envios",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'controller' || usuario = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'controller' || usuario = @request.auth.id)",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'controller')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'controller')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'master')"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "toque",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["d30", "d60"]
+        },
+        {
+          "name": "data_envio",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["enviado", "falha"]
+        },
+        {
+          "name": "destinatario_email",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "dados_conta_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "mensagem_erro",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "reativou",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_reativacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_reativacao_usuario ON reativacao_envios (usuario)",
+        "CREATE INDEX idx_reativacao_toque ON reativacao_envios (toque)",
+        "CREATE INDEX idx_reativacao_status ON reativacao_envios (status)",
+        "CREATE INDEX idx_reativacao_created ON reativacao_envios (created DESC)"
       ]
     }
   ]

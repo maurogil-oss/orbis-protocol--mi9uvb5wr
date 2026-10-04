@@ -104,7 +104,8 @@ import { ConsoleHonorariosTab } from '@/components/ConsoleHonorariosTab'
 import { ConsoleSandboxIngestaoTab } from '@/components/ConsoleSandboxIngestaoTab'
 import { ConsoleAuditoriaIntegridadeTab } from '@/components/ConsoleAuditoriaIntegridadeTab'
 import { ConsoleHistoricoConsultasTab } from '@/components/ConsoleHistoricoConsultasTab'
-import { Sparkles, History } from 'lucide-react'
+import { ConsoleReativacaoTab } from '@/components/ConsoleReativacaoTab'
+import { Sparkles, History, Mail } from 'lucide-react'
 
 type AdminTab =
   | 'receita'
@@ -123,6 +124,7 @@ type AdminTab =
   | 'ccrlr_sinir'
   | 'dmrv_todas_empresas'
   | 'historico_consultas'
+  | 'reativacao'
   | 'sandbox'
   | 'configuracoes'
   | 'governanca'
@@ -146,6 +148,7 @@ export default function AdminConsolePage() {
     if (qTab === 'auditoria_integridade') return 'auditoria_integridade'
     if (qTab === 'clientes') return 'clientes'
     if (qTab === 'historico_consultas') return 'historico_consultas'
+    if (qTab === 'reativacao') return 'reativacao'
     if (qTab === 'sandbox') return 'sandbox'
     return isMaster ? 'governanca' : 'receita'
   })()
@@ -998,6 +1001,11 @@ export default function AdminConsolePage() {
       id: 'historico_consultas',
       label: '13. Histórico de Consultas',
       icon: History,
+    },
+    {
+      id: 'reativacao',
+      label: 'Reativação (Campanha 30/60d)',
+      icon: Mail,
     },
     { id: 'sandbox', label: 'Sandbox de Ingestão', icon: Sparkles },
     { id: 'configuracoes', label: '14. Governança & MOVER', icon: SlidersHorizontal },
@@ -3939,6 +3947,13 @@ export default function AdminConsolePage() {
         {activeTab === 'historico_consultas' && (
           <div className="space-y-6">
             <ConsoleHistoricoConsultasTab />
+          </div>
+        )}
+
+        {/* CAMPANHA DE REATIVAÇÃO POR E-MAIL (JOB 30/60 DIAS & OPT-OUT) */}
+        {activeTab === 'reativacao' && (
+          <div className="space-y-6">
+            <ConsoleReativacaoTab />
           </div>
         )}
 
