@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ShieldCheck,
@@ -20,6 +20,7 @@ import {
   QrCode,
   FileText,
   AlertTriangle,
+  ChevronLeft,
   ChevronRight,
   TrendingUp,
   Database,
@@ -242,6 +243,39 @@ export default function AdminConsolePage() {
   } | null>(null)
   // Observação perito
   const [obsPerito, setObsPerito] = useState<Record<string, string>>({})
+  // Referência e estado para navegação/rolagem da faixa de abas
+  const tabsScrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const checkTabsScroll = useCallback(() => {
+    const el = tabsScrollRef.current
+    if (!el) return
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    // Tolerância de 2px para sub-pixel rendering
+    setCanScrollLeft(scrollLeft > 2)
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2)
+  }, [])
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    const el = tabsScrollRef.current
+    if (!el) return
+    const offset = direction === 'left' ? -320 : 320
+    el.scrollBy({ left: offset, behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    const el = tabsScrollRef.current
+    if (!el) return
+    checkTabsScroll()
+    el.addEventListener('scroll', checkTabsScroll, { passive: true })
+    window.addEventListener('resize', checkTabsScroll)
+    return () => {
+      el.removeEventListener('scroll', checkTabsScroll)
+      window.removeEventListener('resize', checkTabsScroll)
+    }
+  }, [checkTabsScroll])
+
   // Feedback
   const [mensagemSucesso, setMensagemSucesso] = useState('')
 
@@ -1116,26 +1150,109 @@ export default function AdminConsolePage() {
           </div>
         )}
 
-        {/* Menu de Abas (Mobile: scroll horizontal) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] no-scrollbar">
-          {abas.map((aba) => {
-            const Icon = aba.icon
-            const active = activeTab === aba.id
-            return (
-              <button
-                key={aba.id}
-                onClick={() => setActiveTab(aba.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  active
-                    ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
-                    : 'bg-white dark:bg-[#111820] text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:bg-slate-100 dark:hover:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.06)] shadow-sm'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{aba.label}</span>
-              </button>
-            )
-          })}
+        {/* Menu de Abas com Setas de Navegação e Scroll Suave */}
+        <div
+          data-testid="admin-tabs-nav-container"
+          className="relative mb-8 pb-3 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)]"
+        >
+          {/* Seta esquerda */}
+          <button
+            type="button"
+            data-testid="admin-tabs-scroll-left"
+            onClick={() => scrollTabs('left')}
+            aria-label="Rolar abas para a esquerda"
+            disabled={!canScrollLeft}
+            className={`absolute left-0 top-1/2 -translate-y-[calc(50%+6px)] z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md ${
+              canScrollLeft
+                ? 'opacity-100 bg-white/95 dark:bg-[#0E1A2E]/95 text-slate-700 dark:text-[#F4F7FA] border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-[#16202B] hover:text-emerald-600 dark:hover:text-[#12B886] hover:scale-105'
+                : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* Gradiente sutil indicador à esquerda */}
+          {canScrollLeft && (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-0 top-0 bottom-3 w-12 z-10 bg-gradient-to-r from-slate-50 dark:from-[#0A1628] to-transparent"
+            />
+          )}
+
+          {/* Faixa de rolagem das abas */}
+          <div
+            ref={tabsScrollRef}
+            data-testid="admin-tabs-scroll-container"
+            className="flex items-center gap-2 overflow-x-auto scroll-smooth no-scrollbar px-1"
+          >
+            {abas.map((aba) => {
+              const Icon = aba.icon
+              const active = activeTab === aba.id
+              const isSandbox = aba.id === 'sandbox'
+
+              return (
+                <button
+                  key={aba.id}
+                  data-testid={`admin-tab-${aba.id}`}
+                  onClick={() => {
+                    setActiveTab(aba.id)
+                    // Garante que a aba clicada fique no foco visual
+                    const el = tabsScrollRef.current
+                    if (el) setTimeout(checkTabsScroll, 200)
+                  }}
+                  className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                    active
+                      ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
+                      : isSandbox
+                        ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-400/50 dark:border-emerald-500/40 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/25 shadow-sm'
+                        : 'bg-white dark:bg-[#111820] text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:bg-slate-100 dark:hover:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.06)] shadow-sm'
+                  }`}
+                >
+                  <Icon
+                    className={`w-4 h-4 ${
+                      isSandbox && !active
+                        ? 'text-emerald-600 dark:text-emerald-400 animate-pulse'
+                        : ''
+                    }`}
+                  />
+                  <span>{aba.label}</span>
+                  {/* Badge de destaque na Sandbox quando inativa */}
+                  {isSandbox && !active && (
+                    <span
+                      data-testid="sandbox-tab-badge"
+                      className="ml-1 inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-emerald-600/20 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30"
+                    >
+                      Novo
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Gradiente sutil indicador à direita */}
+          {canScrollRight && (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute right-0 top-0 bottom-3 w-12 z-10 bg-gradient-to-l from-slate-50 dark:from-[#0A1628] to-transparent"
+            />
+          )}
+
+          {/* Seta direita */}
+          <button
+            type="button"
+            data-testid="admin-tabs-scroll-right"
+            onClick={() => scrollTabs('right')}
+            aria-label="Rolar abas para a direita"
+            disabled={!canScrollRight}
+            className={`absolute right-0 top-1/2 -translate-y-[calc(50%+6px)] z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md ${
+              canScrollRight
+                ? 'opacity-100 bg-white/95 dark:bg-[#0E1A2E]/95 text-slate-700 dark:text-[#F4F7FA] border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-[#16202B] hover:text-emerald-600 dark:hover:text-[#12B886] hover:scale-105'
+                : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
         {/* CONTEÚDO DOS 8 PAINÉIS */}
