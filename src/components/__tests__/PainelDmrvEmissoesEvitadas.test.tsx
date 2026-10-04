@@ -216,4 +216,155 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
       expect(screen.getByText('Veículos com despoluição atendida')).toBeInTheDocument()
     })
   })
+
+  it('permite clicar em um card de KPI para abrir o modal de Drill-Down e navegar nas abas', async () => {
+    vi.spyOn(dmrvService, 'carregarDadosDmrvEmpresa').mockResolvedValueOnce({
+      cnpj: '33.000.168/0001-09',
+      origem_filtro: 'producao' as const,
+      total_co2e_evitado_kg: 89311.22,
+      total_massa_reciclada_kg: 40000.0,
+      total_pecas_reaproveitadas: 150,
+      total_lotes_processados: 10,
+      emissao_anual_tco2e: 150.0,
+      escopo1_tco2e: 40.0,
+      escopo2_tco2e: 30.0,
+      escopo3_tco2e: 80.0,
+      serie_temporal: [{ mes: 'Jan/26', co2e_evitado_kg: 89311.22, massa_kg: 40000.0 }],
+      relatorios_anteriores: [],
+      protocoloDominanteSlug: 'automotiva',
+      protocoloDominanteNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+      kpiCards: [
+        {
+          id: 'co2e_evitado',
+          rotulo: 'CO₂e Evitado Total',
+          valorFormatado: '89.311,2',
+          valorNumerico: 89311.22,
+          unidade: 'kg',
+          legenda: 'Evitação de produção primária de aço, alumínio e cobre (MOVER)',
+          natureza: 'gravada',
+        },
+        {
+          id: 'kpi_pos2',
+          rotulo: 'Massa Reciclada / Desviada',
+          valorFormatado: '40.000',
+          valorNumerico: 40000,
+          unidade: 'kg',
+          legenda: 'Balanço ponderal rastreado',
+          natureza: 'gravada',
+        },
+        {
+          id: 'kpi_pos3',
+          rotulo: 'Peças com Selo DPP',
+          valorFormatado: '150',
+          valorNumerico: 150,
+          unidade: 'peças',
+          legenda: 'Peças catalogadas',
+          natureza: 'gravada',
+        },
+        {
+          id: 'kpi_pos4',
+          rotulo: 'Lotes CDV Fechados',
+          valorFormatado: '10',
+          valorNumerico: 10,
+          unidade: 'lotes',
+          legenda: 'Veículos com despoluição atendida',
+          natureza: 'gravada',
+        },
+      ],
+      relatorioEstratificado: {
+        geradoEmIso: new Date().toISOString(),
+        cnpjTitular: '33.000.168/0001-09',
+        origemFiltro: 'producao',
+        protocoloDominanteSlug: 'automotiva',
+        protocoloDominanteNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+        kpiCards: [],
+        porProtocolo: [
+          {
+            protocoloSlug: 'automotiva',
+            protocoloNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+            co2e_evitado_kg: 89311.22,
+            massa_kg: 40000,
+            total_pecas: 150,
+            total_lotes: 10,
+            percentualCo2e: 100,
+            percentualMassa: 100,
+          },
+        ],
+        porFatorMaterial: [
+          {
+            chave: 'mat_aco',
+            nomeMaterial: 'Aço Laminado / Estampado',
+            categoriaMaterial: 'cdv_materiais',
+            peso_kg: 40000,
+            fator_co2e_kg: 2.18,
+            co2e_evitado_kg: 87200,
+            fonteFator: 'worldsteel 2024 / DM-ORB-001',
+            possuiFatorOficial: true,
+            statusRastreabilidade: 'com_fator_atribuido',
+            totalPecas: 150,
+          },
+        ],
+        porLoteDocumento: [
+          {
+            loteId: 'lote-123',
+            cdvCodigo: 'CDV-MOOCA-001',
+            cdvNome: 'CDV Verde Mooca',
+            cdvCnpj: '33.000.168/0001-09',
+            protocoloSlug: 'automotiva',
+            protocoloNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+            tipoDocumento: 'NF-e',
+            documentoOrigem: 'NF-e 552109',
+            dataIso: '2025-01-20',
+            totalPecas: 15,
+            peso_kg: 4000,
+            co2e_evitado_kg: 8720,
+            hashSha256: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+            pecasSemFatorCount: 0,
+          },
+        ],
+        totaisConferencia: {
+          co2e_evitado_kg: 89311.22,
+          massa_kg: 40000,
+          total_pecas: 150,
+          total_lotes: 10,
+          massa_sem_co2e_kg: 0,
+          pecas_sem_co2e: 0,
+        },
+      },
+    })
+
+    render(<PainelDmrvEmissoesEvitadas />)
+
+    await waitFor(() => {
+      expect(screen.getByText('89.311,2')).toBeInTheDocument()
+    })
+
+    // Clica no card de CO2e evitado para abrir o drill-down
+    const cardEl = screen.getByRole('button', {
+      name: /drill-down para co₂e evitado total/i,
+    })
+    fireEvent.click(cardEl)
+
+    // Modal de Drill-Down deve abrir exibindo os 3 níveis navegáveis
+    await waitFor(() => {
+      expect(screen.getByText(/Drill-Down & Traçabilidade Completa dMRV/i)).toBeInTheDocument()
+      expect(screen.getByText(/1\. Por Protocolo/i)).toBeInTheDocument()
+      expect(screen.getByText(/2\. Por Fator & Material/i)).toBeInTheDocument()
+      expect(screen.getByText(/3\. Por Lote & Documento/i)).toBeInTheDocument()
+    })
+
+    // Navega para Fator & Material
+    const tabFator = screen.getByText(/2\. Por Fator & Material/i)
+    fireEvent.click(tabFator)
+    expect(screen.getByText('Aço Laminado / Estampado')).toBeInTheDocument()
+    expect(screen.getByText('worldsteel 2024 / DM-ORB-001')).toBeInTheDocument()
+
+    // Navega para Lote & Documento
+    const tabLote = screen.getByText(/3\. Por Lote & Documento/i)
+    fireEvent.click(tabLote)
+    expect(screen.getByText('NF-e 552109')).toBeInTheDocument()
+    expect(
+      screen.getByText(/9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08/),
+    ).toBeInTheDocument()
+  })
 })
