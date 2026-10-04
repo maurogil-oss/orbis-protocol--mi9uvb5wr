@@ -152,7 +152,7 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
     expect(screen.getByTestId('admin-tabs-scroll-container')).toBeDefined()
   })
 
-  it('renderiza exatamente 15 abas para o Gestor Master, incluindo a aba Sandbox de Ingestão', async () => {
+  it('renderiza as abas para o Gestor Master, incluindo a aba Histórico de Consultas e Sandbox de Ingestão', async () => {
     render(
       <MemoryRouter initialEntries={['/admin']}>
         <AdminConsolePage />
@@ -165,10 +165,14 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
 
     const tabsContainer = screen.getByTestId('admin-tabs-scroll-container')
     const tabButtons = tabsContainer.querySelectorAll('button[data-testid^="admin-tab-"]')
-    // 16 abas para Gestor Master (com a inclusão de Auditoria de Integridade)
-    expect(tabButtons.length).toBe(16)
+    // 17 abas para Gestor Master (incluindo Histórico de Consultas)
+    expect(tabButtons.length).toBe(17)
 
-    // Confirma presença da aba Sandbox de Ingestão e da nova aba de Auditoria de Integridade
+    // Confirma presença da aba Histórico de Consultas
+    const historicoTab = screen.getByTestId('admin-tab-historico_consultas')
+    expect(historicoTab.textContent).toContain('13. Histórico de Consultas')
+
+    // Confirma presença da aba Sandbox de Ingestão e da aba de Auditoria de Integridade
     const sandboxTab = screen.getByTestId('admin-tab-sandbox')
     expect(sandboxTab.textContent).toContain('Sandbox de Ingestão')
     const auditoriaIntegridadeTab = screen.getByTestId('admin-tab-auditoria_integridade')

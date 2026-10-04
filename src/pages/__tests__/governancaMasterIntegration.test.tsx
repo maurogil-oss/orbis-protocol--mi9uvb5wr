@@ -506,7 +506,7 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
 
   // 5. Aba "Governança Master" só renderiza para role === 'master' (admin comum não vê)
   describe('5. Renderização Condicional da Aba de Governança no AdminConsolePage', () => {
-    it('usuário com role="master" visualiza o botão da aba "14. Governança Master"', async () => {
+    it('usuário com role="master" visualiza o botão da aba "Governança Master"', async () => {
       mockAuthState.role = 'master'
       mockAuthState.isMaster = true
       mockAuthState.isAdmin = true
@@ -518,11 +518,11 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
       )
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /14\. Governança Master/i })).toBeDefined()
+        expect(screen.getByRole('button', { name: /Governança Master/i })).toBeDefined()
       })
     })
 
-    it('usuário com role="admin" comum NÃO visualiza a aba "14. Governança Master"', async () => {
+    it('usuário com role="admin" comum NÃO visualiza a aba "Governança Master"', async () => {
       mockAuthState.role = 'admin'
       mockAuthState.isMaster = false
       mockAuthState.isAdmin = true
@@ -537,10 +537,10 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
         expect(screen.getByText(/ADMINISTRAÇÃO ORBIS PROTOCOL/i)).toBeDefined()
       })
 
-      expect(screen.queryByRole('button', { name: /14\. Governança Master/i })).toBeNull()
+      expect(screen.queryByRole('button', { name: /Governança Master/i })).toBeNull()
     })
 
-    it('usuário controller NÃO visualiza a aba "14. Governança Master"', async () => {
+    it('usuário controller NÃO visualiza a aba "Governança Master"', async () => {
       mockAuthState.role = 'controller'
       mockAuthState.isMaster = false
       mockAuthState.isAdmin = false
@@ -555,7 +555,7 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
         expect(screen.getByText(/ADMINISTRAÇÃO ORBIS PROTOCOL/i)).toBeDefined()
       })
 
-      expect(screen.queryByRole('button', { name: /14\. Governança Master/i })).toBeNull()
+      expect(screen.queryByRole('button', { name: /Governança Master/i })).toBeNull()
     })
   })
 

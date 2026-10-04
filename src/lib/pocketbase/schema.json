@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-04T13:54:42.175Z",
+  "generatedAt": "2026-10-04T14:06:18.646Z",
   "collections": [
     {
       "name": "users",
@@ -12,6 +12,12 @@
         "delete": "@request.auth.id != '' && @request.auth.role = 'master'"
       },
       "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
         {
           "name": "avatar",
           "type": "file",
@@ -92,6 +98,13 @@
           "required": false,
           "system": false,
           "selectValues": ["pendente", "aprovado", "rejeitado"]
+        },
+        {
+          "name": "radar_acesso_status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["trial", "ativo", "expirado", "cancelado", "nenhum"]
         },
         {
           "name": "radar_plano_faixa",

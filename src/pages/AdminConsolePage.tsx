@@ -103,7 +103,8 @@ import { ConsoleRadarSemanalTab } from '@/components/ConsoleRadarSemanalTab'
 import { ConsoleHonorariosTab } from '@/components/ConsoleHonorariosTab'
 import { ConsoleSandboxIngestaoTab } from '@/components/ConsoleSandboxIngestaoTab'
 import { ConsoleAuditoriaIntegridadeTab } from '@/components/ConsoleAuditoriaIntegridadeTab'
-import { Sparkles } from 'lucide-react'
+import { ConsoleHistoricoConsultasTab } from '@/components/ConsoleHistoricoConsultasTab'
+import { Sparkles, History } from 'lucide-react'
 
 type AdminTab =
   | 'receita'
@@ -121,6 +122,7 @@ type AdminTab =
   | 'lastro_conformidade'
   | 'ccrlr_sinir'
   | 'dmrv_todas_empresas'
+  | 'historico_consultas'
   | 'sandbox'
   | 'configuracoes'
   | 'governanca'
@@ -143,6 +145,7 @@ export default function AdminConsolePage() {
     if (qTab === 'auditoria') return 'auditoria'
     if (qTab === 'auditoria_integridade') return 'auditoria_integridade'
     if (qTab === 'clientes') return 'clientes'
+    if (qTab === 'historico_consultas') return 'historico_consultas'
     if (qTab === 'sandbox') return 'sandbox'
     return isMaster ? 'governanca' : 'receita'
   })()
@@ -991,18 +994,23 @@ export default function AdminConsolePage() {
     },
     { id: 'ccrlr_sinir', label: '11. CCRLR & Interoperabilidade SINIR', icon: Layers },
     { id: 'dmrv_todas_empresas', label: '12. dMRV Emissões Evitadas (SBCE)', icon: Leaf },
+    {
+      id: 'historico_consultas',
+      label: '13. Histórico de Consultas',
+      icon: History,
+    },
     { id: 'sandbox', label: 'Sandbox de Ingestão', icon: Sparkles },
-    { id: 'configuracoes', label: '13. Governança & MOVER', icon: SlidersHorizontal },
+    { id: 'configuracoes', label: '14. Governança & MOVER', icon: SlidersHorizontal },
     ...(isMaster
       ? [
           {
             id: 'governanca' as AdminTab,
-            label: '14. Governança Master (Acessos & Papéis)',
+            label: '15. Governança Master (Acessos & Papéis)',
             icon: ShieldAlert,
           },
           {
             id: 'parametros_negocio' as AdminTab,
-            label: '15. Parâmetros do Negócio',
+            label: '16. Parâmetros do Negócio',
             icon: SlidersHorizontal,
           },
         ]
@@ -3927,12 +3935,19 @@ export default function AdminConsolePage() {
           </div>
         )}
 
-        {/* 14. GOVERNANÇA MASTER (VISÍVEL SOMENTE AO PAPEL MASTER) */}
+        {/* 13. HISTÓRICO DE CONSULTAS (4 COLEÇÕES UNIFICADAS NA LINHA DO TEMPO) */}
+        {activeTab === 'historico_consultas' && (
+          <div className="space-y-6">
+            <ConsoleHistoricoConsultasTab />
+          </div>
+        )}
+
+        {/* 15. GOVERNANÇA MASTER (VISÍVEL SOMENTE AO PAPEL MASTER) */}
         {activeTab === 'governanca' && isMaster && (
           <ConsoleGovernancaMasterTab usuarios={clientes} onAtualizar={carregarTodosDados} />
         )}
 
-        {/* 15. PARÂMETROS DO NEGÓCIO (VISÍVEL SOMENTE AO PAPEL MASTER) */}
+        {/* 16. PARÂMETROS DO NEGÓCIO (VISÍVEL SOMENTE AO PAPEL MASTER) */}
         {activeTab === 'parametros_negocio' && (
           <ConsoleParametrosNegocioTab onParametrosAtualizados={carregarTodosDados} />
         )}
@@ -3943,7 +3958,7 @@ export default function AdminConsolePage() {
         {/* SANDBOX DE INGESTÃO (FASE 1) - EXCLUSIVO CONSOLE AUTENTICADO */}
         {activeTab === 'sandbox' && <ConsoleSandboxIngestaoTab />}
 
-        {/* 13. GOVERNANÇA DA PLATAFORMA & PARÂMETROS REGULATÓRIOS (MOVER) */}
+        {/* 14. GOVERNANÇA DA PLATAFORMA & PARÂMETROS REGULATÓRIOS (MOVER) */}
         {activeTab === 'configuracoes' && (
           <div className="space-y-6 animate-fade-in">
             <div>
