@@ -16,44 +16,38 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
         if (filtroOrigem === 'sintetico') {
           return {
             cnpj: '00.000.000/0001-91',
-            razao_social: 'Empresa Teste Sandbox',
+            origem_filtro: 'sintetico' as const,
             total_co2e_evitado_kg: 8450.5,
             total_massa_reciclada_kg: 4200.0,
             total_pecas_reaproveitadas: 15,
             total_lotes_processados: 2,
-            enquadramento_sbce: 'isento' as const,
             emissao_anual_tco2e: 120.0,
             escopo1_tco2e: 30.0,
             escopo2_tco2e: 15.0,
             escopo3_tco2e: 75.0,
             serie_temporal: [
-              { mes: 'Jan/2026', co2e_evitado_kg: 4200, massa_kg: 2100 },
-              { mes: 'Fev/2026', co2e_evitado_kg: 4250.5, massa_kg: 2100 },
+              { mes: 'Jan/26', co2e_evitado_kg: 4200, massa_kg: 2100 },
+              { mes: 'Fev/26', co2e_evitado_kg: 4250.5, massa_kg: 2100 },
             ],
-            inventarios: [],
-            lotes: [{ id: 'lote-synth-1', origem: 'sintetico' } as any],
             relatorios_anteriores: [],
           }
         }
 
         return {
           cnpj: '00.000.000/0001-91',
-          razao_social: 'Empresa Teste Produção',
+          origem_filtro: 'producao' as const,
           total_co2e_evitado_kg: 12450.8,
           total_massa_reciclada_kg: 7850.0,
           total_pecas_reaproveitadas: 48,
           total_lotes_processados: 3,
-          enquadramento_sbce: 'isento' as const,
           emissao_anual_tco2e: 450.5,
           escopo1_tco2e: 120.2,
           escopo2_tco2e: 45.3,
           escopo3_tco2e: 285.0,
           serie_temporal: [
-            { mes: 'Jan/2026', co2e_evitado_kg: 6200, massa_kg: 3900 },
-            { mes: 'Fev/2026', co2e_evitado_kg: 6250.8, massa_kg: 3950 },
+            { mes: 'Jan/26', co2e_evitado_kg: 6200, massa_kg: 3900 },
+            { mes: 'Fev/26', co2e_evitado_kg: 6250.8, massa_kg: 3950 },
           ],
-          inventarios: [],
-          lotes: [{ id: 'lote-prod-1', origem: 'producao' } as any],
           relatorios_anteriores: [],
         }
       })

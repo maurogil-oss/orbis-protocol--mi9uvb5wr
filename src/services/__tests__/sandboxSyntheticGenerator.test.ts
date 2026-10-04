@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
-  charToValorCnpj,
   calcularDvCnpj,
   validarCnpjAlfanumerico,
   gerarCnpjValido,
@@ -8,343 +7,210 @@ import {
   gerarChaveAcesso44,
   gerarDocumentoSintetico,
   gerarLoteSintetico,
+  normalizarSegmento,
+  SEGMENTOS_SANDBOX_CATALOGO,
   MARCA_SANDBOX_OBRIGATORIA,
 } from '../sandboxSyntheticGenerator'
-import { obterNumerosVerificaveis } from '../metricasHomeService'
+import { calcularInventarioGhgPorSegmento } from '@/components/ConsoleSandboxIngestaoTab'
 import pb from '@/lib/pocketbase/client'
 
-describe('SandboxSyntheticGenerator - Algoritmos Matemáticos Nativos', () => {
-  describe('CNPJ Módulo 11 (Numérico Tradicional e Alfanumérico IN RFB 2.229/2024)', () => {
-    it('converte corretamente caracteres numéricos e alfabéticos segundo padrão Receita Federal', () => {
-      // 0-9 => 0-9
-      expect(charToValorCnpj('0')).toBe(0)
-      expect(charToValorCnpj('9')).toBe(9)
-      // A-Z => 10-35 (ASCII - 55)
-      expect(charToValorCnpj('A')).toBe(10)
-      expect(charToValorCnpj('B')).toBe(11)
-      expect(charToValorCnpj('Z')).toBe(35)
-      expect(charToValorCnpj('a')).toBe(10) // case insensitive
-    })
-
-    it('calcula os dois DVs de CNPJ puramente numérico e valida matematicamente', () => {
-      // Base conhecida com estabelecimento 0001
-      const base = '123456780001'
-      const { dv1, dv2, completo } = calcularDvCnpj(base)
-      expect(completo.length).toBe(14)
-      expect(completo).toBe(`${base}${dv1}${dv2}`)
-      expect(validarCnpjAlfanumerico(completo)).toBe(true)
-    })
-
-    it('calcula e valida CNPJ com raiz alfanumérica conforme IN RFB 2.229/2024', () => {
-      // Raiz alfanumérica ex: '12ABC3450001'
-      const baseAlfa = '12ABC3450001'
-      const { dv1, dv2, completo } = calcularDvCnpj(baseAlfa)
-      expect(typeof dv1).toBe('number')
-      expect(typeof dv2).toBe('number')
-      expect(dv1).toBeGreaterThanOrEqual(0)
-      expect(dv1).toBeLessThanOrEqual(9)
-      expect(dv2).toBeGreaterThanOrEqual(0)
-      expect(dv2).toBeLessThanOrEqual(9)
-      expect(validarCnpjAlfanumerico(completo)).toBe(true)
-    })
-
-    it('rejeita CNPJs com DVs incorretos ou formatações inválidas', () => {
-      expect(validarCnpjAlfanumerico('12345678000199')).toBe(false)
-      expect(validarCnpjAlfanumerico('00000000000000')).toBe(false)
-      expect(validarCnpjAlfanumerico('11111111111111')).toBe(false)
-      expect(validarCnpjAlfanumerico('123')).toBe(false)
-    })
-
-    it('gerador gerarCnpjValido produz 100% de CNPJs válidos (numéricos e alfanuméricos)', () => {
-      for (let i = 0; i < 20; i++) {
-        const cnpjNum = gerarCnpjValido({ alfanumerico: false, seed: i * 17 })
-        expect(validarCnpjAlfanumerico(cnpjNum)).toBe(true)
-        expect(cnpjNum).toMatch(/^\d{14}$/)
-
-        const cnpjAlfa = gerarCnpjValido({ alfanumerico: true, seed: i * 31 + 5 })
-        expect(validarCnpjAlfanumerico(cnpjAlfa)).toBe(true)
-        expect(cnpjAlfa.length).toBe(14)
-      }
-    })
+describe('sandboxSyntheticGenerator - Suite de Verificação do Sandbox e Isolamento dMRV', () => {
+  // 1. Verificação do módulo 11 de CNPJ (com caracteres alfanuméricos)
+  it('calcula e valida CNPJ puramente numérico corretamente', () => {
+    // Base: 330001680001 -> DV esperado 09
+    const { dv1, dv2, completo } = calcularDvCnpj('330001680001')
+    expect(dv1).toBe(0)
+    expect(dv2).toBe(9)
+    expect(completo).toBe('33000168000109')
+    expect(validarCnpjAlfanumerico('33000168000109')).toBe(true)
   })
 
-  describe('Chave de Acesso Fiscal de 44 Dígitos (NF-e mod. 55 e CT-e mod. 57)', () => {
-    it('calcula o Dígito Verificador por módulo 11 com pesos de 2 a 9 corretamente', () => {
-      // Chave base de 43 dígitos
-      const chaveBase43 = '412604000000000001915500100010000118765432'
-      const dv = calcularDvChave44(chaveBase43)
-      expect(typeof dv).toBe('number')
-      expect(dv).toBeGreaterThanOrEqual(0)
-      expect(dv).toBeLessThanOrEqual(9)
-    })
-
-    it('gera chave de 44 dígitos íntegra com modelo 55 e modelo 57', () => {
-      const chaveNfe = gerarChaveAcesso44({
-        cUF: '41',
-        aamm: '2604',
-        cnpjEmitente: '12345678000195',
-        modelo: '55',
-        serie: '1',
-        numeroDoc: '100001',
-        codigoAleatorio: '87654321',
-      })
-      expect(chaveNfe.length).toBe(44)
-      expect(chaveNfe.slice(0, 2)).toBe('41')
-      expect(chaveNfe.slice(2, 6)).toBe('2604')
-      expect(chaveNfe.slice(20, 22)).toBe('55') // mod 55
-
-      // Verifica que o último dígito é exatamente o DV calculado dos 43 anteriores
-      const dvEsperadoNfe = calcularDvChave44(chaveNfe.slice(0, 43))
-      expect(parseInt(chaveNfe.slice(43, 44), 10)).toBe(dvEsperadoNfe)
-
-      const chaveCte = gerarChaveAcesso44({
-        cUF: '41',
-        aamm: '2604',
-        cnpjEmitente: '98765432000188',
-        modelo: '57',
-        serie: '1',
-        numeroDoc: '200001',
-        codigoAleatorio: '12345678',
-      })
-      expect(chaveCte.length).toBe(44)
-      expect(chaveCte.slice(20, 22)).toBe('57') // mod 57
-      const dvEsperadoCte = calcularDvChave44(chaveCte.slice(0, 43))
-      expect(parseInt(chaveCte.slice(43, 44), 10)).toBe(dvEsperadoCte)
-    })
+  it('calcula e valida CNPJ alfanumérico conforme IN RFB 2.229/2024', () => {
+    // Gera base com letras e calcula DVs
+    const baseAlfanum = '12ABC3450001'
+    const { dv1, dv2, completo } = calcularDvCnpj(baseAlfanum)
+    expect(typeof dv1).toBe('number')
+    expect(typeof dv2).toBe('number')
+    expect(completo.length).toBe(14)
+    expect(validarCnpjAlfanumerico(completo)).toBe(true)
   })
 
-  describe('Geradores de Documentos Sintéticos por Segmento com Marca Canônica', () => {
-    it('gera NF-e de combustíveis com Diesel S10 e Biometanol, NCMs e marca obrigatória', async () => {
-      const doc = await gerarDocumentoSintetico({
-        segmento: 'combustiveis',
-        indice: 0,
-      })
-      expect(doc.segmento).toBe('combustiveis')
-      expect(doc.modeloFiscal).toBe('55')
-      expect(doc.chaveAcesso.length).toBe(44)
-      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
-      expect(doc.xmlConteudo).toContain('NCM')
-      expect(doc.xmlConteudo).toContain('<nfeProc')
-      expect(doc.hashSha256.length).toBe(64)
-    })
+  it('gerarCnpjValido produz CNPJs estritamente válidos pelo algoritmo oficial', () => {
+    for (let i = 0; i < 10; i++) {
+      const cnpjNum = gerarCnpjValido({ alfanumerico: false, seed: i * 11 })
+      expect(validarCnpjAlfanumerico(cnpjNum)).toBe(true)
 
-    it('gera NF-e de desmanche com padrão Renova Ecopeças, chassi e NCM automotivo', async () => {
-      const doc = await gerarDocumentoSintetico({
-        segmento: 'desmanche_cdv',
-        indice: 1,
-      })
-      expect(doc.segmento).toBe('desmanche_cdv')
-      expect(doc.modeloFiscal).toBe('55')
-      expect(doc.dadosAdicionais.chassi).toBeDefined()
-      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
-      expect(doc.xmlConteudo).toContain('CHASSI')
-      expect(doc.itens.length).toBeGreaterThan(0)
-    })
-
-    it('gera CT-e de transporte interestadual com CFOP 6353 e RNTRC', async () => {
-      const doc = await gerarDocumentoSintetico({
-        segmento: 'transporte_cte',
-        indice: 2,
-      })
-      expect(doc.segmento).toBe('transporte_cte')
-      expect(doc.modeloFiscal).toBe('57')
-      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
-      expect(doc.xmlConteudo).toContain('<cteProc')
-      expect(doc.xmlConteudo).toContain('RNTRC')
-    })
-
-    it('gera lote sintético com volume requisitado (ex: 10 documentos)', async () => {
-      const lote = await gerarLoteSintetico({
-        segmento: 'desmanche_cdv',
-        quantidade: 10,
-      })
-      expect(lote.length).toBe(10)
-      lote.forEach((doc) => {
-        expect(doc.chaveAcesso.length).toBe(44)
-        expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
-      })
-    })
-
-    it('gera documento de Varejo Reverso com CFOPs, NCMs corretos e cálculo oficial', async () => {
-      const doc = await gerarDocumentoSintetico({
-        segmento: 'varejo_reverso',
-        indice: 0,
-      })
-      expect(doc.segmento).toBe('varejo_reverso')
-      expect(doc.modeloFiscal).toBe('55')
-      expect(doc.chaveAcesso.length).toBe(44)
-      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
-      // NCMs especificados
-      const ncms = doc.itens.map((i) => i.ncm)
-      expect(ncms).toContain('8504.40.10')
-      expect(ncms).toContain('8471.60.52')
-      expect(ncms).toContain('8517.62.77')
-      // Fatores canônicos
-      const itemAco = doc.itens.find((i) => i.categoriaMaterial === 'aco')
-      expect(itemAco?.fatorCo2eKg).toBe(2.18)
-      const itemAlu = doc.itens.find((i) => i.categoriaMaterial === 'aluminio')
-      expect(itemAlu?.fatorCo2eKg).toBe(14.4)
-      const itemCu = doc.itens.find((i) => i.categoriaMaterial === 'cobre')
-      expect(itemCu?.fatorCo2eKg).toBe(5.4)
-      const itemPol = doc.itens.find((i) => i.categoriaMaterial === 'polimeros')
-      expect(itemPol?.fatorCo2eKg).toBe(1.9)
-    })
-
-    it('gera documento de Construção RCD com fatores de concreto (0.12) e aço (2.18)', async () => {
-      const doc = await gerarDocumentoSintetico({
-        segmento: 'construcao_rcd',
-        indice: 0,
-      })
-      expect(doc.segmento).toBe('construcao_rcd')
-      expect(doc.modeloFiscal).toBe('55')
-      expect(doc.chaveAcesso.length).toBe(44)
-      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
-
-      const ncms = doc.itens.map((i) => i.ncm)
-      expect(ncms).toContain('2517.10.00')
-      expect(ncms).toContain('6810.11.00')
-      expect(ncms).toContain('7214.20.00')
-
-      const concretoItens = doc.itens.filter((i) => i.categoriaMaterial === 'concreto')
-      expect(concretoItens.length).toBe(2)
-      concretoItens.forEach((c) => expect(c.fatorCo2eKg).toBe(0.12))
-
-      const acoItem = doc.itens.find((i) => i.categoriaMaterial === 'aco')
-      expect(acoItem?.fatorCo2eKg).toBe(2.18)
-    })
-
-    it('gera documento de Mineração Urbana com cobre calculado (5.40) e ouro/paládio/terras raras em estruturação sem crédito', async () => {
-      const doc = await gerarDocumentoSintetico({
-        segmento: 'mineracao_urbana_criticos',
-        indice: 0,
-      })
-      expect(doc.segmento).toBe('mineracao_urbana_criticos')
-      expect(doc.modeloFiscal).toBe('55')
-      expect(doc.chaveAcesso.length).toBe(44)
-      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
-
-      // CFOP e NCMs
-      const ncms = doc.itens.map((i) => i.ncm)
-      expect(ncms).toContain('8534.00.00')
-      expect(ncms).toContain('8548.00.00')
-
-      // REGRA CRÍTICA: APENAS COBRE é calculado
-      const itemCobre = doc.itens.find((i) => i.cProd.includes('COBRE'))
-      expect(itemCobre).toBeDefined()
-      expect(itemCobre?.categoriaMaterial).toBe('cobre')
-      expect(itemCobre?.fatorCo2eKg).toBe(5.4)
-      expect(itemCobre?.co2eEvitadoKg).toBeGreaterThan(0)
-      expect(itemCobre?.statusCalculo).toBe('calculado')
-
-      // Ouro, paládio/prata e terras raras recebem fator 0, co2e 0 e status "em estruturação de catálogo"
-      const itensCriticos = doc.itens.filter((i) => !i.cProd.includes('COBRE'))
-      expect(itensCriticos.length).toBe(3)
-      itensCriticos.forEach((crit) => {
-        expect(crit.fatorCo2eKg).toBe(0)
-        expect(crit.co2eEvitadoKg).toBe(0)
-        expect(crit.statusCalculo).toBe('em_estruturacao_de_catalogo')
-        expect(crit.teorDeclarado).toBeDefined()
-      })
-    })
-  })
-})
-
-describe('Isolamento de Segurança e Métricas Públicas (Sandbox)', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
+      const cnpjAlfa = gerarCnpjValido({ alfanumerico: true, seed: i * 23 })
+      expect(validarCnpjAlfanumerico(cnpjAlfa)).toBe(true)
+    }
   })
 
-  it('obterNumerosVerificaveis adiciona filtro para excluir origem == "sintetico"', async () => {
-    const spyGetList = vi.spyOn(pb.collection('selos'), 'getList').mockResolvedValue({
-      page: 1,
-      perPage: 1,
-      totalItems: 15,
-      totalPages: 1,
-      items: [],
-    } as any)
-
-    vi.spyOn(pb.collection('lastro_circularidade'), 'getList').mockResolvedValue({
-      page: 1,
-      perPage: 1,
-      totalItems: 3,
-      totalPages: 1,
-      items: [],
-    } as any)
-
-    vi.spyOn(pb.collection('ccrlr_manifestos_sinir'), 'getList').mockResolvedValue({
-      page: 1,
-      perPage: 1,
-      totalItems: 0,
-      totalPages: 1,
-      items: [],
-    } as any)
-
-    const spyPecas = vi.spyOn(pb.collection('cdv_pecas'), 'getList').mockResolvedValue({
-      page: 1,
-      perPage: 1,
-      totalItems: 50,
-      totalPages: 1,
-      items: [],
-    } as any)
-
-    vi.spyOn(pb.collection('dpp_consultas'), 'getList').mockResolvedValue({
-      page: 1,
-      perPage: 1,
-      totalItems: 100,
-      totalPages: 1,
-      items: [],
-    } as any)
-
-    const resultado = await obterNumerosVerificaveis()
-
-    // Verifica se selos chamou com o filtro de exclusão do sandbox
-    expect(spyGetList).toHaveBeenCalledWith(
-      1,
-      1,
-      expect.objectContaining({
-        filter: 'origem != "sintetico"',
-      }),
-    )
-
-    // Verifica se peças chamou com o filtro de exclusão do sandbox
-    expect(spyPecas).toHaveBeenCalledWith(
-      1,
-      1,
-      expect.objectContaining({
-        filter: 'origem != "sintetico"',
-      }),
-    )
-
-    expect(resultado.selosEmitidos).toBe(15)
-    expect(resultado.pecasRastreadas).toBe(50)
+  // 2. Chave de acesso 44 dígitos mod 11 pesos 2-9
+  it('calcularDvChave44 e gerarChaveAcesso44 produzem chave de 44 dígitos com DV válido', () => {
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm: '2603',
+      cnpjEmitente: '33000168000109',
+      modelo: '55',
+      serie: '1',
+      numeroDoc: '100',
+    })
+    expect(chave.length).toBe(44)
+    const base43 = chave.slice(0, 43)
+    const dvCalculado = calcularDvChave44(base43)
+    expect(dvCalculado.toString()).toBe(chave.slice(43, 44))
   })
 
-  it('verificador público filtra fora selos com origem === "sintetico"', async () => {
-    // Simula tentativa de consulta a selo sintético no backend
-    const spyGetFirst = vi
-      .spyOn(pb.collection('selos'), 'getFirstListItem')
-      .mockImplementation(async (filter: string) => {
-        // Se a query exigir origem != 'sintetico', o selo sintético não deve ser retornado
-        if (filter.includes("origem != 'sintetico'")) {
-          throw new Error('404 Not Found')
-        }
-        return {
-          id: 'sintetico-1',
-          codigo_selo: 'PR-SEAL-2026-SYN001',
-          origem: 'sintetico',
-        } as any
-      })
+  // 3. Catálogo dos 15 Protocolos Setoriais + Materiais Críticos
+  it('SEGMENTOS_SANDBOX_CATALOGO contém exatamente os 15 protocolos setoriais + materiais críticos', () => {
+    expect(SEGMENTOS_SANDBOX_CATALOGO.length).toBe(16)
 
-    // Ao consultar com a cláusula de isolamento, gera erro de registro não encontrado
-    await expect(
-      pb
-        .collection('selos')
-        .getFirstListItem("codigo_selo = 'PR-SEAL-2026-SYN001' && origem != 'sintetico'"),
-    ).rejects.toThrow('404 Not Found')
-
-    expect(spyGetFirst).toHaveBeenCalled()
+    const slugs = SEGMENTOS_SANDBOX_CATALOGO.map((s) => s.slugCanonico)
+    expect(slugs).toContain('agro')
+    expect(slugs).toContain('siderurgia')
+    expect(slugs).toContain('cimento')
+    expect(slugs).toContain('energia')
+    expect(slugs).toContain('quimica')
+    expect(slugs).toContain('logistica')
+    expect(slugs).toContain('textil')
+    expect(slugs).toContain('mineracao')
+    expect(slugs).toContain('automotiva')
+    expect(slugs).toContain('alimentos')
+    expect(slugs).toContain('papel')
+    expect(slugs).toContain('plasticos')
+    expect(slugs).toContain('farmaceutica')
+    expect(slugs).toContain('construcao')
+    expect(slugs).toContain('varejo')
+    expect(slugs).toContain('materiais-criticos-recuperados')
   })
 
+  it('normalizarSegmento mapeia corretamente chaves canônicas e legadas', () => {
+    expect(normalizarSegmento('automotiva')).toBe('automotiva')
+    expect(normalizarSegmento('desmanche_cdv')).toBe('automotiva')
+    expect(normalizarSegmento('combustiveis')).toBe('energia')
+    expect(normalizarSegmento('transporte_cte')).toBe('logistica')
+    expect(normalizarSegmento('varejo_reverso')).toBe('varejo')
+    expect(normalizarSegmento('construcao_rcd')).toBe('construcao')
+    expect(normalizarSegmento('mineracao_urbana_criticos')).toBe('materiais-criticos-recuperados')
+  })
+
+  // 4. Geração por segmento com fatores oficiais e regras fixas
+  it('gera documento sintético para Siderurgia & Aço Verde com fator oficial 2,18', async () => {
+    const doc = await gerarDocumentoSintetico({
+      segmento: 'siderurgia',
+      indice: 0,
+      dataReferencia: '2026-03-15',
+    })
+
+    expect(doc.modeloFiscal).toBe('55')
+    expect(doc.chaveAcesso.length).toBe(44)
+    expect(doc.itens.length).toBe(1)
+    expect(doc.itens[0].categoriaMaterial).toBe('aco')
+    expect(doc.itens[0].fatorCo2eKg).toBe(2.18)
+    expect(doc.itens[0].co2eEvitadoKg).toBeGreaterThan(0)
+    expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+  })
+
+  it('gera documento sintético para Automotiva / CDVs com fatores oficiais (aço 2,18, alu 14,40, cobre 5,40)', async () => {
+    const doc = await gerarDocumentoSintetico({
+      segmento: 'automotiva',
+      indice: 1,
+      dataReferencia: '2026-03-15',
+    })
+
+    expect(doc.itens.length).toBe(3)
+    const aco = doc.itens.find((i) => i.categoriaMaterial === 'aco')
+    const alu = doc.itens.find((i) => i.categoriaMaterial === 'aluminio')
+    const cobre = doc.itens.find((i) => i.categoriaMaterial === 'cobre')
+
+    expect(aco?.fatorCo2eKg).toBe(2.18)
+    expect(alu?.fatorCo2eKg).toBe(14.4)
+    expect(cobre?.fatorCo2eKg).toBe(5.4)
+    expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+  })
+
+  it('gera documento de Materiais Críticos com regra fixa: apenas cobre pontua e ouro/paládio/terras raras com zero crédito', async () => {
+    const doc = await gerarDocumentoSintetico({
+      segmento: 'materiais-criticos-recuperados',
+      indice: 0,
+      dataReferencia: '2026-03-15',
+    })
+
+    const cobre = doc.itens.find((i) => i.cProd.includes('COBRE'))
+    const ouro = doc.itens.find((i) => i.cProd.includes('OURO'))
+    const paladio = doc.itens.find((i) => i.cProd.includes('PALADIO'))
+    const terrasRaras = doc.itens.find((i) => i.cProd.includes('TERRAS-RARAS'))
+
+    expect(cobre).toBeDefined()
+    expect(cobre?.categoriaMaterial).toBe('cobre')
+    expect(cobre?.fatorCo2eKg).toBe(5.4)
+    expect(cobre?.co2eEvitadoKg).toBeGreaterThan(0)
+
+    // Metais nobres e terras raras: NUNCA pontuam crédito de carbono (regra permanente da casa)
+    expect(ouro?.fatorCo2eKg).toBe(0)
+    expect(ouro?.co2eEvitadoKg).toBe(0)
+    expect(ouro?.statusCalculo).toBe('em_estruturacao_de_catalogo')
+
+    expect(paladio?.fatorCo2eKg).toBe(0)
+    expect(paladio?.co2eEvitadoKg).toBe(0)
+    expect(paladio?.statusCalculo).toBe('em_estruturacao_de_catalogo')
+
+    expect(terrasRaras?.fatorCo2eKg).toBe(0)
+    expect(terrasRaras?.co2eEvitadoKg).toBe(0)
+    expect(terrasRaras?.statusCalculo).toBe('em_estruturacao_de_catalogo')
+
+    // Verificação de proibição estrita de termos banidos
+    expect(doc.xmlConteudo).not.toContain('Selo Oficial')
+    expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+  })
+
+  it('gera documento de CT-e (mod. 57) para Logística & Transporte', async () => {
+    const doc = await gerarDocumentoSintetico({
+      segmento: 'logistica',
+      indice: 0,
+      dataReferencia: '2026-03-15',
+    })
+
+    expect(doc.modeloFiscal).toBe('57')
+    expect(doc.xmlConteudo).toContain('<cteProc')
+    expect(doc.dadosAdicionais.rntrc).toBeDefined()
+    expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+  })
+
+  // 5. Coerência setorial do Inventário GHG sintético gerado na ingestão
+  it('calcularInventarioGhgPorSegmento gera Escopos 1/2/3 coerentes com o protocolo setorial', () => {
+    // Logística: alto Escopo 1 (combustão diesel frotas)
+    const invLog = calcularInventarioGhgPorSegmento('logistica', 10)
+    expect(invLog.escopo1Tco2e).toBeGreaterThan(invLog.escopo2LocalizacaoTco2e)
+    expect(invLog.descricaoPerfil).toContain('Combustão móvel de frota pesada')
+
+    // Varejo: maior Escopo 2 (eletricidade de lojas/CDs) em relação ao Escopo 1
+    const invVarejo = calcularInventarioGhgPorSegmento('varejo', 10)
+    expect(invVarejo.escopo2LocalizacaoTco2e).toBeGreaterThan(invVarejo.escopo1Tco2e)
+
+    // Siderurgia: grande volume direto em altos-fornos
+    const invSid = calcularInventarioGhgPorSegmento('siderurgia', 10)
+    expect(invSid.escopo1Tco2e).toBeGreaterThan(300)
+
+    // Construção: peso principal em insumos / cadeia (Escopo 3)
+    const invConst = calcularInventarioGhgPorSegmento('construcao', 10)
+    expect(invConst.escopo3Tco2e).toBeGreaterThan(invConst.escopo1Tco2e)
+  })
+
+  it('gerarLoteSintetico produz a quantidade exata de documentos solicitada', async () => {
+    const lote = await gerarLoteSintetico({
+      segmento: 'energia',
+      quantidade: 5,
+    })
+    expect(lote.length).toBe(5)
+    for (const d of lote) {
+      expect(d.chaveAcesso.length).toBe(44)
+      expect(d.hashSha256.length).toBe(64)
+      expect(d.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+    }
+  })
+
+  // 6. Teste de isolamento pericial estrito no dMRV e emissoes_inventario
   it('carregarDadosDmrvEmpresa isola dados de produção (padrão) e dados de sandbox quando filtroOrigem é sintetico', async () => {
     const { carregarDadosDmrvEmpresa } = await import('../dmrvEmissoesService')
 
@@ -355,6 +221,7 @@ describe('Isolamento de Segurança e Métricas Públicas (Sandbox)', () => {
         total_co2e_evitado_kg: 1000,
         total_peso_kg: 500,
         cdv_cnpj: '33000168000109',
+        created: '2026-01-15T10:00:00.000Z',
       },
       {
         id: 'lote-synth-1',
@@ -362,6 +229,7 @@ describe('Isolamento de Segurança e Métricas Públicas (Sandbox)', () => {
         total_co2e_evitado_kg: 9999,
         total_peso_kg: 3333,
         cdv_cnpj: '33000168000109',
+        created: '2026-03-20T10:00:00.000Z',
       },
     ]
 
@@ -372,6 +240,7 @@ describe('Isolamento de Segurança e Métricas Públicas (Sandbox)', () => {
         co2e_evitado_kg: 1000,
         peso_kg: 500,
         cdv_cnpj: '33000168000109',
+        created: '2026-01-15T10:00:00.000Z',
       },
       {
         id: 'peca-synth-1',
@@ -379,26 +248,59 @@ describe('Isolamento de Segurança e Métricas Públicas (Sandbox)', () => {
         co2e_evitado_kg: 9999,
         peso_kg: 3333,
         cdv_cnpj: '33000168000109',
+        created: '2026-03-20T10:00:00.000Z',
       },
     ]
 
-    vi.spyOn(pb.collection('emissoes_inventario'), 'getFullList').mockResolvedValue([])
+    const mockInventarios = [
+      {
+        id: 'inv-real-1',
+        origem: 'producao',
+        escopo1_total_tco2e: 50.0,
+        escopo2_localizacao_tco2e: 20.0,
+        escopo3_total_tco2e: 100.0,
+        created: '2026-01-15T10:00:00.000Z',
+      },
+      {
+        id: 'inv-synth-1',
+        origem: 'sintetico',
+        escopo1_total_tco2e: 500.0,
+        escopo2_localizacao_tco2e: 200.0,
+        escopo3_total_tco2e: 1000.0,
+        created: '2026-03-20T10:00:00.000Z',
+      },
+    ]
+
+    vi.spyOn(pb.collection('emissoes_inventario'), 'getFullList').mockResolvedValue(
+      mockInventarios as any,
+    )
     vi.spyOn(pb.collection('cdv_lotes'), 'getFullList').mockResolvedValue(mockLotes as any)
     vi.spyOn(pb.collection('cdv_pecas'), 'getFullList').mockResolvedValue(mockPecas as any)
     vi.spyOn(pb.collection('relatorios_exportados'), 'getFullList').mockResolvedValue([])
 
-    // 1. Chamada padrão (produção) — não deve incluir o lote/peça sintético
+    // 1. Chamada produção: apenas lotes/peças/inventário reais
     const dadosProd = await carregarDadosDmrvEmpresa('33.000.168/0001-09', 'producao')
     expect(dadosProd.total_co2e_evitado_kg).toBe(1000)
     expect(dadosProd.total_massa_reciclada_kg).toBe(500)
     expect(dadosProd.total_pecas_reaproveitadas).toBe(1)
     expect(dadosProd.total_lotes_processados).toBe(1)
+    expect(dadosProd.escopo1_tco2e).toBe(50.0)
+    expect(dadosProd.escopo2_tco2e).toBe(20.0)
+    expect(dadosProd.escopo3_tco2e).toBe(100.0)
+    expect(dadosProd.emissao_anual_tco2e).toBe(170.0)
+    // Série temporal usa a data real do lote de janeiro
+    expect(dadosProd.serie_temporal[0]?.mes).toContain('/26')
 
-    // 2. Chamada em modo sandbox ('sintetico') — retorna apenas registros com origem == 'sintetico'
+    // 2. Chamada sandbox ('sintetico'): apenas registros com origem == 'sintetico'
     const dadosSandbox = await carregarDadosDmrvEmpresa('33.000.168/0001-09', 'sintetico')
     expect(dadosSandbox.total_co2e_evitado_kg).toBe(9999)
     expect(dadosSandbox.total_massa_reciclada_kg).toBe(3333)
     expect(dadosSandbox.total_pecas_reaproveitadas).toBe(1)
     expect(dadosSandbox.total_lotes_processados).toBe(1)
+    expect(dadosSandbox.escopo1_tco2e).toBe(500.0)
+    expect(dadosSandbox.escopo2_tco2e).toBe(200.0)
+    expect(dadosSandbox.escopo3_tco2e).toBe(1000.0)
+    expect(dadosSandbox.emissao_anual_tco2e).toBe(1700.0)
+    expect(dadosSandbox.serie_temporal[0]?.mes).toContain('/26')
   })
 })

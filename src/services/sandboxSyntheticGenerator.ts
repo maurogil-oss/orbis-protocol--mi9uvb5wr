@@ -2,34 +2,246 @@
  * sandboxSyntheticGenerator.ts
  *
  * Gerador 100% nativo em TypeScript de documentos fiscais sintéticos para o
- * Sandbox de Ingestão (Fase 1) do Orbis Protocol.
+ * Sandbox de Ingestão do Orbis Protocol.
  *
- * Sem nenhuma dependência externa (sem chamadas a InfoSimples, SEFAZ, Receita ou sites de terceiros).
- * Totalmente determinístico, seguro e auditável.
+ * Alinhado integralmente aos 15 Protocolos Setoriais do catálogo oficial
+ * (protocolosSetoriais.ts) + módulo Materiais Críticos Recuperados & Mineração Urbana:
+ *  1. agro (Agronegócio & Grãos)
+ *  2. siderurgia (Siderurgia & Aço Verde)
+ *  3. cimento (Cimento & Concreto)
+ *  4. energia (Energia Renovável & Biogás)
+ *  5. quimica (Química / Indústria Química & Petroquímica)
+ *  6. logistica (Logística & Transporte de Cargas / Frete)
+ *  7. textil (Têxtil, Confecção & Calçados)
+ *  8. mineracao (Mineração & Minerais Críticos)
+ *  9. automotiva (Automotiva / Indústria Automotiva, Autopeças & CDVs)
+ * 10. alimentos (Alimentos & Bebidas)
+ * 11. papel (Papel & Celulose)
+ * 12. plasticos (Plásticos & Economia Circular)
+ * 13. farmaceutica (Farmacêutica & Cosmética)
+ * 14. construcao (Construção Civil & Canteiros Verdes)
+ * 15. varejo (Comércio Varejista, Atacado & Serviços)
+ * 16. materiais-criticos-recuperados (Materiais Críticos Recuperados & Mineração Urbana)
  *
- * Características:
- * - CNPJ com algoritmo módulo 11 padrão da Receita Federal do Brasil, com suporte
- *   estendido a caracteres alfanuméricos (A-Z = 10-35) conforme IN RFB 2.229/2024.
- * - Chave de acesso de 44 dígitos (NF-e mod. 55 e CT-e mod. 57) com DV calculado
- *   por módulo 11 com pesos de 2 a 9 (da direita para a esquerda).
- * - Segmentos reais:
- *   1) Combustíveis & Biocombustíveis (Diesel S10 NCM 2710.19.21, Biometanol NCM 2905.11.00, CFOP 5655/6655).
- *   2) Desmanche & Peças Usadas (Padrão Renova Ecopeças / CDV credenciado, NCMs automotivos, chassi, motor, portas).
- *   3) Frete & Transporte Interestadual (CT-e mod. 57, CFOP 6353, RNTRC, volumes, transportadora).
- * - XML sintético completo estruturalmente íntegro com a marca OBRIGATÓRIA em infCpl:
- *   "[DOCUMENTO SINTÉTICO - AMBIENTE DE SANDBOX ORBIS PROTOCOL - NÃO AUTORIZADO PELA SEFAZ - USO EXCLUSIVO DE TESTE E HOMOLOGAÇÃO]"
+ * Aliases legados retrocompatíveis:
+ * - 'combustiveis' -> mapeia para 'energia' (ou mantido como alias)
+ * - 'desmanche_cdv' -> mapeia para 'automotiva'
+ * - 'transporte_cte' -> mapeia para 'logistica'
+ * - 'varejo_reverso' -> mapeia para 'varejo'
+ * - 'construcao_rcd' -> mapeia para 'construcao'
+ * - 'mineracao_urbana_criticos' -> mapeia para 'materiais-criticos-recuperados'
+ *
+ * Fatores Oficiais Rígidos (catalogoFatoresOficiais.ts):
+ * - Aço: 2,18 kgCO₂e/kg (worldsteel 2024/2025)
+ * - Alumínio: 14,40 kgCO₂e/kg (IAI 2024)
+ * - Cobre: 5,40 kgCO₂e/kg (CopperMark / ICA)
+ * - Polímeros: 1,90 kgCO₂e/kg (PlasticsEurope)
+ * - Concreto / RCD: 0,12 kgCO₂e/kg (ACV agregado reciclado)
+ * - Outros / genérico: 1,50 kgCO₂e/kg (procedimento conservador DM-ORB-001)
+ *
+ * Regras fixas e imutáveis:
+ * - NUNCA inventar número ou prometer crédito de carbono sobre materiais críticos (ouro, paládio, prata, terras raras — só cobre pontua).
+ * - "Selo Oficial" é termo banido do texto público.
+ * - Nada de superlativos de escala ("maior rede", etc.).
+ * - Marca permanente em infCpl: MARCA_SANDBOX_OBRIGATORIA.
  */
 
 export const MARCA_SANDBOX_OBRIGATORIA =
   '[DOCUMENTO SINTÉTICO - AMBIENTE DE SANDBOX ORBIS PROTOCOL - NÃO AUTORIZADO PELA SEFAZ - USO EXCLUSIVO DE TESTE E HOMOLOGAÇÃO]'
 
-export type SegmentoSandbox =
+/**
+ * Slugs canônicos dos 15 Protocolos Setoriais + Materiais Críticos Recuperados,
+ * mais aliases retrocompatíveis suportados.
+ */
+export type ProtocoloSetorialSlug =
+  | 'agro'
+  | 'siderurgia'
+  | 'cimento'
+  | 'energia'
+  | 'quimica'
+  | 'logistica'
+  | 'textil'
+  | 'mineracao'
+  | 'automotiva'
+  | 'alimentos'
+  | 'papel'
+  | 'plasticos'
+  | 'farmaceutica'
+  | 'construcao'
+  | 'varejo'
+  | 'materiais-criticos-recuperados'
+
+export type SegmentoSandboxLegado =
   | 'combustiveis'
   | 'desmanche_cdv'
   | 'transporte_cte'
   | 'varejo_reverso'
   | 'construcao_rcd'
   | 'mineracao_urbana_criticos'
+
+export type SegmentoSandbox = ProtocoloSetorialSlug | SegmentoSandboxLegado
+
+export interface OpcaoSegmentoSandbox {
+  chave: SegmentoSandbox
+  slugCanonico: ProtocoloSetorialSlug
+  titulo: string
+  subtitulo: string
+  modeloPrincipal: '55' | '57'
+  rastreabilidadePecas: boolean
+}
+
+export const SEGMENTOS_SANDBOX_CATALOGO: OpcaoSegmentoSandbox[] = [
+  {
+    chave: 'agro',
+    slugCanonico: 'agro',
+    titulo: 'Agronegócio & Grãos',
+    subtitulo: 'Soja, milho, biomassa, biofertilizantes e rastreabilidade EUDR (NF-e mod. 55)',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: false,
+  },
+  {
+    chave: 'siderurgia',
+    slugCanonico: 'siderurgia',
+    titulo: 'Siderurgia & Aço Verde',
+    subtitulo: 'Sucata ferrosa, bobinas, tarugos e aço laminado (fator 2,18 kgCO₂e/kg, CBAM)',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'cimento',
+    slugCanonico: 'cimento',
+    titulo: 'Cimento & Concreto',
+    subtitulo: 'Clínquer, concreto sustentável e agregados reciclados (fator 0,12 kgCO₂e/kg)',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'energia',
+    slugCanonico: 'energia',
+    titulo: 'Energia Renovável & Biogás',
+    subtitulo: 'Biometanol, biometano, etanol e combustíveis de baixa intensidade de carbono',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: false,
+  },
+  {
+    chave: 'quimica',
+    slugCanonico: 'quimica',
+    titulo: 'Química & Petroquímica',
+    subtitulo: 'Solventes recuperados, resinas químicas e bioinsumos industriais',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: false,
+  },
+  {
+    chave: 'logistica',
+    slugCanonico: 'logistica',
+    titulo: 'Logística & Transporte de Cargas',
+    subtitulo: 'Frete rodoviário interestadual com RNTRC e rota GLEC (CT-e mod. 57)',
+    modeloPrincipal: '57',
+    rastreabilidadePecas: false,
+  },
+  {
+    chave: 'textil',
+    slugCanonico: 'textil',
+    titulo: 'Têxtil, Confecção & Calçados',
+    subtitulo: 'Aparas de algodão, fibras recicladas e tecidos circulares rastreados',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'mineracao',
+    slugCanonico: 'mineracao',
+    titulo: 'Mineração & Minerais Críticos',
+    subtitulo: 'Minério beneficiado, concentrados minerais e recuperação de rejeitos',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: false,
+  },
+  {
+    chave: 'automotiva',
+    slugCanonico: 'automotiva',
+    titulo: 'Automotiva / CDVs',
+    subtitulo:
+      'Peças usadas de desmanche credenciado, chassi rastreado (aço 2,18, alu 14,40, cobre 5,40)',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'alimentos',
+    slugCanonico: 'alimentos',
+    titulo: 'Alimentos & Bebidas',
+    subtitulo: 'Subprodutos agroindustriais, coprodutos e embalagens pós-consumo',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: false,
+  },
+  {
+    chave: 'papel',
+    slugCanonico: 'papel',
+    titulo: 'Papel & Celulose',
+    subtitulo: 'Aparas de papelão ondulado, celulose reciclada e embalagens celulósicas',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'plasticos',
+    slugCanonico: 'plasticos',
+    titulo: 'Plásticos & Economia Circular',
+    subtitulo: 'Polímeros recuperados PP, PEAD, PET, ABS (fator oficial 1,90 kgCO₂e/kg)',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'farmaceutica',
+    slugCanonico: 'farmaceutica',
+    titulo: 'Farmacêutica & Cosmética',
+    subtitulo: 'Embalagens de medicamentos, logística reversa hospitalar e resíduos estéreis',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: false,
+  },
+  {
+    chave: 'construcao',
+    slugCanonico: 'construcao',
+    titulo: 'Construção Civil & Canteiros Verdes',
+    subtitulo: 'RCD, agregados de concreto (0,12 kgCO₂e/kg) e armaduras de aço (2,18 kgCO₂e/kg)',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'varejo',
+    slugCanonico: 'varejo',
+    titulo: 'Comércio Varejista, Atacado & Serviços',
+    subtitulo:
+      'Logística reversa de eletroeletrônicos e peças com aço, alumínio, cobre e polímeros',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+  {
+    chave: 'materiais-criticos-recuperados',
+    slugCanonico: 'materiais-criticos-recuperados',
+    titulo: 'Materiais Críticos Recuperados & Mineração Urbana',
+    subtitulo:
+      'Cobre calculado (5,40). Ouro, paládio, prata e terras raras em estruturação sem crédito',
+    modeloPrincipal: '55',
+    rastreabilidadePecas: true,
+  },
+]
+
+export function normalizarSegmento(seg: SegmentoSandbox): ProtocoloSetorialSlug {
+  switch (seg) {
+    case 'combustiveis':
+      return 'energia'
+    case 'desmanche_cdv':
+      return 'automotiva'
+    case 'transporte_cte':
+      return 'logistica'
+    case 'varejo_reverso':
+      return 'varejo'
+    case 'construcao_rcd':
+      return 'construcao'
+    case 'mineracao_urbana_criticos':
+      return 'materiais-criticos-recuperados'
+    default:
+      return seg
+  }
+}
 
 export interface ItemDocumentoSintetico {
   nItem: number
@@ -67,6 +279,8 @@ export interface DocumentoSintetico {
   hashSha256: string
   dadosAdicionais: {
     marcaInfCpl: string
+    protocoloSetorialSlug?: ProtocoloSetorialSlug
+    protocoloSetorialNome?: string
     chassi?: string
     placa?: string
     rntrc?: string
@@ -81,33 +295,17 @@ export interface DocumentoSintetico {
 // 1. GERAÇÃO E VALIDAÇÃO DE CNPJ COM SUPORTE ALFANUMÉRICO (MÓDULO 11)
 // ----------------------------------------------------------------------
 
-/**
- * Converte um caractere alfanumérico para seu valor numérico segundo a regra
- * oficial da Receita Federal (0-9 => 0-9; A-Z => 10-35, ASCII - 55).
- */
 export function charToValorCnpj(c: string): number {
   const code = c.toUpperCase().charCodeAt(0)
   if (code >= 48 && code <= 57) {
-    // '0'-'9'
     return code - 48
   }
   if (code >= 65 && code <= 90) {
-    // 'A'-'Z'
     return code - 55
   }
   throw new Error(`Caractere inválido para CNPJ: ${c}`)
 }
 
-/**
- * Calcula os dois dígitos verificadores de um CNPJ (com 12 caracteres base).
- * Aceita tanto dígitos numéricos (0-9) quanto letras maiúsculas (A-Z).
- *
- * Módulo 11 oficial:
- * 1º DV: pesos [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
- * 2º DV: pesos [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
- * Resto = soma % 11
- * DV = (resto < 2) ? 0 : 11 - resto
- */
 export function calcularDvCnpj(base12: string): { dv1: number; dv2: number; completo: string } {
   const limpo = base12.toUpperCase().replace(/[^0-9A-Z]/g, '')
   if (limpo.length !== 12) {
@@ -138,15 +336,11 @@ export function calcularDvCnpj(base12: string): { dv1: number; dv2: number; comp
   }
 }
 
-/**
- * Valida um CNPJ (numérico tradicional ou com base alfanumérica).
- */
 export function validarCnpjAlfanumerico(cnpjInput: string): boolean {
   if (!cnpjInput) return false
   const limpo = cnpjInput.toUpperCase().replace(/[^0-9A-Z]/g, '')
   if (limpo.length !== 14) return false
 
-  // Se for 100% numérico, rejeita repetições óbvias (ex.: 00000000000000)
   if (/^\d{14}$/.test(limpo)) {
     if (/^(\d)\1{13}$/.test(limpo)) return false
   }
@@ -164,38 +358,27 @@ export function validarCnpjAlfanumerico(cnpjInput: string): boolean {
   }
 }
 
-/**
- * Formata um CNPJ de 14 caracteres (XX.XXX.XXX/XXXX-XX).
- */
 export function formatarCnpj(cnpj14: string): string {
   const limpo = cnpj14.toUpperCase().replace(/[^0-9A-Z]/g, '')
   if (limpo.length !== 14) return cnpj14
   return `${limpo.slice(0, 2)}.${limpo.slice(2, 5)}.${limpo.slice(5, 8)}/${limpo.slice(8, 12)}-${limpo.slice(12, 14)}`
 }
 
-/**
- * Gera um CNPJ matematicamente válido.
- * Permite alternar entre formato numérico padrão e alfanumérico (IN 2.229/2024).
- */
 export function gerarCnpjValido(opcoes?: { alfanumerico?: boolean; seed?: number }): string {
   const charsAlfanum = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   const seed = opcoes?.seed ?? Math.floor(Math.random() * 1000000)
 
   let base12 = ''
   if (opcoes?.alfanumerico) {
-    // Gera base com letras e números mistos
-    // Raiz (8 caracteres com pelo menos 1 letra) + Estabelecimento '0001'
     for (let i = 0; i < 8; i++) {
       const idx = (seed * 17 + i * 31 + 7) % charsAlfanum.length
       base12 += charsAlfanum[idx]
     }
-    // Garante ao menos uma letra na raiz
     if (!/[A-Z]/.test(base12)) {
       base12 = base12.slice(0, 7) + 'A'
     }
     base12 += '0001'
   } else {
-    // 100% numérico
     for (let i = 0; i < 8; i++) {
       const dig = ((seed * 13 + i * 7 + 3) % 9) + 1
       base12 += dig.toString()
@@ -208,15 +391,9 @@ export function gerarCnpjValido(opcoes?: { alfanumerico?: boolean; seed?: number
 }
 
 // ----------------------------------------------------------------------
-// 2. GERAÇÃO DE CHAVE DE ACESSO FISCAL (44 DÍGITOS MOD 11 PESOS 2-9)
+// 2. CHAVE DE ACESSO FISCAL (44 DÍGITOS MOD 11 PESOS 2-9)
 // ----------------------------------------------------------------------
 
-/**
- * Calcula o Dígito Verificador de 1 dígito para uma chave de 43 dígitos.
- * Pesos de 2 a 9, da direita para a esquerda.
- * Resto = soma % 11
- * Se resto 0 ou 1 => DV = 0; Se (11 - resto) >= 10 => DV = 0; senão DV = 11 - resto.
- */
 export function calcularDvChave44(chave43: string): number {
   const limpa = chave43.replace(/\D/g, '')
   if (limpa.length !== 43) {
@@ -242,28 +419,21 @@ export function calcularDvChave44(chave43: string): number {
   return dv
 }
 
-/**
- * Gera uma chave de acesso fiscal íntegra de 44 dígitos:
- * cUF (2) + AAMM (4) + CNPJ emitente puramente numérico (14) + mod (2) + serie (3) + nNF (9) + tpEmis (1) + cNF (8) + cDV (1)
- */
 export function gerarChaveAcesso44(params: {
-  cUF: string // ex: '41' (Paraná), '35' (São Paulo)
-  aamm: string // ex: '2604'
-  cnpjEmitente: string // 14 dígitos numéricos
-  modelo: '55' | '57' // NF-e mod 55 ou CT-e mod 57
-  serie: string // 1 a 3 dígitos (preenchido com zeros à esquerda)
-  numeroDoc: string // 1 a 9 dígitos (preenchido com zeros à esquerda)
-  tpEmis?: string // '1' = Normal
-  codigoAleatorio?: string // 8 dígitos cNF
+  cUF: string
+  aamm: string
+  cnpjEmitente: string
+  modelo: '55' | '57'
+  serie: string
+  numeroDoc: string
+  tpEmis?: string
+  codigoAleatorio?: string
 }): string {
   const cUF = params.cUF.padStart(2, '0').slice(0, 2)
   const aamm = params.aamm.padStart(4, '0').slice(0, 4)
 
-  // O CNPJ na chave da SEFAZ é numérico (14 dígitos). Se o CNPJ sintético tiver letras,
-  // mapeamos os caracteres para valores numéricos para compor a chave fiscal padrão 44 dígitos.
   let cnpjNum = params.cnpjEmitente.replace(/\D/g, '')
   if (cnpjNum.length !== 14) {
-    // Fallback: se tiver letras, converte modulo 10
     const chars = params.cnpjEmitente.replace(/[^0-9A-Z]/gi, '')
     let numStr = ''
     for (let i = 0; i < Math.min(14, chars.length); i++) {
@@ -287,9 +457,6 @@ export function gerarChaveAcesso44(params: {
 // 3. HASH CANÔNICO SHA-256 SÍNCRONO/UNIVERSAL
 // ----------------------------------------------------------------------
 
-/**
- * Calcula o hash SHA-256 canônico de forma universal (Node/Vite/Browser).
- */
 export async function calcularSha256(texto: string): Promise<string> {
   if (typeof crypto !== 'undefined' && crypto.subtle) {
     const encoder = new TextEncoder()
@@ -299,7 +466,6 @@ export async function calcularSha256(texto: string): Promise<string> {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
   }
-  // Fallback FNV-1a expandido de 64 caracteres
   let h1 = 0x811c9dc5
   let h2 = 0x9e3779b9
   for (let i = 0; i < texto.length; i++) {
@@ -313,12 +479,9 @@ export async function calcularSha256(texto: string): Promise<string> {
 }
 
 // ----------------------------------------------------------------------
-// 4. GERADORES DE XML SINTÉTICO POR SEGMENTO
+// 4. CONSTRUTORES DE XML (NF-e mod. 55 e CT-e mod. 57)
 // ----------------------------------------------------------------------
 
-/**
- * Constrói o XML sintético da NF-e mod. 55 com estrutura SEFAZ íntegra.
- */
 function construirXmlNFe(doc: {
   chaveAcesso: string
   numero: string
@@ -368,7 +531,7 @@ function construirXmlNFe(doc: {
       <ide>
         <cUF>41</cUF>
         <cNF>${doc.chaveAcesso.slice(35, 43)}</cNF>
-        <natOp>VENDA DE MERCADORIA / OPERACAO HOMOLOGACAO</natOp>
+        <natOp>OPERACAO FISCAL SANDBOX DMRV HOMOLOGACAO</natOp>
         <mod>55</mod>
         <serie>${parseInt(doc.serie, 10)}</serie>
         <nNF>${parseInt(doc.numero, 10)}</nNF>
@@ -384,7 +547,7 @@ function construirXmlNFe(doc: {
         <indFinal>1</indFinal>
         <indPres>1</indPres>
         <procEmi>0</procEmi>
-        <verProc>OrbisProtocol_Sandbox_1.0</verProc>
+        <verProc>OrbisProtocol_Sandbox_2.0</verProc>
       </ide>
       <emit>
         <CNPJ>${doc.cnpjEmitente.replace(/\D/g, '')}</CNPJ>
@@ -437,9 +600,6 @@ ${itensXml}
 </nfeProc>`
 }
 
-/**
- * Constrói o XML sintético do CT-e mod. 57 com estrutura SEFAZ íntegra.
- */
 function construirXmlCTe(doc: {
   chaveAcesso: string
   numero: string
@@ -473,7 +633,7 @@ function construirXmlCTe(doc: {
         <tpAmb>2</tpAmb>
         <tpCTe>0</tpCTe>
         <procEmi>0</procEmi>
-        <verProc>OrbisProtocol_Sandbox_1.0</verProc>
+        <verProc>OrbisProtocol_Sandbox_2.0</verProc>
       </ide>
       <emit>
         <CNPJ>${doc.cnpjEmitente.replace(/\D/g, '')}</CNPJ>
@@ -523,7 +683,7 @@ function construirXmlCTe(doc: {
 }
 
 // ----------------------------------------------------------------------
-// 5. GERADOR PRINCIPAL DE LOTE SINTÉTICO POR SEGMENTO
+// 5. GERADOR CENTRAL DE DOCUMENTOS SINTÉTICOS ALINHADO AOS 15 PROTOCOLOS
 // ----------------------------------------------------------------------
 
 export async function gerarDocumentoSintetico(params: {
@@ -532,12 +692,242 @@ export async function gerarDocumentoSintetico(params: {
   dataReferencia?: string
   usarCnpjAlfanumerico?: boolean
 }): Promise<DocumentoSintetico> {
+  const slug = normalizarSegmento(params.segmento)
   const idx = params.indice
   const dataHoje = params.dataReferencia || new Date().toISOString().slice(0, 10)
   const aamm = `${dataHoje.slice(2, 4)}${dataHoje.slice(5, 7)}`
 
-  if (params.segmento === 'combustiveis') {
-    // NF-e mod 55 de combustíveis: Diesel S10 NCM 2710.19.21 ou biometanol NCM 2905.11.00, CFOP 5655 / 6655
+  const cnpjEmit = gerarCnpjValido({
+    alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 0,
+    seed: 1000 + idx * 17 + slug.length,
+  })
+  const cnpjDest = gerarCnpjValido({
+    alfanumerico: false,
+    seed: 2000 + idx * 29 + slug.length,
+  })
+
+  // 1. AGRO (Agronegócio & Grãos) - NF-e 55
+  if (slug === 'agro') {
+    const nNF = (110000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${81000000 + idx}`.slice(0, 8),
+    })
+    const sacas = 500 + (idx % 10) * 100
+    const pesoKg = sacas * 60
+    const vProd = Math.round(sacas * 135.5 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `AGR-SOJA-GR-${idx + 1}`,
+        xProd: 'SOJA EM GRAOS SAFRA RASTREADA CAR EUDR - NCM 1201.90.00',
+        ncm: '1201.90.00',
+        cfop: '5102',
+        uCom: 'SC',
+        qCom: sacas,
+        vUnCom: 135.5,
+        vProd,
+        categoriaMaterial: 'outros',
+        pesoKg,
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+        teorDeclarado: 'Poligonal CAR PR-0000000-EUDR • Livre de desmatamento pós-2020',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 01: Agronegócio & Grãos. Due diligence EUDR e Código Florestal CAR. CFOP 5102. NCM 1201.90.00.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Cooperativa Agroindustrial Grãos do Sul S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Exportadora & Moinhos Integrados do Brasil S.A.',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-AGRO-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Cooperativa Agroindustrial Grãos do Sul S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Exportadora & Moinhos Integrados do Brasil S.A.',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'agro',
+        protocoloSetorialNome: 'Agronegócio & Grãos',
+      },
+    }
+  }
+
+  // 2. SIDERURGIA (Siderurgia & Aço Verde) - NF-e 55 (fator aço 2,18)
+  if (slug === 'siderurgia') {
+    const nNF = (120000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${82000000 + idx}`.slice(0, 8),
+    })
+    const pesoKg = 3500 + (idx % 6) * 1000
+    const vProd = Math.round(pesoKg * 4.95 * 100) / 100
+    const co2e = Math.round(pesoKg * 2.18 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `SID-SUC-ACO-${idx + 1}`,
+        xProd: 'SUCATA FERROSA PREPARADA PARA ACIARIA ELETRICA EAF (ACO LAMINADO RECICLADO)',
+        ncm: '7204.49.00',
+        cfop: '5102',
+        uCom: 'KG',
+        qCom: pesoKg,
+        vUnCom: 4.95,
+        vProd,
+        categoriaMaterial: 'aco',
+        pesoKg,
+        fatorCo2eKg: 2.18,
+        co2eEvitadoKg: co2e,
+        statusCalculo: 'calculado',
+        teorDeclarado: 'Aço Laminado / Estampado (fator worldsteel oficial 2,18 kgCO₂e/kg)',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 02: Siderurgia & Aço Verde. CFOP 5102. NCM 7204.49.00. Emissões incorporadas e abatimento por sucata ferrosa.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Siderúrgica Aço Verde do Paraná S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Laminadora & Tubos Metalúrgicos Integrados Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-SID-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Siderúrgica Aço Verde do Paraná S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Laminadora & Tubos Metalúrgicos Integrados Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'siderurgia',
+        protocoloSetorialNome: 'Siderurgia & Aço Verde',
+      },
+    }
+  }
+
+  // 3. CIMENTO (Cimento & Concreto) - NF-e 55 (fator concreto 0,12)
+  if (slug === 'cimento') {
+    const nNF = (130000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${83000000 + idx}`.slice(0, 8),
+    })
+    const toneladas = 15 + (idx % 8) * 5
+    const pesoKg = toneladas * 1000
+    const vProd = Math.round(toneladas * 320.0 * 100) / 100
+    const co2e = Math.round(pesoKg * 0.12 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `CIM-CP-IV-${idx + 1}`,
+        xProd: 'CIMENTO CP-IV POZOLANICO BAIXO CARBONO COM RESIDUOS COPROCESSADOS',
+        ncm: '2523.29.10',
+        cfop: '5102',
+        uCom: 'TON',
+        qCom: toneladas,
+        vUnCom: 320.0,
+        vProd,
+        categoriaMaterial: 'concreto',
+        pesoKg,
+        fatorCo2eKg: 0.12,
+        co2eEvitadoKg: co2e,
+        statusCalculo: 'calculado',
+        teorDeclarado: 'Agregado e ligante reciclado (fator oficial 0,12 kgCO₂e/kg)',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 03: Cimento & Concreto. CFOP 5102. NCM 2523.29.10. Resolução CONAMA 499/2020 coprocessamento.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Cimentos & Concretos Sustentáveis do Brasil S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Concreteira & Obras Estruturais do Paraná Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-CIM-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Cimentos & Concretos Sustentáveis do Brasil S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Concreteira & Obras Estruturais do Paraná Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'cimento',
+        protocoloSetorialNome: 'Cimento & Concreto',
+      },
+    }
+  }
+
+  // 4. ENERGIA (Energia Renovável & Biogás / Combustíveis) - NF-e 55
+  if (slug === 'energia') {
     const isBiometanol = idx % 2 === 1
     const ncm = isBiometanol ? '2905.11.00' : '2710.19.21'
     const xProd = isBiometanol
@@ -548,30 +938,17 @@ export async function gerarDocumentoSintetico(params: {
     const litros = 10000 + ((idx * 2500) % 20000)
     const precoLitro = isBiometanol ? 4.85 : 5.92
     const valorTotal = Math.round(litros * precoLitro * 100) / 100
-
-    const cnpjEmit = gerarCnpjValido({
-      alfanumerico: params.usarCnpjAlfanumerico && idx % 3 === 0,
-      seed: 1000 + idx * 7,
-    })
-    const cnpjDest = gerarCnpjValido({
-      alfanumerico: false,
-      seed: 2000 + idx * 11,
-    })
-
-    const nNF = (100000 + idx).toString()
-    const serie = '1'
+    const nNF = (140000 + idx).toString()
     const chave = gerarChaveAcesso44({
       cUF: '41',
       aamm,
       cnpjEmitente: cnpjEmit,
       modelo: '55',
-      serie,
+      serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${87000000 + idx}`.slice(0, 8),
+      codigoAleatorio: `${84000000 + idx}`.slice(0, 8),
     })
-
-    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Carga granel autorizada sob regime especial. CFOP ${cfop}. NCM ${ncm}. Volume: ${litros} L.`
-
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 04: Energia Renovável & Biogás. CFOP ${cfop}. NCM ${ncm}. Volume: ${litros} L.`
     const itens: ItemDocumentoSintetico[] = [
       {
         nItem: 1,
@@ -585,14 +962,15 @@ export async function gerarDocumentoSintetico(params: {
         vProd: valorTotal,
         categoriaMaterial: 'outros',
         pesoKg: Math.round(litros * 0.84),
-        fatorCo2eKg: isBiometanol ? 0.45 : 3.12,
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
       },
     ]
-
     const xml = construirXmlNFe({
       chaveAcesso: chave,
       numero: nNF,
-      serie,
+      serie: '1',
       dataEmissao: dataHoje,
       cnpjEmitente: cnpjEmit,
       razaoSocialEmitente: isBiometanol
@@ -604,16 +982,14 @@ export async function gerarDocumentoSintetico(params: {
       itens,
       infCpl,
     })
-
     const hash = await calcularSha256(xml)
-
     return {
-      id: `SYN-COMB-${idx + 1}-${chave.slice(-6)}`,
-      segmento: 'combustiveis',
+      id: `SYN-ENG-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
       modeloFiscal: '55',
       chaveAcesso: chave,
       numeroDocumento: nNF,
-      serie,
+      serie: '1',
       dataEmissao: dataHoje,
       cnpjEmitente: cnpjEmit,
       razaoSocialEmitente: isBiometanol
@@ -627,40 +1003,320 @@ export async function gerarDocumentoSintetico(params: {
       hashSha256: hash,
       dadosAdicionais: {
         marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'energia',
+        protocoloSetorialNome: 'Energia Renovável & Biogás',
         combustivelTipo: isBiometanol ? 'biometanol' : 'diesel_s10',
         volumeLitros: litros,
       },
     }
   }
 
-  if (params.segmento === 'desmanche_cdv') {
-    // NF-e mod 55 de peças usadas de desmontagem (padrão Renova Ecopeças / CDVerde credenciado)
-    // NCMs automotivos 8708.29.99, 8708.70.90, 8407.34.90; com registro de chassi
-    const chassiFinal = (1000 + idx).toString().slice(-4)
-    const chassi = `93YBB05U0GJ${chassiFinal}`
-    const placa = `ORB-${(2000 + idx).toString().slice(-4)}`
-
-    const cnpjEmit = gerarCnpjValido({
-      alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 0,
-      seed: 3000 + idx * 13,
-    })
-    const cnpjDest = gerarCnpjValido({
-      alfanumerico: false,
-      seed: 4000 + idx * 19,
-    })
-
-    const nNF = (200000 + idx).toString()
-    const serie = '2'
+  // 5. QUÍMICA (Química & Petroquímica) - NF-e 55
+  if (slug === 'quimica') {
+    const nNF = (150000 + idx).toString()
     const chave = gerarChaveAcesso44({
       cUF: '41',
       aamm,
       cnpjEmitente: cnpjEmit,
       modelo: '55',
-      serie,
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${85000000 + idx}`.slice(0, 8),
+    })
+    const litros = 4000 + (idx % 5) * 1000
+    const vProd = Math.round(litros * 7.8 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `QUI-SOLV-REC-${idx + 1}`,
+        xProd: 'SOLVENTE INDUSTRIAL RECUPERADO DE REGENERAÇÃO TÉRMICA (NCM 3814.00.90)',
+        ncm: '3814.00.90',
+        cfop: '5102',
+        uCom: 'L',
+        qCom: litros,
+        vUnCom: 7.8,
+        vProd,
+        categoriaMaterial: 'outros',
+        pesoKg: Math.round(litros * 0.88),
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 05: Indústria Química & Petroquímica. CFOP 5102. NCM 3814.00.90.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Química Verde & Solventes Ecológicos do Brasil S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Indústria Química Integrada do Paraná Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-QUI-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Química Verde & Solventes Ecológicos do Brasil S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Indústria Química Integrada do Paraná Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'quimica',
+        protocoloSetorialNome: 'Química & Petroquímica',
+      },
+    }
+  }
+
+  // 6. LOGÍSTICA (Logística & Transporte de Cargas) - CT-e 57
+  if (slug === 'logistica') {
+    const nCT = (300000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '57',
+      serie: '1',
+      numeroDoc: nCT,
+      codigoAleatorio: `${65000000 + idx}`.slice(0, 8),
+    })
+    const rntrc = (80000000 + idx).toString()
+    const cfop = '6353'
+    const valorFrete = Math.round((2800 + ((idx * 340) % 4500)) * 100) / 100
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 06: Logística & Transporte. PR -> SP. RNTRC ${rntrc}. CFOP ${cfop}. GLEC Framework.`
+    const xml = construirXmlCTe({
+      chaveAcesso: chave,
+      numero: nCT,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
+      valorTotal: valorFrete,
+      rntrc,
+      cfop,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: 'SRV-FRETE-ROD',
+        xProd: 'PRESTACAO DE SERVICO DE TRANSPORTE RODOVIARIO DE CARGAS (PR-SP)',
+        ncm: '0000.00.00',
+        cfop,
+        uCom: 'UN',
+        qCom: 1,
+        vUnCom: valorFrete,
+        vProd: valorFrete,
+        categoriaMaterial: 'outros',
+        pesoKg: 12500,
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      },
+    ]
+    return {
+      id: `SYN-LOG-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '57',
+      chaveAcesso: chave,
+      numeroDocumento: nCT,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
+      valorTotal: valorFrete,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'logistica',
+        protocoloSetorialNome: 'Logística & Transporte de Cargas',
+        rntrc,
+        municipioOrigem: 'Curitiba/PR',
+        municipioDestino: 'São Paulo/SP',
+      },
+    }
+  }
+
+  // 7. TÊXTIL (Têxtil, Confecção & Calçados) - NF-e 55 (polímeros sintéticos / outros)
+  if (slug === 'textil') {
+    const nNF = (170000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${87000000 + idx}`.slice(0, 8),
+    })
+    const pesoKg = 1200 + (idx % 6) * 300
+    const vProd = Math.round(pesoKg * 8.5 * 100) / 100
+    const co2e = Math.round(pesoKg * 1.9 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `TEX-FIB-REC-${idx + 1}`,
+        xProd: 'FIBRA SINTETICA POLIESTER RECICLADA DE GARRAFAS PET (NCM 5503.20.90)',
+        ncm: '5503.20.90',
+        cfop: '5102',
+        uCom: 'KG',
+        qCom: pesoKg,
+        vUnCom: 8.5,
+        vProd,
+        categoriaMaterial: 'polimeros',
+        pesoKg,
+        fatorCo2eKg: 1.9,
+        co2eEvitadoKg: co2e,
+        statusCalculo: 'calculado',
+        teorDeclarado: 'Polímeros recuperados (fator oficial PlasticsEurope 1,90 kgCO₂e/kg)',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 07: Têxtil, Confecção & Calçados. CFOP 5102. NCM 5503.20.90.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'EcoTêxtil & Fibras Recicladas do Sul S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Tecelagem & Fiação Santa Catarina Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-TEX-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'EcoTêxtil & Fibras Recicladas do Sul S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Tecelagem & Fiação Santa Catarina Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'textil',
+        protocoloSetorialNome: 'Têxtil, Confecção & Calçados',
+      },
+    }
+  }
+
+  // 8. MINERAÇÃO (Mineração & Minerais Críticos) - NF-e 55
+  if (slug === 'mineracao') {
+    const nNF = (180000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${88000000 + idx}`.slice(0, 8),
+    })
+    const toneladas = 40 + (idx % 5) * 10
+    const vProd = Math.round(toneladas * 480.0 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `MIN-CONC-FER-${idx + 1}`,
+        xProd: 'MINERIO DE FERRO BENEFICIADO ALTO TEOR (PELLET FEED - NCM 2601.12.00)',
+        ncm: '2601.12.00',
+        cfop: '5102',
+        uCom: 'TON',
+        qCom: toneladas,
+        vUnCom: 480.0,
+        vProd,
+        categoriaMaterial: 'outros',
+        pesoKg: toneladas * 1000,
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 08: Mineração & Minerais Críticos. CFOP 5102. NCM 2601.12.00.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Mineração & Beneficiamento Serra Verde S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Pelotizadora & Portos Integrados do Brasil S.A.',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-MINER-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Mineração & Beneficiamento Serra Verde S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Pelotizadora & Portos Integrados do Brasil S.A.',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'mineracao',
+        protocoloSetorialNome: 'Mineração & Minerais Críticos',
+      },
+    }
+  }
+
+  // 9. AUTOMOTIVA (Automotiva / CDVs) - NF-e 55 (aço 2,18, alumínio 14,40, cobre 5,40)
+  if (slug === 'automotiva') {
+    const chassiFinal = (1000 + idx).toString().slice(-4)
+    const chassi = `93YBB05U0GJ${chassiFinal}`
+    const placa = `ORB-${(2000 + idx).toString().slice(-4)}`
+    const nNF = (200000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '2',
       numeroDoc: nNF,
       codigoAleatorio: `${76000000 + idx}`.slice(0, 8),
     })
-
     const itens: ItemDocumentoSintetico[] = [
       {
         nItem: 1,
@@ -675,6 +1331,8 @@ export async function gerarDocumentoSintetico(params: {
         categoriaMaterial: 'aco',
         pesoKg: 18.5,
         fatorCo2eKg: 2.18,
+        co2eEvitadoKg: Math.round(18.5 * 2.18 * 100) / 100,
+        statusCalculo: 'calculado',
       },
       {
         nItem: 2,
@@ -689,6 +1347,8 @@ export async function gerarDocumentoSintetico(params: {
         categoriaMaterial: 'aluminio',
         pesoKg: 8.2,
         fatorCo2eKg: 14.4,
+        co2eEvitadoKg: Math.round(8.2 * 14.4 * 100) / 100,
+        statusCalculo: 'calculado',
       },
       {
         nItem: 3,
@@ -702,17 +1362,17 @@ export async function gerarDocumentoSintetico(params: {
         vProd: 290.0,
         categoriaMaterial: 'cobre',
         pesoKg: 3.8,
-        fatorCo2eKg: 3.8,
+        fatorCo2eKg: 5.4,
+        co2eEvitadoKg: Math.round(3.8 * 5.4 * 100) / 100,
+        statusCalculo: 'calculado',
       },
     ]
-
     const valorTotal = itens.reduce((acc, it) => acc + it.vProd, 0)
-    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Peças de desmontagem técnica credenciada DETRAN/PR. Chassi rastreado: ${chassi}. Baixa DETRAN homologada.`
-
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 09: Automotiva/CDVs. Peças de desmontagem técnica credenciada DETRAN/PR. Chassi: ${chassi}.`
     const xml = construirXmlNFe({
       chaveAcesso: chave,
       numero: nNF,
-      serie,
+      serie: '2',
       dataEmissao: dataHoje,
       cnpjEmitente: cnpjEmit,
       razaoSocialEmitente: 'Renova Ecopeças & Desmontagem Veicular Integrada S.A. (Sandbox)',
@@ -722,16 +1382,14 @@ export async function gerarDocumentoSintetico(params: {
       itens,
       infCpl,
     })
-
     const hash = await calcularSha256(xml)
-
     return {
       id: `SYN-CDV-${idx + 1}-${chave.slice(-6)}`,
-      segmento: 'desmanche_cdv',
+      segmento: params.segmento,
       modeloFiscal: '55',
       chaveAcesso: chave,
       numeroDocumento: nNF,
-      serie,
+      serie: '2',
       dataEmissao: dataHoje,
       cnpjEmitente: cnpjEmit,
       razaoSocialEmitente: 'Renova Ecopeças & Desmontagem Veicular Integrada S.A.',
@@ -743,128 +1401,417 @@ export async function gerarDocumentoSintetico(params: {
       hashSha256: hash,
       dadosAdicionais: {
         marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'automotiva',
+        protocoloSetorialNome: 'Indústria Automotiva, Autopeças & CDVs',
         chassi,
         placa,
       },
     }
   }
 
-  if (params.segmento === 'transporte_cte') {
-    // CT-e mod 57 de frete interestadual: CFOP 6353, RNTRC, volumes de carga
-    const cnpjEmit = gerarCnpjValido({
-      alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 1,
-      seed: 5000 + idx * 17,
-    })
-    const cnpjDest = gerarCnpjValido({
-      alfanumerico: false,
-      seed: 6000 + idx * 23,
-    })
-
-    const nCT = (300000 + idx).toString()
-    const serie = '1'
-    const chave = gerarChaveAcesso44({
-      cUF: '41',
-      aamm,
-      cnpjEmitente: cnpjEmit,
-      modelo: '57',
-      serie,
-      numeroDoc: nCT,
-      codigoAleatorio: `${65000000 + idx}`.slice(0, 8),
-    })
-
-    const rntrc = (80000000 + idx).toString()
-    const cfop = '6353'
-    const valorFrete = Math.round((2800 + ((idx * 340) % 4500)) * 100) / 100
-    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Transporte interestadual PR -> SP. RNTRC ${rntrc}. CFOP ${cfop}. Rastreabilidade de frete rodoviário de cargas.`
-
-    const xml = construirXmlCTe({
-      chaveAcesso: chave,
-      numero: nCT,
-      serie,
-      dataEmissao: dataHoje,
-      cnpjEmitente: cnpjEmit,
-      razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A. (Sandbox)',
-      cnpjDestinatario: cnpjDest,
-      razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
-      valorTotal: valorFrete,
-      rntrc,
-      cfop,
-      infCpl,
-    })
-
-    const hash = await calcularSha256(xml)
-
-    const itens: ItemDocumentoSintetico[] = [
-      {
-        nItem: 1,
-        cProd: 'SRV-FRETE-ROD',
-        xProd: 'PRESTACAO DE SERVICO DE TRANSPORTE RODOVIARIO DE CARGAS (PR-SP)',
-        ncm: '0000.00.00',
-        cfop,
-        uCom: 'UN',
-        qCom: 1,
-        vUnCom: valorFrete,
-        vProd: valorFrete,
-        categoriaMaterial: 'outros',
-        pesoKg: 12500,
-      },
-    ]
-
-    return {
-      id: `SYN-CTE-${idx + 1}-${chave.slice(-6)}`,
-      segmento: 'transporte_cte',
-      modeloFiscal: '57',
-      chaveAcesso: chave,
-      numeroDocumento: nCT,
-      serie,
-      dataEmissao: dataHoje,
-      cnpjEmitente: cnpjEmit,
-      razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A.',
-      cnpjDestinatario: cnpjDest,
-      razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
-      valorTotal: valorFrete,
-      itens,
-      xmlConteudo: xml,
-      hashSha256: hash,
-      dadosAdicionais: {
-        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
-        rntrc,
-        municipioOrigem: 'Curitiba/PR',
-        municipioDestino: 'São Paulo/SP',
-      },
-    }
-  }
-
-  // ----------------------------------------------------------------------
-  // a. COMÉRCIO & VAREJO (varejo_reverso)
-  // CFOPs 5.949 / 6.949 / 1.949
-  // NCMs: 8504.40.10 (fontes/carregadores), 8471.60.52 (periféricos), 8517.62.77 (roteadores)
-  // Materiais das peças restritos aos catalogados: aço, alumínio, cobre, polímeros
-  // ----------------------------------------------------------------------
-  if (params.segmento === 'varejo_reverso') {
-    const cnpjEmit = gerarCnpjValido({
-      alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 0,
-      seed: 7000 + idx * 19,
-    })
-    const cnpjDest = gerarCnpjValido({
-      alfanumerico: false,
-      seed: 7500 + idx * 29,
-    })
-
-    const nNF = (400000 + idx).toString()
-    const serie = '1'
+  // 10. ALIMENTOS (Alimentos & Bebidas) - NF-e 55
+  if (slug === 'alimentos') {
+    const nNF = (210000 + idx).toString()
     const chave = gerarChaveAcesso44({
       cUF: '41',
       aamm,
       cnpjEmitente: cnpjEmit,
       modelo: '55',
-      serie,
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${71000000 + idx}`.slice(0, 8),
+    })
+    const pesoKg = 5000 + (idx % 5) * 1000
+    const vProd = Math.round(pesoKg * 2.1 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `ALI-SUB-RAC-${idx + 1}`,
+        xProd: 'SUBPRODUTO DE LEVEDURA E CEVADA PARA RACAO ANIMAL CIRCULAR (NCM 2303.30.00)',
+        ncm: '2303.30.00',
+        cfop: '5102',
+        uCom: 'KG',
+        qCom: pesoKg,
+        vUnCom: 2.1,
+        vProd,
+        categoriaMaterial: 'outros',
+        pesoKg,
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 10: Alimentos & Bebidas. CFOP 5102. NCM 2303.30.00. Economia circular de subprodutos alimentícios.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Cervejaria & Alimentos Sustentáveis do Brasil S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Fábrica de Nutrição Animal & Rações do Sul Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-ALI-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Cervejaria & Alimentos Sustentáveis do Brasil S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Fábrica de Nutrição Animal & Rações do Sul Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'alimentos',
+        protocoloSetorialNome: 'Alimentos & Bebidas',
+      },
+    }
+  }
+
+  // 11. PAPEL (Papel & Celulose) - NF-e 55
+  if (slug === 'papel') {
+    const nNF = (220000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${72000000 + idx}`.slice(0, 8),
+    })
+    const toneladas = 10 + (idx % 6) * 2
+    const pesoKg = toneladas * 1000
+    const vProd = Math.round(toneladas * 650.0 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `PAP-APAR-OND-${idx + 1}`,
+        xProd: 'APARAS DE PAPELAO ONDULADO CLASSIFICADAS PARA RECICLAGEM (NCM 4707.10.00)',
+        ncm: '4707.10.00',
+        cfop: '5102',
+        uCom: 'TON',
+        qCom: toneladas,
+        vUnCom: 650.0,
+        vProd,
+        categoriaMaterial: 'outros',
+        pesoKg,
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 11: Papel & Celulose. CFOP 5102. NCM 4707.10.00. Logística reversa e reciclagem celulósica.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Klabin & Papel Reciclado Integrado S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Embalagens & Caixas Paraná Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-PAP-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Klabin & Papel Reciclado Integrado S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Embalagens & Caixas Paraná Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'papel',
+        protocoloSetorialNome: 'Papel & Celulose',
+      },
+    }
+  }
+
+  // 12. PLÁSTICOS (Plásticos & Economia Circular) - NF-e 55 (fator polímeros 1,90)
+  if (slug === 'plasticos') {
+    const nNF = (230000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${73000000 + idx}`.slice(0, 8),
+    })
+    const pesoKg = 2500 + (idx % 6) * 500
+    const vProd = Math.round(pesoKg * 6.2 * 100) / 100
+    const co2e = Math.round(pesoKg * 1.9 * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `PLA-GRAN-PP-${idx + 1}`,
+        xProd: 'RESINA TERMOPLASTICA RECICLADA EM GRAOS PP/PEAD (NCM 3902.10.20)',
+        ncm: '3902.10.20',
+        cfop: '5102',
+        uCom: 'KG',
+        qCom: pesoKg,
+        vUnCom: 6.2,
+        vProd,
+        categoriaMaterial: 'polimeros',
+        pesoKg,
+        fatorCo2eKg: 1.9,
+        co2eEvitadoKg: co2e,
+        statusCalculo: 'calculado',
+        teorDeclarado:
+          'Polímeros Automotivos e Termoplásticos PP (fator PlasticsEurope 1,90 kgCO₂e/kg)',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 12: Plásticos & Economia Circular. CFOP 5102. NCM 3902.10.20. Reciclagem mecânica pós-consumo.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Polímeros Circulares & Reciclagem Brasil S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Indústria de Injeção Plástica Curitiba Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-PLA-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Polímeros Circulares & Reciclagem Brasil S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Indústria de Injeção Plástica Curitiba Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'plasticos',
+        protocoloSetorialNome: 'Plásticos & Economia Circular',
+      },
+    }
+  }
+
+  // 13. FARMACÊUTICA (Farmacêutica & Cosmética) - NF-e 55
+  if (slug === 'farmaceutica') {
+    const nNF = (240000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${74000000 + idx}`.slice(0, 8),
+    })
+    const vProd = Math.round((18000 + (idx % 5) * 3500) * 100) / 100
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `FAR-EMB-REV-${idx + 1}`,
+        xProd: 'DESCARTE CONTROLADO DE EMBALAGENS FARMACEUTICAS BLISTER/VIDRO (NCM 3004.90.99)',
+        ncm: '3004.90.99',
+        cfop: '5949',
+        uCom: 'UN',
+        qCom: 1000,
+        vUnCom: vProd / 1000,
+        vProd,
+        categoriaMaterial: 'outros',
+        pesoKg: 350,
+        fatorCo2eKg: 0,
+        co2eEvitadoKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      },
+    ]
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 13: Indústria Farmacêutica & Cosmética. Logística reversa de medicamentos Decreto 10.388/2020. CFOP 5949.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Laboratório Farmacêutico Integrado do Sul S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Logística Reversa & Incineração Térmica Hospitalar Ltda',
+      valorTotal: vProd,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-FAR-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Laboratório Farmacêutico Integrado do Sul S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Logística Reversa & Incineração Térmica Hospitalar Ltda',
+      valorTotal: vProd,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'farmaceutica',
+        protocoloSetorialNome: 'Farmacêutica & Cosmética',
+      },
+    }
+  }
+
+  // 14. CONSTRUÇÃO (Construção Civil & Canteiros Verdes / construcao_rcd) - NF-e 55 (concreto 0,12 e aço 2,18)
+  if (slug === 'construcao') {
+    const nNF = (500000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
+      numeroDoc: nNF,
+      codigoAleatorio: `${43000000 + idx}`.slice(0, 8),
+    })
+    const cfop = idx % 2 === 0 ? '5102' : '5949'
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `RCD-AGREG-BRITA-${idx + 1}`,
+        xProd: 'AGREGADO RECICLADO DE CONCRETO (BRITA RCD GRADUADA)',
+        ncm: '2517.10.00',
+        cfop,
+        uCom: 'TON',
+        qCom: 12 + (idx % 8),
+        vUnCom: 48.0,
+        vProd: Math.round((12 + (idx % 8)) * 48.0 * 100) / 100,
+        categoriaMaterial: 'concreto',
+        pesoKg: (12 + (idx % 8)) * 1000,
+        fatorCo2eKg: 0.12,
+        co2eEvitadoKg: Math.round((12 + (idx % 8)) * 1000 * 0.12 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+      {
+        nItem: 2,
+        cProd: `RCD-BLOCO-CONC-${idx + 1}`,
+        xProd: 'BLOCO DE CONCRETO RECICLADO ESTRUTURAL 14X19X39',
+        ncm: '6810.11.00',
+        cfop,
+        uCom: 'MIL',
+        qCom: 2 + (idx % 3),
+        vUnCom: 2850.0,
+        vProd: Math.round((2 + (idx % 3)) * 2850.0 * 100) / 100,
+        categoriaMaterial: 'concreto',
+        pesoKg: (2 + (idx % 3)) * 12000,
+        fatorCo2eKg: 0.12,
+        co2eEvitadoKg: Math.round((2 + (idx % 3)) * 12000 * 0.12 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+      {
+        nItem: 3,
+        cProd: `RCD-ACO-ARMAD-${idx + 1}`,
+        xProd: 'ACO CA-50 RECUPERADO DE DEMOLICAO CONTROLADA',
+        ncm: '7214.20.00',
+        cfop,
+        uCom: 'KG',
+        qCom: 2500 + (idx % 5) * 500,
+        vUnCom: 4.1,
+        vProd: Math.round((2500 + (idx % 5) * 500) * 4.1 * 100) / 100,
+        categoriaMaterial: 'aco',
+        pesoKg: 2500 + (idx % 5) * 500,
+        fatorCo2eKg: 2.18,
+        co2eEvitadoKg: Math.round((2500 + (idx % 5) * 500) * 2.18 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+    ]
+    const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 14: Construção Civil & Canteiros Verdes. CONAMA 307/2002. CFOP ${cfop}.`
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'EcoBrita & Reciclagem de RCD Construção Civil S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Construtora Metropolitana Obras Sustentáveis Ltda',
+      valorTotal,
+      itens,
+      infCpl,
+    })
+    const hash = await calcularSha256(xml)
+    return {
+      id: `SYN-RCD-${idx + 1}-${chave.slice(-6)}`,
+      segmento: params.segmento,
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie: '1',
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'EcoBrita & Reciclagem de RCD Construção Civil S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Construtora Metropolitana Obras Sustentáveis Ltda',
+      valorTotal,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'construcao',
+        protocoloSetorialNome: 'Construção Civil & Canteiros Verdes',
+      },
+    }
+  }
+
+  // 15. VAREJO (Comércio Varejista / varejo_reverso) - NF-e 55 (aço 2,18, alu 14,40, cobre 5,40, polímeros 1,90)
+  if (slug === 'varejo') {
+    const nNF = (400000 + idx).toString()
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie: '1',
       numeroDoc: nNF,
       codigoAleatorio: `${54000000 + idx}`.slice(0, 8),
     })
-
     const cfop = idx % 3 === 0 ? '5949' : idx % 3 === 1 ? '6949' : '1949'
-
     const itens: ItemDocumentoSintetico[] = [
       {
         nItem: 1,
@@ -931,14 +1878,12 @@ export async function gerarDocumentoSintetico(params: {
         statusCalculo: 'calculado',
       },
     ]
-
     const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
-    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Remessa para logística reversa de eletroeletrônicos e embalagens no varejo físico. CFOP ${cfop}. PNRS Lei 12.305/2010.`
-
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 15: Comércio Varejista. Logística reversa eletroeletrônicos. CFOP ${cfop}. PNRS Lei 12.305/2010.`
     const xml = construirXmlNFe({
       chaveAcesso: chave,
       numero: nNF,
-      serie,
+      serie: '1',
       dataEmissao: dataHoje,
       cnpjEmitente: cnpjEmit,
       razaoSocialEmitente: 'Varejo Sustentável & Eletro Reversa Brasil S.A. (Sandbox)',
@@ -948,16 +1893,14 @@ export async function gerarDocumentoSintetico(params: {
       itens,
       infCpl,
     })
-
     const hash = await calcularSha256(xml)
-
     return {
       id: `SYN-VAR-${idx + 1}-${chave.slice(-6)}`,
-      segmento: 'varejo_reverso',
+      segmento: params.segmento,
       modeloFiscal: '55',
       chaveAcesso: chave,
       numeroDocumento: nNF,
-      serie,
+      serie: '1',
       dataEmissao: dataHoje,
       cnpjEmitente: cnpjEmit,
       razaoSocialEmitente: 'Varejo Sustentável & Eletro Reversa Brasil S.A.',
@@ -969,167 +1912,29 @@ export async function gerarDocumentoSintetico(params: {
       hashSha256: hash,
       dadosAdicionais: {
         marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        protocoloSetorialSlug: 'varejo',
+        protocoloSetorialNome: 'Comércio Varejista, Atacado & Serviços',
       },
     }
   }
 
-  // ----------------------------------------------------------------------
-  // b. IMOBILIÁRIO & CONSTRUÇÃO CIVIL (construcao_rcd)
-  // RCD, agregados reciclados de concreto. CFOPs 5.102 / 5.949
-  // NCMs: 6810.11.00 (blocos concreto), 2517.10.00 (agregados/brita), 7214.20.00 (armaduras aço)
-  // Materiais: concreto 0,12 e aço 2,18
-  // ----------------------------------------------------------------------
-  if (params.segmento === 'construcao_rcd') {
-    const cnpjEmit = gerarCnpjValido({
-      alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 1,
-      seed: 8000 + idx * 23,
-    })
-    const cnpjDest = gerarCnpjValido({
-      alfanumerico: false,
-      seed: 8500 + idx * 37,
-    })
-
-    const nNF = (500000 + idx).toString()
-    const serie = '1'
-    const chave = gerarChaveAcesso44({
-      cUF: '41',
-      aamm,
-      cnpjEmitente: cnpjEmit,
-      modelo: '55',
-      serie,
-      numeroDoc: nNF,
-      codigoAleatorio: `${43000000 + idx}`.slice(0, 8),
-    })
-
-    const cfop = idx % 2 === 0 ? '5102' : '5949'
-
-    const itens: ItemDocumentoSintetico[] = [
-      {
-        nItem: 1,
-        cProd: `RCD-AGREG-BRITA-${idx + 1}`,
-        xProd: 'AGREGADO RECICLADO DE CONCRETO (BRITA RCD GRADUADA)',
-        ncm: '2517.10.00',
-        cfop,
-        uCom: 'TON',
-        qCom: 12 + (idx % 8),
-        vUnCom: 48.0,
-        vProd: Math.round((12 + (idx % 8)) * 48.0 * 100) / 100,
-        categoriaMaterial: 'concreto',
-        pesoKg: (12 + (idx % 8)) * 1000,
-        fatorCo2eKg: 0.12,
-        co2eEvitadoKg: Math.round((12 + (idx % 8)) * 1000 * 0.12 * 100) / 100,
-        statusCalculo: 'calculado',
-      },
-      {
-        nItem: 2,
-        cProd: `RCD-BLOCO-CONC-${idx + 1}`,
-        xProd: 'BLOCO DE CONCRETO RECICLADO ESTRUTURAL 14X19X39',
-        ncm: '6810.11.00',
-        cfop,
-        uCom: 'MIL',
-        qCom: 2 + (idx % 3),
-        vUnCom: 2850.0,
-        vProd: Math.round((2 + (idx % 3)) * 2850.0 * 100) / 100,
-        categoriaMaterial: 'concreto',
-        pesoKg: (2 + (idx % 3)) * 12000,
-        fatorCo2eKg: 0.12,
-        co2eEvitadoKg: Math.round((2 + (idx % 3)) * 12000 * 0.12 * 100) / 100,
-        statusCalculo: 'calculado',
-      },
-      {
-        nItem: 3,
-        cProd: `RCD-ACO-ARMAD-${idx + 1}`,
-        xProd: 'ACO CA-50 RECUPERADO DE DEMOLICAO CONTROLADA',
-        ncm: '7214.20.00',
-        cfop,
-        uCom: 'KG',
-        qCom: 2500 + (idx % 5) * 500,
-        vUnCom: 4.1,
-        vProd: Math.round((2500 + (idx % 5) * 500) * 4.1 * 100) / 100,
-        categoriaMaterial: 'aco',
-        pesoKg: 2500 + (idx % 5) * 500,
-        fatorCo2eKg: 2.18,
-        co2eEvitadoKg: Math.round((2500 + (idx % 5) * 500) * 2.18 * 100) / 100,
-        statusCalculo: 'calculado',
-      },
-    ]
-
-    const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
-    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Agregados e materiais reciclados de construção civil (RCD). CONAMA 307/2002. CFOP ${cfop}.`
-
-    const xml = construirXmlNFe({
-      chaveAcesso: chave,
-      numero: nNF,
-      serie,
-      dataEmissao: dataHoje,
-      cnpjEmitente: cnpjEmit,
-      razaoSocialEmitente: 'EcoBrita & Reciclagem de RCD Construção Civil S.A. (Sandbox)',
-      cnpjDestinatario: cnpjDest,
-      razaoSocialDestinatario: 'Construtora Metropolitana Obras Sustentáveis Ltda',
-      valorTotal,
-      itens,
-      infCpl,
-    })
-
-    const hash = await calcularSha256(xml)
-
-    return {
-      id: `SYN-RCD-${idx + 1}-${chave.slice(-6)}`,
-      segmento: 'construcao_rcd',
-      modeloFiscal: '55',
-      chaveAcesso: chave,
-      numeroDocumento: nNF,
-      serie,
-      dataEmissao: dataHoje,
-      cnpjEmitente: cnpjEmit,
-      razaoSocialEmitente: 'EcoBrita & Reciclagem de RCD Construção Civil S.A.',
-      cnpjDestinatario: cnpjDest,
-      razaoSocialDestinatario: 'Construtora Metropolitana Obras Sustentáveis Ltda',
-      valorTotal,
-      itens,
-      xmlConteudo: xml,
-      hashSha256: hash,
-      dadosAdicionais: {
-        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
-      },
-    }
-  }
-
-  // ----------------------------------------------------------------------
-  // c. MINERAÇÃO URBANA & MATERIAIS CRÍTICOS (mineracao_urbana_criticos)
-  // Sucata eletrônica, placas de circuito impresso (NCM 8534.00.00), resíduos (NCM 8548.00.00)
-  // CFOP 5.949 / 6.949
-  // REGRA CRÍTICA DO USUÁRIO:
-  // APENAS COBRE entra no cálculo de carbono (fator 5,40).
-  // Ouro, paládio, prata e terras raras (neodímio) são 100% rastreáveis (identificador de lote,
-  // teor declarado em ppm/g/t, hash SHA-256, DPP) mas seus campos fator_co2e_kg/co2e_evitado_kg
-  // recebem status "em estruturação de catálogo" — valor nulo/zero com indicação pericial explícita,
-  // NENHUM fator inventado, NENHUMA alegação de crédito de carbono sobre esses materiais.
-  // ----------------------------------------------------------------------
-  // params.segmento === 'mineracao_urbana_criticos'
-  const cnpjEmit = gerarCnpjValido({
-    alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 0,
-    seed: 9000 + idx * 31,
-  })
-  const cnpjDest = gerarCnpjValido({
-    alfanumerico: false,
-    seed: 9500 + idx * 41,
-  })
-
+  // 16. MATERIAIS CRÍTICOS RECUPERADOS & MINERAÇÃO URBANA - NF-e 55
+  // REGRA FIXA DO USUÁRIO:
+  // Apenas cobre entra no cálculo de carbono (fator oficial 5,40).
+  // Ouro, paládio, prata e terras raras são 100% rastreáveis com status pericial "em estruturação de catálogo"
+  // e CO₂e zerado. NUNCA inventar número.
   const nNF = (600000 + idx).toString()
-  const serie = '1'
   const chave = gerarChaveAcesso44({
     cUF: '41',
     aamm,
     cnpjEmitente: cnpjEmit,
     modelo: '55',
-    serie,
+    serie: '1',
     numeroDoc: nNF,
     codigoAleatorio: `${32000000 + idx}`.slice(0, 8),
   })
-
   const cfop = idx % 2 === 0 ? '5949' : '6949'
-
+  const pesoCobre = 350 + (idx % 10) * 20
   const itens: ItemDocumentoSintetico[] = [
     {
       nItem: 1,
@@ -1138,15 +1943,15 @@ export async function gerarDocumentoSintetico(params: {
       ncm: '8534.00.00',
       cfop,
       uCom: 'KG',
-      qCom: 350 + (idx % 10) * 20,
+      qCom: pesoCobre,
       vUnCom: 48.0,
-      vProd: Math.round((350 + (idx % 10) * 20) * 48.0 * 100) / 100,
+      vProd: Math.round(pesoCobre * 48.0 * 100) / 100,
       categoriaMaterial: 'cobre',
-      pesoKg: 350 + (idx % 10) * 20,
+      pesoKg: pesoCobre,
       fatorCo2eKg: 5.4,
-      co2eEvitadoKg: Math.round((350 + (idx % 10) * 20) * 5.4 * 100) / 100,
+      co2eEvitadoKg: Math.round(pesoCobre * 5.4 * 100) / 100,
       statusCalculo: 'calculado',
-      teorDeclarado: 'Cobre 99,9% refinado secundário',
+      teorDeclarado: 'Cobre 99,9% refinado secundário (fator oficial ICA 5,40 kgCO₂e/kg)',
     },
     {
       nItem: 2,
@@ -1200,14 +2005,12 @@ export async function gerarDocumentoSintetico(params: {
       teorDeclarado: 'Teor declarado: 31,5% NdFeB • Sem alegação de carbono',
     },
   ]
-
   const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
-  const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Mineração urbana e materiais críticos recuperados. CFOP ${cfop}. Apenas cobre entra no cálculo de carbono (fator 5,40). Ouro, paládio, prata e terras raras são 100% rastreáveis com status pericial 'em estruturação de catálogo' e zero crédito de carbono.`
-
+  const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 16: Materiais Críticos Recuperados & Mineração Urbana. CFOP ${cfop}. Apenas cobre entra no cálculo de carbono (fator oficial ICA 5,40). Ouro, paládio, prata e terras raras com status pericial 'em estruturação de catálogo' e zero crédito de carbono.`
   const xml = construirXmlNFe({
     chaveAcesso: chave,
     numero: nNF,
-    serie,
+    serie: '1',
     dataEmissao: dataHoje,
     cnpjEmitente: cnpjEmit,
     razaoSocialEmitente: 'Urban Mining & Materiais Críticos do Brasil S.A. (Sandbox)',
@@ -1217,16 +2020,14 @@ export async function gerarDocumentoSintetico(params: {
     itens,
     infCpl,
   })
-
   const hash = await calcularSha256(xml)
-
   return {
     id: `SYN-MIN-${idx + 1}-${chave.slice(-6)}`,
-    segmento: 'mineracao_urbana_criticos',
+    segmento: params.segmento,
     modeloFiscal: '55',
     chaveAcesso: chave,
     numeroDocumento: nNF,
-    serie,
+    serie: '1',
     dataEmissao: dataHoje,
     cnpjEmitente: cnpjEmit,
     razaoSocialEmitente: 'Urban Mining & Materiais Críticos do Brasil S.A.',
@@ -1238,6 +2039,8 @@ export async function gerarDocumentoSintetico(params: {
     hashSha256: hash,
     dadosAdicionais: {
       marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+      protocoloSetorialSlug: 'materiais-criticos-recuperados',
+      protocoloSetorialNome: 'Materiais Críticos Recuperados & Mineração Urbana',
     },
   }
 }

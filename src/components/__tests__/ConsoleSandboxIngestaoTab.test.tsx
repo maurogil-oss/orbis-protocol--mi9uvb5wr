@@ -10,6 +10,11 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
   })
 
   it('exibe erro de backend quando a gravação de selos ou lotes falhar (não engole erros)', async () => {
+    // Mock do emissoes_inventario para o item 1
+    vi.spyOn(pb.collection('emissoes_inventario'), 'create').mockResolvedValue({
+      id: 'inv-test-1',
+    } as any)
+
     // Simula erro 400 Failed to create record do PocketBase em selos
     const selosCreateSpy = vi.spyOn(pb.collection('selos'), 'create').mockRejectedValue({
       status: 400,
@@ -49,6 +54,12 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
   })
 
   it('reporta sucesso e contagem de peças quando gravação no backend responde 200/201', async () => {
+    const invCreateSpy = vi
+      .spyOn(pb.collection('emissoes_inventario'), 'create')
+      .mockResolvedValue({
+        id: 'inv-123',
+      } as any)
+
     vi.spyOn(pb.collection('selos'), 'create').mockResolvedValue({
       id: 'selo-123',
       codigo_selo: 'PR-SEAL-2026-999999',
@@ -88,5 +99,23 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
 
     expect(screen.getByText(/Gravados: 1/i)).toBeInTheDocument()
     expect(screen.queryByText(/Falhados:/i)).not.toBeInTheDocument()
+    expect(invCreateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        origem: 'sintetico',
+        escopo1_total_tco2e: expect.any(Number),
+        escopo2_localizacao_tco2e: expect.any(Number),
+        escopo3_total_tco2e: expect.any(Number),
+      }),
+    )
+  })
+
+  it('permite selecionar qualquer um dos 15 protocolos setoriais no combobox', () => {
+    render(<ConsoleSandboxIngestaoTab />)
+    const select = screen.getByRole('combobox') as HTMLSelectElement
+    expect(select.options.length).toBe(16) // 15 protocolos + materiais críticos
+    fireEvent.change(select, { target: { value: 'siderurgia' } })
+    expect(select.value).toBe('siderurgia')
+    fireEvent.change(select, { target: { value: 'materiais-criticos-recuperados' } })
+    expect(select.value).toBe('materiais-criticos-recuperados')
   })
 })

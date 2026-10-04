@@ -341,11 +341,11 @@ export function PainelDmrvEmissoesEvitadas() {
             <div className="space-y-0.5">
               <CardTitle className="text-base font-bold flex items-center gap-2">
                 <TrendingDown className="h-4 w-4 text-emerald-500" />
-                Série Temporal de Descarbonização (Últimos 6 Meses)
+                Série Temporal de Descarbonização (Datas Reais dos Lotes)
               </CardTitle>
               <CardDescription className="text-xs">
-                Evolução mensal acumulada de emissões evitadas e massa valorizada conforme o GHG
-                Protocol.
+                Evolução mensal agregada a partir da data de criação e processamento real dos lotes,
+                em conformidade com o GHG Protocol e SBCE.
               </CardDescription>
             </div>
             <Badge variant="outline" className="text-xs font-mono">

@@ -3,8 +3,11 @@ import pb from '@/lib/pocketbase/client'
 import {
   gerarLoteSintetico,
   formatarCnpj,
+  normalizarSegmento,
   type DocumentoSintetico,
   type SegmentoSandbox,
+  type ProtocoloSetorialSlug,
+  SEGMENTOS_SANDBOX_CATALOGO,
   MARCA_SANDBOX_OBRIGATORIA,
 } from '@/services/sandboxSyntheticGenerator'
 import {
@@ -18,6 +21,7 @@ import {
   Eye,
   RefreshCw,
   XCircle,
+  Layers,
 } from 'lucide-react'
 import { getErrorMessage } from '@/lib/pocketbase/errors'
 
@@ -30,14 +34,164 @@ export interface PipelineIngestaoResultado {
   registroSeloId?: string
   registroLoteId?: string
   registroPecaId?: string
+  registroInventarioId?: string
   pecasGravadas?: number
   pecasTotal?: number
   erro?: string
   detalhesErro?: string
 }
 
+/**
+ * Calcula os valores de Escopo 1, 2 e 3 do inventário GHG coerentes com o protocolo setorial do lote.
+ * Ex.:
+ * - combustíveis / energia / logística: predomínio de Escopo 1 (frotas, combustão)
+ * - siderurgia / cimento / química / mineração: altas emissões diretas (Escopo 1) e processo
+ * - varejo / têxtil / alimentos / papel / farmacêutica: eletricidade (Escopo 2) e cadeia (Escopo 3)
+ * - construção / materiais críticos: forte cadeia de suprimentos / insumos (Escopo 3)
+ */
+export function calcularInventarioGhgPorSegmento(
+  slug: ProtocoloSetorialSlug,
+  volumeLote: number,
+): {
+  escopo1Tco2e: number
+  escopo2LocalizacaoTco2e: number
+  escopo2MercadoTco2e: number
+  escopo3Tco2e: number
+  emissoesTotaisTco2e: number
+  statusSbce: 'isento_monitoramento' | 'dever_reporte_10k' | 'compensacao_25k'
+  descricaoPerfil: string
+} {
+  const fatorVol = Math.max(1, Math.min(5, volumeLote / 10))
+
+  let esc1 = 45.0
+  let esc2 = 25.0
+  let esc3 = 110.0
+  let desc = 'Perfil balanceado de serviços e comércio'
+
+  switch (slug) {
+    case 'energia':
+      esc1 = Math.round(180.5 * fatorVol * 10) / 10
+      esc2 = Math.round(22.0 * fatorVol * 10) / 10
+      esc3 = Math.round(95.0 * fatorVol * 10) / 10
+      desc = 'Combustão estacionária, destilação e frotas de distribuição de combustíveis'
+      break
+    case 'logistica':
+      esc1 = Math.round(240.0 * fatorVol * 10) / 10
+      esc2 = Math.round(14.5 * fatorVol * 10) / 10
+      esc3 = Math.round(130.0 * fatorVol * 10) / 10
+      desc = 'Combustão móvel de frota pesada interestadual diesel B14 e agregados'
+      break
+    case 'siderurgia':
+      esc1 = Math.round(520.0 * fatorVol * 10) / 10
+      esc2 = Math.round(180.0 * fatorVol * 10) / 10
+      esc3 = Math.round(310.0 * fatorVol * 10) / 10
+      desc = 'Redução metalúrgica em altos-fornos, fornos a arco EAF e bio-redutores'
+      break
+    case 'cimento':
+      esc1 = Math.round(480.0 * fatorVol * 10) / 10
+      esc2 = Math.round(110.0 * fatorVol * 10) / 10
+      esc3 = Math.round(260.0 * fatorVol * 10) / 10
+      desc = 'Descarbonatação do calcário a 1450°C e coprocessamento de clínquer'
+      break
+    case 'quimica':
+      esc1 = Math.round(310.0 * fatorVol * 10) / 10
+      esc2 = Math.round(95.0 * fatorVol * 10) / 10
+      esc3 = Math.round(220.0 * fatorVol * 10) / 10
+      desc = 'Reações químicas industriais, craqueamento térmico e solventes'
+      break
+    case 'mineracao':
+      esc1 = Math.round(290.0 * fatorVol * 10) / 10
+      esc2 = Math.round(140.0 * fatorVol * 10) / 10
+      esc3 = Math.round(185.0 * fatorVol * 10) / 10
+      desc = 'Operação de mina a céu aberto, britagem e flotação de minerais'
+      break
+    case 'agro':
+      esc1 = Math.round(140.0 * fatorVol * 10) / 10
+      esc2 = Math.round(18.0 * fatorVol * 10) / 10
+      esc3 = Math.round(210.0 * fatorVol * 10) / 10
+      desc = 'Fertilizantes nitrogenados, diesel agrícola em tratores e colheita'
+      break
+    case 'automotiva':
+      esc1 = Math.round(65.0 * fatorVol * 10) / 10
+      esc2 = Math.round(42.0 * fatorVol * 10) / 10
+      esc3 = Math.round(290.0 * fatorVol * 10) / 10
+      desc = 'Desmontagem técnica de veículos em fim de vida (ELV), logística reversa e despoluição'
+      break
+    case 'construcao':
+      esc1 = Math.round(55.0 * fatorVol * 10) / 10
+      esc2 = Math.round(30.0 * fatorVol * 10) / 10
+      esc3 = Math.round(380.0 * fatorVol * 10) / 10
+      desc =
+        'Canteiros de obras, armaduras de aço CA-50, agregados de concreto e demolição controlada'
+      break
+    case 'varejo':
+      esc1 = Math.round(28.0 * fatorVol * 10) / 10
+      esc2 = Math.round(85.0 * fatorVol * 10) / 10
+      esc3 = Math.round(245.0 * fatorVol * 10) / 10
+      desc =
+        'Eletricidade predial do SIN em centros de distribuição e logística reversa de eletroeletrônicos'
+      break
+    case 'materiais-criticos-recuperados':
+      esc1 = Math.round(22.0 * fatorVol * 10) / 10
+      esc2 = Math.round(48.0 * fatorVol * 10) / 10
+      esc3 = Math.round(320.0 * fatorVol * 10) / 10
+      desc =
+        'Cominuição de placas de circuito impresso, segregação de cobre secundário e rastreabilidade urbana'
+      break
+    case 'textil':
+      esc1 = Math.round(40.0 * fatorVol * 10) / 10
+      esc2 = Math.round(62.0 * fatorVol * 10) / 10
+      esc3 = Math.round(160.0 * fatorVol * 10) / 10
+      desc = 'Fiação, tecelagem, reciclagem de garrafas PET em fios e tingimento com caldeiras'
+      break
+    case 'plasticos':
+      esc1 = Math.round(50.0 * fatorVol * 10) / 10
+      esc2 = Math.round(75.0 * fatorVol * 10) / 10
+      esc3 = Math.round(210.0 * fatorVol * 10) / 10
+      desc = 'Extrusão, injeção termoplástica e reciclagem mecânica de resinas PP/PEAD'
+      break
+    case 'alimentos':
+      esc1 = Math.round(85.0 * fatorVol * 10) / 10
+      esc2 = Math.round(58.0 * fatorVol * 10) / 10
+      esc3 = Math.round(195.0 * fatorVol * 10) / 10
+      desc = 'Processamento térmico, fermentação cervejeira e embalagens pós-consumo'
+      break
+    case 'papel':
+      esc1 = Math.round(110.0 * fatorVol * 10) / 10
+      esc2 = Math.round(50.0 * fatorVol * 10) / 10
+      esc3 = Math.round(175.0 * fatorVol * 10) / 10
+      desc = 'Despolpamento, caldeiras de recuperação e reciclagem de papelão ondulado'
+      break
+    case 'farmaceutica':
+      esc1 = Math.round(32.0 * fatorVol * 10) / 10
+      esc2 = Math.round(68.0 * fatorVol * 10) / 10
+      esc3 = Math.round(140.0 * fatorVol * 10) / 10
+      desc = 'Salas limpas, climatização de precisão e descarte de embalagens farmacêuticas'
+      break
+  }
+
+  const total = Math.round((esc1 + esc2 + esc3) * 10) / 10
+  let statusSbce: 'isento_monitoramento' | 'dever_reporte_10k' | 'compensacao_25k' =
+    'isento_monitoramento'
+  if (total >= 25000) {
+    statusSbce = 'compensacao_25k'
+  } else if (total >= 10000) {
+    statusSbce = 'dever_reporte_10k'
+  }
+
+  return {
+    escopo1Tco2e: esc1,
+    escopo2LocalizacaoTco2e: esc2,
+    escopo2MercadoTco2e: esc2,
+    escopo3Tco2e: esc3,
+    emissoesTotaisTco2e: total,
+    statusSbce,
+    descricaoPerfil: desc,
+  }
+}
+
 export function ConsoleSandboxIngestaoTab() {
-  const [segmento, setSegmento] = useState<SegmentoSandbox>('combustiveis')
+  const [segmento, setSegmento] = useState<SegmentoSandbox>('automotiva')
   const [volume, setVolume] = useState<number>(10)
   const [usarAlfanumerico, setUsarAlfanumerico] = useState<boolean>(true)
   const [gerando, setGerando] = useState<boolean>(false)
@@ -64,10 +218,12 @@ export function ConsoleSandboxIngestaoTab() {
     fatorCo2eKg: number
     statusCalculo: 'calculado' | 'em_estruturacao_de_catalogo'
   } => {
+    const slugCanonico = normalizarSegmento(segmentoDoc)
+
     // Regra crítica para mineração urbana: ouro/paládio/prata/terras raras ficam "em estruturação de catálogo"
     if (
       item.statusCalculo === 'em_estruturacao_de_catalogo' ||
-      (segmentoDoc === 'mineracao_urbana_criticos' && item.categoriaMaterial !== 'cobre')
+      (slugCanonico === 'materiais-criticos-recuperados' && item.categoriaMaterial !== 'cobre')
     ) {
       return {
         categoriaSelect: 'outros',
@@ -158,7 +314,7 @@ export function ConsoleSandboxIngestaoTab() {
     URL.revokeObjectURL(url)
   }
 
-  // Download de lote completo em múltiplos XMLs ou arquivo único concatenado
+  // Download de lote completo
   const handleDownloadLoteCompleto = () => {
     if (loteGerado.length === 0) return
     const separador = `\n<!-- ======================================================== -->\n`
@@ -192,12 +348,52 @@ export function ConsoleSandboxIngestaoTab() {
     setProgressoIngestao({ atual: 0, total: loteGerado.length })
 
     const resultados: PipelineIngestaoResultado[] = []
+    const usuarioLogado = pb.authStore.model
+
+    // 1. INVENTÁRIO GHG SINTÉTICO (Item 1):
+    // Gera registro na coleção 'emissoes_inventario' com origem: 'sintetico' e Escopos 1/2/3
+    // estritamente coerentes com o protocolo setorial do lote gerado.
+    const slugCanonico = normalizarSegmento(segmento)
+    const dadosInventarioGhg = calcularInventarioGhgPorSegmento(slugCanonico, loteGerado.length)
+    let inventarioGhgId = ''
+
+    try {
+      const primeiroDoc = loteGerado[0]
+      const anoAtual = new Date().getFullYear()
+      const regInv = await pb.collection('emissoes_inventario').create({
+        usuario: usuarioLogado?.id || null,
+        empresa_nome: `${primeiroDoc.razaoSocialEmitente} (Demonstração)`,
+        cnpj: formatarCnpj(primeiroDoc.cnpjEmitente),
+        ano_base: anoAtual,
+        periodo_referencia: `Exercício ${anoAtual} • Sandbox dMRV`,
+        escopo1_total_tco2e: dadosInventarioGhg.escopo1Tco2e,
+        escopo2_localizacao_tco2e: dadosInventarioGhg.escopo2LocalizacaoTco2e,
+        escopo2_mercado_tco2e: dadosInventarioGhg.escopo2MercadoTco2e,
+        escopo3_total_tco2e: dadosInventarioGhg.escopo3Tco2e,
+        emissoes_biogenicas_tco2e: 0,
+        emissoes_totais_tco2e: dadosInventarioGhg.emissoesTotaisTco2e,
+        insetting_iso14067_tco2e: 0,
+        incerteza_consolidada_pct: 3.5,
+        status_sbce: dadosInventarioGhg.statusSbce,
+        versao_metodologia: 'GHG Protocol Corporate Standard • ISO 14064-1:2018 (Sandbox)',
+        origem: 'sintetico',
+        laudo_detalhes_json: {
+          tipo: 'sandbox_sintetico',
+          segmento: slugCanonico,
+          totalDocumentos: loteGerado.length,
+          perfil: dadosInventarioGhg.descricaoPerfil,
+          marca: MARCA_SANDBOX_OBRIGATORIA,
+        },
+      })
+      inventarioGhgId = regInv.id
+    } catch (invErr: any) {
+      console.warn('Aviso ao gerar registro sintético em emissoes_inventario:', invErr)
+    }
 
     for (let i = 0; i < loteGerado.length; i++) {
       const doc = loteGerado[i]
       setProgressoIngestao({ atual: i + 1, total: loteGerado.length })
 
-      // Gera código de selo padrão PR-SEAL-2026-XXXXXX
       const sufixoHex = Math.floor(100000 + Math.random() * 900000).toString()
       const codigoSelo = `PR-SEAL-2026-${sufixoHex}`
       const hoje = new Date().toISOString().slice(0, 10)
@@ -213,7 +409,6 @@ export function ConsoleSandboxIngestaoTab() {
 
       try {
         // 1. Gravar na coleção 'selos' com origem: 'sintetico'
-        // Falha no selo É BLOQUEANTE: não engolir o erro.
         try {
           const regSelo = await pb.collection('selos').create({
             codigo_selo: codigoSelo,
@@ -231,17 +426,13 @@ export function ConsoleSandboxIngestaoTab() {
           throw new Error(`[Coleção selos]: ${msg}`)
         }
 
-        // 2. Se for segmento com peças/itens rastreáveis
-        // calcular CO₂e com motor real por material e gravar cdv_lotes + cdv_pecas por item
-        const segmentosComRastreabilidade = [
-          'desmanche_cdv',
-          'varejo_reverso',
-          'construcao_rcd',
-          'mineracao_urbana_criticos',
-        ]
+        // 2. Se for segmento com itens/materiais rastreáveis, gravar cdv_lotes + cdv_pecas
+        const opcaoSetorial = SEGMENTOS_SANDBOX_CATALOGO.find(
+          (s) => s.chave === doc.segmento || s.slugCanonico === normalizarSegmento(doc.segmento),
+        )
+        const temRastreabilidade = opcaoSetorial?.rastreabilidadePecas ?? true
 
-        if (segmentosComRastreabilidade.includes(doc.segmento)) {
-          // Processamento peça a peça com cálculo oficial de carbono
+        if (temRastreabilidade && doc.itens.length > 0) {
           const itensProcessados = await Promise.all(
             doc.itens.map(async (it, itemIdx) => {
               const infoMat = obterFatorECategoriaMaterial(it, doc.segmento)
@@ -281,29 +472,20 @@ export function ConsoleSandboxIngestaoTab() {
 
           pecasTotalContador = itensProcessados.length
 
-          // Agregação no lote
           const totalPesoLote =
             Math.round(itensProcessados.reduce((acc, p) => acc + p.pesoKg, 0) * 100) / 100
           const totalCo2eLote =
             Math.round(itensProcessados.reduce((acc, p) => acc + p.co2eEvitadoKg, 0) * 100) / 100
 
-          const descricaoVeiculo =
-            doc.segmento === 'desmanche_cdv'
-              ? 'Veículo Teste Sandbox Orbis (Sintético)'
-              : doc.segmento === 'varejo_reverso'
-                ? 'Lote Varejo Reverso & Eletroeletrônicos (Sintético)'
-                : doc.segmento === 'construcao_rcd'
-                  ? 'Lote Agregados Reciclados de Concreto RCD (Sintético)'
-                  : 'Lote Mineração Urbana & Materiais Críticos (Sintético)'
+          const descricaoLote = `${opcaoSetorial?.titulo || 'Lote Sintético Setorial'} (Demonstração)`
 
-          // Gravação do lote (bloqueante)
           let regLote: any
           try {
             regLote = await pb.collection('cdv_lotes').create({
               cdv_nome: doc.razaoSocialEmitente,
               cdv_cnpj: formatarCnpj(doc.cnpjEmitente),
-              cdv_codigo: `SANDBOX-${doc.segmento.toUpperCase().slice(0, 10)}`,
-              veiculo_marca_modelo: descricaoVeiculo,
+              cdv_codigo: `SANDBOX-${normalizarSegmento(doc.segmento).toUpperCase().slice(0, 10)}`,
+              veiculo_marca_modelo: descricaoLote,
               veiculo_chassi: doc.dadosAdicionais.chassi || `SYNTH-${doc.chaveAcesso.slice(-8)}`,
               veiculo_baixa_detran: `SYN-BX-${sufixoHex}`,
               origem_envio: 'erp',
@@ -316,12 +498,14 @@ export function ConsoleSandboxIngestaoTab() {
               payload_bruto_json: {
                 tipo: 'sandbox_sintetico',
                 segmento: doc.segmento,
+                protocoloSetorialSlug: normalizarSegmento(doc.segmento),
                 chaveAcesso: doc.chaveAcesso,
                 hashSha256: doc.hashSha256,
                 marca: MARCA_SANDBOX_OBRIGATORIA,
                 totalItens: doc.itens.length,
                 totalPesoKg: totalPesoLote,
                 totalCo2eKg: totalCo2eLote,
+                inventarioGhgId: inventarioGhgId || null,
               },
             })
             regLoteId = regLote.id
@@ -330,7 +514,6 @@ export function ConsoleSandboxIngestaoTab() {
             throw new Error(`[Coleção cdv_lotes]: ${msg}`)
           }
 
-          // Grava TODAS as peças no banco com seu respectivo cálculo oficial
           const errosPecas: string[] = []
           for (let pIdx = 0; pIdx < itensProcessados.length; pIdx++) {
             const p = itensProcessados[pIdx]
@@ -353,7 +536,7 @@ export function ConsoleSandboxIngestaoTab() {
                 co2e_evitado_kg: p.co2eEvitadoKg,
                 hash_sha256: p.hashPeca,
                 responsavel_crea: 'CREA-PR 000.000/D (Sandbox)',
-                cdv_origem: `SANDBOX-${doc.segmento.toUpperCase().slice(0, 10)}`,
+                cdv_origem: `SANDBOX-${normalizarSegmento(doc.segmento).toUpperCase().slice(0, 10)}`,
                 cdv_cnpj: formatarCnpj(doc.cnpjEmitente),
                 status: 'ativo',
                 situacao_checklist: 'etiquetada',
@@ -369,7 +552,6 @@ export function ConsoleSandboxIngestaoTab() {
             }
           }
 
-          // Se alguma peça falhou, o documento é tratado como erro no resultado
           if (errosPecas.length > 0) {
             throw new Error(
               `[Coleção cdv_pecas]: ${errosPecas.length} de ${itensProcessados.length} peças falharam: ${errosPecas[0]}`,
@@ -386,6 +568,7 @@ export function ConsoleSandboxIngestaoTab() {
           registroSeloId: regSeloId,
           registroLoteId: regLoteId,
           registroPecaId: regPecaId,
+          registroInventarioId: inventarioGhgId || undefined,
           pecasGravadas: pecasGravadasContador,
           pecasTotal: pecasTotalContador,
         })
@@ -401,6 +584,7 @@ export function ConsoleSandboxIngestaoTab() {
           registroSeloId: regSeloId || undefined,
           registroLoteId: regLoteId || undefined,
           registroPecaId: regPecaId || undefined,
+          registroInventarioId: inventarioGhgId || undefined,
           pecasGravadas: pecasGravadasContador,
           pecasTotal: pecasTotalContador,
           erro: mensagemErro,
@@ -420,11 +604,15 @@ export function ConsoleSandboxIngestaoTab() {
         <div className="flex items-center gap-2.5 flex-wrap">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
-            Sandbox de Ingestão (Fase 1)
+            Sandbox de Ingestão dMRV
           </span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 text-xs font-mono">
             <ShieldAlert className="w-3.5 h-3.5" />
             Ambiente Isolado • Não Integrado à SEFAZ
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30 text-xs font-mono">
+            <Layers className="w-3.5 h-3.5" />
+            15 Protocolos Setoriais + Materiais Críticos
           </span>
         </div>
 
@@ -432,39 +620,34 @@ export function ConsoleSandboxIngestaoTab() {
           GERADOR NATIVO & INGESTÃO SINTÉTICA DE DOCUMENTOS FISCAIS
         </h2>
         <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
-          Gere conjuntos controlados de NF-e e CT-e sintéticos com algoritmos matemáticos oficiais
-          (módulo 11 de CNPJs tradicionais e alfanuméricos da IN RFB 2.229/2024, chaves de 44
-          dígitos com DV SEFAZ e carimbo de rastreabilidade). Os dados são gravados com a marca{' '}
-          <strong className="text-emerald-400 font-mono">origem: &apos;sintetico&apos;</strong> e
-          ficam estritamente isolados das consultas e métricas públicas.
+          Gere conjuntos controlados de NF-e e CT-e sintéticos alinhados aos 15 Protocolos Setoriais
+          do Orbis Protocol e ao módulo de Materiais Críticos. Cálculo de carbono SOMENTE com
+          fatores oficiais do catálogo canônico (aço 2,18; alumínio 14,40; cobre 5,40; polímeros
+          1,90; concreto/RCD 0,12). Os dados são gravados com a marca{' '}
+          <strong className="text-emerald-400 font-mono">origem: &apos;sintetico&apos;</strong> nas
+          coleções selos, cdv_lotes, cdv_pecas e emissoes_inventario, permanecendo estritamente
+          isolados das consultas públicas.
         </p>
       </div>
 
       {/* Painel de Controles e Configuração do Lote */}
       <div className="p-6 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-          {/* Seletor de Segmento */}
-          <div className="space-y-1.5">
+          {/* Seletor de Segmento (15 Protocolos + Materiais Críticos) */}
+          <div className="space-y-1.5 sm:col-span-2">
             <label className="block font-semibold uppercase text-slate-500 dark:text-[#93A3B5] text-[11px]">
-              Segmento de Negócio
+              Protocolo Setorial / Segmento dMRV
             </label>
             <select
               value={segmento}
               onChange={(e) => setSegmento(e.target.value as SegmentoSandbox)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
-              <option value="combustiveis">Combustíveis (Diesel S10 / Biometanol)</option>
-              <option value="desmanche_cdv">Desmanche & Peças Usadas (CDV / Renova)</option>
-              <option value="transporte_cte">Frete & Transporte (CT-e Interestadual)</option>
-              <option value="varejo_reverso">
-                Comércio & Varejo (Logística Reversa Eletro/Embalagens)
-              </option>
-              <option value="construcao_rcd">
-                Imobiliário & Construção Civil (RCD / Agregados Reciclados)
-              </option>
-              <option value="mineracao_urbana_criticos">
-                Mineração Urbana & Materiais Críticos (Cobre / Au / Pd / Terras Raras)
-              </option>
+              {SEGMENTOS_SANDBOX_CATALOGO.map((s, idx) => (
+                <option key={s.chave} value={s.chave}>
+                  {idx + 1}. {s.titulo} — {s.subtitulo}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -515,28 +698,36 @@ export function ConsoleSandboxIngestaoTab() {
               />
             </button>
           </div>
+        </div>
 
-          {/* Botão de Ação Gerar Lote */}
-          <div className="space-y-1.5 flex flex-col justify-end">
-            <button
-              type="button"
-              onClick={handleGerarLote}
-              disabled={gerando || ingestando}
-              className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
-            >
-              {gerando ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Gerando Lote...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Gerar {volume} Docs Sintéticos</span>
-                </>
-              )}
-            </button>
+        {/* Botão de Ação Gerar Lote */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <Layers className="w-4 h-4 text-emerald-600" />
+            <span>
+              Ao ingestar, gerará automaticamente lote, peças rastreáveis e inventário GHG Protocol
+              (Escopos 1/2/3) marcado com <code>origem = &apos;sintetico&apos;</code>.
+            </span>
           </div>
+
+          <button
+            type="button"
+            onClick={handleGerarLote}
+            disabled={gerando || ingestando}
+            className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 text-xs shrink-0"
+          >
+            {gerando ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Gerando Lote...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Gerar {volume} Docs Sintéticos</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Resumo da Marca Legal Obrigatória */}
@@ -597,7 +788,7 @@ export function ConsoleSandboxIngestaoTab() {
                 ) : (
                   <>
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Ingestar no Pipeline</span>
+                    <span>Ingestar no Pipeline (com Inventário GHG)</span>
                   </>
                 )}
               </button>
@@ -630,7 +821,7 @@ export function ConsoleSandboxIngestaoTab() {
                         <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                       )}
                       {todosComSucesso
-                        ? `Ingestão concluída: ${sucessos.length} documento(s) gravado(s) com sucesso no backend!`
+                        ? `Ingestão concluída: ${sucessos.length} documento(s) e inventário GHG gravados com sucesso!`
                         : todosComFalha
                           ? `Falha na ingestão: todos os ${falhas.length} documento(s) foram recusados pelo backend.`
                           : `Ingestão parcial: ${sucessos.length} gravado(s) com sucesso e ${falhas.length} falhado(s).`}
@@ -645,7 +836,7 @@ export function ConsoleSandboxIngestaoTab() {
                         </span>
                       )}
                       <span className="text-[11px] font-mono opacity-80">
-                        Carimbo: origem = &apos;sintetico&apos;
+                        origem = &apos;sintetico&apos;
                       </span>
                     </div>
                   </div>
@@ -671,8 +862,8 @@ export function ConsoleSandboxIngestaoTab() {
                   {sucessos.length > 0 && (
                     <p className="text-[11px] opacity-90">
                       Os registros foram persistidos nas coleções do backend com origem sintetico e
-                      já podem ser auditados na aba dMRV na posição &apos;Sandbox
-                      (Demonstração)&apos;.
+                      já podem ser auditados na aba &quot;12. dMRV Emissões Evitadas (SBCE)&quot; na
+                      posição &apos;Sandbox (Demonstração)&apos;.
                     </p>
                   )}
                 </div>
