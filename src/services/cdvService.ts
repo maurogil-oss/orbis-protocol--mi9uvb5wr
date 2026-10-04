@@ -45,7 +45,7 @@ export const FATORES_CDV_MATERIAIS: Record<string, FatorCdvMaterial> = {
     ano: 2023,
   },
   concreto: {
-    categoria: 'outros',
+    categoria: 'concreto' as any,
     nome: 'Concreto / Agregado Reciclado RCD',
     fatorKgCO2ePorKg: 0.12,
     fonte: 'Catálogo Oficial Orbis / RCD CONAMA 307',
@@ -68,7 +68,7 @@ export interface CdvLoteRecord extends RecordModel {
   veiculo_marca_modelo: string
   veiculo_chassi?: string
   veiculo_placa?: string
-  veiculo_baixa_detran: string
+  veiculo_baixa_detran?: string
   veiculo_seguradora?: string
   origem_envio: 'erp' | 'ecommerce' | 'manual_api' | 'planilha'
   status: 'processado' | 'parcial' | 'rejeitado' | 'anulado'
@@ -128,7 +128,7 @@ export interface CdvPecaRecord extends RecordModel {
   sku_interno: string
   selo_dpp: string
   descricao_peca: string
-  categoria_material: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
+  categoria_material: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'concreto' | 'outros'
   material_declarado: string
   peso_kg: number
   ncm?: string

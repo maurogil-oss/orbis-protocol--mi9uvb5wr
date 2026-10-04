@@ -774,12 +774,13 @@ export function construirEstratificacaoDmrv(params: {
       rawCat === 'concreto' ||
       desc.includes('concreto') ||
       desc.includes('rcd') ||
-      desc.includes('agregado')
+      desc.includes('agregado') ||
+      desc.includes('cimento')
     ) {
       return {
         chave: 'mat_concreto_rcd',
         nomeMaterial: 'Concreto Reciclado / Agregado RCD',
-        categoria: 'construcao_rcd',
+        categoria: 'concreto',
         fator: 0.12,
         fonte: 'ACV Agregado Reciclado / DM-ORB-001 §6.3',
         possuiFator: true,

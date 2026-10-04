@@ -102,6 +102,7 @@ import { useSearchParams } from 'react-router-dom'
 import { ConsoleRadarSemanalTab } from '@/components/ConsoleRadarSemanalTab'
 import { ConsoleHonorariosTab } from '@/components/ConsoleHonorariosTab'
 import { ConsoleSandboxIngestaoTab } from '@/components/ConsoleSandboxIngestaoTab'
+import { ConsoleAuditoriaIntegridadeTab } from '@/components/ConsoleAuditoriaIntegridadeTab'
 import { Sparkles } from 'lucide-react'
 
 type AdminTab =
@@ -116,6 +117,7 @@ type AdminTab =
   | 'peritos'
   | 'honorarios_peritos'
   | 'auditoria'
+  | 'auditoria_integridade'
   | 'lastro_conformidade'
   | 'ccrlr_sinir'
   | 'dmrv_todas_empresas'
@@ -139,6 +141,7 @@ export default function AdminConsolePage() {
     if (qTab === 'receita') return 'receita'
     if (qTab === 'honorarios_peritos') return 'honorarios_peritos'
     if (qTab === 'auditoria') return 'auditoria'
+    if (qTab === 'auditoria_integridade') return 'auditoria_integridade'
     if (qTab === 'clientes') return 'clientes'
     if (qTab === 'sandbox') return 'sandbox'
     return isMaster ? 'governanca' : 'receita'
@@ -976,6 +979,11 @@ export default function AdminConsolePage() {
     { id: 'peritos', label: '8. Rede Pericial & Conselhos', icon: Award },
     { id: 'honorarios_peritos', label: 'Honorários de Peritos (Mercado)', icon: DollarSign },
     { id: 'auditoria', label: '9. Auditoria & Trilha Imutável', icon: ShieldCheck },
+    {
+      id: 'auditoria_integridade',
+      label: 'Auditoria de Integridade (dMRV)',
+      icon: ShieldCheck,
+    },
     {
       id: 'lastro_conformidade',
       label: '10. Lastro Circularidade (Dec. 11.413)',
@@ -3928,6 +3936,9 @@ export default function AdminConsolePage() {
         {activeTab === 'parametros_negocio' && (
           <ConsoleParametrosNegocioTab onParametrosAtualizados={carregarTodosDados} />
         )}
+
+        {/* AUDITORIA DE INTEGRIDADE dMRV NO CONSOLE */}
+        {activeTab === 'auditoria_integridade' && <ConsoleAuditoriaIntegridadeTab />}
 
         {/* SANDBOX DE INGESTÃO (FASE 1) - EXCLUSIVO CONSOLE AUTENTICADO */}
         {activeTab === 'sandbox' && <ConsoleSandboxIngestaoTab />}

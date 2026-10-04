@@ -218,7 +218,7 @@ export function ConsoleSandboxIngestaoTab() {
     item: any,
     segmentoDoc: SegmentoSandbox,
   ): {
-    categoriaSelect: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
+    categoriaSelect: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'concreto' | 'outros'
     categoriaDescritiva: string
     fatorCo2eKg: number
     statusCalculo: 'calculado' | 'em_estruturacao_de_catalogo'
@@ -299,9 +299,9 @@ export function ConsoleSandboxIngestaoTab() {
         statusCalculo: 'calculado',
       }
     }
-    if (cat === 'concreto') {
+    if (cat === 'concreto' || descItem.includes('concreto') || descItem.includes('rcd')) {
       return {
-        categoriaSelect: 'outros',
+        categoriaSelect: 'concreto',
         categoriaDescritiva: 'Concreto / Agregados Reciclados de Construção Civil (RCD)',
         fatorCo2eKg: 0.12,
         statusCalculo: 'calculado',
@@ -401,19 +401,44 @@ export function ConsoleSandboxIngestaoTab() {
     const usuarioLogado = pb.authStore.model
 
     // 1. INVENTÁRIO GHG SINTÉTICO (Item 1):
-    // Gera registro na coleção 'emissoes_inventario' com origem: 'sintetico' e Escopos 1/2/3
-    // estritamente coerentes com o protocolo setorial do lote gerado.
+    // UPSERT com origem: 'sintetico' + cnpj do documento + segmento
+    // Se existir, UPDATE dos campos de escopo + laudo_detalhes_json (marcando atualizadoEm); se não, create.
     const slugCanonico = normalizarSegmento(segmento)
     const dadosInventarioGhg = calcularInventarioGhgPorSegmento(slugCanonico, loteGerado.length)
     let inventarioGhgId = ''
 
     try {
       const primeiroDoc = loteGerado[0]
+      const cnpjFormatado = formatarCnpj(primeiroDoc.cnpjEmitente)
       const anoAtual = new Date().getFullYear()
-      const regInv = await pb.collection('emissoes_inventario').create({
+
+      // Buscar inventário sintético existente para este CNPJ
+      let inventarioExistente: any = null
+      try {
+        const registros = await pb.collection('emissoes_inventario').getFullList({
+          filter: `origem = "sintetico" && cnpj = "${cnpjFormatado}"`,
+          sort: '-created',
+        })
+        // Encontrar aquele cujo segmento no laudo_detalhes_json corresponda ao slugCanonico
+        inventarioExistente = registros.find((r: any) => {
+          try {
+            const d =
+              typeof r.laudo_detalhes_json === 'string'
+                ? JSON.parse(r.laudo_detalhes_json)
+                : r.laudo_detalhes_json
+            return d?.segmento === slugCanonico
+          } catch {
+            return false
+          }
+        })
+      } catch {
+        inventarioExistente = null
+      }
+
+      const payloadInventario = {
         usuario: usuarioLogado?.id || null,
         empresa_nome: `${primeiroDoc.razaoSocialEmitente} (Demonstração)`,
-        cnpj: formatarCnpj(primeiroDoc.cnpjEmitente),
+        cnpj: cnpjFormatado,
         ano_base: anoAtual,
         periodo_referencia: `Exercício ${anoAtual} • Sandbox dMRV`,
         escopo1_total_tco2e: dadosInventarioGhg.escopo1Tco2e,
@@ -433,9 +458,19 @@ export function ConsoleSandboxIngestaoTab() {
           totalDocumentos: loteGerado.length,
           perfil: dadosInventarioGhg.descricaoPerfil,
           marca: MARCA_SANDBOX_OBRIGATORIA,
+          atualizadoEm: new Date().toISOString(),
         },
-      })
-      inventarioGhgId = regInv.id
+      }
+
+      if (inventarioExistente) {
+        const regInv = await pb
+          .collection('emissoes_inventario')
+          .update(inventarioExistente.id, payloadInventario)
+        inventarioGhgId = regInv.id
+      } else {
+        const regInv = await pb.collection('emissoes_inventario').create(payloadInventario)
+        inventarioGhgId = regInv.id
+      }
     } catch (invErr: any) {
       console.warn('Aviso ao gerar registro sintético em emissoes_inventario:', invErr)
     }
@@ -531,6 +566,7 @@ export function ConsoleSandboxIngestaoTab() {
             Math.round(itensProcessados.reduce((acc, p) => acc + p.co2eEvitadoKg, 0) * 100) / 100
 
           const descricaoLote = `${opcaoSetorial?.titulo || 'Lote Sintético Setorial'} (Demonstração)`
+          const isAutomotiva = normalizarSegmento(doc.segmento) === 'automotiva'
 
           let regLote: any
           try {
@@ -538,9 +574,15 @@ export function ConsoleSandboxIngestaoTab() {
               cdv_nome: doc.razaoSocialEmitente,
               cdv_cnpj: formatarCnpj(doc.cnpjEmitente),
               cdv_codigo: `SANDBOX-${normalizarSegmento(doc.segmento).toUpperCase().slice(0, 10)}`,
-              veiculo_marca_modelo: descricaoLote,
-              veiculo_chassi: doc.dadosAdicionais.chassi || `SYNTH-${doc.chaveAcesso.slice(-8)}`,
-              veiculo_baixa_detran: `SYN-BX-${sufixoHex}`,
+              veiculo_marca_modelo: isAutomotiva ? descricaoLote : '',
+              veiculo_chassi: isAutomotiva
+                ? doc.dadosAdicionais.chassi || `SYNTH-${doc.chaveAcesso.slice(-8)}`
+                : '',
+              veiculo_baixa_detran: isAutomotiva ? `SYN-BX-${sufixoHex}` : '',
+              veiculo_placa: '',
+              veiculo_seguradora: isAutomotiva
+                ? (doc.dadosAdicionais as any)?.seguradora || ''
+                : '',
               origem_envio: 'erp',
               status: 'processado',
               total_pecas: doc.itens.length,

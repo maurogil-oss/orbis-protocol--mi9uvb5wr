@@ -165,12 +165,14 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
 
     const tabsContainer = screen.getByTestId('admin-tabs-scroll-container')
     const tabButtons = tabsContainer.querySelectorAll('button[data-testid^="admin-tab-"]')
-    // 15 abas conforme confirmação explícita do usuário para o papel Gestor Master
-    expect(tabButtons.length).toBe(15)
+    // 16 abas para Gestor Master (com a inclusão de Auditoria de Integridade)
+    expect(tabButtons.length).toBe(16)
 
-    // Confirma presença da aba Sandbox de Ingestão
+    // Confirma presença da aba Sandbox de Ingestão e da nova aba de Auditoria de Integridade
     const sandboxTab = screen.getByTestId('admin-tab-sandbox')
     expect(sandboxTab.textContent).toContain('Sandbox de Ingestão')
+    const auditoriaIntegridadeTab = screen.getByTestId('admin-tab-auditoria_integridade')
+    expect(auditoriaIntegridadeTab.textContent).toContain('Auditoria de Integridade')
   })
 
   it('destaca visualmente a aba Sandbox quando inativa (badge "Novo" e borda esmeralda sutil)', async () => {
