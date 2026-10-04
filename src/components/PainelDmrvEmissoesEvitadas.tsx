@@ -271,67 +271,134 @@ export function PainelDmrvEmissoesEvitadas() {
         </div>
       </div>
 
-      {/* CARDS DE RESUMO dMRV */}
+      {/* IDENTIFICAÇÃO DO PROTOCOLO SETORIAL DOMINANTE */}
+      {dados.protocoloDominanteNome && (
+        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/40 border border-border text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground">Protocolo Dominante do Lote:</span>
+            <Badge variant="outline" className="font-mono text-[11px] font-bold">
+              {dados.protocoloDominanteNome}
+            </Badge>
+          </div>
+          <span className="text-[11px] text-muted-foreground hidden sm:inline">
+            Unidades canônicas do catálogo setorial
+          </span>
+        </div>
+      )}
+
+      {/* CARDS DE RESUMO dMRV (MÉTRICAS POR PROTOCOLO SETORIAL) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* 1. CO2e Evitado */}
-        <Card className="p-4 bg-emerald-500/10 border-emerald-500/30">
-          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-            CO₂e Evitado Total
-          </span>
-          <div className="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-300 mt-1">
-            {dados.total_co2e_evitado_kg.toLocaleString('pt-BR', {
-              minimumFractionDigits: 1,
-              maximumFractionDigits: 1,
-            })}{' '}
-            kg
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            ≈ {(dados.total_co2e_evitado_kg / 1000).toFixed(2)} tCO₂e abatidas do Escopo 3
-          </p>
-        </Card>
+        {dados.kpiCards && dados.kpiCards.length === 4 ? (
+          dados.kpiCards.map((card, idx) => {
+            const isCarbono = idx === 0
+            return (
+              <Card
+                key={card.id}
+                className={`p-4 ${
+                  isCarbono
+                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                    : 'bg-muted/40 border-border'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider block truncate ${
+                      isCarbono ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'
+                    }`}
+                    title={card.rotulo}
+                  >
+                    {card.rotulo}
+                  </span>
+                  {card.destaqueBadge && (
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] font-mono px-1 py-0 h-4 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                    >
+                      {card.destaqueBadge}
+                    </Badge>
+                  )}
+                </div>
+                <div
+                  className={`text-2xl font-black font-mono mt-1 ${
+                    isCarbono
+                      ? 'text-emerald-700 dark:text-emerald-300'
+                      : idx === 2
+                        ? 'text-primary'
+                        : 'text-foreground'
+                  }`}
+                >
+                  {card.valorFormatado}{' '}
+                  <span className="text-xs font-normal text-muted-foreground">{card.unidade}</span>
+                </div>
+                <p
+                  className="text-[10px] text-muted-foreground mt-1 line-clamp-2"
+                  title={card.legenda}
+                >
+                  {card.legenda}
+                </p>
+              </Card>
+            )
+          })
+        ) : (
+          <>
+            {/* Fallback caso os cards canônicos ainda não tenham sido gerados */}
+            <Card className="p-4 bg-emerald-500/10 border-emerald-500/30">
+              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+                CO₂e Evitado Total
+              </span>
+              <div className="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-300 mt-1">
+                {dados.total_co2e_evitado_kg.toLocaleString('pt-BR', {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })}{' '}
+                kg
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                ≈ {(dados.total_co2e_evitado_kg / 1000).toFixed(2)} tCO₂e abatidas do Escopo 3
+              </p>
+            </Card>
 
-        {/* 2. Massa Reciclada */}
-        <Card className="p-4 bg-muted/40 border-border">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-            Massa Reciclada / Desviada
-          </span>
-          <div className="text-2xl font-black font-mono text-foreground mt-1">
-            {dados.total_massa_reciclada_kg.toLocaleString('pt-BR', {
-              minimumFractionDigits: 1,
-              maximumFractionDigits: 1,
-            })}{' '}
-            kg
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Balanço de massa comprovado com MTR
-          </p>
-        </Card>
+            <Card className="p-4 bg-muted/40 border-border">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Massa Reciclada / Desviada
+              </span>
+              <div className="text-2xl font-black font-mono text-foreground mt-1">
+                {dados.total_massa_reciclada_kg.toLocaleString('pt-BR', {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })}{' '}
+                kg
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Balanço de massa comprovado com MTR
+              </p>
+            </Card>
 
-        {/* 3. Peças / Ativos Rastreáveis */}
-        <Card className="p-4 bg-muted/40 border-border">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-            Peças com Selo DPP
-          </span>
-          <div className="text-2xl font-black font-mono text-primary mt-1">
-            {dados.total_pecas_reaproveitadas}
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Itens catalogados com rastreabilidade
-          </p>
-        </Card>
+            <Card className="p-4 bg-muted/40 border-border">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Itens com Selo DPP
+              </span>
+              <div className="text-2xl font-black font-mono text-primary mt-1">
+                {dados.total_pecas_reaproveitadas}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Itens catalogados com rastreabilidade
+              </p>
+            </Card>
 
-        {/* 4. Lotes Processados */}
-        <Card className="p-4 bg-muted/40 border-border">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-            Lotes CDV Fechados
-          </span>
-          <div className="text-2xl font-black font-mono text-foreground mt-1">
-            {dados.total_lotes_processados}
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Veículos com despoluição atendida
-          </p>
-        </Card>
+            <Card className="p-4 bg-muted/40 border-border">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Lotes Fechados
+              </span>
+              <div className="text-2xl font-black font-mono text-foreground mt-1">
+                {dados.total_lotes_processados}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Lotes com comprovação de conformidade
+              </p>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* SÉRIE TEMPORAL DE CO2e EVITADO & MASSA DESVIADA */}

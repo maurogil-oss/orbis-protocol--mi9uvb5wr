@@ -20,6 +20,24 @@ import pb from '@/lib/pocketbase/client'
 export type FiltroOrigemDmrv = 'producao' | 'sintetico'
 export type ModoFiltroOrigem = 'real' | 'sandbox'
 
+import {
+  getProtocoloBySlug,
+  PROTOCOLOS_SETORIAIS,
+  type KpiSetorial,
+  type ProtocoloSetorial,
+} from '@/data/protocolosSetoriais'
+
+export interface CardKpiRenderizavel {
+  id: 'co2e_evitado' | 'kpi_pos2' | 'kpi_pos3' | 'kpi_pos4'
+  rotulo: string
+  valorFormatado: string
+  valorNumerico: number
+  unidade: string
+  legenda: string
+  natureza: 'gravada' | 'derivada' | 'em_estruturacao'
+  destaqueBadge?: string
+}
+
 export interface PontoSerieTemporalReal {
   mes: string // Ex: "Mar/26"
   rotuloMes: string
@@ -60,6 +78,11 @@ export interface DadosDmrvEmpresa {
   }>
   relatorios_anteriores: any[]
   is_fallback_inventario?: boolean
+  /** Protocolo dominante identificado no conjunto de lotes */
+  protocoloDominanteSlug?: string
+  protocoloDominanteNome?: string
+  /** 4 cards prontos para renderização conforme o catálogo do segmento */
+  kpiCards?: CardKpiRenderizavel[]
 }
 
 export interface ResumoDmrvSegregado {
@@ -84,6 +107,9 @@ export interface ResumoDmrvSegregado {
     serieTemporal: PontoSerieTemporalInventarioReal[]
     isFallback: boolean
   }
+  protocoloDominanteSlug?: string
+  protocoloDominanteNome?: string
+  kpiCards?: CardKpiRenderizavel[]
 }
 
 const MESES_PTBR = [
@@ -133,6 +159,255 @@ export function formatarChaveAnoMes(dataIso: string): { key: string; rotulo: str
  *  - >= 10.000 tCO₂e/ano: Monitoramento e Envio de Relatório de Emissões Obrigatório
  *  - < 10.000 tCO₂e/ano: Isento de Obrigações de Monitoramento (Voluntário)
  */
+/**
+ * Normaliza qualquer chave, código ou nome de segmento para o slug canônico do catálogo.
+ */
+export function normalizarSlugSegmento(raw?: string | null): string {
+  if (!raw) return 'automotiva'
+  const r = String(raw).trim().toLowerCase()
+
+  if (r.startsWith('textil') || r.includes('confecc') || r.includes('calcado')) return 'textil'
+  if (r.startsWith('logistica') || r.includes('transporte') || r.includes('carga'))
+    return 'logistica'
+  if (r.startsWith('energia') || r.includes('biogas') || r.includes('renovavel')) return 'energia'
+  if (r.startsWith('cimento') || r.includes('concreto')) return 'cimento'
+  if (
+    r.startsWith('construcao') ||
+    r.includes('civil') ||
+    r.includes('canteiro') ||
+    r.includes('rcd')
+  )
+    return 'construcao'
+  if (
+    r.startsWith('materiais-criticos') ||
+    r.includes('critico') ||
+    r.includes('mineracao_urbana') ||
+    r.includes('mineração')
+  ) {
+    if (
+      r.includes('urbana') ||
+      r.includes('critico') ||
+      r.includes('ouro') ||
+      r.includes('cobre') ||
+      r.includes('dcp')
+    ) {
+      return 'materiais-criticos-recuperados'
+    }
+  }
+  if (r.startsWith('mineracao') && !r.includes('urbana')) return 'mineracao'
+  if (r.startsWith('agro') || r.includes('pecuaria') || r.includes('florestal'))
+    return 'agronegocio'
+  if (r.startsWith('siderurgia') || r.includes('metalurg') || r.includes('aco')) return 'siderurgia'
+  if (r.startsWith('quimica') || r.includes('fertiliz')) return 'quimica'
+  if (r.startsWith('alimento') || r.includes('bebida')) return 'alimentos'
+  if (r.startsWith('papel') || r.includes('celulose')) return 'papel'
+  if (r.startsWith('plastico')) return 'plasticos'
+  if (r.startsWith('farmaceutica') || r.includes('cosmet')) return 'farmaceutica'
+  if (r.startsWith('varejo') || r.includes('comercio') || r.includes('atacado')) return 'varejo'
+  if (
+    r.startsWith('automotiv') ||
+    r.includes('cdv') ||
+    r.includes('veicul') ||
+    r.includes('desmanche')
+  )
+    return 'automotiva'
+
+  const correspondente = Object.keys(PROTOCOLOS_SETORIAIS).find((key) => r.includes(key))
+  return correspondente || 'automotiva'
+}
+
+/**
+ * Deriva o protocolo dominante a partir de uma lista de lotes e peças.
+ */
+export function determinarProtocoloDominante(
+  lotes: any[],
+  pecas: any[],
+): { slug: string; nome: string; protocolo: ProtocoloSetorial } {
+  const contagem = new Map<string, number>()
+
+  const registrarOcorrencia = (raw?: string | null, peso = 1) => {
+    if (!raw) return
+    const slug = normalizarSlugSegmento(raw)
+    contagem.set(slug, (contagem.get(slug) || 0) + peso)
+  }
+
+  for (const lote of lotes) {
+    // 1. Campos dedicados do lote
+    if (lote.protocolo) registrarOcorrencia(lote.protocolo, 3)
+    else if (lote.protocolo_setorial) registrarOcorrencia(lote.protocolo_setorial, 3)
+    else if (lote.segmento) registrarOcorrencia(lote.segmento, 3)
+    else if (lote.setor) registrarOcorrencia(lote.setor, 3)
+    else if (lote.cdv_codigo && typeof lote.cdv_codigo === 'string') {
+      const match = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)-\d+/)
+      if (match && match[1]) registrarOcorrencia(match[1], 3)
+    }
+
+    // 2. Inspecionar payload_bruto_json ou metadados
+    if (lote.payload_bruto_json) {
+      try {
+        const payload =
+          typeof lote.payload_bruto_json === 'string'
+            ? JSON.parse(lote.payload_bruto_json)
+            : lote.payload_bruto_json
+        if (payload?.protocoloSetorialSlug) registrarOcorrencia(payload.protocoloSetorialSlug, 4)
+        if (payload?.segmentoSlug) registrarOcorrencia(payload.segmentoSlug, 4)
+        if (payload?.tipoSegmento) registrarOcorrencia(payload.tipoSegmento, 3)
+      } catch {
+        // payload não é JSON válido, segue
+      }
+    }
+  }
+
+  // Se não identificou por lotes, inspecionar peças
+  if (contagem.size === 0 && pecas.length > 0) {
+    for (const p of pecas) {
+      if (p.protocolo) registrarOcorrencia(p.protocolo, 1)
+      else if (p.segmento) registrarOcorrencia(p.segmento, 1)
+      else if (p.categoria) registrarOcorrencia(p.categoria, 1)
+    }
+  }
+
+  // Escolher o slug mais frequente; fallback para automotiva
+  let slugDominante = 'automotiva'
+  let maxVotos = 0
+  for (const [slug, votos] of contagem.entries()) {
+    if (votos > maxVotos) {
+      maxVotos = votos
+      slugDominante = slug
+    }
+  }
+
+  const protocolo = getProtocoloBySlug(slugDominante) || PROTOCOLOS_SETORIAIS.automotiva
+  return {
+    slug: slugDominante,
+    nome: protocolo.nome,
+    protocolo,
+  }
+}
+
+/**
+ * Constrói os 4 cards de KPI com os rótulos, grandezas e unidades canônicas do protocolo dominante.
+ * Elimina totalmente vocabulário automotivo/veicular fora do CDV automotivo.
+ */
+export function construirCardsKpiSetoriais(params: {
+  slugDominante: string
+  protocolo: ProtocoloSetorial
+  totalCo2eKg: number
+  totalMassaKg: number
+  totalPecas: number
+  totalLotes: number
+}): CardKpiRenderizavel[] {
+  const { slugDominante, protocolo, totalCo2eKg, totalMassaKg, totalPecas, totalLotes } = params
+  const kpis = protocolo.kpisCanicos
+
+  // Fallback seguro caso algum protocolo não declare a lista canônica completa
+  const kpi1 = kpis?.find((k) => k.id === 'co2e_evitado') || {
+    id: 'co2e_evitado' as const,
+    rotulo: 'CO₂e Evitado Total',
+    unidade: 'kg',
+    legenda: 'Emissões evitadas calculadas pelo método oficial',
+    tipoAgregacao: 'soma' as const,
+    natureza: 'gravada' as const,
+  }
+  const kpi2 = kpis?.find((k) => k.id === 'kpi_pos2') || {
+    id: 'kpi_pos2' as const,
+    rotulo: 'Massa Reciclada / Desviada',
+    unidade: 'kg',
+    legenda: 'Balanço de massa comprovado com lastro fiscal',
+    tipoAgregacao: 'soma' as const,
+    natureza: 'gravada' as const,
+  }
+  const kpi3 = kpis?.find((k) => k.id === 'kpi_pos3') || {
+    id: 'kpi_pos3' as const,
+    rotulo: 'Itens com Selo DPP',
+    unidade: 'itens',
+    legenda: 'Itens rastreados com passaporte digital',
+    tipoAgregacao: 'contagem' as const,
+    natureza: 'gravada' as const,
+  }
+  const kpi4 = kpis?.find((k) => k.id === 'kpi_pos4') || {
+    id: 'kpi_pos4' as const,
+    rotulo: 'Lotes Fechados',
+    unidade: 'lotes',
+    legenda: 'Remessas auditadas em conformidade setorial',
+    tipoAgregacao: 'contagem' as const,
+    natureza: 'gravada' as const,
+  }
+
+  // Formatações por segmento específico
+  let valorKpi2Numerico = totalMassaKg
+  let valorKpi2Formatado = totalMassaKg.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+  let badgeKpi2: string | undefined
+
+  if (slugDominante === 'logistica') {
+    // Para logística: 1 kg de carga média x 400 km de rota média = tkm derivado honesto
+    // totalMassaKg (kg) / 1000 * 400km = tkm eq.
+    const tkmDerivado = Math.round((totalMassaKg / 1000) * 400 * 10) / 10
+    valorKpi2Numerico = tkmDerivado
+    valorKpi2Formatado = tkmDerivado.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+    badgeKpi2 = 'GLEC v3.0 (400 km eq.)'
+  } else if (slugDominante === 'energia') {
+    // Biogás: derivado de massa de substrato (1 kg resíduo ~ 0,45 m³ biogás)
+    const m3Biogas = Math.round(totalMassaKg * 0.45 * 10) / 10
+    valorKpi2Numerico = m3Biogas
+    valorKpi2Formatado = m3Biogas.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+    badgeKpi2 = 'Balanço estequiométrico'
+  }
+
+  let valorKpi3Numerico = totalPecas
+  let valorKpi3Formatado = totalPecas.toLocaleString('pt-BR')
+  let badgeKpi3: string | undefined
+
+  if (slugDominante === 'energia') {
+    // MWh gerados derivados do CO2e evitado (fator SIN 0,085 tCO2e/MWh = 85 kgCO2e/MWh)
+    const mwhDerivado = totalCo2eKg > 0 ? Math.round((totalCo2eKg / 85) * 100) / 100 : 0
+    valorKpi3Numerico = mwhDerivado
+    valorKpi3Formatado = mwhDerivado.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+    badgeKpi3 = 'SIN 0,085 tCO₂e/MWh'
+  }
+
+  return [
+    {
+      id: 'co2e_evitado',
+      rotulo: kpi1.rotulo,
+      valorFormatado: totalCo2eKg.toLocaleString('pt-BR', { maximumFractionDigits: 1 }),
+      valorNumerico: totalCo2eKg,
+      unidade: kpi1.unidade,
+      legenda: kpi1.legenda,
+      natureza: kpi1.natureza,
+    },
+    {
+      id: 'kpi_pos2',
+      rotulo: kpi2.rotulo,
+      valorFormatado: valorKpi2Formatado,
+      valorNumerico: valorKpi2Numerico,
+      unidade: kpi2.unidade,
+      legenda: kpi2.legenda,
+      natureza: kpi2.natureza,
+      destaqueBadge: badgeKpi2,
+    },
+    {
+      id: 'kpi_pos3',
+      rotulo: kpi3.rotulo,
+      valorFormatado: valorKpi3Formatado,
+      valorNumerico: valorKpi3Numerico,
+      unidade: kpi3.unidade,
+      legenda: kpi3.legenda,
+      natureza: kpi3.natureza,
+      destaqueBadge: badgeKpi3,
+    },
+    {
+      id: 'kpi_pos4',
+      rotulo: kpi4.rotulo,
+      valorFormatado: totalLotes.toLocaleString('pt-BR'),
+      valorNumerico: totalLotes,
+      unidade: kpi4.unidade,
+      legenda: kpi4.legenda,
+      natureza: kpi4.natureza,
+    },
+  ]
+}
+
 export function classificarSbce(emissaoAnualTco2e: number): {
   categoria: 'isento_monitoramento' | 'dever_reporte_10k' | 'compensacao_25k'
   rotulo: string
@@ -340,6 +615,17 @@ export async function carregarDadosDmrvEmpresa(
 
   const emissaoAnual = Math.round((escopo1 + escopo2 + escopo3) * 10) / 10
 
+  // Identificar o protocolo dominante e montar os 4 cards de KPI com unidades canônicas
+  const dom = determinarProtocoloDominante(lotes, pecas)
+  const kpiCards = construirCardsKpiSetoriais({
+    slugDominante: dom.slug,
+    protocolo: dom.protocolo,
+    totalCo2eKg: Math.round(totalCo2eKg * 10) / 10,
+    totalMassaKg: Math.round(totalMassaKg * 10) / 10,
+    totalPecas: pecas.length,
+    totalLotes: lotes.length,
+  })
+
   return {
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
     origem_filtro: origem,
@@ -354,6 +640,9 @@ export async function carregarDadosDmrvEmpresa(
     serie_temporal: serieTemporal,
     relatorios_anteriores: relatorios,
     is_fallback_inventario: isFallback,
+    protocoloDominanteSlug: dom.slug,
+    protocoloDominanteNome: dom.nome,
+    kpiCards,
   }
 }
 
@@ -415,6 +704,9 @@ export async function carregarResumoDmrvSegregado(
       ],
       isFallback: Boolean(dados.is_fallback_inventario),
     },
+    protocoloDominanteSlug: dados.protocoloDominanteSlug,
+    protocoloDominanteNome: dados.protocoloDominanteNome,
+    kpiCards: dados.kpiCards,
   }
 }
 
@@ -439,12 +731,30 @@ export async function exportarRelatorioDmrvCsv(
   )
   linhas.push('Metodologia de Calculo;DM-ORB-001 v1.1 - ISO 14064-2:2019 / GHG Protocol Corporate')
   linhas.push('')
-  linhas.push('RESUMO CONSOLIDADO DMRV')
-  linhas.push(`Total de CO2e Evitado (kg);${dados.total_co2e_evitado_kg.toFixed(2)}`)
-  linhas.push(`Total de CO2e Evitado (tCO2e);${(dados.total_co2e_evitado_kg / 1000).toFixed(4)}`)
-  linhas.push(`Massa Total Reciclada / Desviada (kg);${dados.total_massa_reciclada_kg.toFixed(2)}`)
-  linhas.push(`Total de Pecas Catalogadas com Selo DPP;${dados.total_pecas_reaproveitadas}`)
-  linhas.push(`Total de Lotes CDV Fechados;${dados.total_lotes_processados}`)
+  const protocoloSlug = dados.protocoloDominanteSlug || 'automotiva'
+  const protocoloNome = dados.protocoloDominanteNome || 'Protocolo Canônico'
+  linhas.push(`Protocolo Dominante do Lote;${protocoloNome} (${protocoloSlug})`)
+  linhas.push('')
+  linhas.push('RESUMO CONSOLIDADO DMRV (METRICAS CANONICAS DO PROTOCOLO)')
+
+  if (dados.kpiCards && dados.kpiCards.length === 4) {
+    for (const card of dados.kpiCards) {
+      linhas.push(`${card.rotulo} (${card.unidade});${card.valorFormatado};${card.legenda}`)
+    }
+  } else if (protocoloSlug === 'automotiva') {
+    linhas.push(`Total de CO2e Evitado (kg);${dados.total_co2e_evitado_kg.toFixed(2)}`)
+    linhas.push(`Total de CO2e Evitado (tCO2e);${(dados.total_co2e_evitado_kg / 1000).toFixed(4)}`)
+    linhas.push(
+      `Massa Total Reciclada / Desviada (kg);${dados.total_massa_reciclada_kg.toFixed(2)}`,
+    )
+    linhas.push(`Total de Pecas Catalogadas com Selo DPP;${dados.total_pecas_reaproveitadas}`)
+    linhas.push(`Total de Lotes CDV Fechados;${dados.total_lotes_processados}`)
+  } else {
+    linhas.push(`Total de CO2e Evitado (kg);${dados.total_co2e_evitado_kg.toFixed(2)}`)
+    linhas.push(`Massa Total Auditada (kg);${dados.total_massa_reciclada_kg.toFixed(2)}`)
+    linhas.push(`Total de Itens com Selo DPP;${dados.total_pecas_reaproveitadas}`)
+    linhas.push(`Total de Lotes Fechados;${dados.total_lotes_processados}`)
+  }
   linhas.push('')
   linhas.push('INVENTARIO CORPORATIVO GHG PROTOCOL (tCO2e)')
   linhas.push(`Escopo 1 (Emissoes Diretas);${dados.escopo1_tco2e.toFixed(2)}`)

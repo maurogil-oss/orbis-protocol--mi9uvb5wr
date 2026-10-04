@@ -34,6 +34,23 @@ export interface FatorEmissaoPeculiar {
   observacao: string
 }
 
+export interface KpiSetorial {
+  id: 'co2e_evitado' | 'kpi_pos2' | 'kpi_pos3' | 'kpi_pos4'
+  rotulo: string
+  unidade: string
+  legenda: string
+  tipoAgregacao: 'soma' | 'contagem' | 'media' | 'texto'
+  /** Indica se a métrica é derivada de grandezas gravadas ou campo físico */
+  natureza: 'gravada' | 'derivada' | 'em_estruturacao'
+  /** Mapeamento de derivação quando aplicável */
+  campoOrigem?:
+    | 'total_co2e_evitado_kg'
+    | 'total_peso_kg'
+    | 'total_pecas'
+    | 'total_lotes'
+    | 'especifico'
+}
+
 export interface ProtocoloSetorial {
   id: string
   slug: string
@@ -59,6 +76,7 @@ export interface ProtocoloSetorial {
     beneficiosTributarios: string[]
   }
   fatoresPeculiares: FatorEmissaoPeculiar[]
+  kpisCanicos?: KpiSetorial[]
 }
 
 export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
@@ -187,6 +205,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Ponderado com 14% de biodiesel e 86% de diesel fóssil.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento de emissões de fertilizantes, diesel e biomassa',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Produção Agrícola / Biomassa',
+        unidade: 'kg',
+        legenda: 'Massa colhida e bioinsumos com rastreabilidade CAR/EUDR',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Talhões & Entregas Auditadas',
+        unidade: 'itens',
+        legenda: 'Itens e cargas com due diligence antidesmatamento',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes Agrícolas Fechados',
+        unidade: 'lotes',
+        legenda: 'Remessas e safras com conformidade fundiária e fiscal',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   siderurgia: {
@@ -306,6 +362,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Consumo do grafite na fusão da sucata reciclada.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por sucata ferrosa e bioredutores (CBAM/SBCE)',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Sucata Ferrosa / Aço Verde',
+        unidade: 'kg',
+        legenda: 'Massa de sucata metálica reciclada em forno elétrico a arco',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Bobinas & Corridas Rastreadas',
+        unidade: 'itens',
+        legenda: 'Itens siderúrgicos com intensidade de carbono declarada',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes Siderúrgicos Fechados',
+        unidade: 'lotes',
+        legenda: 'Corridas de aciaria com balanço de massa comprovado',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   cimento: {
@@ -403,6 +497,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         unidade: 'tCO2 / t insumo',
         fonte: 'IPCC 2006 Vol 2 (Stationary Combustion)',
         observacao: 'Combustível fóssil tradicional de queima em fornos rotativos.',
+      },
+    ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por coprocessamento e fator clínquer/cimento',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Resíduos Coprocessados / Agregados',
+        unidade: 'kg',
+        legenda: 'Massa de CDR, biomassa e agregados cimentícios desviados',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Traços & Remessas com CDF',
+        unidade: 'itens',
+        legenda: 'Itens de concreto e cimento com rastreabilidade CONAMA 499',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Clínquer / Cimento',
+        unidade: 'lotes',
+        legenda: 'Fornos e bateladas com certificação de coprocessamento',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
       },
     ],
   },
@@ -523,6 +655,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Substituição direta do diesel em frotas pesadas.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Deslocamento da matriz fóssil por biometano e geração limpa',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Biogás / Combustível Renovável',
+        unidade: 'm³ eq.',
+        legenda: 'Volume de biometano/biocombustível derivado do balanço mássico',
+        tipoAgregacao: 'soma',
+        natureza: 'derivada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Geração Elétrica / Lastros I-REC',
+        unidade: 'MWh eq.',
+        legenda: 'Energia renovável auditada e desvinculada de dupla contagem',
+        tipoAgregacao: 'soma',
+        natureza: 'derivada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Geração & Injeção',
+        unidade: 'lotes',
+        legenda: 'Bateladas de purificação e injeção com lastro CGOB/CBIOs',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   quimica: {
@@ -618,6 +788,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         unidade: 'tCO2 / t produto',
         fonte: 'IPCC 2006 Vol 3 (Ammonia Production)',
         observacao: 'Emissão estequiométrica inevitável na reforma a vapor fóssil.',
+      },
+    ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por rotas verdes, solventes reciclados e bioinsumos',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Intermediários / Solventes Recuperados',
+        unidade: 'kg',
+        legenda: 'Massa de insumos químicos verdes reincorporados ao processo',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Partidas Químicas Rastreáveis',
+        unidade: 'itens',
+        legenda: 'Fórmulas e bateladas com carbono renovável declarado',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Síntese Fechados',
+        unidade: 'lotes',
+        legenda: 'Bateladas industriais com balanço estequiométrico auditado',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
       },
     ],
   },
@@ -720,6 +928,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Média de ocupação típica do agronegócio e bens de consumo no Brasil.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por intermodalidade, biocombustíveis e otimização GLEC',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Trabalho de Transporte (tkm)',
+        unidade: 'tkm eq.',
+        legenda: 'Toneladas-quilômetro derivadas do peso transportado e rotas',
+        tipoAgregacao: 'soma',
+        natureza: 'derivada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'CT-es & Fretes Rastreados',
+        unidade: 'documentos',
+        legenda: 'Conhecimentos de Transporte Eletrônico e MDF-es auditados',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Viagens & Despachos Fechados',
+        unidade: 'viagens',
+        legenda: 'Operações de carga concluídas sob diretrizes GLEC v3.0',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   textil: {
@@ -806,6 +1052,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         unidade: 'tCO2 / t cavaco',
         fonte: 'GHG Protocol Brasil / IPCC 2006',
         observacao: 'Emissão neutra de carbono fóssil; reportada estritamente no escopo biogênico.',
+      },
+    ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por reaproveitamento de fibras e polímeros têxteis',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Resíduo Têxtil Desviado',
+        unidade: 'kg',
+        legenda: 'Aparas de algodão, poliéster reciclado e tecidos desviados de aterro',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Itens & Peças com Selo DPP',
+        unidade: 'itens',
+        legenda: 'Fardos, rolos e peças catalogadas com rastreabilidade da fibra',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes Têxteis Fechados',
+        unidade: 'lotes',
+        legenda: 'Remessas têxteis com conformidade ABVTEX/ABR comprovada',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
       },
     ],
   },
@@ -897,6 +1181,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         unidade: 'tCO2e / t',
         fonte: 'ANFO / IPCC 2006',
         observacao: 'Emissão direta durante a fragmentação da rocha.',
+      },
+    ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por minerais recuperados e eletrificação da lavra',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Minério Beneficiado / Rejeito',
+        unidade: 'kg',
+        legenda: 'Massa de concentrado mineral ou rejeito reprocessado auditada',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Remessas Minerais Auditadas',
+        unidade: 'itens',
+        legenda: 'Cargas de minerais estratégicos com rastreabilidade ANM',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Lavra Fechados',
+        unidade: 'lotes',
+        legenda: 'Frontes de lavra e campanhas de beneficiamento auditadas',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
       },
     ],
   },
@@ -999,6 +1321,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Evita a produção primária eletrointensiva de bauxita/alumínio.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Evitação de produção primária de aço, alumínio e cobre (MOVER)',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Massa Reciclada / Desviada',
+        unidade: 'kg',
+        legenda: 'Balanço de massa comprovado com MTR e baixa veicular',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Peças com Selo DPP',
+        unidade: 'peças',
+        legenda: 'Itens automotivos catalogados com rastreabilidade',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes CDV Fechados',
+        unidade: 'lotes',
+        legenda: 'Veículos com despoluição atendida',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   alimentos: {
@@ -1090,6 +1450,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Não causa efeito estufa direto, sendo recomendada na transição.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por valorização de coprodutos e logística reversa',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Subprodutos & Resíduos Valorizados',
+        unidade: 'kg',
+        legenda: 'Massa de coprodutos orgânicos e embalagens recuperadas',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Itens & Embalagens Rastreáveis',
+        unidade: 'itens',
+        legenda: 'Lotes de produtos com rastreio de fluidos e embalagens',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes Agroindustriais Fechados',
+        unidade: 'lotes',
+        legenda: 'Bateladas com balanço de massa e certificação sanitária',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   papel: {
@@ -1174,6 +1572,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
           'Ciclos rápidos de crescimento de 6 a 7 anos conferem altíssima produtividade ao Brasil.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por aparas recicladas e balanço florestal biogênico',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Aparas de Papel & Celulose',
+        unidade: 'kg',
+        legenda: 'Massa de papelão e celulose recuperada desviada de aterros',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Fardos & Bobinas com Selo DPP',
+        unidade: 'itens',
+        legenda: 'Fardos de aparas e bobinas rastreadas na cadeia celulósica',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Reciclagem Fechados',
+        unidade: 'lotes',
+        legenda: 'Lotes de aparas celulósicas processados com lastro fiscal',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   plasticos: {
@@ -1256,6 +1692,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Redução superior a 75% na pegada carbônica.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por substituição de resinas fósseis virgens por PCR',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Polímeros Reciclados (PCR)',
+        unidade: 'kg',
+        legenda: 'Massa de PP, PEAD, PET e ABS desviada de aterros e oceanos',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Fardos & Itens com Selo DPP',
+        unidade: 'itens',
+        legenda: 'Itens poliméricos catalogados com percentual PCR auditado',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Reciclagem Fechados',
+        unidade: 'lotes',
+        legenda: 'Lotes de extrusão e moagem com comprovação MTR/SINIR',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   farmaceutica: {
@@ -1328,6 +1802,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         fonte: 'IPCC 2006 Vol 5 (Waste Incineration)',
         observacao:
           'Emissão decorrente da combustão controlada para destruição de moléculas ativas.',
+      },
+    ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por recuperação de solventes e logística reversa de embalagens',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Resíduos & Embalagens Segregadas',
+        unidade: 'kg',
+        legenda: 'Massa com destinação ambientalmente adequada (Decreto 10.388/2020)',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Itens & Embalagens com Rastreio',
+        unidade: 'itens',
+        legenda: 'Embalagens e medicamentos descartados com rastreabilidade ANVISA',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Logística Reversa Fechados',
+        unidade: 'lotes',
+        legenda: 'Remessas hospitalares e farmacêuticas com CDF homologado',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
       },
     ],
   },
@@ -1404,6 +1916,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         observacao: 'Impactado diretamente pelo fator clínquer do cimento empregado no traço.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por britagem de RCD e aço de armadura reciclado',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'RCD / Agregados Reciclados',
+        unidade: 'kg',
+        legenda: 'Massa de entulho e agregado reciclado desviada de aterros de inertes',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Caçambas & Manifestos de RCD',
+        unidade: 'itens',
+        legenda: 'Caçambas e itens de obra com conformidade CONAMA 307',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes de Canteiro Fechados',
+        unidade: 'lotes',
+        legenda: 'Obras e fases construtivas com laudo pericial de desvio',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 
   varejo: {
@@ -1475,6 +2025,44 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         unidade: 'tCO2e / MWh',
         fonte: 'MCTI / SIN',
         observacao: 'Média de rede do Sistema Interligado Nacional.',
+      },
+    ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Abatimento por logística reversa de eletroeletrônicos e embalagens',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Massa Coletada / Logística Reversa',
+        unidade: 'kg',
+        legenda: 'Eletroeletrônicos, papelão e metais recolhidos pós-consumo',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Equipamentos & Descartes com DPP',
+        unidade: 'itens',
+        legenda: 'Aparelhos e embalagens catalogadas para reciclagem',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes Comerciais Fechados',
+        unidade: 'lotes',
+        legenda: 'Remessas reversas de lojas e centros de distribuição',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
       },
     ],
   },
@@ -1610,6 +2198,45 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
           'Apurado por dados de eletricidade da unidade e transporte da sucata até o portão da fábrica.',
       },
     ],
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado (Cobre Recuperado)',
+        unidade: 'kg',
+        legenda:
+          'Apenas cobre pontua em carbono (5,40 kgCO₂e/kg); metais nobres e terras raras em estruturação sem crédito',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_co2e_evitado_kg',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Cobre Puro / Frações Críticas',
+        unidade: 'kg',
+        legenda: 'Massa de chicotes, bobinados e concentrados minerais urbanos',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+        campoOrigem: 'total_peso_kg',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Frações com Teor Declarado',
+        unidade: 'itens',
+        legenda: 'Itens com laudo pericial (Au, Pd, Ag, Cu e NdFeB)',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_pecas',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes DCP de Origem Urbana',
+        unidade: 'lotes',
+        legenda: 'Passaportes Digitais emitidos com prova anti-receptação',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+        campoOrigem: 'total_lotes',
+      },
+    ],
   },
 }
 
@@ -1622,5 +2249,13 @@ export const LISTA_PROTOCOLOS_SETORIAIS: ProtocoloSetorial[] = Object.values(PRO
  * Helper para buscar protocolo por slug ou id
  */
 export function getProtocoloBySlug(slug: string): ProtocoloSetorial | undefined {
-  return PROTOCOLOS_SETORIAIS[slug]
+  if (!slug) return undefined
+  if (PROTOCOLOS_SETORIAIS[slug]) return PROTOCOLOS_SETORIAIS[slug]
+  const normalizado = slug.toLowerCase().trim()
+  return (
+    PROTOCOLOS_SETORIAIS[normalizado] ||
+    Object.values(PROTOCOLOS_SETORIAIS).find(
+      (p) => p.slug.toLowerCase() === normalizado || p.id.toLowerCase() === normalizado,
+    )
+  )
 }
