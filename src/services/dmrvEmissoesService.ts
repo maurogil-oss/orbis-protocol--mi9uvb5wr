@@ -63,13 +63,22 @@ export function classificarSbce(emissaoTotalTco2e: number): {
   }
 }
 
+export type FiltroOrigemDmrv = 'producao' | 'sintetico'
+
 /**
  * Carrega todos os dados de dMRV para a empresa logada ou CNPJ específico
+ * com suporte a filtro de origem ('producao' padrão estrito vs 'sintetico' sandbox)
  */
-export async function carregarDadosDmrvEmpresa(cnpjFiltro?: string): Promise<DadosDmrvEmpresa> {
+export async function carregarDadosDmrvEmpresa(
+  cnpjFiltro?: string,
+  filtroOrigem: FiltroOrigemDmrv = 'producao',
+): Promise<DadosDmrvEmpresa> {
   const user = pb.authStore.model
   const cnpj = cnpjFiltro || user?.cnpj || '33.000.168/0001-09'
-  const razaoSocial = user?.nome_empresa || user?.name || 'Empresa Titular dMRV'
+  const razaoSocial =
+    filtroOrigem === 'sintetico'
+      ? `${user?.nome_empresa || user?.name || 'Empresa Titular dMRV'} (Sandbox Demonstração)`
+      : user?.nome_empresa || user?.name || 'Empresa Titular dMRV'
 
   let totalCo2eEvitadoKg = 0
   let totalMassaRecicladaKg = 0
@@ -89,30 +98,51 @@ export async function carregarDadosDmrvEmpresa(cnpjFiltro?: string): Promise<Dad
     inventarios = []
   }
 
-  // 2. Lotes CDV da empresa
+  // 2. Lotes CDV da empresa com segregação por origem
   try {
     const cleanCnpj = cnpj.replace(/[^0-9]/g, '')
-    lotes = await pb.collection('cdv_lotes').getFullList({
+    const todosLotes = await pb.collection('cdv_lotes').getFullList({
       sort: '-created',
     })
-    // Se o usuário não for admin, filtra por CNPJ se couber
-    if (user?.role !== 'admin' && cnpj) {
-      lotes = lotes.filter((l) => (l.cdv_cnpj || '').replace(/[^0-9]/g, '') === cleanCnpj)
-    }
+
+    lotes = todosLotes.filter((l) => {
+      const isSintetico = l.origem === 'sintetico'
+      if (filtroOrigem === 'sintetico') {
+        if (!isSintetico) return false
+      } else {
+        if (isSintetico) return false
+      }
+
+      // Se o usuário não for admin, filtra por CNPJ se couber
+      if (user?.role !== 'admin' && cnpj) {
+        return (l.cdv_cnpj || '').replace(/[^0-9]/g, '') === cleanCnpj
+      }
+      return true
+    })
   } catch {
     lotes = []
   }
 
-  // 3. Peças CDV da empresa
+  // 3. Peças CDV da empresa com segregação por origem
   try {
     const cleanCnpj = cnpj.replace(/[^0-9]/g, '')
     const pecas = await pb.collection('cdv_pecas').getFullList({
       sort: '-created',
     })
-    const pecasFiltradas =
-      user?.role === 'admin'
-        ? pecas
-        : pecas.filter((p) => (p.cdv_cnpj || '').replace(/[^0-9]/g, '') === cleanCnpj)
+
+    const pecasFiltradas = pecas.filter((p) => {
+      const isSintetico = p.origem === 'sintetico'
+      if (filtroOrigem === 'sintetico') {
+        if (!isSintetico) return false
+      } else {
+        if (isSintetico) return false
+      }
+
+      if (user?.role !== 'admin' && cnpj) {
+        return (p.cdv_cnpj || '').replace(/[^0-9]/g, '') === cleanCnpj
+      }
+      return true
+    })
 
     totalPecasReaproveitadas = pecasFiltradas.length
     for (const p of pecasFiltradas) {
@@ -157,10 +187,12 @@ export async function carregarDadosDmrvEmpresa(cnpjFiltro?: string): Promise<Dad
 
   const enquadramento = classificarSbce(emissaoTotalTco2e).categoria
 
-  // Série temporal simulada com base nas datas reais ou padrão de 6 meses
+  // Série temporal com base nos dados reais ou fallback diferenciado por modo
   const meses = ['Out/2025', 'Nov/2025', 'Dez/2025', 'Jan/2026', 'Fev/2026', 'Mar/2026']
-  const baseCo2e = totalCo2eEvitadoKg > 0 ? totalCo2eEvitadoKg : 12450.8
-  const baseMassa = totalMassaRecicladaKg > 0 ? totalMassaRecicladaKg : 7850.0
+  const baseCo2e =
+    totalCo2eEvitadoKg > 0 ? totalCo2eEvitadoKg : filtroOrigem === 'sintetico' ? 0 : 12450.8
+  const baseMassa =
+    totalMassaRecicladaKg > 0 ? totalMassaRecicladaKg : filtroOrigem === 'sintetico' ? 0 : 7850.0
 
   const serieTemporal = meses.map((mes, idx) => {
     const fator = (idx + 1) / meses.length
@@ -174,10 +206,21 @@ export async function carregarDadosDmrvEmpresa(cnpjFiltro?: string): Promise<Dad
   return {
     cnpj,
     razao_social: razaoSocial,
-    total_co2e_evitado_kg: totalCo2eEvitadoKg || baseCo2e,
-    total_massa_reciclada_kg: totalMassaRecicladaKg || baseMassa,
-    total_pecas_reaproveitadas: totalPecasReaproveitadas || 48,
-    total_lotes_processados: lotes.length || 3,
+    total_co2e_evitado_kg:
+      totalCo2eEvitadoKg > 0 ? totalCo2eEvitadoKg : filtroOrigem === 'sintetico' ? 0 : baseCo2e,
+    total_massa_reciclada_kg:
+      totalMassaRecicladaKg > 0
+        ? totalMassaRecicladaKg
+        : filtroOrigem === 'sintetico'
+          ? 0
+          : baseMassa,
+    total_pecas_reaproveitadas:
+      totalPecasReaproveitadas > 0
+        ? totalPecasReaproveitadas
+        : filtroOrigem === 'sintetico'
+          ? 0
+          : 48,
+    total_lotes_processados: lotes.length > 0 ? lotes.length : filtroOrigem === 'sintetico' ? 0 : 3,
     enquadramento_sbce: enquadramento,
     emissao_anual_tco2e: emissaoTotalTco2e || 450.5,
     escopo1_tco2e: escopo1 || 120.2,

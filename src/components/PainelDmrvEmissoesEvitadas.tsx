@@ -29,11 +29,15 @@ import {
   exportarRelatorioDmrvCsv,
   classificarSbce,
   type DadosDmrvEmpresa,
+  type FiltroOrigemDmrv,
 } from '@/services/dmrvEmissoesService'
 import { obterStatusCertificadoA1, type CertificadoA1Status } from '@/services/infosimplesService'
 import { ModalAssinaturaLaudo } from '@/components/ModalAssinaturaLaudo'
+import { Sparkles } from 'lucide-react'
+
 export function PainelDmrvEmissoesEvitadas() {
   const { user } = useAuth()
+  const [filtroOrigem, setFiltroOrigem] = useState<FiltroOrigemDmrv>('producao')
   const [dados, setDados] = useState<DadosDmrvEmpresa | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [exportando, setExportando] = useState(false)
@@ -47,10 +51,11 @@ export function PainelDmrvEmissoesEvitadas() {
     hash_sha256?: string
     tipo_relatorio?: string
   } | null>(null)
-  const carregar = async () => {
+
+  const carregar = async (origemAtual: FiltroOrigemDmrv = filtroOrigem) => {
     setCarregando(true)
     try {
-      const info = await carregarDadosDmrvEmpresa(user?.cnpj)
+      const info = await carregarDadosDmrvEmpresa(user?.cnpj, origemAtual)
       setDados(info)
     } catch {
       toast({
@@ -64,8 +69,8 @@ export function PainelDmrvEmissoesEvitadas() {
   }
 
   useEffect(() => {
-    carregar()
-  }, [user])
+    carregar(filtroOrigem)
+  }, [user, filtroOrigem])
 
   // Tarefa 2: Carrega o status da custódia A1 ativa do cliente para habilitar assinatura ICP-Brasil
   useEffect(() => {
@@ -125,7 +130,7 @@ export function PainelDmrvEmissoesEvitadas() {
 
   return (
     <div className="space-y-6">
-      {/* Topo do Painel dMRV */}
+      {/* Topo do Painel dMRV com Seletor Real/Sandbox */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -138,6 +143,14 @@ export function PainelDmrvEmissoesEvitadas() {
             <Badge variant="secondary" className="text-xs font-mono">
               Enquadramento SBCE Ativo
             </Badge>
+            {filtroOrigem === 'sintetico' && (
+              <Badge
+                variant="outline"
+                className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-xs font-mono font-bold uppercase"
+              >
+                Demonstração
+              </Badge>
+            )}
             <span className="text-xs text-muted-foreground font-mono">CNPJ: {dados.cnpj}</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
@@ -150,28 +163,84 @@ export function PainelDmrvEmissoesEvitadas() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={carregar}
-            disabled={carregando}
-            className="gap-1.5 text-xs"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${carregando ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleExportarCsv}
-            disabled={exportando}
-            className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            {exportando ? 'Exportando...' : 'Exportar Relatório dMRV (CSV/PDF)'}
-          </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">
+          {/* Seletor Real (Produção) vs Sandbox (Demonstração) */}
+          <div className="inline-flex rounded-xl p-1 bg-muted/60 border border-border">
+            <button
+              type="button"
+              onClick={() => setFiltroOrigem('producao')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                filtroOrigem === 'producao'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Dados Reais (Produção)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFiltroOrigem('sintetico')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                filtroOrigem === 'sintetico'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Sandbox (Demonstração)</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => carregar(filtroOrigem)}
+              disabled={carregando}
+              className="gap-1.5 text-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${carregando ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleExportarCsv}
+              disabled={exportando}
+              className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              {exportando ? 'Exportando...' : 'Exportar Relatório dMRV (CSV/PDF)'}
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Tarja informativa de Sandbox quando filtroOrigem === 'sintetico' */}
+      {filtroOrigem === 'sintetico' && (
+        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <strong className="font-bold uppercase tracking-wide">
+                Visualização de Dados Sintéticos do Ambiente de Sandbox
+              </strong>
+              <Badge className="bg-amber-500 text-slate-950 text-[10px] font-mono font-bold uppercase">
+                Demonstração
+              </Badge>
+            </div>
+            <p className="leading-relaxed opacity-90">
+              Estes valores foram gerados no gerador nativo do Sandbox de Ingestão e possuem
+              marcação permanente{' '}
+              <code className="font-mono bg-white/70 dark:bg-black/30 px-1 py-0.5 rounded">
+                origem = 'sintetico'
+              </code>
+              . Eles <strong>não representam ativos de carbono reais</strong>, não geram lastro
+              transacionável e ficam estritamente isolados das consultas e métricas públicas da
+              plataforma.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ENQUADRAMENTO REGULATÓRIO SBCE */}
       <div

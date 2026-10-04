@@ -44,6 +44,13 @@ export const FATORES_CDV_MATERIAIS: Record<string, FatorCdvMaterial> = {
     fonte: 'PlasticsEurope Eco-profiles (PP at gate)',
     ano: 2023,
   },
+  concreto: {
+    categoria: 'outros',
+    nome: 'Concreto / Agregado Reciclado RCD',
+    fatorKgCO2ePorKg: 0.12,
+    fonte: 'Catálogo Oficial Orbis / RCD CONAMA 307',
+    ano: 2024,
+  },
   outros: {
     categoria: 'outros',
     nome: 'Outros Materiais (Estimativa Conservadora)',

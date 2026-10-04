@@ -164,6 +164,88 @@ describe('SandboxSyntheticGenerator - Algoritmos Matemáticos Nativos', () => {
         expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
       })
     })
+
+    it('gera documento de Varejo Reverso com CFOPs, NCMs corretos e cálculo oficial', async () => {
+      const doc = await gerarDocumentoSintetico({
+        segmento: 'varejo_reverso',
+        indice: 0,
+      })
+      expect(doc.segmento).toBe('varejo_reverso')
+      expect(doc.modeloFiscal).toBe('55')
+      expect(doc.chaveAcesso.length).toBe(44)
+      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+      // NCMs especificados
+      const ncms = doc.itens.map((i) => i.ncm)
+      expect(ncms).toContain('8504.40.10')
+      expect(ncms).toContain('8471.60.52')
+      expect(ncms).toContain('8517.62.77')
+      // Fatores canônicos
+      const itemAco = doc.itens.find((i) => i.categoriaMaterial === 'aco')
+      expect(itemAco?.fatorCo2eKg).toBe(2.18)
+      const itemAlu = doc.itens.find((i) => i.categoriaMaterial === 'aluminio')
+      expect(itemAlu?.fatorCo2eKg).toBe(14.4)
+      const itemCu = doc.itens.find((i) => i.categoriaMaterial === 'cobre')
+      expect(itemCu?.fatorCo2eKg).toBe(5.4)
+      const itemPol = doc.itens.find((i) => i.categoriaMaterial === 'polimeros')
+      expect(itemPol?.fatorCo2eKg).toBe(1.9)
+    })
+
+    it('gera documento de Construção RCD com fatores de concreto (0.12) e aço (2.18)', async () => {
+      const doc = await gerarDocumentoSintetico({
+        segmento: 'construcao_rcd',
+        indice: 0,
+      })
+      expect(doc.segmento).toBe('construcao_rcd')
+      expect(doc.modeloFiscal).toBe('55')
+      expect(doc.chaveAcesso.length).toBe(44)
+      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+
+      const ncms = doc.itens.map((i) => i.ncm)
+      expect(ncms).toContain('2517.10.00')
+      expect(ncms).toContain('6810.11.00')
+      expect(ncms).toContain('7214.20.00')
+
+      const concretoItens = doc.itens.filter((i) => i.categoriaMaterial === 'concreto')
+      expect(concretoItens.length).toBe(2)
+      concretoItens.forEach((c) => expect(c.fatorCo2eKg).toBe(0.12))
+
+      const acoItem = doc.itens.find((i) => i.categoriaMaterial === 'aco')
+      expect(acoItem?.fatorCo2eKg).toBe(2.18)
+    })
+
+    it('gera documento de Mineração Urbana com cobre calculado (5.40) e ouro/paládio/terras raras em estruturação sem crédito', async () => {
+      const doc = await gerarDocumentoSintetico({
+        segmento: 'mineracao_urbana_criticos',
+        indice: 0,
+      })
+      expect(doc.segmento).toBe('mineracao_urbana_criticos')
+      expect(doc.modeloFiscal).toBe('55')
+      expect(doc.chaveAcesso.length).toBe(44)
+      expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
+
+      // CFOP e NCMs
+      const ncms = doc.itens.map((i) => i.ncm)
+      expect(ncms).toContain('8534.00.00')
+      expect(ncms).toContain('8548.00.00')
+
+      // REGRA CRÍTICA: APENAS COBRE é calculado
+      const itemCobre = doc.itens.find((i) => i.cProd.includes('COBRE'))
+      expect(itemCobre).toBeDefined()
+      expect(itemCobre?.categoriaMaterial).toBe('cobre')
+      expect(itemCobre?.fatorCo2eKg).toBe(5.4)
+      expect(itemCobre?.co2eEvitadoKg).toBeGreaterThan(0)
+      expect(itemCobre?.statusCalculo).toBe('calculado')
+
+      // Ouro, paládio/prata e terras raras recebem fator 0, co2e 0 e status "em estruturação de catálogo"
+      const itensCriticos = doc.itens.filter((i) => !i.cProd.includes('COBRE'))
+      expect(itensCriticos.length).toBe(3)
+      itensCriticos.forEach((crit) => {
+        expect(crit.fatorCo2eKg).toBe(0)
+        expect(crit.co2eEvitadoKg).toBe(0)
+        expect(crit.statusCalculo).toBe('em_estruturacao_de_catalogo')
+        expect(crit.teorDeclarado).toBeDefined()
+      })
+    })
   })
 })
 
@@ -261,5 +343,62 @@ describe('Isolamento de Segurança e Métricas Públicas (Sandbox)', () => {
     ).rejects.toThrow('404 Not Found')
 
     expect(spyGetFirst).toHaveBeenCalled()
+  })
+
+  it('carregarDadosDmrvEmpresa isola dados de produção (padrão) e dados de sandbox quando filtroOrigem é sintetico', async () => {
+    const { carregarDadosDmrvEmpresa } = await import('../dmrvEmissoesService')
+
+    const mockLotes = [
+      {
+        id: 'lote-real-1',
+        origem: 'producao',
+        total_co2e_evitado_kg: 1000,
+        total_peso_kg: 500,
+        cdv_cnpj: '33000168000109',
+      },
+      {
+        id: 'lote-synth-1',
+        origem: 'sintetico',
+        total_co2e_evitado_kg: 9999,
+        total_peso_kg: 3333,
+        cdv_cnpj: '33000168000109',
+      },
+    ]
+
+    const mockPecas = [
+      {
+        id: 'peca-real-1',
+        origem: 'producao',
+        co2e_evitado_kg: 1000,
+        peso_kg: 500,
+        cdv_cnpj: '33000168000109',
+      },
+      {
+        id: 'peca-synth-1',
+        origem: 'sintetico',
+        co2e_evitado_kg: 9999,
+        peso_kg: 3333,
+        cdv_cnpj: '33000168000109',
+      },
+    ]
+
+    vi.spyOn(pb.collection('emissoes_inventario'), 'getFullList').mockResolvedValue([])
+    vi.spyOn(pb.collection('cdv_lotes'), 'getFullList').mockResolvedValue(mockLotes as any)
+    vi.spyOn(pb.collection('cdv_pecas'), 'getFullList').mockResolvedValue(mockPecas as any)
+    vi.spyOn(pb.collection('relatorios_exportados'), 'getFullList').mockResolvedValue([])
+
+    // 1. Chamada padrão (produção) — não deve incluir o lote/peça sintético
+    const dadosProd = await carregarDadosDmrvEmpresa('33.000.168/0001-09', 'producao')
+    expect(dadosProd.total_co2e_evitado_kg).toBe(1000)
+    expect(dadosProd.total_massa_reciclada_kg).toBe(500)
+    expect(dadosProd.total_pecas_reaproveitadas).toBe(1)
+    expect(dadosProd.total_lotes_processados).toBe(1)
+
+    // 2. Chamada em modo sandbox ('sintetico') — retorna apenas registros com origem == 'sintetico'
+    const dadosSandbox = await carregarDadosDmrvEmpresa('33.000.168/0001-09', 'sintetico')
+    expect(dadosSandbox.total_co2e_evitado_kg).toBe(9999)
+    expect(dadosSandbox.total_massa_reciclada_kg).toBe(3333)
+    expect(dadosSandbox.total_pecas_reaproveitadas).toBe(1)
+    expect(dadosSandbox.total_lotes_processados).toBe(1)
   })
 })

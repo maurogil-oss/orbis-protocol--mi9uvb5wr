@@ -51,6 +51,79 @@ export function ConsoleSandboxIngestaoTab() {
     total: 0,
   })
 
+  // Helper para identificar fator e categoria do material com base no catálogo canônico
+  // Aço 2,18; Alumínio 14,40; Cobre 5,40; Polímeros 1,90; Concreto/agregado reciclado 0,12; outros/genérico 1,50
+  const obterFatorECategoriaMaterial = (
+    item: any,
+    segmentoDoc: SegmentoSandbox,
+  ): {
+    categoriaSelect: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
+    categoriaDescritiva: string
+    fatorCo2eKg: number
+    statusCalculo: 'calculado' | 'em_estruturacao_de_catalogo'
+  } => {
+    // Regra crítica para mineração urbana: ouro/paládio/prata/terras raras ficam "em estruturação de catálogo"
+    if (
+      item.statusCalculo === 'em_estruturacao_de_catalogo' ||
+      (segmentoDoc === 'mineracao_urbana_criticos' && item.categoriaMaterial !== 'cobre')
+    ) {
+      return {
+        categoriaSelect: 'outros',
+        categoriaDescritiva: 'Minerais Críticos & Metais Nobres (Em estruturação de catálogo)',
+        fatorCo2eKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      }
+    }
+
+    const cat = item.categoriaMaterial || ''
+    if (cat === 'aco') {
+      return {
+        categoriaSelect: 'aco',
+        categoriaDescritiva: 'Aço Laminado / Estampado',
+        fatorCo2eKg: 2.18,
+        statusCalculo: 'calculado',
+      }
+    }
+    if (cat === 'aluminio') {
+      return {
+        categoriaSelect: 'aluminio',
+        categoriaDescritiva: 'Alumínio Primário Automotivo / Industrial',
+        fatorCo2eKg: 14.4,
+        statusCalculo: 'calculado',
+      }
+    }
+    if (cat === 'cobre') {
+      return {
+        categoriaSelect: 'cobre',
+        categoriaDescritiva: 'Cobre / Bobinamentos Elétricos',
+        fatorCo2eKg: 5.4,
+        statusCalculo: 'calculado',
+      }
+    }
+    if (cat === 'polimeros') {
+      return {
+        categoriaSelect: 'polimeros',
+        categoriaDescritiva: 'Polímeros Automotivos e Termoplásticos (PP / EPDM / ABS)',
+        fatorCo2eKg: 1.9,
+        statusCalculo: 'calculado',
+      }
+    }
+    if (cat === 'concreto') {
+      return {
+        categoriaSelect: 'outros',
+        categoriaDescritiva: 'Concreto / Agregados Reciclados de Construção Civil (RCD)',
+        fatorCo2eKg: 0.12,
+        statusCalculo: 'calculado',
+      }
+    }
+    return {
+      categoriaSelect: 'outros',
+      categoriaDescritiva: 'Outros Materiais (Estimativa Conservadora)',
+      fatorCo2eKg: 1.5,
+      statusCalculo: 'calculado',
+    }
+  }
+
   // Gerar novo lote sintético
   const handleGerarLote = async () => {
     setGerando(true)
@@ -149,58 +222,132 @@ export function ConsoleSandboxIngestaoTab() {
           console.warn('Gravação em selos falhou ou requer permissão:', seloErr)
         }
 
-        // 2. Se for desmanche_cdv ou aplicável, gravar lote em 'cdv_lotes' e peças em 'cdv_pecas'
+        // 2. Se for segmento com peças/itens rastreáveis (desmanche_cdv, varejo_reverso, construcao_rcd, mineracao_urbana_criticos)
+        // calcular CO₂e com motor real por material e gravar cdv_lotes + cdv_pecas por item
         let regLoteId = ''
         let regPecaId = ''
-        if (doc.segmento === 'desmanche_cdv') {
+        const segmentosComRastreabilidade = [
+          'desmanche_cdv',
+          'varejo_reverso',
+          'construcao_rcd',
+          'mineracao_urbana_criticos',
+        ]
+
+        if (segmentosComRastreabilidade.includes(doc.segmento)) {
           try {
+            // Processamento peça a peça com cálculo oficial de carbono
+            const itensProcessados = await Promise.all(
+              doc.itens.map(async (it, itemIdx) => {
+                const infoMat = obterFatorECategoriaMaterial(it, doc.segmento)
+                const pesoKg = Number(it.pesoKg || 0)
+                const seloItem =
+                  doc.itens.length === 1 ? codigoSelo : `${codigoSelo}-${itemIdx + 1}`
+
+                // co2e_evitado_kg = round(pesoKg * fator * 100)/100
+                const co2eEvitadoKg =
+                  infoMat.statusCalculo === 'em_estruturacao_de_catalogo'
+                    ? 0
+                    : Math.round(pesoKg * infoMat.fatorCo2eKg * 100) / 100
+
+                // Hash canônico por peça incluindo o CO2e calculado
+                const textoHashPeca = `${seloItem}|${it.cProd}|${it.xProd}|${pesoKg.toFixed(2)}|${co2eEvitadoKg.toFixed(2)}|${formatarCnpj(doc.cnpjEmitente)}|${doc.chaveAcesso}`
+                let hashPeca = ''
+                if (typeof crypto !== 'undefined' && crypto.subtle) {
+                  const enc = new TextEncoder()
+                  const hb = await crypto.subtle.digest('SHA-256', enc.encode(textoHashPeca))
+                  hashPeca = Array.from(new Uint8Array(hb))
+                    .map((b) => b.toString(16).padStart(2, '0'))
+                    .join('')
+                } else {
+                  hashPeca = doc.hashSha256
+                }
+
+                return {
+                  item: it,
+                  seloDpp: seloItem,
+                  categoriaSelect: infoMat.categoriaSelect,
+                  categoriaDescritiva: infoMat.categoriaDescritiva,
+                  fatorCo2eKg: infoMat.fatorCo2eKg,
+                  statusCalculo: infoMat.statusCalculo,
+                  pesoKg,
+                  co2eEvitadoKg,
+                  hashPeca,
+                }
+              }),
+            )
+
+            // Agregação no lote
+            const totalPesoLote =
+              Math.round(itensProcessados.reduce((acc, p) => acc + p.pesoKg, 0) * 100) / 100
+            const totalCo2eLote =
+              Math.round(itensProcessados.reduce((acc, p) => acc + p.co2eEvitadoKg, 0) * 100) / 100
+
+            const descricaoVeiculo =
+              doc.segmento === 'desmanche_cdv'
+                ? 'Veículo Teste Sandbox Orbis (Sintético)'
+                : doc.segmento === 'varejo_reverso'
+                  ? 'Lote Varejo Reverso & Eletroeletrônicos (Sintético)'
+                  : doc.segmento === 'construcao_rcd'
+                    ? 'Lote Agregados Reciclados de Concreto RCD (Sintético)'
+                    : 'Lote Mineração Urbana & Materiais Críticos (Sintético)'
+
             const regLote = await pb.collection('cdv_lotes').create({
               cdv_nome: doc.razaoSocialEmitente,
               cdv_cnpj: formatarCnpj(doc.cnpjEmitente),
-              cdv_codigo: 'CDV-SANDBOX-SYNTH',
-              veiculo_marca_modelo: 'Veículo Teste Sandbox Orbis (Sintético)',
-              veiculo_chassi: doc.dadosAdicionais.chassi || '93YBB05U0GJ999999',
-              veiculo_baixa_detran: `PR-BX-SYN-${sufixoHex}`,
+              cdv_codigo: `SANDBOX-${doc.segmento.toUpperCase().slice(0, 10)}`,
+              veiculo_marca_modelo: descricaoVeiculo,
+              veiculo_chassi: doc.dadosAdicionais.chassi || `SYNTH-${doc.chaveAcesso.slice(-8)}`,
+              veiculo_baixa_detran: `SYN-BX-${sufixoHex}`,
               origem_envio: 'erp',
               status: 'processado',
               total_pecas: doc.itens.length,
-              total_peso_kg: doc.itens.reduce((acc, it) => acc + (it.pesoKg || 0), 0),
-              total_co2e_evitado_kg: Math.round(doc.itens.length * 15.4 * 100) / 100,
+              total_peso_kg: totalPesoLote,
+              total_co2e_evitado_kg: totalCo2eLote,
               is_demo: true,
               origem: 'sintetico',
               payload_bruto_json: {
                 tipo: 'sandbox_sintetico',
+                segmento: doc.segmento,
                 chaveAcesso: doc.chaveAcesso,
                 hashSha256: doc.hashSha256,
                 marca: MARCA_SANDBOX_OBRIGATORIA,
+                totalItens: doc.itens.length,
+                totalPesoKg: totalPesoLote,
+                totalCo2eKg: totalCo2eLote,
               },
             })
             regLoteId = regLote.id
 
-            // Grava primeira peça representativa
-            if (doc.itens.length > 0) {
-              const it = doc.itens[0]
+            // Grava TODAS as peças no banco com seu respectivo cálculo oficial
+            for (let pIdx = 0; pIdx < itensProcessados.length; pIdx++) {
+              const p = itensProcessados[pIdx]
+              const materialDeclaradoTexto =
+                p.statusCalculo === 'em_estruturacao_de_catalogo'
+                  ? `${p.categoriaDescritiva} [STATUS: EM ESTRUTURAÇÃO DE CATÁLOGO - ZERO CRÉDITO]`
+                  : p.categoriaDescritiva
+
               const regPeca = await pb.collection('cdv_pecas').create({
                 lote: regLote.id,
-                sku_interno: it.cProd,
-                selo_dpp: codigoSelo,
-                descricao_peca: it.xProd,
-                categoria_material: it.categoriaMaterial || 'aco',
-                material_declarado: 'Componente Automotivo Sintético Sandbox',
-                peso_kg: it.pesoKg || 10,
-                ncm: it.ncm,
-                fator_co2e_kg: it.fatorCo2eKg || 2.18,
-                co2e_evitado_kg:
-                  Math.round((it.pesoKg || 10) * (it.fatorCo2eKg || 2.18) * 100) / 100,
-                hash_sha256: doc.hashSha256,
+                sku_interno: p.item.cProd,
+                selo_dpp: p.seloDpp,
+                descricao_peca: p.item.xProd,
+                categoria_material: p.categoriaSelect,
+                material_declarado: materialDeclaradoTexto,
+                peso_kg: p.pesoKg,
+                ncm: p.item.ncm,
+                fator_co2e_kg: p.fatorCo2eKg,
+                co2e_evitado_kg: p.co2eEvitadoKg,
+                hash_sha256: p.hashPeca,
                 responsavel_crea: 'CREA-PR 000.000/D (Sandbox)',
-                cdv_origem: 'CDV-SANDBOX-SYNTH',
+                cdv_origem: `SANDBOX-${doc.segmento.toUpperCase().slice(0, 10)}`,
                 cdv_cnpj: formatarCnpj(doc.cnpjEmitente),
                 status: 'ativo',
                 situacao_checklist: 'etiquetada',
                 origem: 'sintetico',
               })
-              regPecaId = regPeca.id
+              if (pIdx === 0) {
+                regPecaId = regPeca.id
+              }
             }
           } catch (cdvErr: any) {
             console.warn('Gravação em cdv_lotes/pecas falhou:', cdvErr)
@@ -276,6 +423,15 @@ export function ConsoleSandboxIngestaoTab() {
               <option value="combustiveis">Combustíveis (Diesel S10 / Biometanol)</option>
               <option value="desmanche_cdv">Desmanche & Peças Usadas (CDV / Renova)</option>
               <option value="transporte_cte">Frete & Transporte (CT-e Interestadual)</option>
+              <option value="varejo_reverso">
+                Comércio & Varejo (Logística Reversa Eletro/Embalagens)
+              </option>
+              <option value="construcao_rcd">
+                Imobiliário & Construção Civil (RCD / Agregados Reciclados)
+              </option>
+              <option value="mineracao_urbana_criticos">
+                Mineração Urbana & Materiais Críticos (Cobre / Au / Pd / Terras Raras)
+              </option>
             </select>
           </div>
 

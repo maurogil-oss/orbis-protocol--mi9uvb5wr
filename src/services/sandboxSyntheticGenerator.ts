@@ -23,7 +23,13 @@
 export const MARCA_SANDBOX_OBRIGATORIA =
   '[DOCUMENTO SINTÉTICO - AMBIENTE DE SANDBOX ORBIS PROTOCOL - NÃO AUTORIZADO PELA SEFAZ - USO EXCLUSIVO DE TESTE E HOMOLOGAÇÃO]'
 
-export type SegmentoSandbox = 'combustiveis' | 'desmanche_cdv' | 'transporte_cte'
+export type SegmentoSandbox =
+  | 'combustiveis'
+  | 'desmanche_cdv'
+  | 'transporte_cte'
+  | 'varejo_reverso'
+  | 'construcao_rcd'
+  | 'mineracao_urbana_criticos'
 
 export interface ItemDocumentoSintetico {
   nItem: number
@@ -35,9 +41,12 @@ export interface ItemDocumentoSintetico {
   qCom: number
   vUnCom: number
   vProd: number
-  categoriaMaterial?: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
+  categoriaMaterial?: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'concreto' | 'outros'
   pesoKg?: number
   fatorCo2eKg?: number
+  co2eEvitadoKg?: number
+  statusCalculo?: 'calculado' | 'em_estruturacao_de_catalogo'
+  teorDeclarado?: string
 }
 
 export interface DocumentoSintetico {
@@ -740,88 +749,495 @@ export async function gerarDocumentoSintetico(params: {
     }
   }
 
-  // params.segmento === 'transporte_cte'
-  // CT-e mod 57 de frete interestadual: CFOP 6353, RNTRC, volumes de carga
+  if (params.segmento === 'transporte_cte') {
+    // CT-e mod 57 de frete interestadual: CFOP 6353, RNTRC, volumes de carga
+    const cnpjEmit = gerarCnpjValido({
+      alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 1,
+      seed: 5000 + idx * 17,
+    })
+    const cnpjDest = gerarCnpjValido({
+      alfanumerico: false,
+      seed: 6000 + idx * 23,
+    })
+
+    const nCT = (300000 + idx).toString()
+    const serie = '1'
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '57',
+      serie,
+      numeroDoc: nCT,
+      codigoAleatorio: `${65000000 + idx}`.slice(0, 8),
+    })
+
+    const rntrc = (80000000 + idx).toString()
+    const cfop = '6353'
+    const valorFrete = Math.round((2800 + ((idx * 340) % 4500)) * 100) / 100
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Transporte interestadual PR -> SP. RNTRC ${rntrc}. CFOP ${cfop}. Rastreabilidade de frete rodoviário de cargas.`
+
+    const xml = construirXmlCTe({
+      chaveAcesso: chave,
+      numero: nCT,
+      serie,
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
+      valorTotal: valorFrete,
+      rntrc,
+      cfop,
+      infCpl,
+    })
+
+    const hash = await calcularSha256(xml)
+
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: 'SRV-FRETE-ROD',
+        xProd: 'PRESTACAO DE SERVICO DE TRANSPORTE RODOVIARIO DE CARGAS (PR-SP)',
+        ncm: '0000.00.00',
+        cfop,
+        uCom: 'UN',
+        qCom: 1,
+        vUnCom: valorFrete,
+        vProd: valorFrete,
+        categoriaMaterial: 'outros',
+        pesoKg: 12500,
+      },
+    ]
+
+    return {
+      id: `SYN-CTE-${idx + 1}-${chave.slice(-6)}`,
+      segmento: 'transporte_cte',
+      modeloFiscal: '57',
+      chaveAcesso: chave,
+      numeroDocumento: nCT,
+      serie,
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
+      valorTotal: valorFrete,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+        rntrc,
+        municipioOrigem: 'Curitiba/PR',
+        municipioDestino: 'São Paulo/SP',
+      },
+    }
+  }
+
+  // ----------------------------------------------------------------------
+  // a. COMÉRCIO & VAREJO (varejo_reverso)
+  // CFOPs 5.949 / 6.949 / 1.949
+  // NCMs: 8504.40.10 (fontes/carregadores), 8471.60.52 (periféricos), 8517.62.77 (roteadores)
+  // Materiais das peças restritos aos catalogados: aço, alumínio, cobre, polímeros
+  // ----------------------------------------------------------------------
+  if (params.segmento === 'varejo_reverso') {
+    const cnpjEmit = gerarCnpjValido({
+      alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 0,
+      seed: 7000 + idx * 19,
+    })
+    const cnpjDest = gerarCnpjValido({
+      alfanumerico: false,
+      seed: 7500 + idx * 29,
+    })
+
+    const nNF = (400000 + idx).toString()
+    const serie = '1'
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie,
+      numeroDoc: nNF,
+      codigoAleatorio: `${54000000 + idx}`.slice(0, 8),
+    })
+
+    const cfop = idx % 3 === 0 ? '5949' : idx % 3 === 1 ? '6949' : '1949'
+
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `RET-FONTE-AC-${idx + 1}`,
+        xProd: 'FONTE CARREGADORA CHAVEADA REVERSA 65W (POLIMERO/COBRE)',
+        ncm: '8504.40.10',
+        cfop,
+        uCom: 'UN',
+        qCom: 10 + (idx % 5),
+        vUnCom: 28.5,
+        vProd: Math.round((10 + (idx % 5)) * 28.5 * 100) / 100,
+        categoriaMaterial: 'polimeros',
+        pesoKg: Math.round((10 + (idx % 5)) * 0.28 * 100) / 100,
+        fatorCo2eKg: 1.9,
+        co2eEvitadoKg: Math.round((10 + (idx % 5)) * 0.28 * 1.9 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+      {
+        nItem: 2,
+        cProd: `RET-PERIF-TECL-${idx + 1}`,
+        xProd: 'TECLADO E PERIFERICO DESUSO CHASSI METALICO (ACO/POLIMERO)',
+        ncm: '8471.60.52',
+        cfop,
+        uCom: 'UN',
+        qCom: 6 + (idx % 4),
+        vUnCom: 35.0,
+        vProd: Math.round((6 + (idx % 4)) * 35.0 * 100) / 100,
+        categoriaMaterial: 'aco',
+        pesoKg: Math.round((6 + (idx % 4)) * 0.75 * 100) / 100,
+        fatorCo2eKg: 2.18,
+        co2eEvitadoKg: Math.round((6 + (idx % 4)) * 0.75 * 2.18 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+      {
+        nItem: 3,
+        cProd: `RET-ROUT-WIFI-${idx + 1}`,
+        xProd: 'ROTEADOR GIGA BLINDAGEM ALUMINIO DISSIPADOR (ALUMINIO/COBRE)',
+        ncm: '8517.62.77',
+        cfop,
+        uCom: 'UN',
+        qCom: 4 + (idx % 3),
+        vUnCom: 95.0,
+        vProd: Math.round((4 + (idx % 3)) * 95.0 * 100) / 100,
+        categoriaMaterial: 'aluminio',
+        pesoKg: Math.round((4 + (idx % 3)) * 0.45 * 100) / 100,
+        fatorCo2eKg: 14.4,
+        co2eEvitadoKg: Math.round((4 + (idx % 3)) * 0.45 * 14.4 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+      {
+        nItem: 4,
+        cProd: `RET-CABOS-COBRE-${idx + 1}`,
+        xProd: 'LOTE DE CABOS DE ENERGIA E CHICOTES DE COBRE REVERSO',
+        ncm: '8504.40.10',
+        cfop,
+        uCom: 'KG',
+        qCom: 8.5 + (idx % 4),
+        vUnCom: 32.0,
+        vProd: Math.round((8.5 + (idx % 4)) * 32.0 * 100) / 100,
+        categoriaMaterial: 'cobre',
+        pesoKg: Math.round((8.5 + (idx % 4)) * 100) / 100,
+        fatorCo2eKg: 5.4,
+        co2eEvitadoKg: Math.round((8.5 + (idx % 4)) * 5.4 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+    ]
+
+    const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Remessa para logística reversa de eletroeletrônicos e embalagens no varejo físico. CFOP ${cfop}. PNRS Lei 12.305/2010.`
+
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie,
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Varejo Sustentável & Eletro Reversa Brasil S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Centro de Triagem e Descaracterização Reversa Ltda',
+      valorTotal,
+      itens,
+      infCpl,
+    })
+
+    const hash = await calcularSha256(xml)
+
+    return {
+      id: `SYN-VAR-${idx + 1}-${chave.slice(-6)}`,
+      segmento: 'varejo_reverso',
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie,
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'Varejo Sustentável & Eletro Reversa Brasil S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Centro de Triagem e Descaracterização Reversa Ltda',
+      valorTotal,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+      },
+    }
+  }
+
+  // ----------------------------------------------------------------------
+  // b. IMOBILIÁRIO & CONSTRUÇÃO CIVIL (construcao_rcd)
+  // RCD, agregados reciclados de concreto. CFOPs 5.102 / 5.949
+  // NCMs: 6810.11.00 (blocos concreto), 2517.10.00 (agregados/brita), 7214.20.00 (armaduras aço)
+  // Materiais: concreto 0,12 e aço 2,18
+  // ----------------------------------------------------------------------
+  if (params.segmento === 'construcao_rcd') {
+    const cnpjEmit = gerarCnpjValido({
+      alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 1,
+      seed: 8000 + idx * 23,
+    })
+    const cnpjDest = gerarCnpjValido({
+      alfanumerico: false,
+      seed: 8500 + idx * 37,
+    })
+
+    const nNF = (500000 + idx).toString()
+    const serie = '1'
+    const chave = gerarChaveAcesso44({
+      cUF: '41',
+      aamm,
+      cnpjEmitente: cnpjEmit,
+      modelo: '55',
+      serie,
+      numeroDoc: nNF,
+      codigoAleatorio: `${43000000 + idx}`.slice(0, 8),
+    })
+
+    const cfop = idx % 2 === 0 ? '5102' : '5949'
+
+    const itens: ItemDocumentoSintetico[] = [
+      {
+        nItem: 1,
+        cProd: `RCD-AGREG-BRITA-${idx + 1}`,
+        xProd: 'AGREGADO RECICLADO DE CONCRETO (BRITA RCD GRADUADA)',
+        ncm: '2517.10.00',
+        cfop,
+        uCom: 'TON',
+        qCom: 12 + (idx % 8),
+        vUnCom: 48.0,
+        vProd: Math.round((12 + (idx % 8)) * 48.0 * 100) / 100,
+        categoriaMaterial: 'concreto',
+        pesoKg: (12 + (idx % 8)) * 1000,
+        fatorCo2eKg: 0.12,
+        co2eEvitadoKg: Math.round((12 + (idx % 8)) * 1000 * 0.12 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+      {
+        nItem: 2,
+        cProd: `RCD-BLOCO-CONC-${idx + 1}`,
+        xProd: 'BLOCO DE CONCRETO RECICLADO ESTRUTURAL 14X19X39',
+        ncm: '6810.11.00',
+        cfop,
+        uCom: 'MIL',
+        qCom: 2 + (idx % 3),
+        vUnCom: 2850.0,
+        vProd: Math.round((2 + (idx % 3)) * 2850.0 * 100) / 100,
+        categoriaMaterial: 'concreto',
+        pesoKg: (2 + (idx % 3)) * 12000,
+        fatorCo2eKg: 0.12,
+        co2eEvitadoKg: Math.round((2 + (idx % 3)) * 12000 * 0.12 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+      {
+        nItem: 3,
+        cProd: `RCD-ACO-ARMAD-${idx + 1}`,
+        xProd: 'ACO CA-50 RECUPERADO DE DEMOLICAO CONTROLADA',
+        ncm: '7214.20.00',
+        cfop,
+        uCom: 'KG',
+        qCom: 2500 + (idx % 5) * 500,
+        vUnCom: 4.1,
+        vProd: Math.round((2500 + (idx % 5) * 500) * 4.1 * 100) / 100,
+        categoriaMaterial: 'aco',
+        pesoKg: 2500 + (idx % 5) * 500,
+        fatorCo2eKg: 2.18,
+        co2eEvitadoKg: Math.round((2500 + (idx % 5) * 500) * 2.18 * 100) / 100,
+        statusCalculo: 'calculado',
+      },
+    ]
+
+    const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
+    const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Agregados e materiais reciclados de construção civil (RCD). CONAMA 307/2002. CFOP ${cfop}.`
+
+    const xml = construirXmlNFe({
+      chaveAcesso: chave,
+      numero: nNF,
+      serie,
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'EcoBrita & Reciclagem de RCD Construção Civil S.A. (Sandbox)',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Construtora Metropolitana Obras Sustentáveis Ltda',
+      valorTotal,
+      itens,
+      infCpl,
+    })
+
+    const hash = await calcularSha256(xml)
+
+    return {
+      id: `SYN-RCD-${idx + 1}-${chave.slice(-6)}`,
+      segmento: 'construcao_rcd',
+      modeloFiscal: '55',
+      chaveAcesso: chave,
+      numeroDocumento: nNF,
+      serie,
+      dataEmissao: dataHoje,
+      cnpjEmitente: cnpjEmit,
+      razaoSocialEmitente: 'EcoBrita & Reciclagem de RCD Construção Civil S.A.',
+      cnpjDestinatario: cnpjDest,
+      razaoSocialDestinatario: 'Construtora Metropolitana Obras Sustentáveis Ltda',
+      valorTotal,
+      itens,
+      xmlConteudo: xml,
+      hashSha256: hash,
+      dadosAdicionais: {
+        marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
+      },
+    }
+  }
+
+  // ----------------------------------------------------------------------
+  // c. MINERAÇÃO URBANA & MATERIAIS CRÍTICOS (mineracao_urbana_criticos)
+  // Sucata eletrônica, placas de circuito impresso (NCM 8534.00.00), resíduos (NCM 8548.00.00)
+  // CFOP 5.949 / 6.949
+  // REGRA CRÍTICA DO USUÁRIO:
+  // APENAS COBRE entra no cálculo de carbono (fator 5,40).
+  // Ouro, paládio, prata e terras raras (neodímio) são 100% rastreáveis (identificador de lote,
+  // teor declarado em ppm/g/t, hash SHA-256, DPP) mas seus campos fator_co2e_kg/co2e_evitado_kg
+  // recebem status "em estruturação de catálogo" — valor nulo/zero com indicação pericial explícita,
+  // NENHUM fator inventado, NENHUMA alegação de crédito de carbono sobre esses materiais.
+  // ----------------------------------------------------------------------
+  // params.segmento === 'mineracao_urbana_criticos'
   const cnpjEmit = gerarCnpjValido({
-    alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 1,
-    seed: 5000 + idx * 17,
+    alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 0,
+    seed: 9000 + idx * 31,
   })
   const cnpjDest = gerarCnpjValido({
     alfanumerico: false,
-    seed: 6000 + idx * 23,
+    seed: 9500 + idx * 41,
   })
 
-  const nCT = (300000 + idx).toString()
+  const nNF = (600000 + idx).toString()
   const serie = '1'
   const chave = gerarChaveAcesso44({
     cUF: '41',
     aamm,
     cnpjEmitente: cnpjEmit,
-    modelo: '57',
+    modelo: '55',
     serie,
-    numeroDoc: nCT,
-    codigoAleatorio: `${65000000 + idx}`.slice(0, 8),
+    numeroDoc: nNF,
+    codigoAleatorio: `${32000000 + idx}`.slice(0, 8),
   })
 
-  const rntrc = (80000000 + idx).toString()
-  const cfop = '6353'
-  const valorFrete = Math.round((2800 + ((idx * 340) % 4500)) * 100) / 100
-  const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Transporte interestadual PR -> SP. RNTRC ${rntrc}. CFOP ${cfop}. Rastreabilidade de frete rodoviário de cargas.`
+  const cfop = idx % 2 === 0 ? '5949' : '6949'
 
-  const xml = construirXmlCTe({
+  const itens: ItemDocumentoSintetico[] = [
+    {
+      nItem: 1,
+      cProd: `URB-PCI-COBRE-${idx + 1}`,
+      xProd: 'SUCATA DE PLACAS PCI RECUPERADA - FRACAO COBRE ELETROLITICO',
+      ncm: '8534.00.00',
+      cfop,
+      uCom: 'KG',
+      qCom: 350 + (idx % 10) * 20,
+      vUnCom: 48.0,
+      vProd: Math.round((350 + (idx % 10) * 20) * 48.0 * 100) / 100,
+      categoriaMaterial: 'cobre',
+      pesoKg: 350 + (idx % 10) * 20,
+      fatorCo2eKg: 5.4,
+      co2eEvitadoKg: Math.round((350 + (idx % 10) * 20) * 5.4 * 100) / 100,
+      statusCalculo: 'calculado',
+      teorDeclarado: 'Cobre 99,9% refinado secundário',
+    },
+    {
+      nItem: 2,
+      cProd: `URB-PCI-OURO-AU-${idx + 1}`,
+      xProd: 'FRACAO CONCENTRADA DE OURO (AU) DE CONTATOS PCI [EM ESTRUTURACAO DE CATALOGO]',
+      ncm: '8534.00.00',
+      cfop,
+      uCom: 'G',
+      qCom: 125 + (idx % 5) * 15,
+      vUnCom: 395.0,
+      vProd: Math.round((125 + (idx % 5) * 15) * 395.0 * 100) / 100,
+      categoriaMaterial: 'outros',
+      pesoKg: Math.round(((125 + (idx % 5) * 15) / 1000) * 1000) / 1000,
+      fatorCo2eKg: 0,
+      co2eEvitadoKg: 0,
+      statusCalculo: 'em_estruturacao_de_catalogo',
+      teorDeclarado: 'Teor declarado: 280 ppm (g/t) • Sem alegação de carbono',
+    },
+    {
+      nItem: 3,
+      cProd: `URB-PCI-PALADIO-PD-${idx + 1}`,
+      xProd: 'FRACAO CONCENTRADA PALADIO (PD) E PRATA (AG) [EM ESTRUTURACAO DE CATALOGO]',
+      ncm: '8548.00.00',
+      cfop,
+      uCom: 'G',
+      qCom: 85 + (idx % 4) * 10,
+      vUnCom: 210.0,
+      vProd: Math.round((85 + (idx % 4) * 10) * 210.0 * 100) / 100,
+      categoriaMaterial: 'outros',
+      pesoKg: Math.round(((85 + (idx % 4) * 10) / 1000) * 1000) / 1000,
+      fatorCo2eKg: 0,
+      co2eEvitadoKg: 0,
+      statusCalculo: 'em_estruturacao_de_catalogo',
+      teorDeclarado: 'Teor declarado: 95 ppm (g/t) • Sem alegação de carbono',
+    },
+    {
+      nItem: 4,
+      cProd: `URB-TERRAS-RARAS-ND-${idx + 1}`,
+      xProd: 'IMAS DE NEODIMIO NDFEB RECUPERADOS (TERRAS RARAS) [EM ESTRUTURACAO DE CATALOGO]',
+      ncm: '8548.00.00',
+      cfop,
+      uCom: 'KG',
+      qCom: 45 + (idx % 6) * 5,
+      vUnCom: 180.0,
+      vProd: Math.round((45 + (idx % 6) * 5) * 180.0 * 100) / 100,
+      categoriaMaterial: 'outros',
+      pesoKg: 45 + (idx % 6) * 5,
+      fatorCo2eKg: 0,
+      co2eEvitadoKg: 0,
+      statusCalculo: 'em_estruturacao_de_catalogo',
+      teorDeclarado: 'Teor declarado: 31,5% NdFeB • Sem alegação de carbono',
+    },
+  ]
+
+  const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
+  const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Mineração urbana e materiais críticos recuperados. CFOP ${cfop}. Apenas cobre entra no cálculo de carbono (fator 5,40). Ouro, paládio, prata e terras raras são 100% rastreáveis com status pericial 'em estruturação de catálogo' e zero crédito de carbono.`
+
+  const xml = construirXmlNFe({
     chaveAcesso: chave,
-    numero: nCT,
+    numero: nNF,
     serie,
     dataEmissao: dataHoje,
     cnpjEmitente: cnpjEmit,
-    razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A. (Sandbox)',
+    razaoSocialEmitente: 'Urban Mining & Materiais Críticos do Brasil S.A. (Sandbox)',
     cnpjDestinatario: cnpjDest,
-    razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
-    valorTotal: valorFrete,
-    rntrc,
-    cfop,
+    razaoSocialDestinatario: 'Refinaria Metalúrgica de Metais Nobres e Estratégicos Ltda',
+    valorTotal,
+    itens,
     infCpl,
   })
 
   const hash = await calcularSha256(xml)
 
-  const itens: ItemDocumentoSintetico[] = [
-    {
-      nItem: 1,
-      cProd: 'SRV-FRETE-ROD',
-      xProd: 'PRESTACAO DE SERVICO DE TRANSPORTE RODOVIARIO DE CARGAS (PR-SP)',
-      ncm: '0000.00.00',
-      cfop,
-      uCom: 'UN',
-      qCom: 1,
-      vUnCom: valorFrete,
-      vProd: valorFrete,
-      categoriaMaterial: 'outros',
-      pesoKg: 12500,
-    },
-  ]
-
   return {
-    id: `SYN-CTE-${idx + 1}-${chave.slice(-6)}`,
-    segmento: 'transporte_cte',
-    modeloFiscal: '57',
+    id: `SYN-MIN-${idx + 1}-${chave.slice(-6)}`,
+    segmento: 'mineracao_urbana_criticos',
+    modeloFiscal: '55',
     chaveAcesso: chave,
-    numeroDocumento: nCT,
+    numeroDocumento: nNF,
     serie,
     dataEmissao: dataHoje,
     cnpjEmitente: cnpjEmit,
-    razaoSocialEmitente: 'Expresso RodoLog Logística e Transportes Interestaduais S.A.',
+    razaoSocialEmitente: 'Urban Mining & Materiais Críticos do Brasil S.A.',
     cnpjDestinatario: cnpjDest,
-    razaoSocialDestinatario: 'Centro de Distribuição Bandeirantes Logística Ltda',
-    valorTotal: valorFrete,
+    razaoSocialDestinatario: 'Refinaria Metalúrgica de Metais Nobres e Estratégicos Ltda',
+    valorTotal,
     itens,
     xmlConteudo: xml,
     hashSha256: hash,
     dadosAdicionais: {
       marcaInfCpl: MARCA_SANDBOX_OBRIGATORIA,
-      rntrc,
-      municipioOrigem: 'Curitiba/PR',
-      municipioDestino: 'São Paulo/SP',
     },
   }
 }
