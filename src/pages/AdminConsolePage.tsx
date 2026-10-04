@@ -105,30 +105,10 @@ import { ConsoleSandboxIngestaoTab } from '@/components/ConsoleSandboxIngestaoTa
 import { ConsoleAuditoriaIntegridadeTab } from '@/components/ConsoleAuditoriaIntegridadeTab'
 import { ConsoleHistoricoConsultasTab } from '@/components/ConsoleHistoricoConsultasTab'
 import { ConsoleReativacaoTab } from '@/components/ConsoleReativacaoTab'
-import { Sparkles, History, Mail } from 'lucide-react'
+import { AdminGroupNav } from '@/components/AdminGroupNav'
+import { AdminTab, AdminGroupId, resolveInitialTab, getGroupByTab } from '@/data/adminNavConfig'
 
-type AdminTab =
-  | 'receita'
-  | 'radar_semanal'
-  | 'clientes'
-  | 'uso'
-  | 'custos'
-  | 'produtos'
-  | 'assinaturas'
-  | 'comissoes'
-  | 'peritos'
-  | 'honorarios_peritos'
-  | 'auditoria'
-  | 'auditoria_integridade'
-  | 'lastro_conformidade'
-  | 'ccrlr_sinir'
-  | 'dmrv_todas_empresas'
-  | 'historico_consultas'
-  | 'reativacao'
-  | 'sandbox'
-  | 'configuracoes'
-  | 'governanca'
-  | 'parametros_negocio'
+export type { AdminTab }
 
 export default function AdminConsolePage() {
   const [searchParams] = useSearchParams()
@@ -138,21 +118,10 @@ export default function AdminConsolePage() {
   const isFinanceiroEditor = (user as any)?.role === 'financeiro'
   const canEditAndRelease = isAdmin || isFinanceiroEditor
   const isReadOnly = isFinanceiroLeitor && !canEditAndRelease
-  const initialTab = ((): AdminTab => {
-    const qTab = searchParams.get('tab')
-    if (qTab === 'governanca' && isMaster) return 'governanca'
-    if (qTab === 'parametros_negocio') return 'parametros_negocio'
-    if (qTab === 'receita') return 'receita'
-    if (qTab === 'honorarios_peritos') return 'honorarios_peritos'
-    if (qTab === 'auditoria') return 'auditoria'
-    if (qTab === 'auditoria_integridade') return 'auditoria_integridade'
-    if (qTab === 'clientes') return 'clientes'
-    if (qTab === 'historico_consultas') return 'historico_consultas'
-    if (qTab === 'reativacao') return 'reativacao'
-    if (qTab === 'sandbox') return 'sandbox'
-    return isMaster ? 'governanca' : 'receita'
-  })()
-  const [activeTab, setActiveTab] = useState<AdminTab>(initialTab)
+
+  const initialResolved = resolveInitialTab(searchParams.get('tab'), isMaster)
+  const [activeTab, setActiveTab] = useState<AdminTab>(initialResolved.tab)
+  const [activeGroup, setActiveGroup] = useState<AdminGroupId>(initialResolved.group)
   const [businessSettings, setBusinessSettings] = useState<BusinessSettingsRecord>(
     BUSINESS_SETTINGS_FALLBACK,
   )
@@ -272,6 +241,16 @@ export default function AdminConsolePage() {
     const offset = direction === 'left' ? -320 : 320
     el.scrollBy({ left: offset, behavior: 'smooth' })
   }
+
+  // Reage a alterações na URL ?tab=... mantendo o deep link sincronizado
+  useEffect(() => {
+    const qTab = searchParams.get('tab')
+    if (qTab) {
+      const resolved = resolveInitialTab(qTab, isMaster)
+      setActiveTab(resolved.tab)
+      setActiveGroup(resolved.group)
+    }
+  }, [searchParams, isMaster])
 
   useEffect(() => {
     const el = tabsScrollRef.current
@@ -973,57 +952,27 @@ export default function AdminConsolePage() {
     }
   }
 
-  const abas: { id: AdminTab; label: string; icon: any }[] = [
-    { id: 'receita', label: '1. Receita & Cobranças', icon: DollarSign },
-    { id: 'radar_semanal', label: 'Radar Semanal (Assinantes & Digest)', icon: Compass },
-    { id: 'clientes', label: '2. Clientes', icon: Users },
-    { id: 'uso', label: '3. Uso da Plataforma', icon: Activity },
-    { id: 'custos', label: '4. Custos Operacionais', icon: TrendingUp },
-    { id: 'produtos', label: '5. Produtos & Preços', icon: ShoppingBag },
-    { id: 'assinaturas', label: '6. Assinaturas', icon: CreditCard },
-    { id: 'comissoes', label: '7. Comissões & Parceiros', icon: Percent },
-    { id: 'peritos', label: '8. Rede Pericial & Conselhos', icon: Award },
-    { id: 'honorarios_peritos', label: 'Honorários de Peritos (Mercado)', icon: DollarSign },
-    { id: 'auditoria', label: '9. Auditoria & Trilha Imutável', icon: ShieldCheck },
-    {
-      id: 'auditoria_integridade',
-      label: 'Auditoria de Integridade (dMRV)',
-      icon: ShieldCheck,
-    },
-    {
-      id: 'lastro_conformidade',
-      label: '10. Lastro Circularidade (Dec. 11.413)',
-      icon: FileCheck2,
-    },
-    { id: 'ccrlr_sinir', label: '11. CCRLR & Interoperabilidade SINIR', icon: Layers },
-    { id: 'dmrv_todas_empresas', label: '12. dMRV Emissões Evitadas (SBCE)', icon: Leaf },
-    {
-      id: 'historico_consultas',
-      label: '13. Histórico de Consultas',
-      icon: History,
-    },
-    {
-      id: 'reativacao',
-      label: 'Reativação (Campanha 30/60d)',
-      icon: Mail,
-    },
-    { id: 'sandbox', label: 'Sandbox de Ingestão', icon: Sparkles },
-    { id: 'configuracoes', label: '14. Governança & MOVER', icon: SlidersHorizontal },
-    ...(isMaster
-      ? [
-          {
-            id: 'governanca' as AdminTab,
-            label: '15. Governança Master (Acessos & Papéis)',
-            icon: ShieldAlert,
-          },
-          {
-            id: 'parametros_negocio' as AdminTab,
-            label: '16. Parâmetros do Negócio',
-            icon: SlidersHorizontal,
-          },
-        ]
-      : []),
-  ]
+  const handleSelectTab = (tabId: AdminTab, groupId: AdminGroupId) => {
+    setActiveTab(tabId)
+    setActiveGroup(groupId)
+  }
+
+  const handleSelectGroup = (groupId: AdminGroupId) => {
+    setActiveGroup(groupId)
+    // Se a aba ativa não faz parte do novo grupo, move automaticamente para a primeira aba dele
+    const targetGroup = resolveInitialTab(undefined, isMaster)
+    // Busca primeira aba visível do novo grupo
+    const groupTabsMap: Record<AdminGroupId, AdminTab> = {
+      financeiro: 'receita',
+      operacional: 'clientes',
+      dmrv_prova: 'dmrv_todas_empresas',
+      governanca: isMaster ? 'governanca' : 'configuracoes',
+    }
+    const currentTabGroup = getGroupByTab(activeTab)
+    if (currentTabGroup !== groupId) {
+      setActiveTab(groupTabsMap[groupId])
+    }
+  }
 
   const cobrancasFiltradas = cobrancas.filter((c) => {
     if (cobrancaFiltro === 'todos') return true
@@ -1174,110 +1123,19 @@ export default function AdminConsolePage() {
           </div>
         )}
 
-        {/* Menu de Abas com Setas de Navegação e Scroll Suave */}
-        <div
-          data-testid="admin-tabs-nav-container"
-          className="relative mb-8 pb-3 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)]"
-        >
-          {/* Seta esquerda */}
-          <button
-            type="button"
-            data-testid="admin-tabs-scroll-left"
-            onClick={() => scrollTabs('left')}
-            aria-label="Rolar abas para a esquerda"
-            disabled={!canScrollLeft}
-            className={`absolute left-0 top-1/2 -translate-y-[calc(50%+6px)] z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md ${
-              canScrollLeft
-                ? 'opacity-100 bg-white/95 dark:bg-[#0E1A2E]/95 text-slate-700 dark:text-[#F4F7FA] border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-[#16202B] hover:text-emerald-600 dark:hover:text-[#12B886] hover:scale-105'
-                : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          {/* Gradiente sutil indicador à esquerda */}
-          {canScrollLeft && (
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute left-0 top-0 bottom-3 w-12 z-10 bg-gradient-to-r from-slate-50 dark:from-[#0A1628] to-transparent"
-            />
-          )}
-
-          {/* Faixa de rolagem das abas */}
-          <div
-            ref={tabsScrollRef}
-            data-testid="admin-tabs-scroll-container"
-            className="flex items-center gap-2 overflow-x-auto scroll-smooth no-scrollbar px-1"
-          >
-            {abas.map((aba) => {
-              const Icon = aba.icon
-              const active = activeTab === aba.id
-              const isSandbox = aba.id === 'sandbox'
-
-              return (
-                <button
-                  key={aba.id}
-                  data-testid={`admin-tab-${aba.id}`}
-                  onClick={() => {
-                    setActiveTab(aba.id)
-                    // Garante que a aba clicada fique no foco visual
-                    const el = tabsScrollRef.current
-                    if (el) setTimeout(checkTabsScroll, 200)
-                  }}
-                  className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                    active
-                      ? 'bg-[#12B886] text-[#0A0E12] shadow-emerald-glow'
-                      : isSandbox
-                        ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-400/50 dark:border-emerald-500/40 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/25 shadow-sm'
-                        : 'bg-white dark:bg-[#111820] text-slate-600 dark:text-[#93A3B5] hover:text-slate-900 dark:hover:text-[#F4F7FA] hover:bg-slate-100 dark:hover:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.06)] shadow-sm'
-                  }`}
-                >
-                  <Icon
-                    className={`w-4 h-4 ${
-                      isSandbox && !active
-                        ? 'text-emerald-600 dark:text-emerald-400 animate-pulse'
-                        : ''
-                    }`}
-                  />
-                  <span>{aba.label}</span>
-                  {/* Badge de destaque na Sandbox quando inativa */}
-                  {isSandbox && !active && (
-                    <span
-                      data-testid="sandbox-tab-badge"
-                      className="ml-1 inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-emerald-600/20 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30"
-                    >
-                      Novo
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Gradiente sutil indicador à direita */}
-          {canScrollRight && (
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute right-0 top-0 bottom-3 w-12 z-10 bg-gradient-to-l from-slate-50 dark:from-[#0A1628] to-transparent"
-            />
-          )}
-
-          {/* Seta direita */}
-          <button
-            type="button"
-            data-testid="admin-tabs-scroll-right"
-            onClick={() => scrollTabs('right')}
-            aria-label="Rolar abas para a direita"
-            disabled={!canScrollRight}
-            className={`absolute right-0 top-1/2 -translate-y-[calc(50%+6px)] z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md ${
-              canScrollRight
-                ? 'opacity-100 bg-white/95 dark:bg-[#0E1A2E]/95 text-slate-700 dark:text-[#F4F7FA] border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-[#16202B] hover:text-emerald-600 dark:hover:text-[#12B886] hover:scale-105'
-                : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Navegação Agrupada por Área (Financeiro, Operacional, dMRV & Prova, Governança) */}
+        <AdminGroupNav
+          activeTab={activeTab}
+          activeGroup={activeGroup}
+          isMaster={Boolean(isMaster)}
+          onSelectTab={handleSelectTab}
+          onSelectGroup={handleSelectGroup}
+          tabsScrollRef={tabsScrollRef}
+          canScrollLeft={canScrollLeft}
+          canScrollRight={canScrollRight}
+          scrollTabs={scrollTabs}
+          checkTabsScroll={checkTabsScroll}
+        />
 
         {/* CONTEÚDO DOS 8 PAINÉIS */}
 

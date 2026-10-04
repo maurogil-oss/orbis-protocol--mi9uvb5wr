@@ -152,7 +152,7 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
     expect(screen.getByTestId('admin-tabs-scroll-container')).toBeDefined()
   })
 
-  it('renderiza as abas para o Gestor Master, incluindo a aba Histórico de Consultas e Sandbox de Ingestão', async () => {
+  it('renderiza os 4 grupos e as abas da área ativa para o Gestor Master (sem prefixo numérico)', async () => {
     render(
       <MemoryRouter initialEntries={['/admin']}>
         <AdminConsolePage />
@@ -160,33 +160,44 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByTestId('admin-tab-sandbox')).toBeDefined()
+      expect(screen.getByTestId('admin-group-selector')).toBeDefined()
     })
 
+    // Os 4 grupos requeridos estão presentes
+    expect(screen.getByTestId('admin-group-btn-financeiro')).toBeDefined()
+    expect(screen.getByTestId('admin-group-btn-operacional')).toBeDefined()
+    expect(screen.getByTestId('admin-group-btn-dmrv_prova')).toBeDefined()
+    expect(screen.getByTestId('admin-group-btn-governanca')).toBeDefined()
+
+    // O gestor master inicia em Governança
     const tabsContainer = screen.getByTestId('admin-tabs-scroll-container')
     const tabButtons = tabsContainer.querySelectorAll('button[data-testid^="admin-tab-"]')
-    // 18 abas para Gestor Master (incluindo Histórico de Consultas e Reativação)
-    expect(tabButtons.length).toBe(18)
+    expect(tabButtons.length).toBe(3) // Governança & MOVER, Governança Master, Parâmetros do Negócio
 
-    // Confirma presença da aba Histórico de Consultas
+    // Alterna para o grupo Operacional para verificar abas operacionais
+    fireEvent.click(screen.getByTestId('admin-group-btn-operacional'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('admin-tab-historico_consultas')).toBeDefined()
+      expect(screen.getByTestId('admin-tab-sandbox')).toBeDefined()
+      expect(screen.getByTestId('admin-tab-reativacao')).toBeDefined()
+    })
+
+    // Confirma que os prefixos numéricos 1-16 foram REMOVIDOS
     const historicoTab = screen.getByTestId('admin-tab-historico_consultas')
-    expect(historicoTab.textContent).toContain('13. Histórico de Consultas')
+    expect(historicoTab.textContent).toContain('Histórico de Consultas')
+    expect(historicoTab.textContent).not.toContain('13.')
 
-    // Confirma presença da aba Reativação
     const reativacaoTab = screen.getByTestId('admin-tab-reativacao')
     expect(reativacaoTab.textContent).toContain('Reativação')
 
-    // Confirma presença da aba Sandbox de Ingestão e da aba de Auditoria de Integridade
     const sandboxTab = screen.getByTestId('admin-tab-sandbox')
     expect(sandboxTab.textContent).toContain('Sandbox de Ingestão')
-    const auditoriaIntegridadeTab = screen.getByTestId('admin-tab-auditoria_integridade')
-    expect(auditoriaIntegridadeTab.textContent).toContain('Auditoria de Integridade')
   })
 
-  it('destaca visualmente a aba Sandbox quando inativa (badge "Novo" e borda esmeralda sutil)', async () => {
-    // Abrir em outra aba (ex: receita) para que o sandbox fique inativo
+  it('destaca visualmente a aba Sandbox quando inativa no grupo Operacional (badge "Novo" e borda esmeralda sutil)', async () => {
     render(
-      <MemoryRouter initialEntries={['/admin?tab=receita']}>
+      <MemoryRouter initialEntries={['/admin?tab=clientes']}>
         <AdminConsolePage />
       </MemoryRouter>,
     )
@@ -196,18 +207,15 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
     })
 
     const sandboxTab = screen.getByTestId('admin-tab-sandbox')
-    // Verifica que o badge de destaque "Novo" existe quando inativa
     const badge = screen.getByTestId('sandbox-tab-badge')
     expect(badge).toBeDefined()
     expect(badge.textContent).toBe('Novo')
-
-    // Classes de destaque esmeralda diferenciadas do restante das abas inativas
     expect(sandboxTab.className).toContain('emerald')
   })
 
   it('ao clicar na aba Sandbox, ativa a aba e remove o badge sutil mantendo o padrão das demais abas ativas', async () => {
     render(
-      <MemoryRouter initialEntries={['/admin?tab=receita']}>
+      <MemoryRouter initialEntries={['/admin?tab=clientes']}>
         <AdminConsolePage />
       </MemoryRouter>,
     )
@@ -219,7 +227,6 @@ describe('AdminConsolePage - Navegação de Abas e Destaque Sandbox', () => {
     const sandboxTab = screen.getByTestId('admin-tab-sandbox')
     fireEvent.click(sandboxTab)
 
-    // Quando selecionada, a aba ganha o estilo padrão ativo (bg-[#12B886]) e o badge "Novo" some
     await waitFor(() => {
       expect(sandboxTab.className).toContain('bg-[#12B886]')
       expect(screen.queryByTestId('sandbox-tab-badge')).toBeNull()
