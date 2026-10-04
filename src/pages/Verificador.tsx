@@ -103,7 +103,8 @@ export default function Verificador() {
       const records = await pb.collection('selos').getFullList<SeloRecord>({
         sort: '-created',
       })
-      setTodosSelos(records)
+      // Isolamento de sandbox: exclui registros com origem 'sintetico' da listagem pública
+      setTodosSelos(records.filter((r) => (r as any).origem !== 'sintetico'))
     } catch {
       /* intentionally ignored */
     }
@@ -115,6 +116,10 @@ export default function Verificador() {
 
   // Realtime updates for selos collection
   useRealtime<SeloRecord>('selos', (data) => {
+    if ((data.record as any)?.origem === 'sintetico') {
+      // Ignora eventos de registros sintéticos em consultas públicas
+      return
+    }
     if (data.action === 'create') {
       setTodosSelos((prev) => [data.record, ...prev])
     } else if (data.action === 'update') {
@@ -191,16 +196,21 @@ export default function Verificador() {
         // Consulta por CNPJ (exato ou formatado)
         record = await pb
           .collection('selos')
-          .getFirstListItem<SeloRecord>(`cnpj = '${rawInput}' || cnpj ~ '${digitsOnly}'`)
+          .getFirstListItem<SeloRecord>(
+            `(cnpj = '${rawInput}' || cnpj ~ '${digitsOnly}') && origem != 'sintetico'`,
+          )
       } else {
         // Consulta por código do selo exato (normalizado em maiúsculas)
         const codeNormalized = rawInput.toUpperCase()
         record = await pb
           .collection('selos')
-          .getFirstListItem<SeloRecord>(`codigo_selo = '${codeNormalized}'`)
+          .getFirstListItem<SeloRecord>(
+            `codigo_selo = '${codeNormalized}' && origem != 'sintetico'`,
+          )
       }
 
-      if (record) {
+      // Isolamento estrito do Sandbox: selo sintético NUNCA é exibido em consulta pública
+      if (record && record.origem !== 'sintetico') {
         await processSeloResult(record)
       } else {
         setSeloEncontrado(null)

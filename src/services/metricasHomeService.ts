@@ -17,14 +17,18 @@ export interface NumerosVerificaveisData {
 export async function obterNumerosVerificaveis(): Promise<NumerosVerificaveisData> {
   try {
     const [selosRes, lastrosRes, manifestosRes, pecasRes, consultasRes] = await Promise.allSettled([
-      // 1. Selos emitidos (ativos/emitidos)
-      pb.collection('selos').getList(1, 1, { fields: 'id' }),
+      // 1. Selos emitidos (descontando estritamente registros sintéticos do Sandbox)
+      pb
+        .collection('selos')
+        .getList(1, 1, { filter: 'origem != "sintetico"', fields: 'id,origem' }),
       // 2. Documentos de lastro de circularidade
       pb.collection('lastro_circularidade').getList(1, 1, { fields: 'id' }),
       // 3. Manifestos MTR-SINIR registrados
       pb.collection('ccrlr_manifestos_sinir').getList(1, 1, { fields: 'id' }),
-      // 4. Peças rastreadas (cdv_pecas)
-      pb.collection('cdv_pecas').getList(1, 1, { fields: 'id' }),
+      // 4. Peças rastreadas (cdv_pecas) - descontando registros sintéticos
+      pb
+        .collection('cdv_pecas')
+        .getList(1, 1, { filter: 'origem != "sintetico"', fields: 'id,origem' }),
       // 5. Consultas de verificação (dpp_consultas)
       pb.collection('dpp_consultas').getList(1, 1, { fields: 'id' }),
     ])

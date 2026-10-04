@@ -100,6 +100,8 @@ import {
 import { useSearchParams } from 'react-router-dom'
 import { ConsoleRadarSemanalTab } from '@/components/ConsoleRadarSemanalTab'
 import { ConsoleHonorariosTab } from '@/components/ConsoleHonorariosTab'
+import { ConsoleSandboxIngestaoTab } from '@/components/ConsoleSandboxIngestaoTab'
+import { Sparkles } from 'lucide-react'
 
 type AdminTab =
   | 'receita'
@@ -116,6 +118,7 @@ type AdminTab =
   | 'lastro_conformidade'
   | 'ccrlr_sinir'
   | 'dmrv_todas_empresas'
+  | 'sandbox'
   | 'configuracoes'
   | 'governanca'
   | 'parametros_negocio'
@@ -136,6 +139,7 @@ export default function AdminConsolePage() {
     if (qTab === 'honorarios_peritos') return 'honorarios_peritos'
     if (qTab === 'auditoria') return 'auditoria'
     if (qTab === 'clientes') return 'clientes'
+    if (qTab === 'sandbox') return 'sandbox'
     return isMaster ? 'governanca' : 'receita'
   })()
   const [activeTab, setActiveTab] = useState<AdminTab>(initialTab)
@@ -945,6 +949,7 @@ export default function AdminConsolePage() {
     },
     { id: 'ccrlr_sinir', label: '11. CCRLR & Interoperabilidade SINIR', icon: Layers },
     { id: 'dmrv_todas_empresas', label: '12. dMRV Emissões Evitadas (SBCE)', icon: Leaf },
+    { id: 'sandbox', label: 'Sandbox de Ingestão', icon: Sparkles },
     { id: 'configuracoes', label: '13. Governança & MOVER', icon: SlidersHorizontal },
     ...(isMaster
       ? [
@@ -1811,9 +1816,16 @@ export default function AdminConsolePage() {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <strong className="text-[#F4F7FA] truncate max-w-[160px]">
-                          {lt.veiculo_marca_modelo}
-                        </strong>
+                        <div className="flex items-center gap-1.5 truncate max-w-[170px]">
+                          <strong className="text-[#F4F7FA] truncate">
+                            {lt.veiculo_marca_modelo}
+                          </strong>
+                          {(lt.origem === 'sintetico' || lt.is_demo) && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 shrink-0">
+                              Demonstração
+                            </span>
+                          )}
+                        </div>
                         <span
                           className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
                             lt.status === 'anulado'
@@ -1935,9 +1947,16 @@ export default function AdminConsolePage() {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <strong className="text-[#F4F7FA]">
-                          {peca.descricao || peca.codigo_peca}
-                        </strong>
+                        <div className="flex items-center gap-1.5 truncate max-w-[200px]">
+                          <strong className="text-[#F4F7FA] truncate">
+                            {peca.descricao || peca.codigo_peca}
+                          </strong>
+                          {peca.origem === 'sintetico' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 shrink-0">
+                              Demonstração
+                            </span>
+                          )}
+                        </div>
                         <span
                           className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
                             peca.status === 'anulado'
@@ -2020,9 +2039,16 @@ export default function AdminConsolePage() {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <strong className="text-[#F4F7FA]">
-                          {dest.operador_destinacao || dest.tipo_residuo || 'Destinação Final'}
-                        </strong>
+                        <div className="flex items-center gap-1.5 truncate max-w-[200px]">
+                          <strong className="text-[#F4F7FA] truncate">
+                            {dest.operador_destinacao || dest.tipo_residuo || 'Destinação Final'}
+                          </strong>
+                          {dest.origem === 'sintetico' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 shrink-0">
+                              Demonstração
+                            </span>
+                          )}
+                        </div>
                         <span
                           className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
                             dest.status === 'anulado'
@@ -3785,6 +3811,9 @@ export default function AdminConsolePage() {
         {activeTab === 'parametros_negocio' && (
           <ConsoleParametrosNegocioTab onParametrosAtualizados={carregarTodosDados} />
         )}
+
+        {/* SANDBOX DE INGESTÃO (FASE 1) - EXCLUSIVO CONSOLE AUTENTICADO */}
+        {activeTab === 'sandbox' && <ConsoleSandboxIngestaoTab />}
 
         {/* 13. GOVERNANÇA DA PLATAFORMA & PARÂMETROS REGULATÓRIOS (MOVER) */}
         {activeTab === 'configuracoes' && (
