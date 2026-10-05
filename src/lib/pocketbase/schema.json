@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-04T21:23:19.621Z",
+  "generatedAt": "2026-10-05T15:23:12.462Z",
   "collections": [
     {
       "name": "users",
@@ -1285,7 +1285,7 @@
         {
           "name": "veiculo_marca_modelo",
           "type": "text",
-          "required": true,
+          "required": false,
           "system": false
         },
         {

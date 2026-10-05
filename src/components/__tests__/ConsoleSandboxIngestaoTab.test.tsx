@@ -46,8 +46,8 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
       expect(screen.getByText(/Falha na ingestão:/i)).toBeInTheDocument()
     })
 
-    // Deve exibir o badge/texto de ERRO BACKEND e não Sucesso
-    expect(screen.getAllByText(/ERRO BACKEND/i).length).toBeGreaterThan(0)
+    // Deve exibir o badge/texto de FALHA NA GRAVAÇÃO e não Sucesso
+    expect(screen.getAllByText(/FALHA NA GRAVAÇÃO/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/Falhados: 10/i)).toBeInTheDocument()
     expect(screen.getByText(/Gravados: 0/i)).toBeInTheDocument()
     expect(selosCreateSpy).toHaveBeenCalled()

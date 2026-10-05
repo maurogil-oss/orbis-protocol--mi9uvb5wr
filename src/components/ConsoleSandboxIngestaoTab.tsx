@@ -1016,7 +1016,7 @@ export function ConsoleSandboxIngestaoTab() {
                       key={doc.id}
                       className={`transition-colors ${
                         falhou
-                          ? 'bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-100/40'
+                          ? 'bg-rose-50/90 dark:bg-rose-950/40 border-l-4 border-l-rose-600 hover:bg-rose-100/70'
                           : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
                       }`}
                     >
@@ -1042,36 +1042,57 @@ export function ConsoleSandboxIngestaoTab() {
                             Aguardando
                           </span>
                         ) : resultado?.sucesso ? (
-                          <div className="space-y-0.5">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                              Sucesso
-                            </span>
+                          <div className="space-y-1">
                             {resultado.registroLoteId ? (
-                              <span className="block text-[9px] font-mono text-emerald-700 dark:text-emerald-300 font-medium leading-tight">
-                                Selo gravado ✓ · Lote dMRV gravado ✓ ({resultado.pecasGravadas ?? 0}{' '}
-                                item(ns), {(resultado.totalPesoKg ?? 0).toLocaleString('pt-BR')} kg
-                                massa, {(resultado.totalCo2eEvitadoKg ?? 0).toLocaleString('pt-BR')}{' '}
-                                kg CO₂e evitado)
-                              </span>
+                              <>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                  Sucesso dMRV
+                                </span>
+                                <span className="block text-[9px] font-mono text-emerald-700 dark:text-emerald-300 font-medium leading-tight">
+                                  Selo gravado ✓ · Lote dMRV gravado ✓ (
+                                  {resultado.pecasGravadas ?? 0} item(ns),{' '}
+                                  {(resultado.totalPesoKg ?? 0).toLocaleString('pt-BR')} kg massa,{' '}
+                                  {(resultado.totalCo2eEvitadoKg ?? 0).toLocaleString('pt-BR')} kg
+                                  CO₂e evitado)
+                                </span>
+                              </>
                             ) : (
-                              <span className="block text-[9px] font-mono text-amber-600 dark:text-amber-400">
-                                Selo gravado ✓ · Lote dMRV não gerado
-                              </span>
+                              <>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40">
+                                  <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                  Sem Lote dMRV
+                                </span>
+                                <span className="block text-[9px] font-mono text-amber-700 dark:text-amber-300 font-medium">
+                                  Selo gravado ✓ · Lote dMRV não gerado
+                                </span>
+                              </>
                             )}
                           </div>
                         ) : (
-                          <div className="space-y-1 max-w-[200px]">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/40">
-                              <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
-                              ERRO BACKEND
-                            </span>
-                            <span
-                              className="block text-[10px] font-mono text-rose-700 dark:text-rose-300 leading-tight truncate"
-                              title={resultado?.erro}
-                            >
-                              {resultado?.erro}
-                            </span>
+                          <div className="space-y-1.5 max-w-[260px]">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-mono font-extrabold uppercase tracking-wide bg-rose-600 text-white shadow-sm ring-2 ring-rose-400/40">
+                                <XCircle className="w-3.5 h-3.5 shrink-0" />
+                                FALHA NA GRAVAÇÃO
+                              </span>
+                              {resultado?.registroSeloId && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40">
+                                  Selo OK · Lote 400
+                                </span>
+                              )}
+                            </div>
+                            <div className="p-1.5 rounded bg-rose-100/80 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800/80 text-[10px] font-mono text-rose-900 dark:text-rose-200 leading-tight">
+                              <strong className="block text-[9px] uppercase tracking-wider text-rose-700 dark:text-rose-300 font-bold mb-0.5">
+                                Recusa pelo PocketBase:
+                              </strong>
+                              <span
+                                className="block break-words font-medium"
+                                title={resultado?.erro}
+                              >
+                                {resultado?.erro}
+                              </span>
+                            </div>
                           </div>
                         )}
                       </td>
