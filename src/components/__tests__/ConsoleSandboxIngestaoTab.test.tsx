@@ -275,9 +275,65 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
         lote: 'lote-agro-123',
         fator_co2e_kg: 0,
         co2e_evitado_kg: 0,
+        peso_kg: expect.any(Number),
         material_declarado: expect.stringContaining(
           '[STATUS: EM ESTRUTURAÇÃO DE CATÁLOGO - ZERO CRÉDITO]',
         ),
+      }),
+    )
+  })
+
+  it('grava com sucesso peça com co2e_evitado_kg: 0 e peso_kg: 0 (sem crédito de carbono)', async () => {
+    vi.spyOn(pb.collection('emissoes_inventario'), 'create').mockResolvedValue({
+      id: 'inv-zero-test',
+    } as any)
+    vi.spyOn(pb.collection('selos'), 'create').mockResolvedValue({
+      id: 'selo-zero-test',
+      codigo_selo: 'PR-SEAL-2026-ZERO1',
+    } as any)
+    vi.spyOn(pb.collection('cdv_lotes'), 'create').mockResolvedValue({
+      id: 'lote-zero-123',
+    } as any)
+
+    const pecasCreateSpy = vi
+      .spyOn(pb.collection('cdv_pecas'), 'create')
+      .mockImplementation(async (body: any) => {
+        // Simula a validação do PocketBase pós-migração 0097:
+        // Campos peso_kg e co2e_evitado_kg aceitam 0 como número válido
+        if (typeof body.co2e_evitado_kg !== 'number' || typeof body.peso_kg !== 'number') {
+          throw new Error('Tipo inválido')
+        }
+        return { id: 'peca-zero-ok', ...body } as any
+      })
+
+    render(<ConsoleSandboxIngestaoTab />)
+
+    // Seleciona Agro (fator 0 / sem crédito)
+    const select = screen.getByRole('combobox') as HTMLSelectElement
+    fireEvent.change(select, { target: { value: 'agro' } })
+
+    const btnVol1 = screen.getByRole('button', { name: '1' })
+    fireEvent.click(btnVol1)
+
+    const btnGerar = screen.getByRole('button', { name: /Gerar 1 Docs Sintéticos/i })
+    fireEvent.click(btnGerar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Lote de Documentos Prontos/i)).toBeInTheDocument()
+    })
+
+    const btnIngestar = screen.getByRole('button', { name: /Ingestar no Pipeline/i })
+    fireEvent.click(btnIngestar)
+
+    await waitFor(() => {
+      expect(screen.getByText('Sucesso dMRV')).toBeInTheDocument()
+    })
+
+    expect(pecasCreateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        co2e_evitado_kg: 0,
+        fator_co2e_kg: 0,
+        origem: 'sintetico',
       }),
     )
   })

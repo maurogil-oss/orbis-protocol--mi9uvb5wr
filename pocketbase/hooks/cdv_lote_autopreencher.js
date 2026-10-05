@@ -14,6 +14,31 @@ onRecordAfterCreateSuccess((e) => {
     const loteRec = e.record
     if (!loteRec || !loteRec.id) return
 
+    // GUARDA DEFENSIVA: auto-preenchimento do catálogo CONTRAN/MOVER (77 peças)
+    // destina-se EXCLUSIVAMENTE a lotes CDV automotivos reais.
+    // Lotes sintéticos/sandbox (origem = 'sintetico' ou cdv_codigo iniciando com 'SANDBOX-')
+    // e lotes de outros segmentos produtivos (Agro, Concreto, Energia, Química, etc.)
+    // NÃO devem receber peças veiculares.
+    // Critério defensivo:
+    // 1. Pular imediatamente se origem for 'sintetico' ou is_demo for verdadeiro;
+    // 2. Pular imediatamente se cdv_codigo iniciar por 'SANDBOX-';
+    // 3. Pular imediatamente se não for lote veicular (exige chassi preenchido ou cdv_codigo iniciando com 'DETRAN').
+    const origem = loteRec.getString('origem') || ''
+    const isDemo = loteRec.getBool('is_demo')
+    const cdvCodigoLote = loteRec.getString('cdv_codigo') || ''
+    const chassiLote = loteRec.getString('veiculo_chassi') || ''
+
+    if (origem === 'sintetico' || isDemo || cdvCodigoLote.toUpperCase().startsWith('SANDBOX-')) {
+      return
+    }
+
+    const isLoteAutomotivoLegitimo =
+      chassiLote.trim() !== '' || cdvCodigoLote.toUpperCase().startsWith('DETRAN')
+
+    if (!isLoteAutomotivoLegitimo) {
+      return
+    }
+
     const app = e.app || $app
     const catalogoCol = app.findCollectionByNameOrId('cdv_pecas_catalogo')
     const pecasCol = app.findCollectionByNameOrId('cdv_pecas')

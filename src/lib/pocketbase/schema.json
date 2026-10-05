@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T15:23:12.462Z",
+  "generatedAt": "2026-10-05T15:57:03.390Z",
   "collections": [
     {
       "name": "users",
@@ -1476,7 +1476,7 @@
         {
           "name": "peso_kg",
           "type": "number",
-          "required": true,
+          "required": false,
           "system": false
         },
         {
@@ -1494,7 +1494,7 @@
         {
           "name": "co2e_evitado_kg",
           "type": "number",
-          "required": true,
+          "required": false,
           "system": false
         },
         {
