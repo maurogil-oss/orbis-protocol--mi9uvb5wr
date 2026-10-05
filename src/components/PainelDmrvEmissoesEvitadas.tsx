@@ -56,6 +56,7 @@ export function PainelDmrvEmissoesEvitadas({
   const [dados, setDados] = useState<DadosDmrvEmpresa | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [exportando, setExportando] = useState(false)
+  const [erroCarregamento, setErroCarregamento] = useState<string | null>(null)
   const [hashGerado, setHashGerado] = useState<string | null>(null)
   const [statusA1, setStatusA1] = useState<CertificadoA1Status | null>(null)
   const [modalAssinaturaAberto, setModalAssinaturaAberto] = useState(false)
