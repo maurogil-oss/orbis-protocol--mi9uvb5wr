@@ -53,6 +53,105 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
     expect(selosCreateSpy).toHaveBeenCalled()
   })
 
+  it('exibe "Selo OK · Lote 400" e a mensagem exata de recusa do PocketBase quando o selo grava mas o lote falha', async () => {
+    vi.spyOn(pb.collection('emissoes_inventario'), 'create').mockResolvedValue({
+      id: 'inv-test-selo-ok',
+    } as any)
+
+    // Selo grava com sucesso
+    vi.spyOn(pb.collection('selos'), 'create').mockResolvedValue({
+      id: 'selo-gravado-ok-123',
+      codigo_selo: 'PR-SEAL-2026-OK123',
+    } as any)
+
+    // Lote é recusado pelo PocketBase (ex: HTTP 400)
+    const lotesCreateSpy = vi.spyOn(pb.collection('cdv_lotes'), 'create').mockRejectedValue({
+      status: 400,
+      message: 'Failed to create record.',
+      response: {
+        data: {
+          veiculo_marca_modelo: { message: 'The value cannot be empty.' },
+        },
+      },
+    })
+
+    render(<ConsoleSandboxIngestaoTab />)
+
+    // 1 documento para teste pontual
+    const btnVol1 = screen.getByRole('button', { name: '1' })
+    fireEvent.click(btnVol1)
+
+    const btnGerar = screen.getByRole('button', { name: /Gerar 1 Docs Sintéticos/i })
+    fireEvent.click(btnGerar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Lote de Documentos Prontos/i)).toBeInTheDocument()
+    })
+
+    const btnIngestar = screen.getByRole('button', { name: /Ingestar no Pipeline/i })
+    fireEvent.click(btnIngestar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Falha na ingestão:/i)).toBeInTheDocument()
+    })
+
+    // Destaque visual e badges exigidos
+    expect(screen.getByText(/FALHA NA GRAVAÇÃO/i)).toBeInTheDocument()
+    expect(screen.getByText(/Selo OK · Lote 400/i)).toBeInTheDocument()
+    // Mensagem exata de recusa do PocketBase na UI
+    expect(screen.getByText(/Recusa pelo PocketBase:/i)).toBeInTheDocument()
+    expect(screen.getByText(/\[Coleção cdv_lotes\]: Failed to create record/i)).toBeInTheDocument()
+
+    // Borda lateral vermelha forte aplicada na linha da tabela
+    const linhaComFalha = screen.getByText(/FALHA NA GRAVAÇÃO/i).closest('tr')
+    expect(linhaComFalha).not.toBeNull()
+    expect(linhaComFalha?.className).toContain('border-l-4')
+    expect(linhaComFalha?.className).toContain('border-l-rose-600')
+
+    expect(lotesCreateSpy).toHaveBeenCalled()
+  })
+
+  it('exibe "Sem Lote dMRV" em âmbar e "Sucesso dMRV" apenas quando o lote dMRV foi efetivamente persistido', async () => {
+    // Caso 1: Sucesso dMRV completo (selo + lote + peças)
+    vi.spyOn(pb.collection('emissoes_inventario'), 'create').mockResolvedValue({
+      id: 'inv-sucesso-1',
+    } as any)
+    vi.spyOn(pb.collection('selos'), 'create').mockResolvedValue({
+      id: 'selo-1',
+      codigo_selo: 'PR-SEAL-2026-COMPLETE',
+    } as any)
+    vi.spyOn(pb.collection('cdv_lotes'), 'create').mockResolvedValue({
+      id: 'lote-1',
+    } as any)
+    vi.spyOn(pb.collection('cdv_pecas'), 'create').mockResolvedValue({
+      id: 'peca-1',
+    } as any)
+
+    const { unmount } = render(<ConsoleSandboxIngestaoTab />)
+
+    const btnVol1 = screen.getByRole('button', { name: '1' })
+    fireEvent.click(btnVol1)
+
+    const btnGerar = screen.getByRole('button', { name: /Gerar 1 Docs Sintéticos/i })
+    fireEvent.click(btnGerar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Lote de Documentos Prontos/i)).toBeInTheDocument()
+    })
+
+    const btnIngestar = screen.getByRole('button', { name: /Ingestar no Pipeline/i })
+    fireEvent.click(btnIngestar)
+
+    await waitFor(() => {
+      expect(screen.getByText('Sucesso dMRV')).toBeInTheDocument()
+    })
+
+    // Garante que o rótulo de sucesso é especificamente "Sucesso dMRV"
+    expect(screen.getByText('Sucesso dMRV')).toBeInTheDocument()
+    expect(screen.queryByText('Sem Lote dMRV')).not.toBeInTheDocument()
+    unmount()
+  })
+
   it('reporta sucesso e contagem de peças quando gravação no backend responde 200/201', async () => {
     const invCreateSpy = vi
       .spyOn(pb.collection('emissoes_inventario'), 'create')
