@@ -717,7 +717,7 @@ export function construirEstratificacaoDmrv(params: {
     const fatorGravado = Number(p.fator_co2e_kg ?? -1)
     const co2eGravado = Number(p.co2e_evitado_kg || 0)
 
-    // Detecção de fração crítica real (mineração urbana: ouro, paládio, prata, terras raras, NdFeB)
+    // Detecção estrita de fração crítica (mineração urbana: restrita explicitamente a ouro, paládio, prata, terras raras, ndfeb)
     const isMineralCriticoReal =
       desc.includes('ouro') ||
       desc.includes('paladio') ||
@@ -725,9 +725,7 @@ export function construirEstratificacaoDmrv(params: {
       desc.includes('prata') ||
       desc.includes('terras raras') ||
       desc.includes('terras_raras') ||
-      desc.includes('ndfeb') ||
-      rawCat.includes('critico') ||
-      rawCat.includes('mineracao_urbana')
+      desc.includes('ndfeb')
 
     if (isMineralCriticoReal) {
       let nomeEspecifico = 'Fração Crítica (Ouro/Paládio/Prata/Terras Raras)'
@@ -753,6 +751,11 @@ export function construirEstratificacaoDmrv(params: {
     const isEmEstruturacao =
       desc.includes('em estruturação') ||
       desc.includes('sem crédito') ||
+      desc.includes('soja') ||
+      desc.includes('grao') ||
+      desc.includes('grão') ||
+      desc.includes('biomassa') ||
+      desc.includes('milho') ||
       (fatorGravado === 0 &&
         co2eGravado === 0 &&
         (rawCat === 'outros' || rawCat === 'agro' || !rawCat))
@@ -765,9 +768,13 @@ export function construirEstratificacaoDmrv(params: {
         .replace(/\s*-\s*NCM\s*[\d.]+/gi, '')
         .trim()
 
-      // Formatar de forma canônica se contiver termos de soja
+      // Formatar de forma canônica mantendo o nome real do material
       if (nomeLimpo.toLowerCase().includes('soja')) {
         nomeLimpo = 'Soja em Grãos'
+      } else if (nomeLimpo.toLowerCase().includes('milho')) {
+        nomeLimpo = 'Milho em Grãos'
+      } else if (nomeLimpo.toLowerCase().includes('biomassa')) {
+        nomeLimpo = 'Biomassa Agroflorestal'
       } else if (!nomeLimpo) {
         nomeLimpo = 'Material Agro / Granel'
       }
@@ -1277,20 +1284,102 @@ export async function carregarDadosDmrvEmpresa(
     mapaLotesPorSlug.set(dom.slug, lotes.length)
   }
 
+  // Helper para nome institucional dos protocolos por slug
+  const formatarNomeSlug = (slug: string): string => {
+    const mapaNomes: Record<string, string> = {
+      agro: 'Agro & Biomassa Sustentável',
+      automotiva: 'Automotiva & Desmanches Sustentáveis (CDV)',
+      textil: 'Têxtil, Confecção & Calçados Sustentáveis',
+      concreto: 'Construção Civil & RCD',
+      construcao: 'Construção Civil & RCD',
+      'materiais-criticos-recuperados': 'Materiais Críticos Recuperados & Mineração Urbana',
+      logistica: 'Logística Reversa & Transporte Limpo',
+      energia: 'Biogás & Transição Energética',
+      siderurgia: 'Siderurgia & Aço Verde',
+      cimento: 'Cimento & Concreto',
+      vidro: 'Vidro & Reciclagem',
+      quimica: 'Indústria Química Sustentável',
+      papel_celulose: 'Papel, Celulose & Embalagens',
+      minerais_nao_metalicos: 'Minerais Não Metálicos',
+      residuos_urbanos: 'Resíduos Sólidos Urbanos & CDR',
+      eletronicos: 'Eletroeletrônicos & Logística Reversa',
+    }
+
+    if (mapaNomes[slug]) return mapaNomes[slug]
+    const p = getProtocoloBySlug(slug) || PROTOCOLOS_SETORIAIS[slug]
+    if (p?.nome) return p.nome
+
+    // Fallback de capitalização genérica
+    return (
+      slug
+        .split(/[-_]+/)
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ') || 'Protocolo Canônico'
+    )
+  }
+
   const verticaisDisponiveis: VerticalDisponivel[] = Array.from(mapaLotesPorSlug.entries()).map(
     ([slug, count]) => {
       const p = getProtocoloBySlug(slug) || PROTOCOLOS_SETORIAIS[slug]
       return {
         slug,
-        nome: p?.nome || slug,
-        totalLotes: count,
+        nome: p?.nome || formatarNomeSlug(slug),
+        totalLotes: count ?? 0,
       }
     },
   )
 
   // Vertical ativa para exibição: a selecionada explicitamente pelo usuário ou a dominante
-  const slugAtivo = verticalSelecionadaSlug || dom.slug
-  const protoAtivo = getProtocoloBySlug(slugAtivo) || dom.protocolo
+  const slugAtivo = verticalSelecionadaSlug || dom.slug || 'geral'
+  const protoEncontrado = getProtocoloBySlug(slugAtivo) || dom.protocolo
+  const protoAtivoSeguro: any = protoEncontrado || {
+    id: slugAtivo,
+    slug: slugAtivo,
+    nome: formatarNomeSlug(slugAtivo),
+    unidadeCanonica: 'lotes',
+    rotuloMetricaCanonica: 'Itens Catalogados',
+    metodologiaPadrao: 'DM-ORB-001 v1.1 • GHG Protocol',
+    kpisCanicos: [
+      {
+        id: 'co2e_evitado',
+        rotulo: 'CO₂e Evitado Total',
+        unidade: 'kg',
+        legenda: 'Emissões evitadas calculadas pelo método oficial',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+      },
+      {
+        id: 'kpi_pos2',
+        rotulo: 'Massa Auditada',
+        unidade: 'kg',
+        legenda: 'Balanço de massa comprovado com lastro fiscal',
+        tipoAgregacao: 'soma',
+        natureza: 'gravada',
+      },
+      {
+        id: 'kpi_pos3',
+        rotulo: 'Itens Catalogados',
+        unidade: 'itens',
+        legenda: 'Itens rastreados com passaporte digital',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+      },
+      {
+        id: 'kpi_pos4',
+        rotulo: 'Lotes Fechados',
+        unidade: 'lotes',
+        legenda: 'Remessas auditadas em conformidade setorial',
+        tipoAgregacao: 'contagem',
+        natureza: 'gravada',
+      },
+    ],
+  }
+
+  // Garantir que protoAtivoSeguro.nome tenha fallback se vazio
+  if (!protoAtivoSeguro.nome) {
+    protoAtivoSeguro.nome = formatarNomeSlug(slugAtivo)
+  }
 
   // Se houver seleção de vertical explícita (diferente ou igual), filtrar lotes e peças correspondentes
   // para recálculo dos 4 cards KPI, série temporal e estratificação
@@ -1351,11 +1440,11 @@ export async function carregarDadosDmrvEmpresa(
   const chavesOrdenadas = Array.from(mapaMeses.keys()).sort()
   const serieTemporal: Array<{ mes: string; co2e_evitado_kg: number; massa_kg: number }> =
     chavesOrdenadas.map((key) => {
-      const dados = mapaMeses.get(key)!
+      const dados = mapaMeses.get(key) || { rotulo: key, co2e: 0, massa: 0 }
       return {
-        mes: dados.rotulo,
-        co2e_evitado_kg: Math.round(dados.co2e * 10) / 10,
-        massa_kg: Math.round(dados.massa * 10) / 10,
+        mes: dados.rotulo || key,
+        co2e_evitado_kg: Math.round((dados.co2e || 0) * 10) / 10,
+        massa_kg: Math.round((dados.massa || 0) * 10) / 10,
       }
     })
 
@@ -1364,8 +1453,8 @@ export async function carregarDadosDmrvEmpresa(
     const { rotulo } = formatarChaveAnoMes(new Date().toISOString())
     serieTemporal.push({
       mes: rotulo,
-      co2e_evitado_kg: Math.round(totalCo2eKg * 10) / 10,
-      massa_kg: Math.round(totalMassaKg * 10) / 10,
+      co2e_evitado_kg: Math.round((totalCo2eKg || 0) * 10) / 10,
+      massa_kg: Math.round((totalMassaKg || 0) * 10) / 10,
     })
   }
 
@@ -1397,30 +1486,30 @@ export async function carregarDadosDmrvEmpresa(
     }
   }
 
-  const emissaoAnual = Math.round((escopo1 + escopo2 + escopo3) * 10) / 10
+  const emissaoAnual = Math.round(((escopo1 || 0) + (escopo2 || 0) + (escopo3 || 0)) * 10) / 10
 
   const kpiCards = construirCardsKpiSetoriais({
     slugDominante: slugAtivo,
-    protocolo: protoAtivo,
-    totalCo2eKg: Math.round(totalCo2eKg * 10) / 10,
-    totalMassaKg: Math.round(totalMassaKg * 10) / 10,
-    totalPecas: pecasFiltradasVertical.length,
-    totalLotes: lotesFiltradosVertical.length,
+    protocolo: protoAtivoSeguro,
+    totalCo2eKg: Math.round((totalCo2eKg || 0) * 10) / 10,
+    totalMassaKg: Math.round((totalMassaKg || 0) * 10) / 10,
+    totalPecas: pecasFiltradasVertical.length || 0,
+    totalLotes: lotesFiltradosVertical.length || 0,
   })
 
   const relatorioEstratificado = construirEstratificacaoDmrv({
-    lotes: lotesFiltradosVertical,
-    pecas: pecasFiltradasVertical,
-    kpiCards,
+    lotes: lotesFiltradosVertical || [],
+    pecas: pecasFiltradasVertical || [],
+    kpiCards: kpiCards || [],
     origem,
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
     protocoloDominanteSlug: slugAtivo,
-    protocoloDominanteNome: protoAtivo.nome,
+    protocoloDominanteNome: protoAtivoSeguro.nome || formatarNomeSlug(slugAtivo),
   })
 
   const simuladorReferencial = calcularSimuladorReferencial({
-    lotes: lotesFiltradosVertical,
-    pecas: pecasFiltradasVertical,
+    lotes: lotesFiltradosVertical || [],
+    pecas: pecasFiltradasVertical || [],
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
     origem,
     protocoloDominanteSlug: slugAtivo,
@@ -1429,23 +1518,23 @@ export async function carregarDadosDmrvEmpresa(
   return {
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
     origem_filtro: origem,
-    total_co2e_evitado_kg: Math.round(totalCo2eKg * 10) / 10,
-    total_massa_reciclada_kg: Math.round(totalMassaKg * 10) / 10,
-    total_pecas_reaproveitadas: pecasFiltradasVertical.length,
-    total_lotes_processados: lotesFiltradosVertical.length,
-    emissao_anual_tco2e: emissaoAnual,
-    escopo1_tco2e: Math.round(escopo1 * 10) / 10,
-    escopo2_tco2e: Math.round(escopo2 * 10) / 10,
-    escopo3_tco2e: Math.round(escopo3 * 10) / 10,
-    serie_temporal: serieTemporal,
-    relatorios_anteriores: relatorios,
+    total_co2e_evitado_kg: Math.round((totalCo2eKg || 0) * 10) / 10,
+    total_massa_reciclada_kg: Math.round((totalMassaKg || 0) * 10) / 10,
+    total_pecas_reaproveitadas: pecasFiltradasVertical.length || 0,
+    total_lotes_processados: lotesFiltradosVertical.length || 0,
+    emissao_anual_tco2e: emissaoAnual || 0,
+    escopo1_tco2e: Math.round((escopo1 || 0) * 10) / 10,
+    escopo2_tco2e: Math.round((escopo2 || 0) * 10) / 10,
+    escopo3_tco2e: Math.round((escopo3 || 0) * 10) / 10,
+    serie_temporal: serieTemporal || [],
+    relatorios_anteriores: relatorios || [],
     is_fallback_inventario: isFallback,
     protocoloDominanteSlug: slugAtivo,
-    protocoloDominanteNome: protoAtivo.nome,
-    kpiCards,
+    protocoloDominanteNome: protoAtivoSeguro.nome || formatarNomeSlug(slugAtivo),
+    kpiCards: kpiCards || [],
     relatorioEstratificado,
     simuladorReferencial,
-    verticaisDisponiveis,
+    verticaisDisponiveis: verticaisDisponiveis || [],
   }
 }
 

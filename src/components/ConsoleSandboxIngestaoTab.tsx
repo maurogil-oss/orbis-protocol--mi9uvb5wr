@@ -218,7 +218,14 @@ export function ConsoleSandboxIngestaoTab() {
     item: any,
     segmentoDoc: SegmentoSandbox,
   ): {
-    categoriaSelect: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'concreto' | 'outros'
+    categoriaSelect:
+      | 'aco'
+      | 'aluminio'
+      | 'cobre'
+      | 'polimeros'
+      | 'concreto'
+      | 'outros'
+      | 'agro_rastreado'
     categoriaDescritiva: string
     fatorCo2eKg: number
     statusCalculo: 'calculado' | 'em_estruturacao_de_catalogo'
@@ -253,15 +260,41 @@ export function ConsoleSandboxIngestaoTab() {
       }
     }
 
-    // Regra crítica para mineração urbana: ouro/paládio/prata/terras raras ficam "em estruturação de catálogo"
-    if (
-      item.statusCalculo === 'em_estruturacao_de_catalogo' ||
+    // Detecção estrita de minerais críticos / nobres (mineração urbana: restrito a ouro, paládio, prata, terras raras, ndfeb)
+    const isMineralCritico =
+      descItem.includes('ouro') ||
+      descItem.includes('paladio') ||
+      descItem.includes('paládio') ||
+      descItem.includes('prata') ||
+      descItem.includes('terras raras') ||
+      descItem.includes('terras_raras') ||
+      descItem.includes('ndfeb') ||
       (slugCanonico === 'materiais-criticos-recuperados' && cat !== 'cobre')
-    ) {
+
+    if (isMineralCritico) {
       return {
         categoriaSelect: 'outros',
         categoriaDescritiva:
           item.xProd || 'Minerais Críticos & Metais Nobres (Em estruturação de catálogo)',
+        fatorCo2eKg: 0,
+        statusCalculo: 'em_estruturacao_de_catalogo',
+      }
+    }
+
+    // Detecção de agro/biomassa/grãos rastreados (soja, grãos, milho, biomassa em estruturação de catálogo)
+    const isAgroRastreado =
+      slugCanonico === 'agro' ||
+      descItem.includes('soja') ||
+      descItem.includes('grao') ||
+      descItem.includes('grão') ||
+      descItem.includes('milho') ||
+      descItem.includes('biomassa')
+
+    if (isAgroRastreado && item.statusCalculo === 'em_estruturacao_de_catalogo') {
+      return {
+        categoriaSelect: 'agro_rastreado',
+        categoriaDescritiva:
+          item.xProd || 'Massa Agro & Biomassa Rastreada (Em estruturação de catálogo)',
         fatorCo2eKg: 0,
         statusCalculo: 'em_estruturacao_de_catalogo',
       }

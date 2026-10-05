@@ -521,4 +521,24 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
       expect(screen.queryByText('Lotes CDV Fechados')).not.toBeInTheDocument()
     })
   })
+
+  it('exibe tela de erro com botão "Tentar novamente" quando o carregamento falha com TypeError ou erro de rede (nunca spinner infinito)', async () => {
+    vi.spyOn(dmrvService, 'carregarDadosDmrvEmpresa').mockRejectedValue(
+      new TypeError("Cannot read properties of undefined (reading 'nome')"),
+    )
+
+    render(<PainelDmrvEmissoesEvitadas />)
+
+    // Aguarda a renderização do Card de erro
+    await waitFor(() => {
+      expect(screen.getByTestId('card-erro-dmrv')).toBeInTheDocument()
+      expect(screen.getByText('Não foi possível consolidar as métricas dMRV')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Tentar novamente/i })).toBeInTheDocument()
+    })
+
+    // Garante que o spinner não permaneceu em tela
+    expect(
+      screen.queryByText('Consolidando série temporal dMRV e inventário GHG Protocol...'),
+    ).not.toBeInTheDocument()
+  })
 })

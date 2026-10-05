@@ -400,4 +400,53 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
     fireEvent.change(select, { target: { value: 'materiais-criticos-recuperados' } })
     expect(select.value).toBe('materiais-criticos-recuperados')
   })
+
+  it('peça de soja nunca é classificada como mineral crítico nem recebe rótulo de metais nobres', async () => {
+    vi.spyOn(pb.collection('emissoes_inventario'), 'create').mockResolvedValue({
+      id: 'inv-soja-test',
+    } as any)
+    vi.spyOn(pb.collection('selos'), 'create').mockResolvedValue({
+      id: 'selo-soja-test',
+      codigo_selo: 'PR-SEAL-2026-SOJA1',
+    } as any)
+    vi.spyOn(pb.collection('cdv_lotes'), 'create').mockResolvedValue({
+      id: 'lote-soja-123',
+    } as any)
+
+    let pecaCriada: any = null
+    vi.spyOn(pb.collection('cdv_pecas'), 'create').mockImplementation(async (body: any) => {
+      pecaCriada = body
+      return { id: 'peca-soja-ok', ...body } as any
+    })
+
+    render(<ConsoleSandboxIngestaoTab />)
+
+    // Seleciona segmento Agro
+    const select = screen.getByRole('combobox') as HTMLSelectElement
+    fireEvent.change(select, { target: { value: 'agro' } })
+
+    const btnVol1 = screen.getByRole('button', { name: '1' })
+    fireEvent.click(btnVol1)
+
+    const btnGerar = screen.getByRole('button', { name: /Gerar 1 Docs Sintéticos/i })
+    fireEvent.click(btnGerar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Lote de Documentos Prontos/i)).toBeInTheDocument()
+    })
+
+    const btnIngestar = screen.getByRole('button', { name: /Ingestar no Pipeline/i })
+    fireEvent.click(btnIngestar)
+
+    await waitFor(() => {
+      expect(pecaCriada).not.toBeNull()
+    })
+
+    // Garante que o material gravado não tenha categoria de metais/minerais nobres nem rótulo de ouro/paládio/prata
+    expect(pecaCriada.categoria_material).not.toBe('materiais_criticos_rastreados')
+    expect(pecaCriada.material_declarado).not.toMatch(
+      /Fração Crítica|Ouro|Paládio|Prata|Terras Raras/i,
+    )
+    expect(pecaCriada.material_declarado).toMatch(/Agro|Biomassa|Soja|Milho|Grãos/i)
+  })
 })

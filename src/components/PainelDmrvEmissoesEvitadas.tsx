@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   TrendingDown,
   Scale,
@@ -11,6 +11,7 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   AlertTriangle,
+  AlertCircle,
   Info,
   Clock,
   ArrowUpRight,
@@ -81,18 +82,21 @@ export function PainelDmrvEmissoesEvitadas({
   )
 
   const carregar = useCallback(
-    async (origemAtual: FiltroOrigemDmrv, verticalAtual?: string) => {
+    async (origemAtual?: FiltroOrigemDmrv, verticalAtual?: string) => {
+      const origemEfetiva = origemAtual || filtroOrigem
+      const verticalEfetiva = verticalAtual !== undefined ? verticalAtual : verticalSelecionada
+
       setCarregando(true)
       setErroCarregamento(null)
       try {
         const info = await carregarDadosDmrvEmpresa(
           userCnpj,
-          origemAtual,
-          verticalAtual || undefined,
+          origemEfetiva,
+          verticalEfetiva || undefined,
         )
         setDados(info)
         // Se não havia vertical selecionada explicitamente, adotar o protocolo dominante como padrão
-        if (!verticalAtual && info.protocoloDominanteSlug) {
+        if (!verticalEfetiva && info.protocoloDominanteSlug) {
           setVerticalSelecionada(info.protocoloDominanteSlug)
         }
       } catch (err: any) {
@@ -109,7 +113,7 @@ export function PainelDmrvEmissoesEvitadas({
         setCarregando(false)
       }
     },
-    [userCnpj],
+    [userCnpj, filtroOrigem, verticalSelecionada],
   )
 
   useEffect(() => {
@@ -166,20 +170,10 @@ export function PainelDmrvEmissoesEvitadas({
     }
   }
 
-  if (carregando) {
+  // Se houver erro de carregamento ativo e não estiver em carregamento, exibir Card de erro com "Tentar novamente" (nunca spinner infinito)
+  if (erroCarregamento && !carregando) {
     return (
-      <div className="p-8 text-center space-y-3" role="status" aria-live="polite">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-        <p className="text-sm text-muted-foreground">
-          Consolidando série temporal dMRV e inventário GHG Protocol...
-        </p>
-      </div>
-    )
-  }
-
-  if (erroCarregamento || !dados) {
-    return (
-      <Card className="border-red-500/30 bg-red-500/5">
+      <Card className="border-red-500/30 bg-red-500/5" data-testid="card-erro-dmrv">
         <CardContent className="p-8 text-center space-y-4">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 mx-auto">
             <AlertCircle className="w-6 h-6" />
@@ -214,6 +208,41 @@ export function PainelDmrvEmissoesEvitadas({
               </Button>
             )}
           </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (carregando) {
+    return (
+      <div className="p-8 text-center space-y-3" role="status" aria-live="polite">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+        <p className="text-sm text-muted-foreground">
+          Consolidando série temporal dMRV e inventário GHG Protocol...
+        </p>
+      </div>
+    )
+  }
+
+  if (!dados) {
+    return (
+      <Card className="border-border">
+        <CardContent className="p-8 text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted text-muted-foreground mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Nenhum dado disponível para consolidação dMRV no momento.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => carregar(filtroOrigem, verticalSelecionada)}
+            className="gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Tentar novamente
+          </Button>
         </CardContent>
       </Card>
     )
@@ -568,14 +597,15 @@ export function PainelDmrvEmissoesEvitadas({
                       CO₂e Evitado Total
                     </span>
                     <div className="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-300 mt-1">
-                      {dados.total_co2e_evitado_kg.toLocaleString('pt-BR', {
+                      {(dados.total_co2e_evitado_kg ?? 0).toLocaleString('pt-BR', {
                         minimumFractionDigits: 1,
                         maximumFractionDigits: 1,
                       })}{' '}
                       kg
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-1">
-                      ≈ {(dados.total_co2e_evitado_kg / 1000).toFixed(2)} tCO₂e abatidas do Escopo 3
+                      ≈ {((dados.total_co2e_evitado_kg ?? 0) / 1000).toFixed(2)} tCO₂e abatidas do
+                      Escopo 3
                     </p>
                   </Card>
 
@@ -584,7 +614,7 @@ export function PainelDmrvEmissoesEvitadas({
                       Massa Reciclada / Desviada
                     </span>
                     <div className="text-2xl font-black font-mono text-foreground mt-1">
-                      {dados.total_massa_reciclada_kg.toLocaleString('pt-BR', {
+                      {(dados.total_massa_reciclada_kg ?? 0).toLocaleString('pt-BR', {
                         minimumFractionDigits: 1,
                         maximumFractionDigits: 1,
                       })}{' '}
@@ -600,7 +630,7 @@ export function PainelDmrvEmissoesEvitadas({
                       Itens com DPP
                     </span>
                     <div className="text-2xl font-black font-mono text-primary mt-1">
-                      {dados.total_pecas_reaproveitadas}
+                      {(dados.total_pecas_reaproveitadas ?? 0).toLocaleString('pt-BR')}
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-1">
                       Itens catalogados com rastreabilidade
@@ -612,7 +642,7 @@ export function PainelDmrvEmissoesEvitadas({
                       Lotes Fechados
                     </span>
                     <div className="text-2xl font-black font-mono text-foreground mt-1">
-                      {dados.total_lotes_processados}
+                      {(dados.total_lotes_processados ?? 0).toLocaleString('pt-BR')}
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-1">
                       Lotes com comprovação de conformidade
@@ -644,7 +674,7 @@ export function PainelDmrvEmissoesEvitadas({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
-                {dados.serie_temporal.map((st) => (
+                {(dados.serie_temporal ?? []).map((st) => (
                   <div
                     key={st.mes}
                     className="p-3 rounded-xl bg-muted/40 border border-border text-center space-y-1"
@@ -653,10 +683,10 @@ export function PainelDmrvEmissoesEvitadas({
                       {st.mes}
                     </span>
                     <div className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
-                      {st.co2e_evitado_kg.toLocaleString('pt-BR')} kg
+                      {(st.co2e_evitado_kg ?? 0).toLocaleString('pt-BR')} kg
                     </div>
                     <div className="text-[10px] font-mono text-muted-foreground">
-                      {st.massa_kg.toLocaleString('pt-BR')} kg resíduo
+                      {(st.massa_kg ?? 0).toLocaleString('pt-BR')} kg resíduo
                     </div>
                   </div>
                 ))}

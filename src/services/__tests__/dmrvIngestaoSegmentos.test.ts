@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   determinarProtocoloDominante,
   construirCardsKpiSetoriais,
@@ -6,6 +6,7 @@ import {
 } from '@/services/dmrvEmissoesService'
 import { getProtocoloBySlug } from '@/data/protocolosSetoriais'
 import { gerarLoteSintetico } from '@/services/sandboxSyntheticGenerator'
+import pb from '@/lib/pocketbase/client'
 
 describe('dmrvIngestaoSegmentos - Ingestão Universal dMRV nos 16 Segmentos', () => {
   it('normalizarSlugSegmento mapeia termos de agronegócio estritamente para "agro"', () => {
@@ -147,5 +148,51 @@ describe('dmrvIngestaoSegmentos - Ingestão Universal dMRV nos 16 Segmentos', ()
     const dom = determinarProtocoloDominante(todosLotes, [])
     expect(dom.slug).toBe('agro')
     expect(dom.nome).toBe('Agronegócio & Grãos')
+  })
+
+  it('lote SANDBOX-AGRO com soja resolve protocolo agro sem TypeError e exibe nome formatado seguro', async () => {
+    const { carregarDadosDmrvEmpresa } = await import('../dmrvEmissoesService')
+
+    const loteAgro = {
+      id: 'lote-agro-teste-1',
+      cdv_codigo: 'SANDBOX-AGRO',
+      total_peso_kg: 50000,
+      total_co2e_evitado_kg: 0,
+      origem: 'sintetico',
+      created: '2026-03-01T10:00:00.000Z',
+    }
+
+    const pecaSoja = {
+      id: 'peca-soja-1',
+      lote: 'lote-agro-teste-1',
+      descricao_peca: 'Soja em Grãos - Granel Agrícola Safra 2026',
+      categoria_material: 'agro',
+      peso_kg: 50000,
+      fator_co2e_kg: 0,
+      co2e_evitado_kg: 0,
+      origem: 'sintetico',
+      protocolo: 'agro',
+    }
+
+    vi.spyOn(pb.collection('cdv_lotes'), 'getFullList').mockResolvedValueOnce([loteAgro] as any)
+    vi.spyOn(pb.collection('cdv_pecas'), 'getFullList').mockResolvedValueOnce([pecaSoja] as any)
+    vi.spyOn(pb.collection('emissoes_inventario'), 'getFullList').mockResolvedValueOnce([] as any)
+    vi.spyOn(pb.collection('relatorios_exportados'), 'getFullList').mockResolvedValueOnce([] as any)
+
+    const resultado = await carregarDadosDmrvEmpresa('33.000.168/0001-09', 'sintetico')
+
+    expect(resultado.protocoloDominanteSlug).toBe('agro')
+    expect(resultado.protocoloDominanteNome).toBe('Agro & Biomassa Sustentável')
+    expect(resultado.kpiCards).toBeDefined()
+    expect(resultado.kpiCards.length).toBe(4)
+
+    // A peça de soja deve aparecer como rastreada sem crédito, nunca com rótulo de fração crítica
+    const matSoja = resultado.relatorioEstratificado.porFatorMaterial.find((m) =>
+      m.nomeMaterial.includes('Soja'),
+    )
+    expect(matSoja).toBeDefined()
+    expect(matSoja?.nomeMaterial).toBe('Soja em Grãos — rastreada, sem CO₂e atribuído')
+    expect(matSoja?.categoriaMaterial).toBe('agro_rastreado')
+    expect(matSoja?.nomeMaterial).not.toMatch(/Fração Crítica|Ouro|Paládio|Prata/i)
   })
 })
