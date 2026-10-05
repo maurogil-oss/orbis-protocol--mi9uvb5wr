@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   TrendingDown,
   Scale,
@@ -81,10 +81,19 @@ export function PainelDmrvEmissoesEvitadas({
     'dmrv_documental',
   )
 
+  // Ref para sincronizar a vertical selecionada sem torná-la dependência reativa do carregar
+  const verticalSelecionadaRef = useRef(verticalSelecionada)
+  verticalSelecionadaRef.current = verticalSelecionada
+
   const carregar = useCallback(
-    async (origemAtual?: FiltroOrigemDmrv, verticalAtual?: string) => {
+    async (
+      origemAtual?: FiltroOrigemDmrv,
+      verticalAtual?: string,
+      origemChamada?: 'efeito_inicial' | 'troca_manual' | 'retry',
+    ) => {
       const origemEfetiva = origemAtual || filtroOrigem
-      const verticalEfetiva = verticalAtual !== undefined ? verticalAtual : verticalSelecionada
+      const verticalEfetiva =
+        verticalAtual !== undefined ? verticalAtual : verticalSelecionadaRef.current
 
       setCarregando(true)
       setErroCarregamento(null)
@@ -95,8 +104,15 @@ export function PainelDmrvEmissoesEvitadas({
           verticalEfetiva || undefined,
         )
         setDados(info)
-        // Se não havia vertical selecionada explicitamente, adotar o protocolo dominante como padrão
-        if (!verticalEfetiva && info.protocoloDominanteSlug) {
+        // Adoção única do protocolo dominante com guarda:
+        // Apenas se a chamada NÃO veio do efeito inicial (onde o estado já foi resetado e não deve disparar re-render),
+        // ou quando nenhuma vertical foi solicitada E o estado atual ainda está vazio, sem redefinir o mesmo valor
+        if (
+          origemChamada !== 'efeito_inicial' &&
+          !verticalEfetiva &&
+          info.protocoloDominanteSlug &&
+          verticalSelecionadaRef.current !== info.protocoloDominanteSlug
+        ) {
           setVerticalSelecionada(info.protocoloDominanteSlug)
         }
       } catch (err: any) {
@@ -113,18 +129,22 @@ export function PainelDmrvEmissoesEvitadas({
         setCarregando(false)
       }
     },
-    [userCnpj, filtroOrigem, verticalSelecionada],
+    [userCnpj, filtroOrigem],
   )
 
   useEffect(() => {
-    // Ao alternar filtro Real/Sandbox ou CNPJ, resetar vertical explicitada para recalcular dominante da nova origem
-    setVerticalSelecionada('')
-    carregar(filtroOrigem, '')
+    // Ao alternar filtro Real/Sandbox ou CNPJ, resetar vertical explicitada apenas se não estiver vazia
+    if (verticalSelecionadaRef.current !== '') {
+      setVerticalSelecionada('')
+    }
+    carregar(filtroOrigem, '', 'efeito_inicial')
   }, [userCnpj, filtroOrigem, carregar])
 
   const handleTrocarVertical = (novoSlug: string) => {
-    setVerticalSelecionada(novoSlug)
-    carregar(filtroOrigem, novoSlug)
+    if (verticalSelecionadaRef.current !== novoSlug) {
+      setVerticalSelecionada(novoSlug)
+    }
+    carregar(filtroOrigem, novoSlug, 'troca_manual')
   }
 
   // Tarefa 2: Carrega o status da custódia A1 ativa do cliente para habilitar assinatura ICP-Brasil

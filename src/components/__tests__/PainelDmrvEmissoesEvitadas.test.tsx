@@ -541,4 +541,108 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
       screen.queryByText('Consolidando série temporal dMRV e inventário GHG Protocol...'),
     ).not.toBeInTheDocument()
   })
+
+  it('não dispara loop infinito nem "Maximum update depth exceeded" quando backend retorna protocoloDominanteSlug e suporta troca manual', async () => {
+    let callCount = 0
+    const spyCarregar = vi
+      .spyOn(dmrvService, 'carregarDadosDmrvEmpresa')
+      .mockImplementation(async (_cnpj, origem, vertical) => {
+        callCount++
+        const slugAtivo = vertical || 'automotiva'
+        return {
+          cnpj: '33.000.168/0001-09',
+          origem_filtro: (origem || 'producao') as any,
+          total_co2e_evitado_kg: 5000,
+          total_massa_reciclada_kg: 2000,
+          total_pecas_reaproveitadas: 10,
+          total_lotes_processados: 1,
+          emissao_anual_tco2e: 45.0,
+          escopo1_tco2e: 10.0,
+          escopo2_tco2e: 5.0,
+          escopo3_tco2e: 30.0,
+          serie_temporal: [{ mes: 'Jan/26', co2e_evitado_kg: 5000, massa_kg: 2000 }],
+          relatorios_anteriores: [],
+          protocoloDominanteSlug: 'automotiva',
+          protocoloDominanteNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+          verticaisDisponiveis: [
+            {
+              slug: 'automotiva',
+              nome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+              totalLotes: 1,
+            },
+            {
+              slug: 'textil',
+              nome: 'Têxtil, Confecção & Calçados Sustentáveis',
+              totalLotes: 1,
+            },
+          ],
+          kpiCards: [
+            {
+              id: 'co2e_evitado',
+              rotulo: 'CO₂e Evitado Total',
+              valorFormatado: '5.000,0',
+              valorNumerico: 5000,
+              unidade: 'kg',
+              legenda: slugAtivo === 'textil' ? 'Abatimento têxtil' : 'Abatimento CDV',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos2',
+              rotulo: slugAtivo === 'textil' ? 'Resíduo Têxtil Desviado' : 'Massa Reciclada',
+              valorFormatado: '2.000',
+              valorNumerico: 2000,
+              unidade: 'kg',
+              legenda: 'Balanço de massa',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos3',
+              rotulo: 'Itens Catalogados',
+              valorFormatado: '10',
+              valorNumerico: 10,
+              unidade: 'itens',
+              legenda: 'Rastreabilidade',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos4',
+              rotulo: 'Lotes Fechados',
+              valorFormatado: '1',
+              valorNumerico: 1,
+              unidade: 'lotes',
+              legenda: 'Conformidade',
+              natureza: 'gravada',
+            },
+          ],
+        }
+      })
+
+    // Renderização real do componente completo
+    render(<PainelDmrvEmissoesEvitadas />)
+
+    // Aguarda exibição dos dados consolidados
+    await waitFor(() => {
+      expect(screen.getByText('CO₂e Evitado Total')).toBeInTheDocument()
+      expect(screen.getByText('5.000,0')).toBeInTheDocument()
+    })
+
+    // A montagem inicial deve chamar carregar exatamente 1 vez, sem disparar cascata de re-renders
+    expect(callCount).toBe(1)
+    expect(spyCarregar).toHaveBeenCalledTimes(1)
+
+    // O seletor de vertical deve refletir o protocolo dominante
+    const seletor = screen.getByTestId('seletor-vertical-foco') as HTMLSelectElement
+    expect(seletor.value).toBe('automotiva')
+
+    // Testar troca manual de vertical
+    fireEvent.change(seletor, { target: { value: 'textil' } })
+
+    await waitFor(() => {
+      expect(seletor.value).toBe('textil')
+      expect(screen.getByText('Resíduo Têxtil Desviado')).toBeInTheDocument()
+    })
+
+    // Troca manual deve somar exatamente 1 chamada adicional (total 2 chamadas)
+    expect(callCount).toBe(2)
+  })
 })
