@@ -238,7 +238,7 @@ export function calcularSimuladorReferencial(params: {
     if (loteRef?.segmento) return loteRef.segmento
     if (loteRef?.setor) return loteRef.setor
     if (loteRef?.cdv_codigo && typeof loteRef.cdv_codigo === 'string') {
-      const m = loteRef.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)-\d+/)
+      const m = loteRef.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
       if (m && m[1]) return m[1].toLowerCase()
     }
     return protocoloDominanteSlug || 'automotiva'

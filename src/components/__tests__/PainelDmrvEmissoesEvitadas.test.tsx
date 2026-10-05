@@ -367,4 +367,158 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
       screen.getByText(/9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08/),
     ).toBeInTheDocument()
   })
+
+  it('permite alternar a vertical no dropdown "Vertical em foco" e recalcula os cards e dados da vertical', async () => {
+    const spyCarregar = vi.spyOn(dmrvService, 'carregarDadosDmrvEmpresa')
+
+    spyCarregar.mockImplementation(async (_cnpj, _origem, vertical) => {
+      if (vertical === 'agro') {
+        return {
+          cnpj: '33.000.168/0001-09',
+          origem_filtro: 'sintetico' as const,
+          total_co2e_evitado_kg: 0,
+          total_massa_reciclada_kg: 15000.0,
+          total_pecas_reaproveitadas: 5,
+          total_lotes_processados: 2,
+          emissao_anual_tco2e: 50.0,
+          escopo1_tco2e: 10.0,
+          escopo2_tco2e: 5.0,
+          escopo3_tco2e: 35.0,
+          serie_temporal: [{ mes: 'Fev/26', co2e_evitado_kg: 0, massa_kg: 15000 }],
+          relatorios_anteriores: [],
+          protocoloDominanteSlug: 'agro',
+          protocoloDominanteNome: 'Agro & Biomassa Sustentável',
+          verticaisDisponiveis: [
+            {
+              slug: 'automotiva',
+              nome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+              totalLotes: 5,
+            },
+            { slug: 'agro', nome: 'Agro & Biomassa Sustentável', totalLotes: 2 },
+          ],
+          kpiCards: [
+            {
+              id: 'co2e_evitado',
+              rotulo: 'CO₂e Evitado Total',
+              valorFormatado: '0,0',
+              valorNumerico: 0,
+              unidade: 'kg',
+              legenda: 'Em estruturação de catálogo — zero crédito',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos2',
+              rotulo: 'Massa Agro Rastreada',
+              valorFormatado: '15.000',
+              valorNumerico: 15000,
+              unidade: 'kg',
+              legenda: 'Grãos e biomassa com rastreabilidade territorial',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos3',
+              rotulo: 'Cargas Catalogadas',
+              valorFormatado: '5',
+              valorNumerico: 5,
+              unidade: 'cargas',
+              legenda: 'Cargas com comprovação de origem',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos4',
+              rotulo: 'Lotes Agro Fechados',
+              valorFormatado: '2',
+              valorNumerico: 2,
+              unidade: 'lotes',
+              legenda: 'Lotes agrícolas processados',
+              natureza: 'gravada',
+            },
+          ],
+        }
+      }
+
+      // Default (automotiva)
+      return {
+        cnpj: '33.000.168/0001-09',
+        origem_filtro: 'sintetico' as const,
+        total_co2e_evitado_kg: 25000.0,
+        total_massa_reciclada_kg: 12000.0,
+        total_pecas_reaproveitadas: 40,
+        total_lotes_processados: 5,
+        emissao_anual_tco2e: 80.0,
+        escopo1_tco2e: 20.0,
+        escopo2_tco2e: 10.0,
+        escopo3_tco2e: 50.0,
+        serie_temporal: [{ mes: 'Jan/26', co2e_evitado_kg: 25000, massa_kg: 12000 }],
+        relatorios_anteriores: [],
+        protocoloDominanteSlug: 'automotiva',
+        protocoloDominanteNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+        verticaisDisponiveis: [
+          { slug: 'automotiva', nome: 'Automotiva & Desmanches Sustentáveis (CDV)', totalLotes: 5 },
+          { slug: 'agro', nome: 'Agro & Biomassa Sustentável', totalLotes: 2 },
+        ],
+        kpiCards: [
+          {
+            id: 'co2e_evitado',
+            rotulo: 'CO₂e Evitado Total',
+            valorFormatado: '25.000,0',
+            valorNumerico: 25000,
+            unidade: 'kg',
+            legenda: 'Evitação de produção primária automotiva',
+            natureza: 'gravada',
+          },
+          {
+            id: 'kpi_pos2',
+            rotulo: 'Massa Reciclada / Desviada',
+            valorFormatado: '12.000',
+            valorNumerico: 12000,
+            unidade: 'kg',
+            legenda: 'Balanço de massa comprovado',
+            natureza: 'gravada',
+          },
+          {
+            id: 'kpi_pos3',
+            rotulo: 'Peças com Selo DPP',
+            valorFormatado: '40',
+            valorNumerico: 40,
+            unidade: 'peças',
+            legenda: 'Peças catalogadas',
+            natureza: 'gravada',
+          },
+          {
+            id: 'kpi_pos4',
+            rotulo: 'Lotes CDV Fechados',
+            valorFormatado: '5',
+            valorNumerico: 5,
+            unidade: 'lotes',
+            legenda: 'Veículos com despoluição atendida',
+            natureza: 'gravada',
+          },
+        ],
+      }
+    })
+
+    render(<PainelDmrvEmissoesEvitadas />)
+
+    // Aguarda carregar dados iniciais (automotiva)
+    await waitFor(() => {
+      expect(screen.getByText('Lotes CDV Fechados')).toBeInTheDocument()
+      expect(screen.getByText('25.000,0')).toBeInTheDocument()
+    })
+
+    // Localiza o seletor de vertical em foco
+    const seletorVertical = screen.getByTestId('seletor-vertical-foco')
+    expect(seletorVertical).toBeInTheDocument()
+
+    // Troca para agro
+    fireEvent.change(seletorVertical, { target: { value: 'agro' } })
+
+    // Aguarda os cards recalcularem para os rótulos e unidades canônicas do Agro
+    await waitFor(() => {
+      expect(screen.getByText('Massa Agro Rastreada')).toBeInTheDocument()
+      expect(screen.getByText('Lotes Agro Fechados')).toBeInTheDocument()
+      expect(screen.getByText('Cargas Catalogadas')).toBeInTheDocument()
+      expect(screen.queryByText('Lotes CDV Fechados')).not.toBeInTheDocument()
+    })
+  })
 })

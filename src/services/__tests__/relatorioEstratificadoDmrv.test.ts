@@ -236,6 +236,66 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
     expect(resultado.nomeArquivo).toContain('relatorio_dmrv_33000168000109')
   })
 
+  it('peça de soja NUNCA é rotulada como Fração Crítica (Ouro/Paládio/Prata/Terras Raras) e exibe "Soja em Grãos — rastreada, sem CO₂e atribuído"', () => {
+    const pecaSojaMock = [
+      {
+        id: 'peca-soja-01',
+        lote: 'lote-agro-01',
+        material_declarado: 'Soja em Grãos [STATUS: EM ESTRUTURAÇÃO DE CATÁLOGO - ZERO CRÉDITO]',
+        descricao_peca: 'Carga de Soja em Grãos - NCM 1201.90.00',
+        categoria_material: 'agro',
+        peso_kg: 50000,
+        fator_co2e_kg: 0,
+        co2e_evitado_kg: 0,
+      },
+    ]
+
+    const loteAgroMock = [
+      {
+        id: 'lote-agro-01',
+        cdv_codigo: 'SANDBOX-AGRO',
+        created: '2025-02-20T10:00:00Z',
+      },
+    ]
+
+    const kpiCards = construirCardsKpiSetoriais({
+      slugDominante: 'agro',
+      protocolo: PROTOCOLOS_SETORIAIS.agro,
+      totalCo2eKg: 0,
+      totalMassaKg: 50000,
+      totalPecas: 1,
+      totalLotes: 1,
+    })
+
+    const est = construirEstratificacaoDmrv({
+      lotes: loteAgroMock,
+      pecas: pecaSojaMock,
+      kpiCards,
+      origem: 'sintetico',
+      cnpj: '33.000.168/0001-09',
+      protocoloDominanteSlug: 'agro',
+      protocoloDominanteNome: 'Agronegócio & Grãos',
+    })
+
+    expect(est.porFatorMaterial.length).toBe(1)
+    const materialSoja = est.porFatorMaterial[0]
+
+    // NUNCA deve ser classificado como minerais críticos nem conter termos de metais preciosos
+    expect(materialSoja.nomeMaterial).not.toContain('Fração Crítica')
+    expect(materialSoja.nomeMaterial).not.toContain('Ouro')
+    expect(materialSoja.nomeMaterial).not.toContain('Paládio')
+    expect(materialSoja.nomeMaterial).not.toContain('Terras Raras')
+    expect(materialSoja.categoriaMaterial).toBe('agro_rastreado')
+
+    // Deve exibir o nome canônico e limpo especificado
+    expect(materialSoja.nomeMaterial).toBe('Soja em Grãos — rastreada, sem CO₂e atribuído')
+    expect(materialSoja.fator_co2e_kg).toBe(0)
+    expect(materialSoja.co2e_evitado_kg).toBe(0)
+    expect(materialSoja.possuiFatorOficial).toBe(false)
+    expect(materialSoja.statusRastreabilidade).toBe('rastreada_sem_co2e')
+    expect(materialSoja.fonteFator).toContain('Em estruturação de catálogo — zero crédito')
+  })
+
   it('preserva a tagline institucional unificada com travessão intacta', () => {
     const taglineEsperada = 'Prova Documental da Economia Circular — dMRV'
     expect(taglineEsperada).toContain('— dMRV')

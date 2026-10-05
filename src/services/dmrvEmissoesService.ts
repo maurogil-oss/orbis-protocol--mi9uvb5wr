@@ -127,6 +127,12 @@ export interface RelatorioEstratificadoDmrv {
   }
 }
 
+export interface VerticalDisponivel {
+  slug: string
+  nome: string
+  totalLotes: number
+}
+
 export interface DadosDmrvEmpresa {
   cnpj: string
   origem_filtro: FiltroOrigemDmrv
@@ -154,6 +160,8 @@ export interface DadosDmrvEmpresa {
   relatorioEstratificado?: RelatorioEstratificadoDmrv
   /** Simulador Referencial de Potencial de Crédito (Informativo - sem validade, não emissível) */
   simuladorReferencial?: SimuladorReferencialResultado
+  /** Verticais identificadas nos lotes do filtro ativo */
+  verticaisDisponiveis?: VerticalDisponivel[]
 }
 
 export interface ResumoDmrvSegregado {
@@ -181,6 +189,7 @@ export interface ResumoDmrvSegregado {
   protocoloDominanteSlug?: string
   protocoloDominanteNome?: string
   kpiCards?: CardKpiRenderizavel[]
+  verticaisDisponiveis?: VerticalDisponivel[]
 }
 
 const MESES_PTBR = [
@@ -294,22 +303,35 @@ export function determinarProtocoloDominante(
   pecas: any[],
 ): { slug: string; nome: string; protocolo: ProtocoloSetorial } {
   const contagem = new Map<string, number>()
+  const ultimoTimestamp = new Map<string, number>()
 
-  const registrarOcorrencia = (raw?: string | null, peso = 1) => {
+  const extrairTimestamp = (item: any): number => {
+    const rawData = item?.created || item?.data_emissao || item?.dataEmissao || item?.dataIso
+    if (!rawData) return 0
+    const t = new Date(rawData).getTime()
+    return isNaN(t) ? 0 : t
+  }
+
+  const registrarOcorrencia = (raw?: string | null, peso = 1, ts = 0) => {
     if (!raw) return
     const slug = normalizarSlugSegmento(raw)
     contagem.set(slug, (contagem.get(slug) || 0) + peso)
+    if (ts > (ultimoTimestamp.get(slug) || 0)) {
+      ultimoTimestamp.set(slug, ts)
+    }
   }
 
   for (const lote of lotes) {
+    const tsLote = extrairTimestamp(lote)
+
     // 1. Campos dedicados do lote
-    if (lote.protocolo) registrarOcorrencia(lote.protocolo, 3)
-    else if (lote.protocolo_setorial) registrarOcorrencia(lote.protocolo_setorial, 3)
-    else if (lote.segmento) registrarOcorrencia(lote.segmento, 3)
-    else if (lote.setor) registrarOcorrencia(lote.setor, 3)
+    if (lote.protocolo) registrarOcorrencia(lote.protocolo, 3, tsLote)
+    else if (lote.protocolo_setorial) registrarOcorrencia(lote.protocolo_setorial, 3, tsLote)
+    else if (lote.segmento) registrarOcorrencia(lote.segmento, 3, tsLote)
+    else if (lote.setor) registrarOcorrencia(lote.setor, 3, tsLote)
     else if (lote.cdv_codigo && typeof lote.cdv_codigo === 'string') {
-      const match = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)-\d+/)
-      if (match && match[1]) registrarOcorrencia(match[1], 3)
+      const match = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
+      if (match && match[1]) registrarOcorrencia(match[1], 3, tsLote)
     }
 
     // 2. Inspecionar payload_bruto_json ou metadados
@@ -319,9 +341,10 @@ export function determinarProtocoloDominante(
           typeof lote.payload_bruto_json === 'string'
             ? JSON.parse(lote.payload_bruto_json)
             : lote.payload_bruto_json
-        if (payload?.protocoloSetorialSlug) registrarOcorrencia(payload.protocoloSetorialSlug, 4)
-        if (payload?.segmentoSlug) registrarOcorrencia(payload.segmentoSlug, 4)
-        if (payload?.tipoSegmento) registrarOcorrencia(payload.tipoSegmento, 3)
+        if (payload?.protocoloSetorialSlug)
+          registrarOcorrencia(payload.protocoloSetorialSlug, 4, tsLote)
+        if (payload?.segmentoSlug) registrarOcorrencia(payload.segmentoSlug, 4, tsLote)
+        if (payload?.tipoSegmento) registrarOcorrencia(payload.tipoSegmento, 3, tsLote)
       } catch {
         // payload não é JSON válido, segue
       }
@@ -331,19 +354,29 @@ export function determinarProtocoloDominante(
   // Se não identificou por lotes, inspecionar peças
   if (contagem.size === 0 && pecas.length > 0) {
     for (const p of pecas) {
-      if (p.protocolo) registrarOcorrencia(p.protocolo, 1)
-      else if (p.segmento) registrarOcorrencia(p.segmento, 1)
-      else if (p.categoria) registrarOcorrencia(p.categoria, 1)
+      const tsPeca = extrairTimestamp(p)
+      if (p.protocolo) registrarOcorrencia(p.protocolo, 1, tsPeca)
+      else if (p.segmento) registrarOcorrencia(p.segmento, 1, tsPeca)
+      else if (p.categoria) registrarOcorrencia(p.categoria, 1, tsPeca)
     }
   }
 
-  // Escolher o slug mais frequente; fallback para automotiva
+  // Escolher o slug mais frequente; em caso de empate, vencer o slug com o lote mais recente
   let slugDominante = 'automotiva'
   let maxVotos = 0
+  let maisRecenteTs = -1
+
   for (const [slug, votos] of contagem.entries()) {
+    const ts = ultimoTimestamp.get(slug) || 0
     if (votos > maxVotos) {
       maxVotos = votos
       slugDominante = slug
+      maisRecenteTs = ts
+    } else if (votos === maxVotos && votos > 0) {
+      if (ts > maisRecenteTs) {
+        slugDominante = slug
+        maisRecenteTs = ts
+      }
     }
   }
 
@@ -525,7 +558,7 @@ export function construirEstratificacaoDmrv(params: {
     if (lote.segmento) return normalizarSlugSegmento(lote.segmento)
     if (lote.setor) return normalizarSlugSegmento(lote.setor)
     if (lote.cdv_codigo && typeof lote.cdv_codigo === 'string') {
-      const m = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)-\d+/)
+      const m = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
       if (m && m[1]) return normalizarSlugSegmento(m[1])
     }
     if (lote.payload_bruto_json) {
@@ -684,8 +717,8 @@ export function construirEstratificacaoDmrv(params: {
     const fatorGravado = Number(p.fator_co2e_kg ?? -1)
     const co2eGravado = Number(p.co2e_evitado_kg || 0)
 
-    // Detecção de materiais críticos sem fator atribuído
-    const isSemFatorDeclarado =
+    // Detecção de fração crítica real (mineração urbana: ouro, paládio, prata, terras raras, NdFeB)
+    const isMineralCriticoReal =
       desc.includes('ouro') ||
       desc.includes('paladio') ||
       desc.includes('paládio') ||
@@ -693,11 +726,10 @@ export function construirEstratificacaoDmrv(params: {
       desc.includes('terras raras') ||
       desc.includes('terras_raras') ||
       desc.includes('ndfeb') ||
-      desc.includes('sem crédito') ||
-      desc.includes('em estruturação') ||
-      (fatorGravado === 0 && co2eGravado === 0 && (rawCat === 'outros' || !rawCat))
+      rawCat.includes('critico') ||
+      rawCat.includes('mineracao_urbana')
 
-    if (isSemFatorDeclarado) {
+    if (isMineralCriticoReal) {
       let nomeEspecifico = 'Fração Crítica (Ouro/Paládio/Prata/Terras Raras)'
       if (desc.includes('ouro')) nomeEspecifico = 'Ouro Recuperado (Mineração Urbana)'
       else if (desc.includes('paladio') || desc.includes('paládio'))
@@ -712,6 +744,45 @@ export function construirEstratificacaoDmrv(params: {
         categoria: 'materiais_criticos_rastreados',
         fator: 0,
         fonte: 'DM-ORB-001 Apêndice B (Módulo Mineração Urbana / Em Estruturação)',
+        possuiFator: false,
+        status: 'rastreada_sem_co2e',
+      }
+    }
+
+    // Detecção de materiais rastreados "em estruturação" (soja, grãos, biomassa, madeira, etc. sem fator homologado)
+    const isEmEstruturacao =
+      desc.includes('em estruturação') ||
+      desc.includes('sem crédito') ||
+      (fatorGravado === 0 &&
+        co2eGravado === 0 &&
+        (rawCat === 'outros' || rawCat === 'agro' || !rawCat))
+
+    if (isEmEstruturacao) {
+      // Limpar marcador técnico como [STATUS: ...] ou [STATUS: EM ESTRUTURAÇÃO DE CATÁLOGO - ZERO CRÉDITO]
+      const rawNome = p.material_declarado || p.descricao_peca || 'Material Rastreado'
+      let nomeLimpo = rawNome
+        .replace(/\[STATUS:[^\]]*\]/gi, '')
+        .replace(/\s*-\s*NCM\s*[\d.]+/gi, '')
+        .trim()
+
+      // Formatar de forma canônica se contiver termos de soja
+      if (nomeLimpo.toLowerCase().includes('soja')) {
+        nomeLimpo = 'Soja em Grãos'
+      } else if (!nomeLimpo) {
+        nomeLimpo = 'Material Agro / Granel'
+      }
+
+      const chaveDerivada = `agro_rastreado_${nomeLimpo
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '')}`
+
+      return {
+        chave: chaveDerivada,
+        nomeMaterial: `${nomeLimpo} — rastreada, sem CO₂e atribuído`,
+        categoria: 'agro_rastreado',
+        fator: 0,
+        fonte: 'DM-ORB-001 (Em estruturação de catálogo — zero crédito)',
         possuiFator: false,
         status: 'rastreada_sem_co2e',
       }
@@ -1088,6 +1159,7 @@ export function classificarSbce(emissaoAnualTco2e: number): {
 export async function carregarDadosDmrvEmpresa(
   cnpjEmpresa?: string,
   origem: FiltroOrigemDmrv = 'producao',
+  verticalSelecionadaSlug?: string,
 ): Promise<DadosDmrvEmpresa> {
   const cnpjLimpo = (cnpjEmpresa || '').replace(/\D/g, '')
 
@@ -1165,14 +1237,85 @@ export async function carregarDadosDmrvEmpresa(
     }
   }
 
-  // Totalizadores de lotes e peças
+  // Derivar lista de verticais disponíveis a partir dos lotes carregados
+  const mapaLotesPorSlug = new Map<string, number>()
+  const extrairSlugLote = (l: any): string => {
+    if (l.protocolo) return normalizarSlugSegmento(l.protocolo)
+    if (l.protocolo_setorial) return normalizarSlugSegmento(l.protocolo_setorial)
+    if (l.segmento) return normalizarSlugSegmento(l.segmento)
+    if (l.setor) return normalizarSlugSegmento(l.setor)
+    if (l.cdv_codigo && typeof l.cdv_codigo === 'string') {
+      const m = l.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
+      if (m && m[1]) return normalizarSlugSegmento(m[1])
+    }
+    if (l.payload_bruto_json) {
+      try {
+        const p =
+          typeof l.payload_bruto_json === 'string'
+            ? JSON.parse(l.payload_bruto_json)
+            : l.payload_bruto_json
+        if (p?.protocoloSetorialSlug) return normalizarSlugSegmento(p.protocoloSetorialSlug)
+        if (p?.segmentoSlug) return normalizarSlugSegmento(p.segmentoSlug)
+        if (p?.segmento) return normalizarSlugSegmento(p.segmento)
+      } catch {
+        /* ignore */
+      }
+    }
+    return 'automotiva'
+  }
+
+  for (const l of lotes) {
+    const sl = extrairSlugLote(l)
+    mapaLotesPorSlug.set(sl, (mapaLotesPorSlug.get(sl) || 0) + 1)
+  }
+
+  // Identificar o protocolo dominante natural dos lotes/peças
+  const dom = determinarProtocoloDominante(lotes, pecas)
+
+  // Se o dominante não estiver no mapa (ex: determinado por peças ou vazio), incluir
+  if (!mapaLotesPorSlug.has(dom.slug)) {
+    mapaLotesPorSlug.set(dom.slug, lotes.length)
+  }
+
+  const verticaisDisponiveis: VerticalDisponivel[] = Array.from(mapaLotesPorSlug.entries()).map(
+    ([slug, count]) => {
+      const p = getProtocoloBySlug(slug) || PROTOCOLOS_SETORIAIS[slug]
+      return {
+        slug,
+        nome: p?.nome || slug,
+        totalLotes: count,
+      }
+    },
+  )
+
+  // Vertical ativa para exibição: a selecionada explicitamente pelo usuário ou a dominante
+  const slugAtivo = verticalSelecionadaSlug || dom.slug
+  const protoAtivo = getProtocoloBySlug(slugAtivo) || dom.protocolo
+
+  // Se houver seleção de vertical explícita (diferente ou igual), filtrar lotes e peças correspondentes
+  // para recálculo dos 4 cards KPI, série temporal e estratificação
+  const lotesFiltradosVertical = verticalSelecionadaSlug
+    ? lotes.filter((l) => extrairSlugLote(l) === verticalSelecionadaSlug)
+    : lotes
+
+  const mapaLotesFiltradosIds = new Set(lotesFiltradosVertical.map((l) => l.id).filter(Boolean))
+
+  const pecasFiltradasVertical = verticalSelecionadaSlug
+    ? pecas.filter((p) => {
+        if (p.protocolo) return normalizarSlugSegmento(p.protocolo) === verticalSelecionadaSlug
+        if (p.lote && mapaLotesFiltradosIds.has(p.lote)) return true
+        return false
+      })
+    : pecas
+
+  // Totalizadores de lotes e peças calculados sobre a vertical ativa (ou total caso sem filtro)
   let totalCo2eKg = 0
   let totalMassaKg = 0
 
   // Agregação mensal baseada nas DATAS REAIS dos lotes (elimina série fixa estática)
   const mapaMeses = new Map<string, { rotulo: string; co2e: number; massa: number }>()
 
-  for (const lote of lotes) {
+  for (const lote of lotesFiltradosVertical) {
     const co2e = Number(lote.total_co2e_evitado_kg || 0)
     const massa = Number(lote.total_peso_kg || 0)
     totalCo2eKg += co2e
@@ -1188,8 +1331,8 @@ export async function carregarDadosDmrvEmpresa(
   }
 
   // Se não houver lotes somados (ou peças fornecerem dados mais detalhados)
-  if (totalCo2eKg === 0 && pecas.length > 0) {
-    for (const p of pecas) {
+  if (totalCo2eKg === 0 && pecasFiltradasVertical.length > 0) {
+    for (const p of pecasFiltradasVertical) {
       const co2e = Number(p.co2e_evitado_kg || 0)
       const massa = Number(p.peso_kg || 0)
       totalCo2eKg += co2e
@@ -1256,33 +1399,31 @@ export async function carregarDadosDmrvEmpresa(
 
   const emissaoAnual = Math.round((escopo1 + escopo2 + escopo3) * 10) / 10
 
-  // Identificar o protocolo dominante e montar os 4 cards de KPI com unidades canônicas
-  const dom = determinarProtocoloDominante(lotes, pecas)
   const kpiCards = construirCardsKpiSetoriais({
-    slugDominante: dom.slug,
-    protocolo: dom.protocolo,
+    slugDominante: slugAtivo,
+    protocolo: protoAtivo,
     totalCo2eKg: Math.round(totalCo2eKg * 10) / 10,
     totalMassaKg: Math.round(totalMassaKg * 10) / 10,
-    totalPecas: pecas.length,
-    totalLotes: lotes.length,
+    totalPecas: pecasFiltradasVertical.length,
+    totalLotes: lotesFiltradosVertical.length,
   })
 
   const relatorioEstratificado = construirEstratificacaoDmrv({
-    lotes,
-    pecas,
+    lotes: lotesFiltradosVertical,
+    pecas: pecasFiltradasVertical,
     kpiCards,
     origem,
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
-    protocoloDominanteSlug: dom.slug,
-    protocoloDominanteNome: dom.nome,
+    protocoloDominanteSlug: slugAtivo,
+    protocoloDominanteNome: protoAtivo.nome,
   })
 
   const simuladorReferencial = calcularSimuladorReferencial({
-    lotes,
-    pecas,
+    lotes: lotesFiltradosVertical,
+    pecas: pecasFiltradasVertical,
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
     origem,
-    protocoloDominanteSlug: dom.slug,
+    protocoloDominanteSlug: slugAtivo,
   })
 
   return {
@@ -1290,8 +1431,8 @@ export async function carregarDadosDmrvEmpresa(
     origem_filtro: origem,
     total_co2e_evitado_kg: Math.round(totalCo2eKg * 10) / 10,
     total_massa_reciclada_kg: Math.round(totalMassaKg * 10) / 10,
-    total_pecas_reaproveitadas: pecas.length,
-    total_lotes_processados: lotes.length,
+    total_pecas_reaproveitadas: pecasFiltradasVertical.length,
+    total_lotes_processados: lotesFiltradosVertical.length,
     emissao_anual_tco2e: emissaoAnual,
     escopo1_tco2e: Math.round(escopo1 * 10) / 10,
     escopo2_tco2e: Math.round(escopo2 * 10) / 10,
@@ -1299,11 +1440,12 @@ export async function carregarDadosDmrvEmpresa(
     serie_temporal: serieTemporal,
     relatorios_anteriores: relatorios,
     is_fallback_inventario: isFallback,
-    protocoloDominanteSlug: dom.slug,
-    protocoloDominanteNome: dom.nome,
+    protocoloDominanteSlug: slugAtivo,
+    protocoloDominanteNome: protoAtivo.nome,
     kpiCards,
     relatorioEstratificado,
     simuladorReferencial,
+    verticaisDisponiveis,
   }
 }
 
@@ -1368,6 +1510,7 @@ export async function carregarResumoDmrvSegregado(
     protocoloDominanteSlug: dados.protocoloDominanteSlug,
     protocoloDominanteNome: dados.protocoloDominanteNome,
     kpiCards: dados.kpiCards,
+    verticaisDisponiveis: dados.verticaisDisponiveis,
   }
 }
 

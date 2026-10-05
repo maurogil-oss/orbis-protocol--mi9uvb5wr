@@ -52,6 +52,7 @@ export function PainelDmrvEmissoesEvitadas({
 }: PainelDmrvEmissoesEvitadasProps) {
   const { user } = useAuth()
   const [filtroOrigem, setFiltroOrigem] = useState<FiltroOrigemDmrv>('producao')
+  const [verticalSelecionada, setVerticalSelecionada] = useState<string>('')
   const [dados, setDados] = useState<DadosDmrvEmpresa | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [exportando, setExportando] = useState(false)
@@ -77,11 +78,22 @@ export function PainelDmrvEmissoesEvitadas({
     'dmrv_documental',
   )
 
-  const carregar = async (origemAtual: FiltroOrigemDmrv = filtroOrigem) => {
+  const carregar = async (
+    origemAtual: FiltroOrigemDmrv = filtroOrigem,
+    verticalAtual: string = verticalSelecionada,
+  ) => {
     setCarregando(true)
     try {
-      const info = await carregarDadosDmrvEmpresa(user?.cnpj, origemAtual)
+      const info = await carregarDadosDmrvEmpresa(
+        user?.cnpj,
+        origemAtual,
+        verticalAtual || undefined,
+      )
       setDados(info)
+      // Se não havia vertical selecionada explicitamente, adotar o protocolo dominante como padrão
+      if (!verticalAtual && info.protocoloDominanteSlug) {
+        setVerticalSelecionada(info.protocoloDominanteSlug)
+      }
     } catch {
       toast({
         title: 'Erro ao carregar dados dMRV',
@@ -94,8 +106,15 @@ export function PainelDmrvEmissoesEvitadas({
   }
 
   useEffect(() => {
-    carregar(filtroOrigem)
+    // Ao alternar filtro Real/Sandbox, resetar vertical explicitada para recalcular dominante da nova origem
+    setVerticalSelecionada('')
+    carregar(filtroOrigem, '')
   }, [user, filtroOrigem])
+
+  const handleTrocarVertical = (novoSlug: string) => {
+    setVerticalSelecionada(novoSlug)
+    carregar(filtroOrigem, novoSlug)
+  }
 
   // Tarefa 2: Carrega o status da custódia A1 ativa do cliente para habilitar assinatura ICP-Brasil
   useEffect(() => {
@@ -188,7 +207,7 @@ export function PainelDmrvEmissoesEvitadas({
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0 flex-wrap">
           {/* Seletor Real (Produção) vs Sandbox (Demonstração) */}
           <div className="inline-flex rounded-xl p-1 bg-muted/60 border border-border">
             <button
@@ -215,6 +234,31 @@ export function PainelDmrvEmissoesEvitadas({
               <span>Sandbox (Demonstração)</span>
             </button>
           </div>
+
+          {/* Seletor de Vertical em Foco */}
+          {dados.verticaisDisponiveis && dados.verticaisDisponiveis.length > 0 && (
+            <div className="flex items-center gap-1.5 bg-muted/60 border border-border rounded-xl px-2.5 py-1 text-xs">
+              <label
+                htmlFor="seletor-vertical-foco"
+                className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
+              >
+                Vertical em foco:
+              </label>
+              <select
+                id="seletor-vertical-foco"
+                data-testid="seletor-vertical-foco"
+                value={verticalSelecionada || dados.protocoloDominanteSlug || ''}
+                onChange={(e) => handleTrocarVertical(e.target.value)}
+                className="bg-transparent text-xs font-bold text-foreground border-none outline-none cursor-pointer pr-1 py-0.5"
+              >
+                {dados.verticaisDisponiveis.map((v) => (
+                  <option key={v.slug} value={v.slug} className="bg-popover text-foreground">
+                    {v.nome} ({v.totalLotes} lote{v.totalLotes === 1 ? '' : 's'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="flex items-center gap-2 flex-wrap">
             <Button

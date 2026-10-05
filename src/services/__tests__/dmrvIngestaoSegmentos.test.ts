@@ -115,4 +115,37 @@ describe('dmrvIngestaoSegmentos - Ingestão Universal dMRV nos 16 Segmentos', ()
       expect(texto).not.toMatch(/veículo|despoluição|chassi/i)
     }
   })
+
+  it('regex reconhece SANDBOX-AGRO sem dígitos sufixados no cdv_codigo', () => {
+    // Apenas cdv_codigo sem payload_bruto_json e sem campos de setor
+    const loteApenasCodigo = {
+      id: 'lote-sem-digitos',
+      cdv_codigo: 'SANDBOX-AGRO',
+    }
+
+    const dom = determinarProtocoloDominante([loteApenasCodigo], [])
+    expect(dom.slug).toBe('agro')
+    expect(dom.nome).toBe('Agronegócio & Grãos')
+  })
+
+  it('desempate de votos: base com 10 lotes Materiais Críticos antigos + 10 lotes Agro novos → dominante = agro (mais recente vence)', () => {
+    const lotesCriticosAntigos = Array.from({ length: 10 }).map((_, i) => ({
+      id: `lote-critico-${i}`,
+      cdv_codigo: 'SANDBOX-MATERIAIS_CRITICOS',
+      created: '2025-01-01T10:00:00.000Z',
+    }))
+
+    const lotesAgroNovos = Array.from({ length: 10 }).map((_, i) => ({
+      id: `lote-agro-${i}`,
+      cdv_codigo: 'SANDBOX-AGRO',
+      created: '2025-02-15T15:30:00.000Z',
+    }))
+
+    // Inserindo primeiro os materiais críticos para garantir que não vence apenas pela ordem de inserção
+    const todosLotes = [...lotesCriticosAntigos, ...lotesAgroNovos]
+
+    const dom = determinarProtocoloDominante(todosLotes, [])
+    expect(dom.slug).toBe('agro')
+    expect(dom.nome).toBe('Agronegócio & Grãos')
+  })
 })
