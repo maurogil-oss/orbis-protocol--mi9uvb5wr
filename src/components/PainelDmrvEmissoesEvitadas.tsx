@@ -51,6 +51,7 @@ export function PainelDmrvEmissoesEvitadas({
   permitirSimulador = true,
 }: PainelDmrvEmissoesEvitadasProps) {
   const { user } = useAuth()
+  const userCnpj = user?.cnpj || ''
   const [filtroOrigem, setFiltroOrigem] = useState<FiltroOrigemDmrv>('producao')
   const [verticalSelecionada, setVerticalSelecionada] = useState<string>('')
   const [dados, setDados] = useState<DadosDmrvEmpresa | null>(null)
@@ -79,38 +80,43 @@ export function PainelDmrvEmissoesEvitadas({
     'dmrv_documental',
   )
 
-  const carregar = async (
-    origemAtual: FiltroOrigemDmrv = filtroOrigem,
-    verticalAtual: string = verticalSelecionada,
-  ) => {
-    setCarregando(true)
-    try {
-      const info = await carregarDadosDmrvEmpresa(
-        user?.cnpj,
-        origemAtual,
-        verticalAtual || undefined,
-      )
-      setDados(info)
-      // Se não havia vertical selecionada explicitamente, adotar o protocolo dominante como padrão
-      if (!verticalAtual && info.protocoloDominanteSlug) {
-        setVerticalSelecionada(info.protocoloDominanteSlug)
+  const carregar = useCallback(
+    async (origemAtual: FiltroOrigemDmrv, verticalAtual?: string) => {
+      setCarregando(true)
+      setErroCarregamento(null)
+      try {
+        const info = await carregarDadosDmrvEmpresa(
+          userCnpj,
+          origemAtual,
+          verticalAtual || undefined,
+        )
+        setDados(info)
+        // Se não havia vertical selecionada explicitamente, adotar o protocolo dominante como padrão
+        if (!verticalAtual && info.protocoloDominanteSlug) {
+          setVerticalSelecionada(info.protocoloDominanteSlug)
+        }
+      } catch (err: any) {
+        console.error('Erro ao carregar dados dMRV:', err)
+        setErroCarregamento(
+          err?.message || 'Falha ao consolidar métricas de emissões evitadas para a sua empresa.',
+        )
+        toast({
+          title: 'Erro ao carregar dados dMRV',
+          description: 'Falha ao consolidar métricas de emissões evitadas para a sua empresa.',
+          variant: 'destructive',
+        })
+      } finally {
+        setCarregando(false)
       }
-    } catch {
-      toast({
-        title: 'Erro ao carregar dados dMRV',
-        description: 'Falha ao consolidar métricas de emissões evitadas para a sua empresa.',
-        variant: 'destructive',
-      })
-    } finally {
-      setCarregando(false)
-    }
-  }
+    },
+    [userCnpj],
+  )
 
   useEffect(() => {
-    // Ao alternar filtro Real/Sandbox, resetar vertical explicitada para recalcular dominante da nova origem
+    // Ao alternar filtro Real/Sandbox ou CNPJ, resetar vertical explicitada para recalcular dominante da nova origem
     setVerticalSelecionada('')
     carregar(filtroOrigem, '')
-  }, [user, filtroOrigem])
+  }, [userCnpj, filtroOrigem, carregar])
 
   const handleTrocarVertical = (novoSlug: string) => {
     setVerticalSelecionada(novoSlug)
@@ -160,17 +166,58 @@ export function PainelDmrvEmissoesEvitadas({
     }
   }
 
-  if (carregando || !dados) {
+  if (carregando) {
     return (
-      <div className="p-8 text-center space-y-3">
+      <div className="p-8 text-center space-y-3" role="status" aria-live="polite">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-        <p className="text-xs text-muted-foreground font-mono">
+        <p className="text-sm text-muted-foreground">
           Consolidando série temporal dMRV e inventário GHG Protocol...
         </p>
       </div>
     )
   }
 
+  if (erroCarregamento || !dados) {
+    return (
+      <Card className="border-red-500/30 bg-red-500/5">
+        <CardContent className="p-8 text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-semibold text-foreground text-base">
+              Não foi possível consolidar as métricas dMRV
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              {erroCarregamento ||
+                'Os dados de emissões evitadas e inventário não puderam ser carregados. Verifique sua conexão ou tente novamente.'}
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => carregar(filtroOrigem, verticalSelecionada)}
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Tentar novamente
+            </Button>
+            {filtroOrigem !== 'sintetico' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFiltroOrigem('sintetico')}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Alternar para ambiente Sandbox
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
   const sbce = classificarSbce(dados.emissao_anual_tco2e)
 
   return (
