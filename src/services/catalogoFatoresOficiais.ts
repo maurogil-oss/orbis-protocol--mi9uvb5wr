@@ -74,12 +74,12 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     categoria: 'cdv_materiais',
     nomeMaterial: 'Aço Laminado / Estampado',
     descricao:
-      'Chapas de carroceria, partes estruturais, portas, capôs e componentes de estampagem veicular.',
+      'Portas, capôs, para-lamas, tampas traseiras, caixas de roda, assoalhos e longarinas estampadas.',
     valorFator: 2.18,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
     fonteOficial:
-      'worldsteel "Sustainability Indicators Report 2025" (Indicador 1a GHG emissions intensity 2024)',
+      'worldsteel Association, Sustainability Indicators Report 2025, indicador 1a GHG emissions intensity 2024 = 2,18 tCO₂e/t aço bruto, escopos 1+2+3 cat. 1',
     anoReferencia: 2024,
     normaPadrao: 'worldsteel CO2 data collection methodology • Escopos 1, 2 e 3 Categoria 1',
     tierIncerteza: 'Tier 3',
@@ -97,7 +97,7 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
     fonteOficial:
-      'International Aluminium Institute (IAI), Primary Aluminium Greenhouse Gas Emissions Intensity (emissão 2024, tabela Primary Aluminium — Total Cradle-to-Gate: 14,4 tCO₂e/t Al)',
+      'International Aluminium Institute (IAI), 2024 Data Release, alumínio primário global cradle-to-gate, escopos 1+2+3',
     anoReferencia: 2024,
     normaPadrao: 'IAI Cradle-to-Gate Guidance • ISO 14067 / ISO 14040/44',
     tierIncerteza: 'Tier 3',
@@ -111,22 +111,22 @@ export const CATALOGO_FATORES_CO2E: FatorCatalogoItem[] = [
     nomeMaterial: 'Cobre / Bobinamentos Elétricos',
     descricao:
       'Fiações de chicotes, bobinas de alternadores, motores de arranque, atuadores e estatores.',
-    valorFator: 5.4,
+    valorFator: 4.1,
     unidade: 'kgCO₂e/kg',
     tipoImpacto: 'emissao_evitada',
     fonteOficial:
-      'CopperMark "Decarbonizing the Copper Sector" (2024, base ICA, rota pirometalúrgica)',
+      'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
     anoReferencia: 2024,
-    normaPadrao: 'ICA Life Cycle Assessment • Rota Pirometalúrgica Berço-ao-Portão',
+    normaPadrao: 'ICA Global LCI/LCA Study • Berço-ao-Portão Cobre Primário Refinado',
     tierIncerteza: 'Tier 3',
     incertezaPct: 4.5,
     detalheTecnico:
-      'Evita mineração e pirometalurgia primária de sulfeto de cobre: intensidade berço-ao-portão de catodo de cobre refinado é 5,3 tCO₂e/t; o valor adotado de 5,40 kgCO₂e/kg incorpora margem conservadora de refino final e estamparia elétrica.',
+      'Evita mineração e pirometalurgia primária de cobre: fator de 4,10 kgCO₂e/kg derivado do Estudo Global LCI/LCA cradle-to-gate da International Copper Association (ICA) para cobre primário refinado (média global ponderada, Tier 3, u_FE ±4,5%).',
   },
   {
     id: 'mat-polimeros',
     categoria: 'cdv_materiais',
-    nomeMaterial: 'Polímeros Automotivos (PP / EPDM / ABS)',
+    nomeMaterial: 'Polímeros Automotivos (PP / EPDM / ABS) • [Pendente de verificação de fonte]',
     descricao:
       'Parachoques termoplásticos, forros de porta, painéis de instrumentos, carcaças de filtro e spoilers.',
     valorFator: 1.9,

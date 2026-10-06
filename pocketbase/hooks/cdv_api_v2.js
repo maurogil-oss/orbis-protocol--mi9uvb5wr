@@ -148,9 +148,10 @@ routerAdd('POST', '/backend/v2/cdv/lotes', (e) => {
       tier: 'T3',
     },
     cobre: {
-      fe: 5.4,
-      u_fe: 0.045,
-      fonte: 'CopperMark Decarbonizing Copper / ICA 2024 (5,3 tCO₂e/t + margem)',
+      fe: 4.1,
+      u: 0.045,
+      fonte:
+        'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
       tier: 'T3',
     },
     polimeros: {

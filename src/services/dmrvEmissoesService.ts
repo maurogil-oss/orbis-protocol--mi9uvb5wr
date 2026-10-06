@@ -864,8 +864,8 @@ export function construirEstratificacaoDmrv(params: {
         chave: 'mat_cobre',
         nomeMaterial: 'Cobre / Bobinamentos Elétricos',
         categoria: 'cdv_materiais',
-        fator: 5.4,
-        fonte: 'CopperMark / ICA 2024 • DM-ORB-001',
+        fator: 4.1,
+        fonte: 'ICA Global LCI/LCA Study • DM-ORB-001',
         possuiFator: true,
         status: 'com_fator_atribuido',
       }

@@ -135,7 +135,7 @@ onRecordAfterCreateSuccess((e) => {
     const fatoresCo2e = {
       aco: 2.18,
       aluminio: 14.4,
-      cobre: 5.4,
+      cobre: 4.1,
       polimeros: 1.9,
       outros: 1.5,
     }

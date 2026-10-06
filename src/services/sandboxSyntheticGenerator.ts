@@ -34,7 +34,7 @@
  * Fatores Oficiais Rígidos (catalogoFatoresOficiais.ts):
  * - Aço: 2,18 kgCO₂e/kg (worldsteel 2024/2025)
  * - Alumínio: 14,40 kgCO₂e/kg (IAI 2024)
- * - Cobre: 5,40 kgCO₂e/kg (CopperMark / ICA)
+ * - Cobre: 4,10 kgCO₂e/kg (ICA Global LCI/LCA)
  * - Polímeros: 1,90 kgCO₂e/kg (PlasticsEurope)
  * - Concreto / RCD: 0,12 kgCO₂e/kg (ACV agregado reciclado)
  * - Outros / genérico: 1,50 kgCO₂e/kg (procedimento conservador DM-ORB-001)
@@ -160,7 +160,7 @@ export const SEGMENTOS_SANDBOX_CATALOGO: OpcaoSegmentoSandbox[] = [
     slugCanonico: 'automotiva',
     titulo: 'Automotiva / CDVs',
     subtitulo:
-      'Peças usadas de desmanche credenciado, chassi rastreado (aço 2,18, alu 14,40, cobre 5,40)',
+      'Peças usadas de desmanche credenciado, chassi rastreado (aço 2,18, alu 14,40, cobre 4,10)',
     modeloPrincipal: '55',
     rastreabilidadePecas: true,
   },
@@ -218,7 +218,7 @@ export const SEGMENTOS_SANDBOX_CATALOGO: OpcaoSegmentoSandbox[] = [
     slugCanonico: 'materiais-criticos-recuperados',
     titulo: 'Materiais Críticos Recuperados & Mineração Urbana',
     subtitulo:
-      'Cobre calculado (5,40). Ouro, paládio, prata e terras raras em estruturação sem crédito',
+      'Cobre calculado (4,10). Ouro, paládio, prata e terras raras em estruturação sem crédito',
     modeloPrincipal: '55',
     rastreabilidadePecas: true,
   },
@@ -1359,7 +1359,7 @@ export async function gerarDocumentoSintetico(params: {
     }
   }
 
-  // 9. AUTOMOTIVA (Automotiva / CDVs) - NF-e 55 (aço 2,18, alumínio 14,40, cobre 5,40)
+  // 9. AUTOMOTIVA (Automotiva / CDVs) - NF-e 55 (aço 2,18, alumínio 14,40, cobre 4,10)
   if (slug === 'automotiva') {
     const chassiFinal = (1000 + ((roundSeed * 7 + idx) % 8999)).toString().slice(-4)
     const chassi = `93YBB05U0GJ${chassiFinal}`
@@ -1418,9 +1418,9 @@ export async function gerarDocumentoSintetico(params: {
         vUnCom: 290.0,
         vProd: 290.0,
         categoriaMaterial: 'cobre',
-        pesoKg: 3.8,
-        fatorCo2eKg: 5.4,
-        co2eEvitadoKg: Math.round(3.8 * 5.4 * 100) / 100,
+        pesoKg: 35.0,
+        fatorCo2eKg: 4.1,
+        co2eEvitadoKg: Math.round(35.0 * 4.1 * 100) / 100,
         statusCalculo: 'calculado',
       },
     ]
@@ -1867,7 +1867,7 @@ export async function gerarDocumentoSintetico(params: {
     }
   }
 
-  // 15. VAREJO (Comércio Varejista / varejo_reverso) - NF-e 55 (aço 2,18, alu 14,40, cobre 5,40, polímeros 1,90)
+  // 15. VAREJO (Comércio Varejista / varejo_reverso) - NF-e 55 (aço 2,18, alu 14,40, cobre 4,10, polímeros 1,90)
   if (slug === 'varejo') {
     const nNF = (400000 + idx).toString()
     const chave = gerarChaveAcesso44({
@@ -1993,7 +1993,7 @@ export async function gerarDocumentoSintetico(params: {
 
   // 16. MATERIAIS CRÍTICOS RECUPERADOS & MINERAÇÃO URBANA - NF-e 55
   // REGRA FIXA DO USUÁRIO:
-  // Apenas cobre entra no cálculo de carbono (fator oficial 5,40).
+  // Apenas cobre entra no cálculo de carbono (fator oficial 4,10).
   // Ouro, paládio, prata e terras raras são 100% rastreáveis com status pericial "em estruturação de catálogo"
   // e CO₂e zerado. NUNCA inventar número.
   const nNF = (600000 + idx).toString()
@@ -2026,10 +2026,10 @@ export async function gerarDocumentoSintetico(params: {
       vProd: Math.round(pesoCobre * 48.0 * 100) / 100,
       categoriaMaterial: 'cobre',
       pesoKg: pesoCobre,
-      fatorCo2eKg: 5.4,
-      co2eEvitadoKg: Math.round(pesoCobre * 5.4 * 100) / 100,
+      fatorCo2eKg: 4.1,
+      co2eEvitadoKg: Math.round(pesoCobreKg * 4.1 * 100) / 100,
       statusCalculo: 'calculado',
-      teorDeclarado: 'Cobre 99,9% refinado secundário (fator oficial ICA 5,40 kgCO₂e/kg)',
+      teorDeclarado: 'Cobre 99,9% refinado secundário (fator oficial ICA 4,10 kgCO₂e/kg)',
     },
     {
       nItem: 2,
@@ -2084,7 +2084,7 @@ export async function gerarDocumentoSintetico(params: {
     },
   ]
   const valorTotal = Math.round(itens.reduce((acc, it) => acc + it.vProd, 0) * 100) / 100
-  const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 16: Materiais Críticos Recuperados & Mineração Urbana. CFOP ${cfop}. Apenas cobre entra no cálculo de carbono (fator oficial ICA 5,40). Ouro, paládio, prata e terras raras com status pericial 'em estruturação de catálogo' e zero crédito de carbono.`
+  const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 16: Materiais Críticos Recuperados & Mineração Urbana. CFOP ${cfop}. Apenas cobre entra no cálculo de carbono (fator oficial ICA 4,10). Ouro, paládio, prata e terras raras com status pericial 'em estruturação de catálogo' e zero crédito de carbono.`
   const xml = construirXmlNFe({
     chaveAcesso: chave,
     numero: nNF,

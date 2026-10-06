@@ -86,7 +86,7 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     fe_ref: 2.18,
     u_fe: 0.035, // ±3.5%
     fonte:
-      'worldsteel Sustainability Indicators Report 2025 (Indicador 1a GHG intensity 2024: 2,18 tCO₂e/t aço bruto; Escopos 1+2+3 Cat. 1)',
+      'worldsteel Association, Sustainability Indicators Report 2025, indicador 1a GHG emissions intensity 2024 = 2,18 tCO₂e/t aço bruto, escopos 1+2+3 cat. 1',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T3',
     pendente_verificacao: false,
@@ -97,7 +97,7 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     fe_ref: 14.4,
     u_fe: 0.04, // ±4.0%
     fonte:
-      'International Aluminium Institute (IAI), Primary Aluminium Greenhouse Gas Emissions Intensity 2024 (14,4 tCO₂e/t Al cradle-to-gate; fallback conservador padrão do motor. Cenário regional BR hidrelétrica ~10,0 indicativo ativável com evidência documental)',
+      'International Aluminium Institute (IAI), 2024 Data Release, alumínio primário global cradle-to-gate, escopos 1+2+3',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T3',
     pendente_verificacao: false,
@@ -105,10 +105,10 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
   cobre: {
     material: 'cobre',
     nome: 'Cobre / Bobinamentos Elétricos',
-    fe_ref: 5.4,
+    fe_ref: 4.1,
     u_fe: 0.045, // ±4.5%
     fonte:
-      'CopperMark Decarbonizing the Copper Sector 2024 (base ICA, rota pirometalúrgica 5,3 tCO₂e/t com margem conservadora)',
+      'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T3',
     pendente_verificacao: false,
@@ -122,7 +122,7 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
       'PlasticsEurope Eco-profiles 2023 (PCR ISO 14025, declared unit 1 kg resina at gate, menor valor da faixa 1,91-5,70 correspondente a PP)',
     vigencia: '2025-01-01/2025-12-31',
     tier: 'T2',
-    pendente_verificacao: false,
+    pendente_verificacao: true,
   },
   outros: {
     material: 'outros',

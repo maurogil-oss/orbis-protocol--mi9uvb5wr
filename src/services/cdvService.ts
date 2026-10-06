@@ -33,8 +33,8 @@ export const FATORES_CDV_MATERIAIS: Record<string, FatorCdvMaterial> = {
   cobre: {
     categoria: 'cobre',
     nome: 'Cobre / Bobinamentos Elétricos',
-    fatorKgCO2ePorKg: 5.4,
-    fonte: 'CopperMark Decarbonizing Copper / ICA 2024',
+    fatorKgCO2ePorKg: 4.1,
+    fonte: 'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate',
     ano: 2024,
   },
   polimeros: {
