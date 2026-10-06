@@ -401,7 +401,7 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
     expect(select.value).toBe('materiais-criticos-recuperados')
   })
 
-  it('peça de soja nunca é classificada como mineral crítico nem recebe rótulo de metais nobres', async () => {
+  it('peça de soja é classificada como categoria agro_rastreado e nunca como mineral crítico', async () => {
     vi.spyOn(pb.collection('emissoes_inventario'), 'create').mockResolvedValue({
       id: 'inv-soja-test',
     } as any)
@@ -442,7 +442,8 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
       expect(pecaCriada).not.toBeNull()
     })
 
-    // Garante que o material gravado não tenha categoria de metais/minerais nobres nem rótulo de ouro/paládio/prata
+    // Garante que a categoria é agro_rastreado
+    expect(pecaCriada.categoria_material).toBe('agro_rastreado')
     expect(pecaCriada.categoria_material).not.toBe('materiais_criticos_rastreados')
     expect(pecaCriada.material_declarado).not.toMatch(
       /Fração Crítica|Ouro|Paládio|Prata|Terras Raras/i,

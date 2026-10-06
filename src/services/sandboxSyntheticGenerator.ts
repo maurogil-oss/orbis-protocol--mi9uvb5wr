@@ -253,7 +253,14 @@ export interface ItemDocumentoSintetico {
   qCom: number
   vUnCom: number
   vProd: number
-  categoriaMaterial?: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'concreto' | 'outros'
+  categoriaMaterial?:
+    | 'aco'
+    | 'aluminio'
+    | 'cobre'
+    | 'polimeros'
+    | 'concreto'
+    | 'agro_rastreado'
+    | 'outros'
   pesoKg?: number
   fatorCo2eKg?: number
   co2eEvitadoKg?: number
@@ -732,7 +739,7 @@ export async function gerarDocumentoSintetico(params: {
         qCom: sacas,
         vUnCom: 135.5,
         vProd,
-        categoriaMaterial: 'outros',
+        categoriaMaterial: 'agro_rastreado',
         pesoKg,
         fatorCo2eKg: 0,
         co2eEvitadoKg: 0,

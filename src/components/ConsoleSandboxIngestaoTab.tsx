@@ -284,13 +284,15 @@ export function ConsoleSandboxIngestaoTab() {
     // Detecção de agro/biomassa/grãos rastreados (soja, grãos, milho, biomassa em estruturação de catálogo)
     const isAgroRastreado =
       slugCanonico === 'agro' ||
+      cat === 'agro' ||
+      cat === 'agro_rastreado' ||
       descItem.includes('soja') ||
       descItem.includes('grao') ||
       descItem.includes('grão') ||
       descItem.includes('milho') ||
       descItem.includes('biomassa')
 
-    if (isAgroRastreado && item.statusCalculo === 'em_estruturacao_de_catalogo') {
+    if (isAgroRastreado) {
       return {
         categoriaSelect: 'agro_rastreado',
         categoriaDescritiva:
@@ -549,7 +551,6 @@ export function ConsoleSandboxIngestaoTab() {
         const opcaoSetorial = SEGMENTOS_SANDBOX_CATALOGO.find(
           (s) => s.chave === doc.segmento || s.slugCanonico === normalizarSegmento(doc.segmento),
         )
-
         let totalPesoDoc = 0
         let totalCo2eDoc = 0
 
