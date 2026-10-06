@@ -108,11 +108,9 @@ export default function RegistroPage() {
       const dbRole = role === 'gestao' ? 'admin' : role
       const isGestaoPerfil = role === 'gestao'
 
-      // Se for do fluxo do Radar Semanal, ativa trial de 15 dias sem cartão
+      // Se for do fluxo do Radar Semanal ou cliente comum, inicializa o trial de 15 dias sem cartão com 5 notas
       const agora = new Date()
-      const dataTrialFim = ehFluxoRadar
-        ? new Date(agora.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString()
-        : undefined
+      const dataTrialFim = new Date(agora.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString()
 
       await pb.collection('users').create({
         email: cleanEmail,
@@ -122,9 +120,17 @@ export default function RegistroPage() {
         role: dbRole,
         parceiro_acesso_status: role === 'parceiro' ? 'pendente' : undefined,
         status_aprovacao: isGestaoPerfil ? 'pendente' : 'aprovado',
+        // Campos de licença e trial do produto central (15 dias sem cartão, 5 notas iniciais)
+        licenca_camada: 'trial',
+        trial_tipo: 'trial_15d_5notas',
+        trial_inicio: agora.toISOString(),
+        trial_fim: dataTrialFim,
+        trial_notas_limite: 5,
+        trial_notas_consumidas: 0,
+        // Radar Semanal (plus de receita)
         radar_acesso_status: ehFluxoRadar ? 'trial' : 'nenhum',
         radar_plano_faixa: planoFaixaParam || (ehFluxoRadar ? '1_cnpj' : 'nenhum'),
-        radar_trial_fim: dataTrialFim,
+        radar_trial_fim: ehFluxoRadar ? dataTrialFim : undefined,
         radar_ref_origem: refParam,
       })
 
@@ -195,14 +201,16 @@ export default function RegistroPage() {
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/30 text-[#12B886] text-[11px] font-semibold uppercase tracking-wider mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            Cadastro na Plataforma Orbis
+            Trial de 15 Dias sem Cartão (5 Notas Iniciais)
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#F4F7FA]">
             CRIAR SUA CONTA
           </h1>
           <p className="text-xs sm:text-sm text-[#93A3B5] mt-1 max-w-lg">
-            Acesso permanente ao cálculo da pegada de carbono, laudos periciais dMRV, passaportes
-            verificáveis e documentos prontos para envio.
+            Experimente o produto central: cálculo da{' '}
+            <strong>pegada de carbono por nota/produto</strong> e, como plus, a{' '}
+            <strong>situação tributária da empresa em relação à reforma tributária</strong>. Limite
+            de 5 notas iniciais sem pedir cartão de crédito.
           </p>
         </div>
 

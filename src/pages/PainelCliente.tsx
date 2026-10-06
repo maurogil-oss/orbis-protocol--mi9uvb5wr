@@ -67,6 +67,14 @@ import { Terminal, Car, Network, Radio, Leaf } from 'lucide-react'
 import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
 import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
 import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
+import {
+  obterEstadoLicencaUsuario,
+  registrarConsumoNotaTrial,
+  EstadoLicencaUsuario,
+  avaliarEstadoLicenca,
+} from '@/services/licencaService'
+import { TrialStatusBanner } from '@/components/TrialStatusBanner'
+import { BloqueioSuaveImportacao } from '@/components/BloqueioSuaveImportacao'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -123,6 +131,7 @@ export default function PainelCliente() {
   const [selos, setSelos] = useState<SeloRecord[]>([])
   const [nfeList, setNfeList] = useState<NFeUploadRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [licenca, setLicenca] = useState<EstadoLicencaUsuario>(avaliarEstadoLicenca(user as any))
 
   // Abas de visualização do módulo fiscal, motor pericial e console CDV
   const [abaFiscalAtiva, setAbaFiscalAtiva] = useState<
@@ -180,6 +189,10 @@ export default function PainelCliente() {
           sort: '-created',
         })
         setNfeList(nfeRecords)
+
+        // Atualiza estado de licença sincronizado
+        const stLicenca = await obterEstadoLicencaUsuario(user.id)
+        setLicenca(stLicenca)
       }
     } catch {
       /* intentionally ignored */
@@ -219,6 +232,24 @@ export default function PainelCliente() {
     if (!files || files.length === 0) return
     if (!user?.id) {
       setUploadError('Você precisa estar autenticado para enviar notas fiscais.')
+      return
+    }
+
+    // Checagem de licença: bloqueio suave para novas importações se trial expirado ou notas esgotadas
+    if (!licenca.podeImportarNovasNotas) {
+      setUploadError(
+        licenca.mensagemStatus ||
+          'Limite de importação atingido. Contrate o plano para continuar importando notas.',
+      )
+      return
+    }
+
+    // Calcula quantas notas ainda podem ser enviadas no trial
+    const notasRestantesPermitidas = licenca.isPlanoContratado ? 999999 : licenca.notasRestantes
+    if (files.length > notasRestantesPermitidas) {
+      setUploadError(
+        `Você selecionou ${files.length} nota(s), mas restam apenas ${notasRestantesPermitidas} nota(s) no seu teste gratuito de ${licenca.notasLimite} notas. Reduza a seleção ou contrate o plano.`,
+      )
       return
     }
 
@@ -294,6 +325,10 @@ export default function PainelCliente() {
       setUploadSuccess(
         `${successCount} nota(s) fiscal(is) processada(s) e incorporada(s) com sucesso!`,
       )
+      // Atualiza contador de notas consumidas no trial
+      if (user?.id && !licenca.isPlanoContratado) {
+        await registrarConsumoNotaTrial(user.id, successCount)
+      }
       // Recarrega lista
       loadData()
     }
@@ -757,6 +792,9 @@ export default function PainelCliente() {
           onClose={() => setModalAlterarSenhaAberto(false)}
         />
 
+        {/* CONTADOR DE TRIAL VISÍVEL E BLOQUEIO SUAVE */}
+        <TrialStatusBanner licenca={licenca} />
+
         {/* SELETOR DE ABAS DO MÓDULO FISCAL & MOTOR PERICIAL */}
         <div className="flex border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">
           <button
@@ -967,356 +1005,393 @@ export default function PainelCliente() {
         )}
 
         {abaFiscalAtiva === 'upload_manual' && (
-          <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/30 mb-10 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div>
-                <div className="flex items-center gap-2">
-                  <UploadCloud className="w-5 h-5 text-[#12B886]" />
-                  <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
-                    INGESTÃO MULTI-MODELO FISCAL (NF-E, NFC-E, NFS-E, CT-E, MDF-E, NF3E, NFCOM,
-                    BP-E, CT-E OS, FATURAS)
-                  </h2>
+          <div className="space-y-6 mb-10">
+            {licenca.bloqueioSuaveAtivo ? (
+              <BloqueioSuaveImportacao
+                motivo={licenca.motivoBloqueio}
+                notasConsumidas={licenca.notasConsumidas}
+                notasLimite={licenca.notasLimite}
+              />
+            ) : null}
+
+            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/30 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <UploadCloud className="w-5 h-5 text-[#12B886]" />
+                    <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
+                      INGESTÃO MULTI-MODELO FISCAL (NF-E, NFC-E, NFS-E, CT-E, MDF-E, NF3E, NFCOM,
+                      BP-E, CT-E OS, FATURAS)
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-[#93A3B5] mt-1">
+                    Envie seus arquivos fiscais para calcular a pegada de carbono por nota/produto e
+                    verificar a situação tributária da empresa em relação à reforma tributária.
+                  </p>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-[#93A3B5] mt-1">
-                  Envie seus arquivos fiscais para substituir estimativas preliminares por créditos
-                  fiscais reais apurados e alimentar o motor pericial de emissões de Escopo 1, 2 e
-                  3.
-                </p>
+
+                {/* Botões de Ação: Upload e Fechamento de Competência */}
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFilesSelected}
+                    accept=".xml,text/xml,.json,.txt"
+                    multiple
+                    className="hidden"
+                    id="nfe-file-input"
+                  />
+                  <button
+                    type="button"
+                    disabled={isUploading || licenca.bloqueioSuaveAtivo}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    <span>{isUploading ? 'Processando...' : 'Importar Documentos Fiscais'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isFechandoCompetencia || nfeList.length === 0}
+                    onClick={handleExecutarFechamentoCompetencia}
+                    className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white dark:bg-[#16202B] text-amber-800 dark:text-[#D9B36C] border border-amber-300 dark:border-[#D9B36C]/40 hover:bg-amber-50 dark:hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 disabled:opacity-40 shadow-sm"
+                    title="Calcula e registra o hash encadeado SHA-256 de todas as notas fiscais da competência"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-[#D9B36C]" />
+                    <span>{isFechandoCompetencia ? 'Fechando...' : 'Fechar Competência'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={nfeList.length === 0}
+                    onClick={async () => {
+                      const docsMapeados: DocumentoFonteNFe[] = nfeList.map((item) => ({
+                        id: item.id,
+                        chave_acesso: item.chave_acesso,
+                        numero_nota: item.numero_nota,
+                        serie: item.serie,
+                        data_emissao: item.data_emissao,
+                        cnpj_emitente: item.cnpj_emitente,
+                        nome_emitente: item.nome_emitente,
+                        valor_total_nf: item.valor_total_nf,
+                        credito_apurado: (item.valor_pis || 0) + (item.valor_cofins || 0),
+                        valor_pis: item.valor_pis,
+                        valor_cofins: item.valor_cofins,
+                        valor_icms: item.valor_icms,
+                        modelo: (item as any).modelo_fiscal || item.modelo,
+                      }))
+                      const cnpjAlvo = currentLead?.cnpj || 'CNPJ em Análise'
+                      const hashFontes = await calcularHashCanonicalDocumentosFonte(
+                        docsMapeados,
+                        cnpjAlvo,
+                      )
+                      exportarDocumentosFonteCsv({
+                        razaoSocial: currentLead?.razao_social || 'Empresa Cadastrada',
+                        cnpj: cnpjAlvo,
+                        documentos: docsMapeados,
+                        hashDocumentosFonte: hashFontes,
+                      })
+                    }}
+                    className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white dark:bg-[#16202B] text-[#12B886] border border-emerald-300 dark:border-[#12B886]/40 hover:bg-emerald-50 dark:hover:bg-[#12B886]/10 transition-all flex items-center gap-2 disabled:opacity-40 shadow-sm"
+                    title="Exporta arquivo CSV analítico com BOM e cabeçalho de integridade criptográfica SHA-256"
+                  >
+                    <Download className="w-4 h-4 text-[#12B886]" />
+                    <span>Exportar relação completa (CSV)</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Botões de Ação: Upload e Fechamento de Competência */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFilesSelected}
-                  accept=".xml,text/xml,.json,.txt"
-                  multiple
-                  className="hidden"
-                  id="nfe-file-input"
-                />
-                <button
-                  type="button"
-                  disabled={isUploading}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
-                >
-                  <UploadCloud className="w-4 h-4" />
-                  <span>{isUploading ? 'Processando...' : 'Importar Documentos Fiscais'}</span>
-                </button>
+              {/* Banner Informativo do Hash de Fechamento por Competência */}
+              {(hashFechamentoAtual || fechamentoMsg) && (
+                <div className="mb-5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-emerald-300 dark:border-[#12B886]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-[#12B886] font-semibold">
+                    <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0" />
+                    <span>
+                      Hash de fechamento da competência:{' '}
+                      <strong className="font-mono text-slate-900 dark:text-[#F4F7FA]">
+                        {hashFechamentoAtual
+                          ? `${hashFechamentoAtual.hash_fechamento.slice(0, 18)}...${hashFechamentoAtual.hash_fechamento.slice(-6)}`
+                          : ''}
+                      </strong>{' '}
+                      verificado ✓
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-[#93A3B5] font-mono">
+                    Competência: {hashFechamentoAtual?.competencia || 'Vigente'} •{' '}
+                    {hashFechamentoAtual?.total_notas || nfeList.length} notas inclusas
+                  </div>
+                </div>
+              )}
 
-                <button
-                  type="button"
-                  disabled={isFechandoCompetencia || nfeList.length === 0}
-                  onClick={handleExecutarFechamentoCompetencia}
-                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white dark:bg-[#16202B] text-amber-800 dark:text-[#D9B36C] border border-amber-300 dark:border-[#D9B36C]/40 hover:bg-amber-50 dark:hover:bg-[#D9B36C]/10 transition-all flex items-center gap-2 disabled:opacity-40 shadow-sm"
-                  title="Calcula e registra o hash encadeado SHA-256 de todas as notas fiscais da competência"
-                >
-                  <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-[#D9B36C]" />
-                  <span>{isFechandoCompetencia ? 'Fechando...' : 'Fechar Competência'}</span>
-                </button>
+              {/* Feedback de erro/sucesso */}
+              {uploadError && (
+                <div className="mb-4 p-3 rounded-lg bg-rose-50 dark:bg-[#F03E54]/10 border border-rose-300 dark:border-[#F03E54]/30 text-xs text-rose-700 dark:text-[#F03E54] flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+              {uploadSuccess && (
+                <div className="mb-4 p-3 rounded-lg bg-emerald-50 dark:bg-[#12B886]/10 border border-emerald-300 dark:border-[#12B886]/30 text-xs text-emerald-800 dark:text-[#12B886] flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{uploadSuccess}</span>
+                </div>
+              )}
 
-                <button
-                  type="button"
-                  disabled={nfeList.length === 0}
-                  onClick={async () => {
-                    const docsMapeados: DocumentoFonteNFe[] = nfeList.map((item) => ({
-                      id: item.id,
-                      chave_acesso: item.chave_acesso,
-                      numero_nota: item.numero_nota,
-                      serie: item.serie,
-                      data_emissao: item.data_emissao,
-                      cnpj_emitente: item.cnpj_emitente,
-                      nome_emitente: item.nome_emitente,
-                      valor_total_nf: item.valor_total_nf,
-                      credito_apurado: (item.valor_pis || 0) + (item.valor_cofins || 0),
-                      valor_pis: item.valor_pis,
-                      valor_cofins: item.valor_cofins,
-                      valor_icms: item.valor_icms,
-                      modelo: (item as any).modelo_fiscal || item.modelo,
-                    }))
-                    const cnpjAlvo = currentLead?.cnpj || 'CNPJ em Análise'
-                    const hashFontes = await calcularHashCanonicalDocumentosFonte(
-                      docsMapeados,
-                      cnpjAlvo,
-                    )
-                    exportarDocumentosFonteCsv({
-                      razaoSocial: currentLead?.razao_social || 'Empresa Cadastrada',
-                      cnpj: cnpjAlvo,
-                      documentos: docsMapeados,
-                      hashDocumentosFonte: hashFontes,
-                    })
-                  }}
-                  className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white dark:bg-[#16202B] text-[#12B886] border border-emerald-300 dark:border-[#12B886]/40 hover:bg-emerald-50 dark:hover:bg-[#12B886]/10 transition-all flex items-center gap-2 disabled:opacity-40 shadow-sm"
-                  title="Exporta arquivo CSV analítico com BOM e cabeçalho de integridade criptográfica SHA-256"
-                >
-                  <Download className="w-4 h-4 text-[#12B886]" />
-                  <span>Exportar relação completa (CSV)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Banner Informativo do Hash de Fechamento por Competência */}
-            {(hashFechamentoAtual || fechamentoMsg) && (
-              <div className="mb-5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-emerald-300 dark:border-[#12B886]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-2 text-[#12B886] font-semibold">
-                  <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0" />
-                  <span>
-                    Hash de fechamento da competência:{' '}
-                    <strong className="font-mono text-slate-900 dark:text-[#F4F7FA]">
-                      {hashFechamentoAtual
-                        ? `${hashFechamentoAtual.hash_fechamento.slice(0, 18)}...${hashFechamentoAtual.hash_fechamento.slice(-6)}`
-                        : ''}
-                    </strong>{' '}
-                    verificado ✓
+              {/* Resumo dos Créditos Apurados */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-4 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] block mb-0.5">
+                    Docs Ingeridos
+                  </span>
+                  <span className="text-xl font-heading font-black text-slate-900 dark:text-[#F4F7FA]">
+                    {totaisNfe.totalNotas}
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-[#93A3B5] font-mono">
-                  Competência: {hashFechamentoAtual?.competencia || 'Vigente'} •{' '}
-                  {hashFechamentoAtual?.total_notas || nfeList.length} notas inclusas
-                </div>
-              </div>
-            )}
-
-            {/* Feedback de erro/sucesso */}
-            {uploadError && (
-              <div className="mb-4 p-3 rounded-lg bg-rose-50 dark:bg-[#F03E54]/10 border border-rose-300 dark:border-[#F03E54]/30 text-xs text-rose-700 dark:text-[#F03E54] flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{uploadError}</span>
-              </div>
-            )}
-            {uploadSuccess && (
-              <div className="mb-4 p-3 rounded-lg bg-emerald-50 dark:bg-[#12B886]/10 border border-emerald-300 dark:border-[#12B886]/30 text-xs text-emerald-800 dark:text-[#12B886] flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{uploadSuccess}</span>
-              </div>
-            )}
-
-            {/* Resumo dos Créditos Apurados */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-4 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)]">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] block mb-0.5">
-                  Docs Ingeridos
-                </span>
-                <span className="text-xl font-heading font-black text-slate-900 dark:text-[#F4F7FA]">
-                  {totaisNfe.totalNotas}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-[#12B886] block mb-0.5">
-                  PIS/Cofins Real
-                </span>
-                <span className="text-xl font-heading font-black text-[#12B886]">
-                  {formatCurrencyBRL(totaisNfe.somaPisCofins)}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-[#D9B36C] block mb-0.5">
-                  ICMS Destacado
-                </span>
-                <span className="text-xl font-heading font-black text-amber-700 dark:text-[#D9B36C]">
-                  {formatCurrencyBRL(totaisNfe.somaIcms)}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] block mb-0.5">
-                  IPI Apurado
-                </span>
-                <span className="text-xl font-heading font-black text-slate-900 dark:text-[#F4F7FA]">
-                  {formatCurrencyBRL(totaisNfe.somaIpi)}
-                </span>
-              </div>
-            </div>
-
-            {/* Alerta Educativo de Transição IBS/CBS e Imposto Seletivo */}
-            <div className="mb-6 p-4 rounded-xl bg-slate-100/80 dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/30 space-y-2 text-xs">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2 text-[#12B886] font-bold">
-                  <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-                  <span>TRANSIÇÃO REFORMA TRIBUTÁRIA (FASE-TESTE 2026)</span>
-                </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#12B886]/10 text-emerald-800 dark:text-[#12B886] font-semibold border border-emerald-300 dark:border-[#12B886]/30">
-                  Prazo Oficial: 1º/08/2026
-                </span>
-              </div>
-
-              {totaisNfe.notasComIbsCbs > 0 ? (
-                <div className="text-slate-900 dark:text-[#F4F7FA] text-xs">
-                  Foram identificados grupos <strong className="text-[#12B886]">IBS/CBS</strong> em{' '}
-                  <span className="font-mono text-[#12B886] font-bold">
-                    {totaisNfe.notasComIbsCbs} nota(s)
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#12B886] block mb-0.5">
+                    PIS/Cofins Real
                   </span>
-                  . Total apurado: IBS {formatCurrencyBRL(totaisNfe.somaIbs)} | CBS{' '}
-                  {formatCurrencyBRL(totaisNfe.somaCbs)}.
+                  <span className="text-xl font-heading font-black text-[#12B886]">
+                    {formatCurrencyBRL(totaisNfe.somaPisCofins)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-[#D9B36C] block mb-0.5">
+                    ICMS Destacado
+                  </span>
+                  <span className="text-xl font-heading font-black text-amber-700 dark:text-[#D9B36C]">
+                    {formatCurrencyBRL(totaisNfe.somaIcms)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#93A3B5] block mb-0.5">
+                    IPI Apurado
+                  </span>
+                  <span className="text-xl font-heading font-black text-slate-900 dark:text-[#F4F7FA]">
+                    {formatCurrencyBRL(totaisNfe.somaIpi)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Alerta Educativo de Transição IBS/CBS e Imposto Seletivo */}
+              <div className="mb-6 p-4 rounded-xl bg-slate-100/80 dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/30 space-y-2 text-xs">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 text-[#12B886] font-bold">
+                    <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+                    <span>TRANSIÇÃO REFORMA TRIBUTÁRIA (FASE-TESTE 2026)</span>
+                  </div>
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#12B886]/10 text-emerald-800 dark:text-[#12B886] font-semibold border border-emerald-300 dark:border-[#12B886]/30">
+                    Prazo Oficial: 1º/08/2026
+                  </span>
+                </div>
+
+                {totaisNfe.notasComIbsCbs > 0 ? (
+                  <div className="text-slate-900 dark:text-[#F4F7FA] text-xs">
+                    Foram identificados grupos <strong className="text-[#12B886]">IBS/CBS</strong>{' '}
+                    em{' '}
+                    <span className="font-mono text-[#12B886] font-bold">
+                      {totaisNfe.notasComIbsCbs} nota(s)
+                    </span>
+                    . Total apurado: IBS {formatCurrencyBRL(totaisNfe.somaIbs)} | CBS{' '}
+                    {formatCurrencyBRL(totaisNfe.somaCbs)}.
+                  </div>
+                ) : (
+                  <div className="text-slate-600 dark:text-[#93A3B5] text-xs leading-relaxed">
+                    <span className="text-amber-700 dark:text-[#D9B36C] font-semibold">
+                      Aviso educativo:{' '}
+                    </span>
+                    Notas sem destaque IBS/CBS — a partir de{' '}
+                    <strong className="text-slate-900 dark:text-[#F4F7FA]">1º/08/2026</strong> o
+                    destaque (IBS 0,1% / CBS 0,9% na fase-teste) é obrigatório; verifique a
+                    atualização do emissor. O recolhimento é dispensado se as obrigações acessórias
+                    forem cumpridas (art. 348 da LC 214/2025).
+                  </div>
+                )}
+
+                {totaisNfe.totalItensIS > 0 && (
+                  <div className="pt-2 border-t border-slate-200 dark:border-[rgba(244,247,250,0.08)] flex items-center gap-2 text-xs text-rose-700 dark:text-[#F03E54]">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>
+                      Identificado(s) <strong>{totaisNfe.totalItensIS} item(ns)</strong> com NCM
+                      sujeito ao <strong>Imposto Seletivo</strong> (LC 214/2025).
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Lista de Notas Processadas */}
+              {nfeList.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] text-slate-600 dark:text-[#93A3B5] uppercase font-semibold">
+                      <tr>
+                        <th className="py-2.5 px-3">Documento / Emissão</th>
+                        <th className="py-2.5 px-3">Origem</th>
+                        <th className="py-2.5 px-3">Emitente</th>
+                        <th className="py-2.5 px-3 text-right">Valor Total</th>
+                        <th className="py-2.5 px-3 text-right">Pegada de Carbono</th>
+                        <th className="py-2.5 px-3 text-right">Situação Reforma (IBS/CBS)</th>
+                        <th className="py-2.5 px-3 text-right">ICMS</th>
+                        <th className="py-2.5 px-3 text-center">Validação</th>
+                        <th className="py-2.5 px-3 text-center">Ação</th>{' '}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-[rgba(244,247,250,0.06)] text-slate-900 dark:text-[#F4F7FA]">
+                      {nfeList.map((item) => (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-slate-50 dark:hover:bg-[#16202B]/40 transition-colors"
+                        >
+                          <td className="py-2.5 px-3">
+                            <div className="font-mono font-semibold text-[#12B886]">
+                              Doc nº {item.numero_nota || 'S/N'} (Série {item.serie || '1'})
+                            </div>
+                            <div className="text-[10px] text-slate-500 dark:text-[#93A3B5]">
+                              {item.data_emissao
+                                ? item.data_emissao.slice(0, 10)
+                                : 'Data não informada'}{' '}
+                              • Mod. {(item as any).modelo_fiscal || item.modelo}
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold ${
+                                (item as any).origem === 'infosimples'
+                                  ? 'bg-blue-100 dark:bg-[#3B82F6]/20 text-blue-700 dark:text-[#3B82F6]'
+                                  : 'bg-emerald-100 dark:bg-[#12B886]/20 text-emerald-800 dark:text-[#12B886]'
+                              }`}
+                            >
+                              {(item as any).origem || 'manual'}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div
+                              className="font-semibold truncate max-w-[150px]"
+                              title={item.nome_emitente}
+                            >
+                              {item.nome_emitente || 'Não informado'}
+                            </div>
+                            <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
+                              {item.cnpj_emitente}
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div className="truncate max-w-[150px]" title={item.nome_destinatario}>
+                              {item.nome_destinatario || 'Consumidor'}
+                            </div>
+                            <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
+                              {item.cnpj_destinatario}
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                            {formatCurrencyBRL(item.valor_total_nf || 0)}
+                          </td>
+                          {/* PRODUTO CENTRAL: Pegada de carbono por nota/produto */}
+                          <td className="py-2.5 px-3 text-right font-mono">
+                            {licenca.podeVerPegadaPorNota ? (
+                              <div className="text-emerald-700 dark:text-[#12B886] font-bold">
+                                {(item as any).combustivel_litros
+                                  ? (((item as any).combustivel_litros * 2.6) / 1000).toFixed(2) +
+                                    ' tCO₂e'
+                                  : (item as any).energia_kwh
+                                    ? (((item as any).energia_kwh * 0.08) / 1000).toFixed(2) +
+                                      ' tCO₂e'
+                                    : '0,14 tCO₂e'}
+                                <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5] font-normal">
+                                  dMRV auditável
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 dark:text-[#93A3B5]/60 font-mono">
+                                Disponível no Trial
+                              </span>
+                            )}
+                          </td>
+                          {/* PLUS: Situação tributária da empresa em relação à reforma tributária */}
+                          <td className="py-2.5 px-3 text-right font-mono">
+                            {licenca.podeVerSituacaoTributariaPorNota ? (
+                              ((item as any).dados_adicionais_json?.valor_ibs_total || 0) > 0 ||
+                              ((item as any).dados_adicionais_json?.valor_cbs_total || 0) > 0 ? (
+                                <div className="text-[#12B886] font-bold">
+                                  {formatCurrencyBRL(
+                                    ((item as any).dados_adicionais_json?.valor_ibs_total || 0) +
+                                      ((item as any).dados_adicionais_json?.valor_cbs_total || 0),
+                                  )}
+                                  <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5]">
+                                    IBS:{' '}
+                                    {formatCurrencyBRL(
+                                      (item as any).dados_adicionais_json?.valor_ibs_total || 0,
+                                    )}{' '}
+                                    | CBS:{' '}
+                                    {formatCurrencyBRL(
+                                      (item as any).dados_adicionais_json?.valor_cbs_total || 0,
+                                    )}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span
+                                  className="text-[10px] text-amber-700 dark:text-[#D9B36C] cursor-help block"
+                                  title="Nota sem destaque IBS/CBS — a partir de 1º/08/2026 o destaque (IBS 0,1% / CBS 0,9%) é obrigatório"
+                                >
+                                  Sem IBS/CBS
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-[10px] text-slate-400 dark:text-[#93A3B5]/60 font-mono">
+                                Disponível no Trial
+                              </span>
+                            )}
+                            {((item as any).dados_adicionais_json?.itens_sujeitos_is_qtd || 0) >
+                              0 && (
+                              <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-rose-100 dark:bg-[#F03E54]/20 text-rose-700 dark:text-[#F03E54] text-[9px] font-bold">
+                                IS ({(item as any).dados_adicionais_json.itens_sujeitos_is_qtd})
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
+                            {formatCurrencyBRL((item.valor_pis || 0) + (item.valor_cofins || 0))}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono text-amber-700 dark:text-[#D9B36C]">
+                            {formatCurrencyBRL(item.valor_icms || 0)}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            {Array.isArray((item as any).flags_revisao) &&
+                            (item as any).flags_revisao.length > 0 ? (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C] text-[10px] font-semibold cursor-help"
+                                title={(item as any).flags_revisao.join(' | ')}
+                              >
+                                <AlertCircle className="w-3 h-3 text-amber-700 dark:text-[#D9B36C]" />
+                                Desvio ANP
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-[#12B886] font-mono">Conforme</span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteNfe(item.id)}
+                              className="p-1 rounded text-slate-500 dark:text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
+                              title="Remover nota fiscal"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               ) : (
-                <div className="text-slate-600 dark:text-[#93A3B5] text-xs leading-relaxed">
-                  <span className="text-amber-700 dark:text-[#D9B36C] font-semibold">
-                    Aviso educativo:{' '}
-                  </span>
-                  Notas sem destaque IBS/CBS — a partir de{' '}
-                  <strong className="text-slate-900 dark:text-[#F4F7FA]">1º/08/2026</strong> o
-                  destaque (IBS 0,1% / CBS 0,9% na fase-teste) é obrigatório; verifique a
-                  atualização do emissor. O recolhimento é dispensado se as obrigações acessórias
-                  forem cumpridas (art. 348 da LC 214/2025).
-                </div>
-              )}
-
-              {totaisNfe.totalItensIS > 0 && (
-                <div className="pt-2 border-t border-slate-200 dark:border-[rgba(244,247,250,0.08)] flex items-center gap-2 text-xs text-rose-700 dark:text-[#F03E54]">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>
-                    Identificado(s) <strong>{totaisNfe.totalItensIS} item(ns)</strong> com NCM
-                    sujeito ao <strong>Imposto Seletivo</strong> (LC 214/2025).
-                  </span>
+                <div className="text-center py-6 border border-dashed border-slate-200 dark:border-[rgba(244,247,250,0.12)] rounded-xl text-xs text-slate-500 dark:text-[#93A3B5] bg-slate-50 dark:bg-[#0A0E12]">
+                  <FileCode className="w-8 h-8 text-slate-400 dark:text-[#93A3B5]/40 mx-auto mb-2" />
+                  Nenhum documento fiscal importado ainda. Selecione arquivos XML/JSON ou use a aba
+                  de importação via InfoSimples.
                 </div>
               )}
             </div>
-
-            {/* Lista de Notas Processadas */}
-            {nfeList.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] text-slate-600 dark:text-[#93A3B5] uppercase font-semibold">
-                    <tr>
-                      <th className="py-2.5 px-3">Documento / Emissão</th>
-                      <th className="py-2.5 px-3">Origem</th>
-                      <th className="py-2.5 px-3">Emitente</th>
-                      <th className="py-2.5 px-3">Destinatário</th>
-                      <th className="py-2.5 px-3 text-right">Valor Total</th>
-                      <th className="py-2.5 px-3 text-right">IBS / CBS</th>
-                      <th className="py-2.5 px-3 text-right">Créd. PIS/Cofins</th>
-                      <th className="py-2.5 px-3 text-right">ICMS</th>
-                      <th className="py-2.5 px-3 text-center">Validação</th>
-                      <th className="py-2.5 px-3 text-center">Ação</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-[rgba(244,247,250,0.06)] text-slate-900 dark:text-[#F4F7FA]">
-                    {nfeList.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-50 dark:hover:bg-[#16202B]/40 transition-colors"
-                      >
-                        <td className="py-2.5 px-3">
-                          <div className="font-mono font-semibold text-[#12B886]">
-                            Doc nº {item.numero_nota || 'S/N'} (Série {item.serie || '1'})
-                          </div>
-                          <div className="text-[10px] text-slate-500 dark:text-[#93A3B5]">
-                            {item.data_emissao
-                              ? item.data_emissao.slice(0, 10)
-                              : 'Data não informada'}{' '}
-                            • Mod. {(item as any).modelo_fiscal || item.modelo}
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold ${
-                              (item as any).origem === 'infosimples'
-                                ? 'bg-blue-100 dark:bg-[#3B82F6]/20 text-blue-700 dark:text-[#3B82F6]'
-                                : 'bg-emerald-100 dark:bg-[#12B886]/20 text-emerald-800 dark:text-[#12B886]'
-                            }`}
-                          >
-                            {(item as any).origem || 'manual'}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <div
-                            className="font-semibold truncate max-w-[150px]"
-                            title={item.nome_emitente}
-                          >
-                            {item.nome_emitente || 'Não informado'}
-                          </div>
-                          <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
-                            {item.cnpj_emitente}
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <div className="truncate max-w-[150px]" title={item.nome_destinatario}>
-                            {item.nome_destinatario || 'Consumidor'}
-                          </div>
-                          <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
-                            {item.cnpj_destinatario}
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold">
-                          {formatCurrencyBRL(item.valor_total_nf || 0)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono">
-                          {((item as any).dados_adicionais_json?.valor_ibs_total || 0) > 0 ||
-                          ((item as any).dados_adicionais_json?.valor_cbs_total || 0) > 0 ? (
-                            <div className="text-[#12B886] font-bold">
-                              {formatCurrencyBRL(
-                                ((item as any).dados_adicionais_json?.valor_ibs_total || 0) +
-                                  ((item as any).dados_adicionais_json?.valor_cbs_total || 0),
-                              )}
-                              <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5]">
-                                IBS:{' '}
-                                {formatCurrencyBRL(
-                                  (item as any).dados_adicionais_json?.valor_ibs_total || 0,
-                                )}{' '}
-                                | CBS:{' '}
-                                {formatCurrencyBRL(
-                                  (item as any).dados_adicionais_json?.valor_cbs_total || 0,
-                                )}
-                              </span>
-                            </div>
-                          ) : (
-                            <span
-                              className="text-[10px] text-amber-700 dark:text-[#D9B36C] cursor-help block"
-                              title="Nota sem destaque IBS/CBS — a partir de 1º/08/2026 o destaque (IBS 0,1% / CBS 0,9%) é obrigatório"
-                            >
-                              Sem IBS/CBS
-                            </span>
-                          )}
-                          {((item as any).dados_adicionais_json?.itens_sujeitos_is_qtd || 0) >
-                            0 && (
-                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-rose-100 dark:bg-[#F03E54]/20 text-rose-700 dark:text-[#F03E54] text-[9px] font-bold">
-                              IS ({(item as any).dados_adicionais_json.itens_sujeitos_is_qtd})
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
-                          {formatCurrencyBRL((item.valor_pis || 0) + (item.valor_cofins || 0))}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-amber-700 dark:text-[#D9B36C]">
-                          {formatCurrencyBRL(item.valor_icms || 0)}
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          {Array.isArray((item as any).flags_revisao) &&
-                          (item as any).flags_revisao.length > 0 ? (
-                            <span
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C] text-[10px] font-semibold cursor-help"
-                              title={(item as any).flags_revisao.join(' | ')}
-                            >
-                              <AlertCircle className="w-3 h-3 text-amber-700 dark:text-[#D9B36C]" />
-                              Desvio ANP
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-[#12B886] font-mono">Conforme</span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteNfe(item.id)}
-                            className="p-1 rounded text-slate-500 dark:text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
-                            title="Remover nota fiscal"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-6 border border-dashed border-slate-200 dark:border-[rgba(244,247,250,0.12)] rounded-xl text-xs text-slate-500 dark:text-[#93A3B5] bg-slate-50 dark:bg-[#0A0E12]">
-                <FileCode className="w-8 h-8 text-slate-400 dark:text-[#93A3B5]/40 mx-auto mb-2" />
-                Nenhum documento fiscal importado ainda. Selecione arquivos XML/JSON ou use a aba de
-                importação via InfoSimples.
-              </div>
-            )}
           </div>
         )}
 

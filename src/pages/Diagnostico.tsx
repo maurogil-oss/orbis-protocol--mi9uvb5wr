@@ -1771,6 +1771,12 @@ export default function Diagnostico() {
                     </div>
                   )}
 
+                  {/* Etiqueta de honestidade obrigatória */}
+                  <div className="max-w-xl mx-auto p-3 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-700 dark:text-[#D9B36C] text-xs font-medium text-center">
+                    ⚠️ Resumo preliminar — não substitui laudo pericial probatório. Cadastro
+                    gratuito entrega o diagnóstico completo do CNPJ sem valores de nota.
+                  </div>
+
                   {/* Summary Card */}
                   <div className="p-6 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 text-left max-w-xl mx-auto space-y-3 relative overflow-hidden">
                     {protocoloGerado.demonstracao && (
@@ -1806,7 +1812,7 @@ export default function Diagnostico() {
                     )}
                     {protocoloGerado.comparativo && (
                       <div className="flex justify-between items-center text-xs border-b border-[rgba(244,247,250,0.08)] pb-2">
-                        <span className="text-[#93A3B5]">Impacto Reforma Tributária:</span>
+                        <span className="text-[#93A3B5]">Situação em relação à Reforma:</span>
                         <span className="font-semibold text-[#12B886] text-right">
                           {protocoloGerado.comparativo.tituloImpacto}
                         </span>

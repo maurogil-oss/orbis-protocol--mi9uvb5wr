@@ -219,16 +219,17 @@ export default function Index() {
               </Link>
             </div>
 
-            {/* Linha discreta "Novo:" logo abaixo dos CTAs do Hero */}
-            <div className="mt-5 flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8]">
-              <span className="text-[#D9B36C] font-semibold">Novo:</span>
-              <Link
-                to="/materiais-criticos"
-                className="inline-flex items-center gap-1 text-[#059669] hover:underline transition-colors"
-              >
-                <span>Passaporte Digital de Materiais Críticos Recuperados</span>
-                <ArrowRight className="w-3.5 h-3.5 inline" />
-              </Link>
+            {/* Proposta de Comercialização: Trial 15 dias sem cartão com 5 notas */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] max-w-2xl">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#059669]/15 border border-emerald-200 dark:border-[#059669]/40 text-emerald-800 dark:text-[#10B981] font-semibold text-xs">
+                <span>✦ Trial de 15 dias sem cartão</span>
+                <span className="opacity-60">•</span>
+                <span>Limite de 5 notas iniciais</span>
+              </span>
+              <span className="text-slate-500 dark:text-[#94A3B8]">
+                Pegada de carbono como produto central + situação tributária da empresa em relação à
+                reforma tributária.
+              </span>
             </div>
 
             {/* Emblema/globo Orbis em traço fino */}

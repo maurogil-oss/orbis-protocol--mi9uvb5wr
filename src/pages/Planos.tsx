@@ -62,71 +62,74 @@ export default function Planos() {
     {
       id: 'essencial',
       servicoId: 'diagnostico',
-      nome: catalogo['diagnostico']?.nome || 'Plano Essencial',
-      servicoTitulo: 'Diagnóstico Orbis',
+      nome: catalogo['diagnostico']?.nome || 'Plano Essencial dMRV',
+      servicoTitulo: 'Pegada Contínua Ilimitada',
       indicacao: 'Pequenas e Médias Empresas (PME)',
       valorNumerico: precoEssencial,
       valorFormatado: formatPreco(precoEssencial),
-      periodo: 'pagamento único / por CNPJ',
-      chamariz: 'Primeiro resultado prévio validado, com Hash de integridade criptográfica.',
+      periodo: 'por CNPJ / anual',
+      chamariz:
+        'Pegada de carbono contínua ilimitada, laudo pericial e situação tributária contínua.',
       descricao:
         catalogo['diagnostico']?.descricao ||
-        'Diagnóstico Orbis — primeiro resultado prévio validado, com Hash e demais entregas.',
+        'Pegada contínua de carbono ilimitada, laudo com hash SHA-256 e situação tributária da empresa em relação à reforma tributária.',
       destaques: [
-        'Diagnóstico anual preliminar validado por CNPJ',
-        'Hash de integridade criptográfica dMRV',
-        'Emissão do Atestado Orbis Protocol dMRV',
-        'Atestado preparatório para exigências ESG bancárias (Res. BCB 4.945/2021)',
-        'Ingestão real de XML NF-e (Mod. 55/65) com apuração de créditos tributários ativos',
-        'Suporte técnico via canal oficial',
+        'Pegada de carbono contínua ilimitada por nota e produto',
+        'Laudo pericial com hash SHA-256 e chancela probatória',
+        'Atestado Orbis Protocol dMRV emitido com validade pública',
+        'Situação tributária da empresa em relação à reforma tributária contínua (IBS/CBS)',
+        'Passaporte Digital de Produto (DPP) e exportações auditáveis',
+        'Radar Semanal disponível como plus regulatório',
       ],
-      ctaText: 'Fazer Diagnóstico Preliminar',
+      ctaText: 'Contratar Plano Essencial',
       popular: false,
     },
     {
       id: 'mover',
       servicoId: 'laudo_pericial',
-      nome: catalogo['laudo_pericial']?.nome || 'Plano MOVER',
-      servicoTitulo: 'Laudo Pericial com ART',
+      nome: catalogo['laudo_pericial']?.nome || 'Plano MOVER & CDV',
+      servicoTitulo: 'Laudo Pericial com ART / RRT',
       indicacao: 'Exclusivo Segmento Automotivo & CDVs DETRAN',
       valorNumerico: precoMover,
       valorFormatado: formatPreco(precoMover),
       periodo: 'por laudo homologado',
-      chamariz: 'Chancela de perito homologado com Anotação de Responsabilidade Técnica (ART).',
+      chamariz:
+        'Pegada contínua ilimitada + Laudo pericial com chancela de perito homologado (ART/RRT).',
       descricao:
         catalogo['laudo_pericial']?.descricao ||
-        'Laudo Pericial com ART — chancela de perito homologado.',
+        'Laudo Pericial com ART — chancela de perito homologado, DPP automotivo e pegada contínua ilimitada.',
       destaques: [
-        'Tudo do plano Essencial incluído',
-        'Chancela de perito homologado com ART/RRT acoplada',
+        'Tudo do plano Essencial incluído com ingestão ilimitada',
+        'Chancela de perito homologado com Anotação de Responsabilidade Técnica (ART)',
         'Laudo pericial emitido sob a norma NBC TO 3000 do CFC',
         'Dossiê preparatório para créditos do Programa MOVER (Lei 14.902/2024)',
-        'Passaporte Digital de Produto (DPP) para peças reaproveitadas',
-        'Ingestão ilimitada de NF-e e conciliação de créditos PIS/Cofins, ICMS e IPI',
+        'Passaporte Digital de Produto (DPP) para peças e lotes reaproveitados',
+        'Situação tributária contínua em relação à reforma tributária',
       ],
-      ctaText: 'Diagnóstico para Setor Automotivo',
+      ctaText: 'Contratar Plano Automotivo',
       popular: true,
     },
     {
       id: 'corporativo',
       servicoId: 'assinatura_bureau',
-      nome: catalogo['assinatura_bureau']?.nome || 'Plano Corporativo',
-      servicoTitulo: 'Bureau ACP',
+      nome: catalogo['assinatura_bureau']?.nome || 'Plano Corporativo Enterprise',
+      servicoTitulo: 'Bureau ACP & Gestão Contínua',
       indicacao: 'Indústrias Reguladas & Grandes Exportadores',
       valorNumerico: precoCorp,
       valorFormatado: formatPreco(precoCorp),
       periodo: 'anual / gestão contínua',
-      chamariz: 'Gestão contínua com passaportes do fornecedor e dossiê BRDE/fomento.',
+      chamariz:
+        'Pegada contínua multi-filiais, laudos periciais e Radar Semanal por faixas de CNPJs.',
       descricao:
         catalogo['assinatura_bureau']?.descricao ||
-        'Bureau ACP — gestão contínua, passaportes, dossiê BRDE/fomento.',
+        'Bureau ACP — gestão contínua de carbono, passaportes, dossiê bancário e Radar Semanal multi-CNPJs.',
       destaques: [
         'Tudo do plano MOVER / Laudo Pericial incluído',
-        'Gestão contínua e cockpit completo no Bureau ACP',
+        'Gestão contínua e cockpit completo no Bureau ACP multi-unidades',
         'Passaporte Digital do Fornecedor com revelação seletiva por parceiro',
         'Dossiê contínuo de elegibilidade para linhas BRDE e Fomento Paraná',
-        'Curva MAC personalizada (Custo Marginal de Abatimento)',
-        'Preparação para SBCE (Lei 15.042/2024) e reporte IFRS S1/S2',
+        'Situação tributária da empresa em relação à reforma tributária',
+        'Radar Semanal incluso com monitoramento de atos e normas',
       ],
       ctaText: 'Solicitar Diagnóstico Corporativo',
       popular: false,
@@ -191,6 +194,175 @@ export default function Planos() {
             <span>Ir para Checkout PIX</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
+        </div>
+
+        {/* Quadro Comparativo de Modelo de Comercialização: Cadastro Gratuito / Trial 15d / Plano Contratado */}
+        <div className="mb-14 p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl">
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#12B886]">
+              MODELO DE COMERCIALIZAÇÃO TRANSPARENTE
+            </span>
+            <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-[#F4F7FA] mt-1">
+              Como funciona o acesso na plataforma Orbis
+            </h2>
+            <p className="text-xs text-[#93A3B5] mt-1.5">
+              Produto central: <strong>Pegada de carbono por nota/produto</strong>. Plus de atração:{' '}
+              <strong>Situação tributária da empresa em relação à reforma tributária</strong> (sem
+              promessa de créditos milagrosos). Plus de receita:{' '}
+              <strong>Radar Semanal regulatório</strong>.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Coluna 1: Cadastro Gratuito */}
+            <div className="p-5 rounded-xl bg-[#0A0E12] border border-slate-700/60 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-mono uppercase text-[#93A3B5] font-bold">
+                  1. Entrada
+                </div>
+                <h3 className="font-heading font-bold text-base text-[#F4F7FA] mt-0.5">
+                  Cadastro Gratuito
+                </h3>
+                <div className="text-lg font-black text-[#F4F7FA] my-2">R$ 0</div>
+                <p className="text-xs text-[#93A3B5] mb-4">
+                  Entrega o diagnóstico completo do CNPJ (elegibilidade, protocolos aplicáveis e
+                  comparativo regulatório) <strong>sem valores de nota</strong>.
+                </p>
+                <ul className="text-xs text-[#93A3B5] space-y-2">
+                  <li className="flex items-center gap-1.5 text-[#12B886]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Diagnóstico completo do CNPJ</span>
+                  </li>
+                  <li className="flex items-center gap-1.5 text-[#12B886]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Enquadramento preliminar SBCE/MOVER</span>
+                  </li>
+                  <li className="flex items-center gap-1.5 text-[#93A3B5]/60">
+                    <span className="w-3.5 text-center">✕</span>
+                    <span>Sem valores de nota fiscal</span>
+                  </li>
+                </ul>
+              </div>
+              <Link
+                to="/diagnostico"
+                className="mt-6 w-full py-2.5 rounded-lg text-xs font-semibold bg-[#16202B] border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] text-center"
+              >
+                Fazer Cadastro Gratuito
+              </Link>
+            </div>
+
+            {/* Coluna 2: Trial 15 dias sem cartão */}
+            <div className="p-5 rounded-xl bg-[#0A0E12] border-2 border-[#12B886] flex flex-col justify-between relative shadow-emerald-glow">
+              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#12B886] text-[#0A0E12] font-mono text-[9px] font-bold uppercase tracking-wider">
+                TESTE SEM CARTÃO
+              </span>
+              <div>
+                <div className="text-[10px] font-mono uppercase text-[#12B886] font-bold">
+                  2. Degustação Real
+                </div>
+                <h3 className="font-heading font-bold text-base text-[#F4F7FA] mt-0.5">
+                  Trial de 15 Dias
+                </h3>
+                <div className="text-lg font-black text-[#12B886] my-2">
+                  15 dias • Limite de 5 notas
+                </div>
+                <p className="text-xs text-[#93A3B5] mb-4">
+                  Exibe a <strong>pegada de carbono por nota/produto</strong> como produto central
+                  e, como plus, a{' '}
+                  <strong>situação tributária da empresa em relação à reforma tributária</strong>.
+                  Sem pedir cartão.
+                </p>
+                <ul className="text-xs text-[#93A3B5] space-y-2">
+                  <li className="flex items-center gap-1.5 text-[#12B886]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Pegada de carbono por nota/produto</span>
+                  </li>
+                  <li className="flex items-center gap-1.5 text-[#12B886]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Situação em relação à reforma tributária</span>
+                  </li>
+                  <li className="flex items-center gap-1.5 text-[#12B886]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Bloqueio suave ao expirar (preserva dados)</span>
+                  </li>
+                </ul>
+              </div>
+              <Link
+                to="/registro"
+                className="mt-6 w-full py-2.5 rounded-lg text-xs font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] text-center"
+              >
+                Iniciar Trial (5 notas)
+              </Link>
+            </div>
+
+            {/* Coluna 3: Plano Contratado */}
+            <div className="p-5 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/60 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-mono uppercase text-[#D9B36C] font-bold">
+                  3. Produção Ilimitada
+                </div>
+                <h3 className="font-heading font-bold text-base text-[#F4F7FA] mt-0.5">
+                  Plano Contratado
+                </h3>
+                <div className="text-lg font-black text-[#D9B36C] my-2">Ilimitado + Perícia</div>
+                <p className="text-xs text-[#93A3B5] mb-4">
+                  Pegada contínua ilimitada, laudo pericial (hash, chancela, DPP, exportações
+                  auditáveis), situação tributária contínua e Radar Semanal como plus.
+                </p>
+                <ul className="text-xs text-[#93A3B5] space-y-2">
+                  <li className="flex items-center gap-1.5 text-[#12B886]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Pegada contínua de carbono ilimitada</span>
+                  </li>
+                  <li className="flex items-center gap-1.5 text-[#12B886]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Laudo pericial probatório (hash, ART/RRT, DPP)</span>
+                  </li>
+                  <li className="flex items-center gap-1.5 text-[#D9B36C]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Radar Semanal (Plus de Receita)</span>
+                  </li>
+                </ul>
+              </div>
+              <Link
+                to="/checkout"
+                className="mt-6 w-full py-2.5 rounded-lg text-xs font-bold bg-[#D9B36C] text-[#0A0E12] hover:bg-[#C9A25B] text-center"
+              >
+                Contratar Acesso Ilimitado
+              </Link>
+            </div>
+          </div>
+
+          {/* Plus de Receita: Radar Semanal explicativo com faixas e liberação manual */}
+          <div className="mt-8 p-5 rounded-xl bg-[#0E1724] border border-[#D9B36C]/40 text-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-[#D9B36C]/20 text-[#D9B36C] font-mono text-[10px] font-bold uppercase">
+                    PLUS DE RECEITA
+                  </span>
+                  <span className="font-heading font-bold text-sm text-[#F4F7FA]">
+                    Radar Semanal Regulatório (Monitoramento de Atos e Normas)
+                  </span>
+                </div>
+                <p className="text-[#93A3B5] mt-1">
+                  Disponível por faixas de CNPJs monitorados: <strong>1 CNPJ = R$ 59/mês</strong> |{' '}
+                  <strong>5 CNPJs = R$ 149/mês</strong> | <strong>30 CNPJs = R$ 249/mês</strong>{' '}
+                  (acima sob consulta).
+                </p>
+                <p className="text-[11px] text-[#93A3B5]/80 mt-1 italic">
+                  * A liberação do Radar Semanal é realizada de forma manual pela equipe técnica no
+                  Console v1 após a validação cadastral.
+                </p>
+              </div>
+              <Link
+                to="/central-radar"
+                className="px-4 py-2 rounded-lg text-xs font-semibold bg-[#16202B] border border-[#D9B36C]/50 text-[#D9B36C] hover:bg-[#D9B36C] hover:text-[#0A0E12] transition-colors shrink-0 text-center"
+              >
+                Conhecer o Radar Semanal
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Plans Grid */}
