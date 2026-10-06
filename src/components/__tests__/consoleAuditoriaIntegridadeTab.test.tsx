@@ -90,7 +90,7 @@ describe('ConsoleAuditoriaIntegridadeTab - Verificações Periciais e Laudo', ()
 
     const resultado = await executarAuditoriaIntegridade('auditor.teste@orbis.com')
 
-    expect(resultado.totalVerificacoes).toBe(9)
+    expect(resultado.totalVerificacoes).toBe(12)
     expect(resultado.totalAlertas).toBe(0) // todos conformes
     expect(resultado.itens.reconciliacaoMatematicaLotes.status).toBe('ok')
     expect(resultado.itens.reconciliacaoMatematicaInventarios.status).toBe('ok')
@@ -99,6 +99,9 @@ describe('ConsoleAuditoriaIntegridadeTab - Verificações Periciais e Laudo', ()
     expect(resultado.itens.higieneMateriaisCatalogados.status).toBe('ok')
     expect(resultado.itens.higieneInventariosDuplicados.status).toBe('ok')
     expect(resultado.itens.higieneCamposVeicularesNaoVeiculares.status).toBe('ok')
+    expect(resultado.itens.auditoriaFatoresLegadosCobre.status).toBe('ok')
+    expect(resultado.itens.auditoriaChavesAcessoDuplicadas.status).toBe('ok')
+    expect(resultado.itens.auditoriaLotesOrfaos.status).toBe('ok')
   })
 
   it('detecta anomalias e gera alertas quando há divergências na base', async () => {

@@ -522,6 +522,12 @@ export default function ModoDemonstracaoOrientadaPage() {
                 <span>Fatores Orbis vs. Mercado Real (Anexo Demo) →</span>
               </Link>
               <Link
+                to="/demo/laudo-integridade"
+                className="inline-flex items-center gap-1 text-[#12B886] hover:underline font-semibold block text-[11px]"
+              >
+                <span>Laudo de Auditoria de Integridade dMRV (Anexo Demo) →</span>
+              </Link>
+              <Link
                 to="/planos"
                 className="text-[#12B886] hover:underline font-semibold block text-[11px] pt-1"
               >

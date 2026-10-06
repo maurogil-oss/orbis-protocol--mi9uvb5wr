@@ -1,0 +1,39 @@
+# Robots.txt - Orbis Protocol (https://www.orbis-protocol.com)
+# Diretrizes para rastreadores e mecanismos de busca
+
+User-agent: *
+Allow: /
+Allow: /solucoes
+Allow: /protocolos/
+Allow: /trilhas/
+Allow: /passaporte/
+Allow: /passaporte-lote/
+Allow: /fatores
+Allow: /mover
+Allow: /materiais-criticos
+Allow: /equipe
+Allow: /privacidade
+Allow: /termos
+Allow: /radar-regulatorio
+Allow: /radar-semanal
+Allow: /diagnostico
+
+# Bloqueio de rotas administrativas, periciais restritas e privadas
+Disallow: /admin
+Disallow: /admin/
+Disallow: /painel
+Disallow: /painel/
+Disallow: /console-do-auditor
+Disallow: /console-do-auditor/
+Disallow: /parceiro
+Disallow: /parceiro/
+Disallow: /parceiro-painel
+Disallow: /parceiro-painel/
+Disallow: /financeiro
+Disallow: /financeiro/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /redefinir-senha
+Disallow: /recuperar-senha
+Disallow: /backend/
+Disallow: /api/

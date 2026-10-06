@@ -758,13 +758,31 @@ export function PainelDmrvEmissoesEvitadas({
           {/* DETALHAMENTO DE ESCOPOS GHG PROTOCOL (1, 2 e 3) */}
           <Card className="border-border">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-bold flex items-center gap-2">
-                <Leaf className="h-4 w-4 text-primary" />
-                Inventário Corporativo GHG Protocol (Escopos 1, 2 e 3)
-              </CardTitle>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <Leaf className="h-4 w-4 text-primary" />
+                  Inventário Corporativo GHG Protocol (Escopos 1, 2 e 3)
+                </CardTitle>
+                {dados.is_fallback_inventario ? (
+                  <Badge
+                    variant="outline"
+                    className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-medium text-[11px] gap-1"
+                  >
+                    Valores indicativos de demonstração (não é dado real)
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium text-[11px]"
+                  >
+                    Inventário Registrado
+                  </Badge>
+                )}
+              </div>
               <CardDescription className="text-xs">
-                Dados vinculados ao módulo emissoes_inventario para cruzamento com o perfil de
-                sustentabilidade.
+                {dados.is_fallback_inventario
+                  ? 'Atenção: Não há inventário GHG corporativo cadastrado para esta empresa no banco. Os números abaixo são meramente ilustrativos para fins de demonstração do painel analítico.'
+                  : 'Dados consolidados a partir dos inventários registrados no módulo emissoes_inventario para cruzamento com o perfil de sustentabilidade.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

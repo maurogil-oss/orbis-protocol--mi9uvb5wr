@@ -31,6 +31,9 @@ export interface LaudoIntegridadeResultado {
     higieneMateriaisCatalogados: ItemAuditoria
     higieneInventariosDuplicados: ItemAuditoria
     higieneCamposVeicularesNaoVeiculares: ItemAuditoria
+    auditoriaFatoresLegadosCobre: ItemAuditoria
+    auditoriaChavesAcessoDuplicadas: ItemAuditoria
+    auditoriaLotesOrfaos: ItemAuditoria
   }
 }
 
@@ -442,6 +445,140 @@ export async function executarAuditoriaIntegridade(
     higieneCamposVeicularesNaoVeiculares,
   ]
 
+  // -------------------------------------------------------------
+  // VERIFICAÇÃO 5.A: Fatores Antigos / Legados (Ex: cobre 5,40 remanescente)
+  // O fator canônico de cobre é 4,10 kgCO2e/kg (ICA 2024). Fator 5,40 é legado revogado.
+  // -------------------------------------------------------------
+  const afetadosFatoresLegados: ItemAuditoria['registrosAfetados'] = []
+  let totalPecasCobreVerificadas = 0
+
+  for (const peca of pecas) {
+    if (peca.categoria_material === 'cobre') {
+      totalPecasCobreVerificadas++
+      const fator = Number(peca.fator_co2e_kg || 0)
+      if (Math.abs(fator - 5.4) < 0.01) {
+        afetadosFatoresLegados.push({
+          id: peca.id,
+          identificador: `${peca.selo_dpp || peca.sku_interno || peca.id} - ${peca.descricao_peca}`,
+          detalhes: `Peça de cobre registrada com fator legado revogado 5,40 kgCO₂e/kg (lote: ${peca.lote})`,
+          valorEsperado: '4,10 kgCO₂e/kg (ICA 2024 oficial)',
+          valorEncontrado: `${fator.toFixed(2)} kgCO₂e/kg`,
+        })
+      }
+    }
+  }
+
+  const auditoriaFatoresLegadosCobre: ItemAuditoria = {
+    id: 'fator_legado_cobre_540',
+    titulo: 'Auditoria de Fatores Oficiais: Fator de Cobre Legado 5,40 Remanescente',
+    descricao:
+      'Garante a transição pericial dos fatores de emissão. Detecta peças de cobre que ainda utilizam o fator revogado 5,40 em vez do fator canônico 4,10 kgCO₂e/kg (ICA 2024 LCI/LCA).',
+    status: afetadosFatoresLegados.length === 0 ? 'ok' : 'alerta',
+    totalVerificados: totalPecasCobreVerificadas,
+    totalInconformidades: afetadosFatoresLegados.length,
+    registrosAfetados: afetadosFatoresLegados,
+  }
+
+  // -------------------------------------------------------------
+  // VERIFICAÇÃO 5.B: Duplicidade de Chaves de Acesso NF-e / CT-e
+  // Identifica se a mesma chave de acesso fiscal de 44 dígitos foi usada em múltiplos lotes
+  // -------------------------------------------------------------
+  const mapaChavesLotes = new Map<string, any[]>()
+  for (const lote of lotes) {
+    let chave = ''
+    try {
+      if (lote.payload_bruto_json) {
+        const p =
+          typeof lote.payload_bruto_json === 'string'
+            ? JSON.parse(lote.payload_bruto_json)
+            : lote.payload_bruto_json
+        chave = String(p?.chaveAcesso || p?.chave_acesso || '').trim()
+      }
+    } catch {
+      /* ignore */
+    }
+    if (chave && chave.length === 44) {
+      if (!mapaChavesLotes.has(chave)) mapaChavesLotes.set(chave, [])
+      mapaChavesLotes.get(chave)!.push(lote)
+    }
+  }
+
+  const afetadosChavesDuplicadas: ItemAuditoria['registrosAfetados'] = []
+  let totalChavesVerificadas = 0
+  mapaChavesLotes.forEach((lista, chave) => {
+    totalChavesVerificadas++
+    if (lista.length > 1) {
+      afetadosChavesDuplicadas.push({
+        id: lista.map((l) => l.id).join(', '),
+        identificador: `Chave: ${chave}`,
+        detalhes: `A mesma chave fiscal de 44 dígitos está vinculada a ${lista.length} lotes distintos: [${lista.map((l) => l.cdv_codigo || l.id).join(', ')}]`,
+        valorEsperado: 'Exatamente 1 lote por chave fiscal (princípio da não-cumulatividade)',
+        valorEncontrado: `${lista.length} lotes`,
+      })
+    }
+  })
+
+  const auditoriaChavesAcessoDuplicadas: ItemAuditoria = {
+    id: 'chaves_acesso_duplicadas',
+    titulo: 'Auditoria de Chaves Fiscais: Duplicidade de Chave de Acesso (44 dígitos)',
+    descricao:
+      'Garante que nenhuma nota fiscal ou CT-e seja contabilizada em mais de um lote, evitando risco de dupla contagem de lastro.',
+    status: afetadosChavesDuplicadas.length === 0 ? 'ok' : 'alerta',
+    totalVerificados: totalChavesVerificadas,
+    totalInconformidades: afetadosChavesDuplicadas.length,
+    registrosAfetados: afetadosChavesDuplicadas,
+  }
+
+  // -------------------------------------------------------------
+  // VERIFICAÇÃO 5.C: Lotes Órfãos (Lotes sem peças e Peças sem lote)
+  // -------------------------------------------------------------
+  const lotesIdsSet = new Set(lotes.map((l) => l.id))
+  const afetadosOrfaos: ItemAuditoria['registrosAfetados'] = []
+
+  // Peças sem lote válido no banco
+  for (const peca of pecas) {
+    if (!peca.lote || !lotesIdsSet.has(peca.lote)) {
+      afetadosOrfaos.push({
+        id: peca.id,
+        identificador: `Peça: ${peca.selo_dpp || peca.sku_interno || peca.id}`,
+        detalhes: `Peça aponta para lote_id inexistente ou nulo: "${peca.lote || '(vazio)'}"`,
+        valorEsperado: 'Lote existente na coleção cdv_lotes',
+        valorEncontrado: peca.lote || '(vazio)',
+      })
+    }
+  }
+
+  // Lotes que deveriam ter peças mas não têm nenhuma associada (excluindo lotes anulados)
+  for (const lote of lotes) {
+    const pecasDoLote = pecasPorLote.get(lote.id) || []
+    if (pecasDoLote.length === 0 && lote.status !== 'anulado') {
+      afetadosOrfaos.push({
+        id: lote.id,
+        identificador: `Lote: ${lote.cdv_codigo || lote.id} - ${lote.cdv_nome}`,
+        detalhes: `Lote com status "${lote.status}" não possui nenhuma peça vinculada em cdv_pecas`,
+        valorEsperado: 'Ao menos 1 peça vinculada',
+        valorEncontrado: '0 peças',
+      })
+    }
+  }
+
+  const auditoriaLotesOrfaos: ItemAuditoria = {
+    id: 'lotes_e_pecas_orfaos',
+    titulo: 'Integridade Relacional: Lotes e Peças Órfãos',
+    descricao:
+      'Identifica peças cujo lote não existe no banco e lotes ativos sem peças cadastradas na esteira dMRV.',
+    status: afetadosOrfaos.length === 0 ? 'ok' : 'alerta',
+    totalVerificados: lotes.length + pecas.length,
+    totalInconformidades: afetadosOrfaos.length,
+    registrosAfetados: afetadosOrfaos,
+  }
+
+  todasVerificacoes.push(
+    auditoriaFatoresLegadosCobre,
+    auditoriaChavesAcessoDuplicadas,
+    auditoriaLotesOrfaos,
+  )
+
   const totalAlertas = todasVerificacoes.filter((v) => v.status === 'alerta').length
 
   return {
@@ -459,6 +596,9 @@ export async function executarAuditoriaIntegridade(
       higieneMateriaisCatalogados,
       higieneInventariosDuplicados,
       higieneCamposVeicularesNaoVeiculares,
+      auditoriaFatoresLegadosCobre,
+      auditoriaChavesAcessoDuplicadas,
+      auditoriaLotesOrfaos,
     },
   }
 }
