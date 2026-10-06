@@ -49,6 +49,31 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
     expect(outros?.valorFator).toBe(FATORES_CDV_MATERIAIS.outros.fatorKgCO2ePorKg) // 1.5
   })
 
+  it('deve cumprir o contrato canônico FatorCanonicaItem para todos os fatores curados', () => {
+    const materiaisEsperados = ['aco', 'aluminio', 'cobre', 'polimeros', 'outros']
+    materiaisEsperados.forEach((mat) => {
+      const fator = CATALOGO_FATORES_CO2E.find((f) => f.id === `mat-${mat}`)
+      expect(fator).toBeDefined()
+      expect(fator?.categoria).toBe('cdv_materiais')
+      expect(fator?.codigoMaterial).toBe(mat)
+      expect(fator?.valorFator).toBeGreaterThan(0)
+      expect(fator?.unidade).toBe('kgCO₂e/kg')
+      expect(typeof fator?.incertezaRelativaUfe).toBe('number')
+      expect(['T1', 'T2', 'T3', 'T4']).toContain(fator?.tier)
+      expect(fator?.fonteOficial).toBeTruthy()
+      expect(fator?.versaoRegistro).toBeTruthy()
+      expect(fator?.dataAtualizacao).toBeTruthy()
+      expect(fator?.vigencia).toBeTruthy()
+      expect(typeof fator?.pendenteVerificacao).toBe('boolean')
+      expect(typeof fator?.permiteEpdSubstituicao).toBe('boolean')
+    })
+
+    const sinMwh = CATALOGO_FATORES_CO2E.find((f) => f.codigoMaterial === 'sin_mwh')
+    expect(sinMwh).toBeDefined()
+    expect(sinMwh?.valorFator).toBe(0.085)
+    expect(sinMwh?.unidade).toBe('tCO₂e/MWh')
+  })
+
   it('deve conter fatores de combustíveis, eletricidade SIN/I-REC e insetting ISO 14067', () => {
     const diesel = CATALOGO_FATORES_CO2E.find((f) => f.id === 'comb-diesel-s10')
     expect(diesel).toBeDefined()

@@ -6,6 +6,8 @@
 import pb from '@/lib/pocketbase/client'
 import type { RecordModel } from 'pocketbase'
 
+import { MAPA_FATORES_CANONICOS } from './catalogoFatoresOficiais'
+
 export interface FatorCdvMaterial {
   categoria: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
   nome: string
@@ -14,49 +16,59 @@ export interface FatorCdvMaterial {
   ano: number
 }
 
+const cAco = MAPA_FATORES_CANONICOS.aco
+const cAlu = MAPA_FATORES_CANONICOS.aluminio
+const cCob = MAPA_FATORES_CANONICOS.cobre
+const cPol = MAPA_FATORES_CANONICOS.polimeros
+const cConc = MAPA_FATORES_CANONICOS.concreto
+const cOut = MAPA_FATORES_CANONICOS.outros
+
 export const FATORES_CDV_MATERIAIS: Record<string, FatorCdvMaterial> = {
   aco: {
     categoria: 'aco',
-    nome: 'Aço Laminado / Estampado',
-    fatorKgCO2ePorKg: 2.18,
-    fonte: 'worldsteel Sustainability Indicators Report (GHG 2024)',
-    ano: 2024,
+    nome: cAco?.nomeMaterial || 'Aço Laminado / Estampado',
+    fatorKgCO2ePorKg: cAco?.valorFator ?? 2.18,
+    fonte: cAco?.fonteOficial || 'worldsteel Sustainability Indicators Report (GHG 2024)',
+    ano: cAco?.anoReferencia || 2024,
   },
   aluminio: {
     categoria: 'aluminio',
-    nome: 'Alumínio Primário Automotivo (Fallback Global)',
-    fatorKgCO2ePorKg: 14.4,
+    nome: cAlu?.nomeMaterial || 'Alumínio Primário Automotivo (Fallback Global)',
+    fatorKgCO2ePorKg: cAlu?.valorFator ?? 14.4,
     fonte:
+      cAlu?.fonteOficial ||
       'International Aluminium Institute (IAI 2024 Emissions Intensity; 14,4 tCO₂e/t Al cradle-to-gate fallback global)',
-    ano: 2024,
+    ano: cAlu?.anoReferencia || 2024,
   },
   cobre: {
     categoria: 'cobre',
-    nome: 'Cobre / Bobinamentos Elétricos',
-    fatorKgCO2ePorKg: 4.1,
-    fonte: 'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate',
-    ano: 2024,
+    nome: cCob?.nomeMaterial || 'Cobre / Bobinamentos Elétricos',
+    fatorKgCO2ePorKg: cCob?.valorFator ?? 4.1,
+    fonte:
+      cCob?.fonteOficial ||
+      'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate',
+    ano: cCob?.anoReferencia || 2024,
   },
   polimeros: {
     categoria: 'polimeros',
-    nome: 'Polímeros Automotivos (PP / EPDM / ABS)',
-    fatorKgCO2ePorKg: 1.9,
-    fonte: 'PlasticsEurope Eco-profiles (PP at gate)',
-    ano: 2023,
+    nome: cPol?.nomeMaterial || 'Polímeros Automotivos (PP / EPDM / ABS)',
+    fatorKgCO2ePorKg: cPol?.valorFator ?? 1.9,
+    fonte: cPol?.fonteOficial || 'PlasticsEurope Eco-profiles (PP at gate)',
+    ano: cPol?.anoReferencia || 2023,
   },
   concreto: {
     categoria: 'concreto' as any,
-    nome: 'Concreto / Agregado Reciclado RCD',
-    fatorKgCO2ePorKg: 0.12,
-    fonte: 'Catálogo Oficial Orbis / RCD CONAMA 307',
-    ano: 2024,
+    nome: cConc?.nomeMaterial || 'Concreto / Agregado Reciclado RCD',
+    fatorKgCO2ePorKg: cConc?.valorFator ?? 0.12,
+    fonte: cConc?.fonteOficial || 'Catálogo Oficial Orbis / RCD CONAMA 307',
+    ano: cConc?.anoReferencia || 2024,
   },
   outros: {
     categoria: 'outros',
-    nome: 'Outros Materiais (Estimativa Conservadora)',
-    fatorKgCO2ePorKg: 1.5,
-    fonte: 'Orbis dMRV Baseline Conservadora',
-    ano: 2024,
+    nome: cOut?.nomeMaterial || 'Outros Materiais (Estimativa Conservadora)',
+    fatorKgCO2ePorKg: cOut?.valorFator ?? 1.5,
+    fonte: cOut?.fonteOficial || 'Orbis dMRV Baseline Conservadora',
+    ano: cOut?.anoReferencia || 2024,
   },
 }
 

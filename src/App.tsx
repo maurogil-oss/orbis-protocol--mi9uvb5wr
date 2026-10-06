@@ -19,6 +19,7 @@ import BureauACP from './pages/BureauACP'
 import PortalCorporativo from './pages/PortalCorporativo'
 import ModoCorporativoDemoPage from './pages/ModoCorporativoDemoPage'
 import ModoDemonstracaoOrientadaPage from './pages/ModoDemonstracaoOrientadaPage'
+import FatoresComparativoDemoPage from './pages/FatoresComparativoDemoPage'
 import CaseCDVerde from './pages/CaseCDVerde'
 import CadeiasProdutivasPage from './pages/CadeiasProdutivasPage'
 import ProtocoloDetailPage from './pages/ProtocoloDetailPage'
@@ -72,6 +73,8 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/demo" element={<ModoDemonstracaoOrientadaPage />} />
+            <Route path="/demo/orientada" element={<ModoDemonstracaoOrientadaPage />} />
+            <Route path="/demo/fatores-comparativo" element={<FatoresComparativoDemoPage />} />
             <Route path="/radar-regulatorio" element={<RadarRegulatorio />} />
             <Route path="/radar-semanal" element={<RadarSemanalPublicPage />} />
             <Route path="/central-radar" element={<CentralRadarPage />} />

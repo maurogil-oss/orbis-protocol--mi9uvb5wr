@@ -516,6 +516,12 @@ export default function ModoDemonstracaoOrientadaPage() {
                 de sustentabilidade e auditorias externas.
               </p>
               <Link
+                to="/demo/fatores-comparativo"
+                className="inline-flex items-center gap-1 text-[#D9B36C] hover:underline font-semibold block text-[11px] pt-1"
+              >
+                <span>Fatores Orbis vs. Mercado Real (Anexo Demo) →</span>
+              </Link>
+              <Link
                 to="/planos"
                 className="text-[#12B886] hover:underline font-semibold block text-[11px] pt-1"
               >
@@ -556,59 +562,62 @@ export default function ModoDemonstracaoOrientadaPage() {
                     órgãos de controle, à sua contabilidade e a instituições financeiras.&rdquo;
                   </div>
 
-                  {/* 4 Pilares Fundamentais */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div className="p-4 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.08)] space-y-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#12B886]/10 text-[#12B886] flex items-center justify-center font-bold">
-                        1
-                      </div>
-                      <h3 className="text-sm font-bold text-[#F4F7FA]">
-                        Pegada de Carbono Auditável
-                      </h3>
-                      <p className="text-xs text-[#93A3B5] leading-relaxed">
-                        Ingestão direta de NF-e (mod. 55), CT-e (mod. 57), NF3e (mod. 66) e SPED com
-                        segregação inequívoca entre parcelas fósseis e biogênicas (IPCC AR6).
-                      </p>
+                  {/* Os 3 Pilares Fundamentais da Infraestrutura Orbis */}
+                  <div className="space-y-3 pt-2">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[#12B886] flex items-center gap-2">
+                      <Layers className="w-4 h-4" />
+                      <span>Os 3 Pilares Fundamentais da Infraestrutura Orbis</span>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.08)] space-y-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#D9B36C]/10 text-[#D9B36C] flex items-center justify-center font-bold">
-                        2
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Pilar A: Falha do modelo autodeclarado */}
+                      <div className="p-4 rounded-xl bg-[#0D1217] border border-[#F03E54]/30 space-y-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#F03E54]/15 text-[#F03E54] flex items-center justify-center font-bold text-xs">
+                          A
+                        </div>
+                        <h3 className="text-sm font-bold text-[#F4F7FA]">
+                          Falha do Modelo Autodeclarado
+                        </h3>
+                        <p className="text-xs text-[#93A3B5] leading-relaxed">
+                          Relatórios corporativos tradicionais (GRI, CDP, relatórios ESG anuais)
+                          operam com dados agregados e autodeclarados sem lastro granular
+                          verificável, deixando a organização exposta a riscos de autuação por
+                          greenwashing, rejeição de laudos por bancos e glosa de créditos
+                          tributários no SBCE.
+                        </p>
                       </div>
-                      <h3 className="text-sm font-bold text-[#F4F7FA]">
-                        Conformidade & Reforma Tributária
-                      </h3>
-                      <p className="text-xs text-[#93A3B5] leading-relaxed">
-                        Enquadramento automatizado sob a Lei 15.042/2024 (SBCE) e simulação do IVA
-                        dual (IBS/CBS - LC 214/2025) com não cumulatividade plena de créditos
-                        tributários.
-                      </p>
-                    </div>
 
-                    <div className="p-4 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.08)] space-y-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#12B886]/10 text-[#12B886] flex items-center justify-center font-bold">
-                        3
+                      {/* Pilar B: Prova documental unitária */}
+                      <div className="p-4 rounded-xl bg-[#0D1217] border border-[#12B886]/40 space-y-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#12B886]/15 text-[#12B886] flex items-center justify-center font-bold text-xs">
+                          B
+                        </div>
+                        <h3 className="text-sm font-bold text-[#F4F7FA]">
+                          Prova Documental Unitária
+                        </h3>
+                        <p className="text-xs text-[#93A3B5] leading-relaxed">
+                          Cada quilograma, metro cúbico ou MWh reportado é vinculado a documentos
+                          fiscais e operacionais irrefutáveis: NF-e com chave de 44 dígitos, CT-e,
+                          MTR de destinação final expedida no SINIR, tíquetes de balança aferida por
+                          órgão metrológico e certidão de destinação ambiental.
+                        </p>
                       </div>
-                      <h3 className="text-sm font-bold text-[#F4F7FA]">
-                        Rastreabilidade & Passaporte Digital
-                      </h3>
-                      <p className="text-xs text-[#93A3B5] leading-relaxed">
-                        Selo e passaporte digital de produto (DPP) com ancoragem canônica SHA-256 e
-                        QR code público para cada peça, lote veicular ou lote industrial auditado.
-                      </p>
-                    </div>
 
-                    <div className="p-4 rounded-xl bg-[#0D1217] border border-[rgba(244,247,250,0.08)] space-y-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#D9B36C]/10 text-[#D9B36C] flex items-center justify-center font-bold">
-                        4
+                      {/* Pilar C: Imutabilidade e verificabilidade pública */}
+                      <div className="p-4 rounded-xl bg-[#0D1217] border border-[#D9B36C]/40 space-y-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#D9B36C]/15 text-[#D9B36C] flex items-center justify-center font-bold text-xs">
+                          C
+                        </div>
+                        <h3 className="text-sm font-bold text-[#F4F7FA]">
+                          Imutabilidade & Verificabilidade Pública
+                        </h3>
+                        <p className="text-xs text-[#93A3B5] leading-relaxed">
+                          Cada peça, lote e fechamento de competência recebe hash SHA-256 canônico
+                          gravado no livro-razão imutável e QR Code com consulta pública aberta em
+                          /verificador, permitindo que auditores, investidores e órgãos de controle
+                          atestem a autenticidade instantaneamente sem intermediação.
+                        </p>
                       </div>
-                      <h3 className="text-sm font-bold text-[#F4F7FA]">
-                        Documentos Prontos para Envio
-                      </h3>
-                      <p className="text-xs text-[#93A3B5] leading-relaxed">
-                        Relatórios técnicos estruturados em PDF para contabilidade, compliance
-                        bancário (Green Capital) e fiscalizações regulatórias sem retrabalho manual.
-                      </p>
                     </div>
                   </div>
 

@@ -132,6 +132,7 @@ onRecordAfterCreateSuccess((e) => {
       return 'outros'
     }
 
+    // Catálogo canônico de fatores padrão (DM-ORB-001 v1.1 §6.3 / catalogoFatoresOficiais)
     const fatoresCo2e = {
       aco: 2.18,
       aluminio: 14.4,

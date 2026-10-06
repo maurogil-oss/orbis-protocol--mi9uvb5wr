@@ -138,14 +138,22 @@ routerAdd('POST', '/backend/v2/cdv/lotes', (e) => {
   const df = typeof body.df_config === 'number' ? body.df_config : 0.3
   const li = typeof body.li_config === 'number' ? body.li_config : 1.0
 
+  // Catálogo canônico de fatores e incertezas (DM-ORB-001 v1.1 §6.3 / catalogoFatoresOficiais)
   const fatoresCo2e = {
-    aco: { fe: 2.18, u_fe: 0.035, fonte: 'worldsteel 2025 (GHG 2024: 2,18 tCO₂e/t)', tier: 'T3' },
+    aco: {
+      fe: 2.18,
+      u_fe: 0.035,
+      fonte: 'worldsteel 2025 (GHG 2024: 2,18 tCO₂e/t)',
+      tier: 'T3',
+      vigencia: '2025-01-01/2026-12-31',
+    },
     aluminio: {
       fe: 14.4,
       u_fe: 0.04,
       fonte:
         'International Aluminium Institute (IAI 2024 Emissions Intensity; 14,4 tCO₂e/t Al fallback global)',
       tier: 'T3',
+      vigencia: '2025-01-01/2026-12-31',
     },
     cobre: {
       fe: 4.1,
@@ -153,18 +161,21 @@ routerAdd('POST', '/backend/v2/cdv/lotes', (e) => {
       fonte:
         'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
       tier: 'T3',
+      vigencia: '2025-01-01/2026-12-31',
     },
     polimeros: {
       fe: 1.9,
       u_fe: 0.05,
       fonte: 'PlasticsEurope Eco-profiles 2023 (PP at gate)',
       tier: 'T2',
+      vigencia: '2025-01-01/2026-12-31',
     },
     outros: {
       fe: 1.5,
       u_fe: 0.1,
       fonte: 'Orbis dMRV Baseline Conservadora (Apêndice B)',
       tier: 'T1',
+      vigencia: '2025-01-01/2026-12-31',
     },
   }
 

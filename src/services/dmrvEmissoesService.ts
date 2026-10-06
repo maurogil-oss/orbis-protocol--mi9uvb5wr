@@ -16,6 +16,7 @@
  */
 
 import pb from '@/lib/pocketbase/client'
+import { FATOR_SIN_MCTI_TCO2E_POR_MWH } from './catalogoFatoresOficiais'
 import {
   calcularSimuladorReferencial,
   type SimuladorReferencialResultado,
@@ -522,11 +523,13 @@ export function construirCardsKpiSetoriais(params: {
   let badgeKpi3: string | undefined
 
   if (slugDominante === 'energia') {
-    // MWh gerados derivados do CO2e evitado (fator SIN 0,085 tCO2e/MWh = 85 kgCO2e/MWh)
-    const mwhDerivado = totalCo2eKg > 0 ? Math.round((totalCo2eKg / 85) * 100) / 100 : 0
+    // MWh gerados derivados do CO2e evitado (fator canônico SIN 0,085 tCO2e/MWh = 85 kgCO2e/MWh)
+    const fatorSinMwh = FATOR_SIN_MCTI_TCO2E_POR_MWH // 0.085 tCO2e/MWh
+    const kgPorMwh = fatorSinMwh * 1000 // 85 kgCO2e/MWh
+    const mwhDerivado = totalCo2eKg > 0 ? Math.round((totalCo2eKg / kgPorMwh) * 100) / 100 : 0
     valorKpi3Numerico = mwhDerivado
     valorKpi3Formatado = mwhDerivado.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
-    badgeKpi3 = 'SIN 0,085 tCO₂e/MWh'
+    badgeKpi3 = `SIN ${fatorSinMwh.toFixed(3).replace('.', ',')} tCO₂e/MWh`
   }
 
   return [

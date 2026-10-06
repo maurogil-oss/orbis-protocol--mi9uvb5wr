@@ -69,6 +69,11 @@ describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
     ).toBeDefined()
 
     expect(demoAuditService.registrarInicioDemonstracao).toHaveBeenCalled()
+
+    // Verifica a presença explícita dos 3 Pilares Fundamentais na Etapa 1
+    expect(screen.getByText(/Falha do Modelo Autodeclarado/i)).toBeDefined()
+    expect(screen.getByText(/Prova Documental Unitária/i)).toBeDefined()
+    expect(screen.getByText(/Imutabilidade & Verificabilidade Pública/i)).toBeDefined()
   })
 
   it('deve avançar para a Etapa 2 (Motor de Cálculo) e exibir segregação fóssil x biogênica', async () => {

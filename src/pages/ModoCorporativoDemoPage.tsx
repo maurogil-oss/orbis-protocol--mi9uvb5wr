@@ -517,6 +517,59 @@ export default function ModoCorporativoDemoPage() {
                 </div>
               </div>
 
+              {/* Os 3 Pilares Fundamentais da Infraestrutura Geral Orbis */}
+              <div className="mt-6 pt-5 border-t border-[rgba(244,247,250,0.08)] space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#12B886] flex items-center gap-2">
+                  <Layers className="w-4 h-4" />
+                  <span>Os 3 Pilares Fundamentais da Infraestrutura Orbis</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Pilar A */}
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#F03E54]/30 space-y-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#F03E54]/15 text-[#F03E54] flex items-center justify-center font-bold text-xs">
+                      A
+                    </div>
+                    <h3 className="text-sm font-bold text-[#F4F7FA]">
+                      Falha do Modelo Autodeclarado
+                    </h3>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Relatórios corporativos tradicionais (GRI, CDP, relatórios ESG anuais) operam
+                      com dados agregados e autodeclarados sem lastro granular verificável, deixando
+                      empresas vulneráveis a acusações de greenwashing e riscos no SBCE.
+                    </p>
+                  </div>
+
+                  {/* Pilar B */}
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#12B886]/15 text-[#12B886] flex items-center justify-center font-bold text-xs">
+                      B
+                    </div>
+                    <h3 className="text-sm font-bold text-[#F4F7FA]">Prova Documental Unitária</h3>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Cada kg ou insumo reportado é vinculado a documentos fiscais e operacionais:
+                      NF-e com chave de 44 dígitos, CT-e, MTR emitido no SINIR, tíquetes de balança
+                      aferida e certidões de destinação ambiental.
+                    </p>
+                  </div>
+
+                  {/* Pilar C */}
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/40 space-y-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#D9B36C]/15 text-[#D9B36C] flex items-center justify-center font-bold text-xs">
+                      C
+                    </div>
+                    <h3 className="text-sm font-bold text-[#F4F7FA]">
+                      Imutabilidade & Verificabilidade Pública
+                    </h3>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Hash SHA-256 canônico registrado a cada fechamento de competência e QR Code
+                      público aberto em /verificador, permitindo que auditores e investidores
+                      atestem autenticidade sem intermediação.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Botão de avanço da etapa 1 para 2 */}
               <div className="mt-6 pt-5 border-t border-[rgba(244,247,250,0.08)] flex justify-end">
                 <button
@@ -1240,6 +1293,12 @@ export default function ModoCorporativoDemoPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                  <Link
+                    to="/demo/fatores-comparativo"
+                    className="inline-flex items-center gap-2 px-4 py-3 rounded-xl font-bold border border-[#D9B36C]/40 text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-all text-xs uppercase tracking-wider"
+                  >
+                    <span>Fatores vs. Mercado (Anexo)</span>
+                  </Link>
                   <Link
                     to="/corporativo/dcp"
                     className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow text-xs uppercase tracking-wider"

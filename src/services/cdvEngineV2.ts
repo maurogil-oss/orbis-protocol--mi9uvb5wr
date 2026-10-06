@@ -29,10 +29,16 @@
 
 export const VERSAO_METODOLOGIA_CDV_V2 = 'DM-ORB-001-v1.1'
 
+import { MAPA_FATORES_CANONICOS, GWP_IPCC_AR6_OFICIAL } from './catalogoFatoresOficiais'
+
+// Extrair GWP AR6 diretamente do catálogo canônico oficial
+const gwpR134aItem = GWP_IPCC_AR6_OFICIAL.gases.find((g) => g.formula.includes('R-134a'))
+const gwpR1234yfItem = GWP_IPCC_AR6_OFICIAL.gases.find((g) => g.formula.includes('R-1234yf'))
+
 // GWP 100 oficial IPCC AR6 WG1 Capítulo 7 (Tabela 7.15 e Tabela 7.SM.7 com feedbacks de carbono)
-export const GWP_AR6_R134A = 1530
+export const GWP_AR6_R134A = gwpR134aItem?.gwp ?? 1530
 // HFO-1234yf (R-1234yf): IPCC AR6 WG1 Ch. 7 Tab. 7.SM.7 (CF3CF=CH2, Lifetime 0.033 anos; GWP100 = 0.501; conservador de catálogo = 0.50)
-export const GWP_AR6_R1234YF = 0.5
+export const GWP_AR6_R1234YF = gwpR1234yfItem?.gwp ?? 0.5
 export const DF_REFRIGERANTE_PADRAO = 1.0
 
 export interface FatorRefrigeranteV2 {
@@ -50,18 +56,21 @@ export const REFRIGERANTES_CATALOGO_V2: Record<string, FatorRefrigeranteV2> = {
     tipo: 'R134a',
     nome: '1,1,1,2-Tetrafluoroetano (HFC-134a / R-134a)',
     formula: 'CH₂FCF₃ (R-134a)',
-    gwp100: 1530,
+    gwp100: GWP_AR6_R134A,
     df: 1.0,
-    fonte: 'IPCC AR6 WG1 Capítulo 7 Tabela 7.15 (com feedbacks de carbono)',
+    fonte:
+      MAPA_FATORES_CANONICOS.r134a?.fonteOficial ||
+      'IPCC AR6 WG1 Capítulo 7 Tabela 7.15 (com feedbacks de carbono)',
     aplicacao: 'Veículos anteriores a ~2017 e HVAC comercial',
   },
   r1234yf: {
     tipo: 'R1234yf',
     nome: '2,3,3,3-Tetrafluoropropeno (HFO-1234yf / R-1234yf)',
     formula: 'CF₃CF=CH₂ (R-1234yf)',
-    gwp100: 0.5,
+    gwp100: GWP_AR6_R1234YF,
     df: 1.0,
     fonte:
+      MAPA_FATORES_CANONICOS.r1234yf?.fonteOficial ||
       'IPCC AR6 WG1 Capítulo 7 Tabela 7.SM.7 (HFO-1234yf, GWP100 = 0,501 com feedbacks; adotado 0,50 conservador)',
     aplicacao: 'Veículos pós-~2017 (padrão automotivo global moderno)',
   },
@@ -79,61 +88,72 @@ export interface FatorMaterialV2 {
   pendente_verificacao?: boolean
 }
 
+const fAco = MAPA_FATORES_CANONICOS.aco
+const fAlu = MAPA_FATORES_CANONICOS.aluminio
+const fCob = MAPA_FATORES_CANONICOS.cobre
+const fPol = MAPA_FATORES_CANONICOS.polimeros
+const fOut = MAPA_FATORES_CANONICOS.outros
+
 export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
   aco: {
     material: 'aco',
-    nome: 'Aço Laminado / Estampado',
-    fe_ref: 2.18,
-    u_fe: 0.035, // ±3.5%
+    nome: fAco?.nomeMaterial || 'Aço Laminado / Estampado',
+    fe_ref: fAco?.valorFator ?? 2.18,
+    u_fe: fAco?.incertezaRelativaUfe ?? 0.035, // ±3.5%
     fonte:
+      fAco?.fonteOficial ||
       'worldsteel Association, Sustainability Indicators Report 2025, indicador 1a GHG emissions intensity 2024 = 2,18 tCO₂e/t aço bruto, escopos 1+2+3 cat. 1',
-    vigencia: '2025-01-01/2025-12-31',
-    tier: 'T3',
-    pendente_verificacao: false,
+    vigencia: fAco?.vigencia || '2025-01-01/2025-12-31',
+    tier: fAco?.tier || 'T3',
+    pendente_verificacao: fAco?.pendenteVerificacao ?? false,
   },
   aluminio: {
     material: 'aluminio',
-    nome: 'Alumínio Primário Automotivo (Fallback Global)',
-    fe_ref: 14.4,
-    u_fe: 0.04, // ±4.0%
+    nome: fAlu?.nomeMaterial || 'Alumínio Primário Automotivo (Fallback Global)',
+    fe_ref: fAlu?.valorFator ?? 14.4,
+    u_fe: fAlu?.incertezaRelativaUfe ?? 0.04, // ±4.0%
     fonte:
+      fAlu?.fonteOficial ||
       'International Aluminium Institute (IAI), 2024 Data Release, alumínio primário global cradle-to-gate, escopos 1+2+3',
-    vigencia: '2025-01-01/2025-12-31',
-    tier: 'T3',
-    pendente_verificacao: false,
+    vigencia: fAlu?.vigencia || '2025-01-01/2025-12-31',
+    tier: fAlu?.tier || 'T3',
+    pendente_verificacao: fAlu?.pendenteVerificacao ?? false,
   },
   cobre: {
     material: 'cobre',
-    nome: 'Cobre / Bobinamentos Elétricos',
-    fe_ref: 4.1,
-    u_fe: 0.045, // ±4.5%
+    nome: fCob?.nomeMaterial || 'Cobre / Bobinamentos Elétricos',
+    fe_ref: fCob?.valorFator ?? 4.1,
+    u_fe: fCob?.incertezaRelativaUfe ?? 0.045, // ±4.5%
     fonte:
+      fCob?.fonteOficial ||
       'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
-    vigencia: '2025-01-01/2025-12-31',
-    tier: 'T3',
-    pendente_verificacao: false,
+    vigencia: fCob?.vigencia || '2025-01-01/2025-12-31',
+    tier: fCob?.tier || 'T3',
+    pendente_verificacao: fCob?.pendenteVerificacao ?? false,
   },
   polimeros: {
     material: 'polimeros',
-    nome: 'Polímeros Automotivos (PP / EPDM / ABS)',
-    fe_ref: 1.9,
-    u_fe: 0.05, // ±5.0%
+    nome: fPol?.nomeMaterial || 'Polímeros Automotivos (PP / EPDM / ABS)',
+    fe_ref: fPol?.valorFator ?? 1.9,
+    u_fe: fPol?.incertezaRelativaUfe ?? 0.05, // ±5.0%
     fonte:
+      fPol?.fonteOficial ||
       'PlasticsEurope Eco-profiles 2023 (PCR ISO 14025, declared unit 1 kg resina at gate, menor valor da faixa 1,91-5,70 correspondente a PP)',
-    vigencia: '2025-01-01/2025-12-31',
-    tier: 'T2',
-    pendente_verificacao: true,
+    vigencia: fPol?.vigencia || '2025-01-01/2025-12-31',
+    tier: fPol?.tier || 'T2',
+    pendente_verificacao: fPol?.pendenteVerificacao ?? true,
   },
   outros: {
     material: 'outros',
-    nome: 'Outros Materiais (Estimativa Conservadora)',
-    fe_ref: 1.5,
-    u_fe: 0.1, // ±10.0%
+    nome: fOut?.nomeMaterial || 'Outros Materiais (Estimativa Conservadora)',
+    fe_ref: fOut?.valorFator ?? 1.5,
+    u_fe: fOut?.incertezaRelativaUfe ?? 0.1, // ±10.0%
     fonte:
+      fOut?.fonteOficial ||
       'Orbis dMRV Baseline Conservadora (derivação interna conservadora — procedimento sob publicação formal)',
-    vigencia: '2025-01-01/2025-12-31',
-    tier: 'T1',
-    pendente_verificacao: false,
+    vigencia: fOut?.vigencia || '2025-01-01/2025-12-31',
+    tier: fOut?.tier || 'T1',
+    pendente_verificacao: fOut?.pendenteVerificacao ?? false,
   },
 }
 

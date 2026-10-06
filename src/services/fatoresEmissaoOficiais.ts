@@ -52,6 +52,11 @@ export const GWP_AR6 = {
 /**
  * Fatores Oficiais Curados de Combustíveis e Insumos
  */
+import { MAPA_FATORES_CANONICOS } from './catalogoFatoresOficiais'
+
+const getValorCanonica = (codigo: string, fallback: number): number =>
+  MAPA_FATORES_CANONICOS[codigo]?.valorFator ?? fallback
+
 export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
   // 1. Diesel Comercial S10 (B14 - 86% fóssil + 14% biodiesel obrigatório 2024)
   diesel_s10: {
@@ -65,7 +70,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCH4: 0.00012,
     kgN2O: 0.00008,
     // (2.27*1 + 0.00012*29.8 + 0.00008*273) / 1000 = ~0.002295 tCO2e/L
-    fatorFossilTCO2e: 0.002295,
+    fatorFossilTCO2e: getValorCanonica('diesel_s10', 2.295) / 1000,
     kgCO2Biogenico: 0.38, // Parcela biogênica do biodiesel B14
     tierIncertezaPadrao: 'Tier 2',
     incertezaPadraoPct: 4.5,
@@ -83,7 +88,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 1.62,
     kgCH4: 0.00025,
     kgN2O: 0.00007,
-    fatorFossilTCO2e: 0.001646,
+    fatorFossilTCO2e: getValorCanonica('gasolina_c', 1.646) / 1000,
     kgCO2Biogenico: 0.59,
     tierIncertezaPadrao: 'Tier 2',
     incertezaPadraoPct: 4.0,
@@ -101,7 +106,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 0.0, // Fóssil zero na queima
     kgCH4: 0.00009,
     kgN2O: 0.00003,
-    fatorFossilTCO2e: 0.000011, // Apenas traços de N2O e CH4 na combustão
+    fatorFossilTCO2e: getValorCanonica('etanol_hidratado', 0.011) / 1000,
     kgCO2Biogenico: 1.51,
     tierIncertezaPadrao: 'Tier 2',
     incertezaPadraoPct: 5.0,
@@ -119,7 +124,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 2.98,
     kgCH4: 0.00005,
     kgN2O: 0.00003,
-    fatorFossilTCO2e: 0.002989,
+    fatorFossilTCO2e: getValorCanonica('glp', 2.989) / 1000,
     kgCO2Biogenico: 0.0,
     tierIncertezaPadrao: 'Tier 2',
     incertezaPadraoPct: 3.5,
@@ -137,7 +142,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 1.99,
     kgCH4: 0.00004,
     kgN2O: 0.00002,
-    fatorFossilTCO2e: 0.001996,
+    fatorFossilTCO2e: getValorCanonica('gas_natural', 1.996) / 1000,
     kgCO2Biogenico: 0.0,
     tierIncertezaPadrao: 'Tier 2',
     incertezaPadraoPct: 4.0,
@@ -155,7 +160,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 0.0485, // 0.0485 kgCO2/kWh no SIN (matriz predominantemente hídrica/renovável)
     kgCH4: 0.000001,
     kgN2O: 0.0000005,
-    fatorFossilTCO2e: 0.0000486, // ~0.0486 tCO2e por 1.000 kWh (ou 0.0486 kgCO2e/kWh)
+    fatorFossilTCO2e: getValorCanonica('sin_localizacao', 0.0486) / 1000, // ~0.0486 tCO2e por 1.000 kWh (ou 0.0486 kgCO2e/kWh)
     kgCO2Biogenico: 0.008, // Pequena fração biogênica térmica de biomassa
     tierIncertezaPadrao: 'Tier 3',
     incertezaPadraoPct: 2.0,
@@ -173,7 +178,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 0.0, // Fator zero assegurado por I-REC cancelado
     kgCH4: 0.0,
     kgN2O: 0.0,
-    fatorFossilTCO2e: 0.0,
+    fatorFossilTCO2e: getValorCanonica('irec_mercado', 0.0),
     kgCO2Biogenico: 0.0,
     tierIncertezaPadrao: 'Tier 3',
     incertezaPadraoPct: 1.0,
@@ -191,7 +196,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 0.098,
     kgCH4: 0.000006,
     kgN2O: 0.000003,
-    fatorFossilTCO2e: 0.000099, // ~0.099 kgCO2e/t.km
+    fatorFossilTCO2e: getValorCanonica('rodoviario_tkm', 0.099) / 1000, // ~0.099 kgCO2e/t.km
     kgCO2Biogenico: 0.016,
     tierIncertezaPadrao: 'Tier 1',
     incertezaPadraoPct: 12.0,
@@ -209,7 +214,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 0.133,
     kgCH4: 0.000001,
     kgN2O: 0.000001,
-    fatorFossilTCO2e: 0.0001335,
+    fatorFossilTCO2e: getValorCanonica('aereo_pkm', 0.1335) / 1000,
     kgCO2Biogenico: 0.0,
     tierIncertezaPadrao: 'Tier 2',
     incertezaPadraoPct: 8.0,
@@ -227,7 +232,7 @@ export const FATORES_EMISSAO_CURADOS: Record<string, FatorEmissaoCurado> = {
     kgCO2: 0.344,
     kgCH4: 0.00002,
     kgN2O: 0.00001,
-    fatorFossilTCO2e: 0.000347, // 0.347 kgCO2e/m³ de água e esgoto tratado
+    fatorFossilTCO2e: getValorCanonica('agua_saneamento', 0.347) / 1000, // 0.347 kgCO2e/m³ de água e esgoto tratado
     kgCO2Biogenico: 0.0,
     tierIncertezaPadrao: 'Tier 2',
     incertezaPadraoPct: 6.0,
