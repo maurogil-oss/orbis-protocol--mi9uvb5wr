@@ -7,10 +7,12 @@ import {
   gerarChaveAcesso44,
   gerarDocumentoSintetico,
   gerarLoteSintetico,
+  gerarSementeRodada,
   normalizarSegmento,
   SEGMENTOS_SANDBOX_CATALOGO,
   MARCA_SANDBOX_OBRIGATORIA,
 } from '../sandboxSyntheticGenerator'
+import { isValidCNPJ } from '../cnpj'
 import { calcularInventarioGhgPorSegmento } from '@/components/ConsoleSandboxIngestaoTab'
 import pb from '@/lib/pocketbase/client'
 
@@ -302,5 +304,113 @@ describe('sandboxSyntheticGenerator - Suite de Verificação do Sandbox e Isolam
     expect(dadosSandbox.escopo3_tco2e).toBe(1000.0)
     expect(dadosSandbox.emissao_anual_tco2e).toBe(1700.0)
     expect(dadosSandbox.serie_temporal[0]?.mes).toContain('/26')
+  })
+
+  // 7. Semente por rodada (round seed) - Requisitos verbatim da tarefa
+  describe('Semente por rodada no gerador sintético (Requisitos do usuário)', () => {
+    it('(a) duas gerações do mesmo segmento em mesma data produzem conjuntos de chaves de acesso distintos', async () => {
+      const hoje = '2026-03-30'
+      const loteA = await gerarLoteSintetico({
+        segmento: 'agro',
+        quantidade: 5,
+        dataReferencia: hoje,
+        roundSeed: 123456,
+      })
+      const loteB = await gerarLoteSintetico({
+        segmento: 'agro',
+        quantidade: 5,
+        dataReferencia: hoje,
+        roundSeed: 654321,
+      })
+
+      const chavesA = loteA.map((d) => d.chaveAcesso)
+      const chavesB = loteB.map((d) => d.chaveAcesso)
+
+      // Nenhuma chave do lote A pode coincidir com lote B no mesmo dia
+      const intersecaoChaves = chavesA.filter((c) => chavesB.includes(c))
+      expect(intersecaoChaves).toHaveLength(0)
+
+      // Hashes sha256 também devem ser distintos
+      const hashesA = loteA.map((d) => d.hashSha256)
+      const hashesB = loteB.map((d) => d.hashSha256)
+      const intersecaoHashes = hashesA.filter((h) => hashesB.includes(h))
+      expect(intersecaoHashes).toHaveLength(0)
+    })
+
+    it('(b) todos os CNPJs gerados entre rodadas passam na validação de DV', async () => {
+      for (const roundSeed of [11111, 22222, 987654]) {
+        const lote = await gerarLoteSintetico({
+          segmento: 'automotiva',
+          quantidade: 4,
+          roundSeed,
+        })
+        for (const doc of lote) {
+          // Validação oficial (incluindo suporte a alfanumérico se gerado)
+          expect(validarCnpjAlfanumerico(doc.cnpjEmitente)).toBe(true)
+          expect(validarCnpjAlfanumerico(doc.cnpjDestinatario)).toBe(true)
+          if (/^\d{14}$/.test(doc.cnpjEmitente)) {
+            expect(isValidCNPJ(doc.cnpjEmitente)).toBe(true)
+          }
+          if (/^\d{14}$/.test(doc.cnpjDestinatario)) {
+            expect(isValidCNPJ(doc.cnpjDestinatario)).toBe(true)
+          }
+        }
+      }
+    })
+
+    it('(c) pesos e quantidades variam a cada execução e ficam dentro das faixas realistas por segmento', async () => {
+      const docRodada1 = await gerarDocumentoSintetico({
+        segmento: 'agro',
+        indice: 0,
+        roundSeed: 10001,
+      })
+      const docRodada2 = await gerarDocumentoSintetico({
+        segmento: 'agro',
+        indice: 0,
+        roundSeed: 20002,
+      })
+
+      // Soja: ~30 a 90 toneladas por lote (30.000 a 90.000 kg)
+      expect(docRodada1.itens[0].pesoKg).toBeGreaterThanOrEqual(30000)
+      expect(docRodada1.itens[0].pesoKg).toBeLessThanOrEqual(90000)
+      expect(docRodada2.itens[0].pesoKg).toBeGreaterThanOrEqual(30000)
+      expect(docRodada2.itens[0].pesoKg).toBeLessThanOrEqual(90000)
+
+      // Variam entre rodadas diferentes
+      expect(docRodada1.itens[0].pesoKg).not.toBe(docRodada2.itens[0].pesoKg)
+      expect(docRodada1.cnpjEmitente).not.toBe(docRodada2.cnpjEmitente)
+      expect(docRodada1.chaveAcesso).not.toBe(docRodada2.chaveAcesso)
+    })
+
+    it('(d) categoria agro_rastreado preservada com CO₂e = 0 em qualquer roundSeed', async () => {
+      for (const seed of [101, 202, 999999]) {
+        const docAgro = await gerarDocumentoSintetico({
+          segmento: 'agro',
+          indice: 0,
+          roundSeed: seed,
+        })
+        expect(docAgro.itens[0].categoriaMaterial).toBe('agro_rastreado')
+        expect(docAgro.itens[0].fatorCo2eKg).toBe(0)
+        expect(docAgro.itens[0].co2eEvitadoKg).toBe(0)
+        expect(docAgro.itens[0].statusCalculo).toBe('em_estruturacao_de_catalogo')
+      }
+    })
+
+    it('gerarSementeRodada retorna inteiro positivo de 6 dígitos', () => {
+      const seed1 = gerarSementeRodada()
+      const seed2 = gerarSementeRodada()
+      expect(Number.isInteger(seed1)).toBe(true)
+      expect(seed1).toBeGreaterThanOrEqual(100000)
+      expect(seed1).toBeLessThan(1000000)
+    })
+
+    it('roundSeed padrão é gerado automaticamente em gerarLoteSintetico sem parâmetro explícito', async () => {
+      const loteA = await gerarLoteSintetico({ segmento: 'siderurgia', quantidade: 2 })
+      const loteB = await gerarLoteSintetico({ segmento: 'siderurgia', quantidade: 2 })
+      expect(loteA[0].chaveAcesso).not.toBe(loteB[0].chaveAcesso)
+      expect(loteA[0].dadosAdicionais.roundSeed).toBeDefined()
+      expect(loteB[0].dadosAdicionais.roundSeed).toBeDefined()
+      expect(loteA[0].dadosAdicionais.roundSeed).not.toBe(loteB[0].dadosAdicionais.roundSeed)
+    })
   })
 })

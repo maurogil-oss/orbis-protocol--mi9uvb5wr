@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import pb from '@/lib/pocketbase/client'
 import {
   gerarLoteSintetico,
+  gerarSementeRodada,
   formatarCnpj,
   normalizarSegmento,
   type DocumentoSintetico,
@@ -196,6 +197,7 @@ export function ConsoleSandboxIngestaoTab() {
   const [segmento, setSegmento] = useState<SegmentoSandbox>('automotiva')
   const [volume, setVolume] = useState<number>(10)
   const [usarAlfanumerico, setUsarAlfanumerico] = useState<boolean>(true)
+  const [sementeRodadaAtual, setSementeRodadaAtual] = useState<number | null>(null)
   const [gerando, setGerando] = useState<boolean>(false)
   const [loteGerado, setLoteGerado] = useState<DocumentoSintetico[]>([])
   const [docSelecionado, setDocSelecionado] = useState<DocumentoSintetico | null>(null)
@@ -372,10 +374,13 @@ export function ConsoleSandboxIngestaoTab() {
     setGerando(true)
     setResultadosIngestao([])
     try {
+      const novaSemente = gerarSementeRodada()
+      setSementeRodadaAtual(novaSemente)
       const lote = await gerarLoteSintetico({
         segmento,
         quantidade: volume,
         usarCnpjAlfanumerico: usarAlfanumerico,
+        roundSeed: novaSemente,
       })
       setLoteGerado(lote)
       setDocSelecionado(lote[0] || null)
@@ -880,16 +885,25 @@ export function ConsoleSandboxIngestaoTab() {
         <div className="p-6 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-heading font-bold text-base text-slate-900 dark:text-slate-100">
                   Lote de Documentos Prontos ({loteGerado.length})
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30">
                   Demonstração
                 </span>
+                {sementeRodadaAtual !== null && (
+                  <span
+                    data-testid="badge-round-seed"
+                    className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                  >
+                    Semente da rodada: #{sementeRodadaAtual}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Chaves calculadas com DV SEFAZ módulo 11 e tags íntegras para parse e ingestão.
+                Chaves calculadas com DV SEFAZ módulo 11, semente por rodada única e tags íntegras
+                para parse e ingestão.
               </p>
             </div>
 

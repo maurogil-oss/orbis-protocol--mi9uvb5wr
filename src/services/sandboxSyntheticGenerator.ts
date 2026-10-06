@@ -295,7 +295,30 @@ export interface DocumentoSintetico {
     volumeLitros?: number
     municipioOrigem?: string
     municipioDestino?: string
+    roundSeed?: number
   }
+}
+
+/**
+ * Gerador pseudoaleatório determinístico (Mulberry32) para derivação
+ * reprodutível a partir de semente de rodada (roundSeed).
+ */
+export function criarPrng(seed: number): () => number {
+  let s = Math.floor(Math.abs(seed)) >>> 0
+  if (s === 0) s = 1
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0
+    let t = Math.imul(s ^ (s >>> 15), 1 | s)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/**
+ * Gera uma nova semente de rodada inteira positiva dentro da faixa de 6 a 7 dígitos.
+ */
+export function gerarSementeRodada(): number {
+  return Math.floor(100000 + Math.random() * 900000)
 }
 
 // ----------------------------------------------------------------------
@@ -698,20 +721,35 @@ export async function gerarDocumentoSintetico(params: {
   indice: number
   dataReferencia?: string
   usarCnpjAlfanumerico?: boolean
+  roundSeed?: number
 }): Promise<DocumentoSintetico> {
   const slug = normalizarSegmento(params.segmento)
   const idx = params.indice
   const dataHoje = params.dataReferencia || new Date().toISOString().slice(0, 10)
   const aamm = `${dataHoje.slice(2, 4)}${dataHoje.slice(5, 7)}`
+  const roundSeed = params.roundSeed ?? 0
+
+  // PRNG determinístico por roundSeed + índice do documento
+  const prng = criarPrng((roundSeed * 1009 + idx * 37 + 7) >>> 0)
+
+  // Deslocamento de CNPJ: garante DVs válidos mantendo reprodutibilidade e variedade por rodada
+  const cnpjSeedEmit = (1000 + idx * 17 + slug.length + (roundSeed % 50000) * 13) >>> 0
+  const cnpjSeedDest = (2000 + idx * 29 + slug.length + (roundSeed % 50000) * 19) >>> 0
 
   const cnpjEmit = gerarCnpjValido({
     alfanumerico: params.usarCnpjAlfanumerico && idx % 2 === 0,
-    seed: 1000 + idx * 17 + slug.length,
+    seed: cnpjSeedEmit,
   })
   const cnpjDest = gerarCnpjValido({
     alfanumerico: false,
-    seed: 2000 + idx * 29 + slug.length,
+    seed: cnpjSeedDest,
   })
+
+  // Helper para cNF (8 dígitos aleatórios da NFe/CTe): incorpora roundSeed e índice garantindo unicidade diária
+  const gerarCodigoAleatorioChave = (baseCode: number): string => {
+    const val = ((baseCode + ((roundSeed * 7919 + idx * 313) % 89999999)) % 90000000) + 10000000
+    return val.toString().slice(0, 8)
+  }
 
   // 1. AGRO (Agronegócio & Grãos) - NF-e 55
   if (slug === 'agro') {
@@ -723,11 +761,14 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${81000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(81000000),
     })
-    const sacas = 500 + (idx % 10) * 100
+    // Faixa realista por segmento: soja ~30–90 t por lote (500 a 1500 sacas de 60 kg)
+    const deltaSacas = Math.floor(prng() * 1000) // 0 a 999
+    const sacas = 500 + deltaSacas // 500 a 1499 sacas = 30 a ~90 toneladas
     const pesoKg = sacas * 60
-    const vProd = Math.round(sacas * 135.5 * 100) / 100
+    const precoSaca = Math.round((130 + prng() * 15) * 100) / 100 // R$ 130 a 145 / saca
+    const vProd = Math.round(sacas * precoSaca * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
       {
         nItem: 1,
@@ -796,10 +837,12 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${82000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(82000000),
     })
-    const pesoKg = 3500 + (idx % 6) * 1000
-    const vProd = Math.round(pesoKg * 4.95 * 100) / 100
+    // Faixa realista: sucata ferrosa ~3.000 a 10.000 kg por carregamento de caminhão
+    const pesoKg = Math.round(3000 + prng() * 6000 + (idx % 5) * 200)
+    const precoKg = Math.round((4.6 + prng() * 0.7) * 100) / 100 // R$ 4,60 a 5,30/kg
+    const vProd = Math.round(pesoKg * precoKg * 100) / 100
     const co2e = Math.round(pesoKg * 2.18 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
       {
@@ -869,10 +912,11 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${83000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(83000000),
     })
-    const toneladas = 15 + (idx % 8) * 5
-    const pesoKg = toneladas * 1000
+    // Faixa realista: concreto / cimento granel ~12 a 45 toneladas por caminhão betoneira/silo
+    const toneladas = Math.round((12 + prng() * 30 + (idx % 4) * 2) * 10) / 10
+    const pesoKg = Math.round(toneladas * 1000)
     const vProd = Math.round(toneladas * 320.0 * 100) / 100
     const co2e = Math.round(pesoKg * 0.12 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
@@ -942,7 +986,8 @@ export async function gerarDocumentoSintetico(params: {
       : 'OLEO DIESEL B S10 COMUM GRANEL - BAIXO TEOR DE ENXOFRE'
     const cfop = isBiometanol ? '6655' : '5655'
     const cProd = isBiometanol ? 'BIO-MET-01' : 'DSL-S10-02'
-    const litros = 10000 + ((idx * 2500) % 20000)
+    // Faixa realista: caminhão tanque de combustível ~8.000 a 30.000 litros
+    const litros = Math.round(8000 + prng() * 20000 + (idx % 5) * 1000)
     const precoLitro = isBiometanol ? 4.85 : 5.92
     const valorTotal = Math.round(litros * precoLitro * 100) / 100
     const nNF = (140000 + idx).toString()
@@ -953,7 +998,7 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${84000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(84000000),
     })
     const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 04: Energia Renovável & Biogás. CFOP ${cfop}. NCM ${ncm}. Volume: ${litros} L.`
     const itens: ItemDocumentoSintetico[] = [
@@ -1028,9 +1073,10 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${85000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(85000000),
     })
-    const litros = 4000 + (idx % 5) * 1000
+    // Faixa realista: solvente recuperado em IBCs (1.000 L cada) ~2.000 a 10.000 litros
+    const litros = Math.round(2000 + prng() * 6000 + (idx % 4) * 1000)
     const vProd = Math.round(litros * 7.8 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
       {
@@ -1099,11 +1145,13 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '57',
       serie: '1',
       numeroDoc: nCT,
-      codigoAleatorio: `${65000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(65000000),
     })
-    const rntrc = (80000000 + idx).toString()
+    const rntrc = (80000000 + ((roundSeed * 13 + idx) % 9999999)).toString().slice(0, 8)
     const cfop = '6353'
-    const valorFrete = Math.round((2800 + ((idx * 340) % 4500)) * 100) / 100
+    // Faixa realista: frete rodoviário interestadual lote fechado R$ 2.400 a R$ 7.500
+    const valorFrete = Math.round((2400 + prng() * 4500 + (idx % 5) * 200) * 100) / 100
+    const pesoCargaKg = Math.round(8000 + prng() * 14000) // 8 a 22 toneladas
     const infCpl = `${MARCA_SANDBOX_OBRIGATORIA} - Protocolo Setorial 06: Logística & Transporte. PR -> SP. RNTRC ${rntrc}. CFOP ${cfop}. GLEC Framework.`
     const xml = construirXmlCTe({
       chaveAcesso: chave,
@@ -1132,7 +1180,7 @@ export async function gerarDocumentoSintetico(params: {
         vUnCom: valorFrete,
         vProd: valorFrete,
         categoriaMaterial: 'outros',
-        pesoKg: 12500,
+        pesoKg: pesoCargaKg,
         fatorCo2eKg: 0,
         co2eEvitadoKg: 0,
         statusCalculo: 'em_estruturacao_de_catalogo',
@@ -1175,9 +1223,10 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${87000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(87000000),
     })
-    const pesoKg = 1200 + (idx % 6) * 300
+    // Faixa realista: fardos de fibra PET reciclada ~800 a 4.000 kg
+    const pesoKg = Math.round(800 + prng() * 3000 + (idx % 4) * 200)
     const vProd = Math.round(pesoKg * 8.5 * 100) / 100
     const co2e = Math.round(pesoKg * 1.9 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
@@ -1248,9 +1297,10 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${88000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(88000000),
     })
-    const toneladas = 40 + (idx % 5) * 10
+    // Faixa realista: minério beneficiado carretas caçamba rodotrem ~30 a 80 toneladas
+    const toneladas = Math.round((30 + prng() * 45 + (idx % 4) * 3) * 10) / 10
     const vProd = Math.round(toneladas * 480.0 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
       {
@@ -1311,9 +1361,9 @@ export async function gerarDocumentoSintetico(params: {
 
   // 9. AUTOMOTIVA (Automotiva / CDVs) - NF-e 55 (aço 2,18, alumínio 14,40, cobre 5,40)
   if (slug === 'automotiva') {
-    const chassiFinal = (1000 + idx).toString().slice(-4)
+    const chassiFinal = (1000 + ((roundSeed * 7 + idx) % 8999)).toString().slice(-4)
     const chassi = `93YBB05U0GJ${chassiFinal}`
-    const placa = `ORB-${(2000 + idx).toString().slice(-4)}`
+    const placa = `ORB-${(2000 + ((roundSeed * 11 + idx) % 7999)).toString().slice(-4)}`
     const nNF = (200000 + idx).toString()
     const chave = gerarChaveAcesso44({
       cUF: '41',
@@ -1322,7 +1372,7 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '2',
       numeroDoc: nNF,
-      codigoAleatorio: `${76000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(76000000),
     })
     const itens: ItemDocumentoSintetico[] = [
       {
@@ -1426,9 +1476,10 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${71000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(71000000),
     })
-    const pesoKg = 5000 + (idx % 5) * 1000
+    // Faixa realista: subprodutos alimentícios (levedura / cevada ração) ~3.000 a 12.000 kg
+    const pesoKg = Math.round(3000 + prng() * 8000 + (idx % 4) * 500)
     const vProd = Math.round(pesoKg * 2.1 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
       {
@@ -1497,10 +1548,11 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${72000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(72000000),
     })
-    const toneladas = 10 + (idx % 6) * 2
-    const pesoKg = toneladas * 1000
+    // Faixa realista: aparas de papelão prensado em fardos ~8 a 25 toneladas por carga
+    const toneladas = Math.round((8 + prng() * 16 + (idx % 4) * 1.5) * 10) / 10
+    const pesoKg = Math.round(toneladas * 1000)
     const vProd = Math.round(toneladas * 650.0 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
       {
@@ -1569,10 +1621,12 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${73000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(73000000),
     })
-    const pesoKg = 2500 + (idx % 6) * 500
-    const vProd = Math.round(pesoKg * 6.2 * 100) / 100
+    // Faixa realista: resina termoplástica reciclada em bags ~1.500 a 7.000 kg
+    const pesoKg = Math.round(1500 + prng() * 5000 + (idx % 4) * 250)
+    const precoKg = Math.round((5.8 + prng() * 1.0) * 100) / 100
+    const vProd = Math.round(pesoKg * precoKg * 100) / 100
     const co2e = Math.round(pesoKg * 1.9 * 100) / 100
     const itens: ItemDocumentoSintetico[] = [
       {
@@ -1643,9 +1697,12 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${74000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(74000000),
     })
-    const vProd = Math.round((18000 + (idx % 5) * 3500) * 100) / 100
+    // Faixa realista: caixas de descarte controlado de embalagens/blisters ~500 a 3.000 un
+    const qCom = Math.round(500 + prng() * 2500 + (idx % 4) * 100)
+    const vProd = Math.round((12000 + prng() * 18000 + (idx % 5) * 1000) * 100) / 100
+    const pesoKg = Math.round(qCom * 0.35)
     const itens: ItemDocumentoSintetico[] = [
       {
         nItem: 1,
@@ -1654,11 +1711,11 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '3004.90.99',
         cfop: '5949',
         uCom: 'UN',
-        qCom: 1000,
-        vUnCom: vProd / 1000,
+        qCom,
+        vUnCom: Math.round((vProd / qCom) * 100) / 100,
         vProd,
         categoriaMaterial: 'outros',
-        pesoKg: 350,
+        pesoKg,
         fatorCo2eKg: 0,
         co2eEvitadoKg: 0,
         statusCalculo: 'em_estruturacao_de_catalogo',
@@ -1713,9 +1770,13 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${43000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(43000000),
     })
     const cfop = idx % 2 === 0 ? '5102' : '5949'
+    const britaTon = Math.round((10 + prng() * 18 + (idx % 5)) * 10) / 10
+    const blocosMil = Math.round((1 + prng() * 3) * 10) / 10
+    const acoKg = Math.round(1800 + prng() * 3200 + (idx % 5) * 200)
+
     const itens: ItemDocumentoSintetico[] = [
       {
         nItem: 1,
@@ -1724,13 +1785,13 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '2517.10.00',
         cfop,
         uCom: 'TON',
-        qCom: 12 + (idx % 8),
+        qCom: britaTon,
         vUnCom: 48.0,
-        vProd: Math.round((12 + (idx % 8)) * 48.0 * 100) / 100,
+        vProd: Math.round(britaTon * 48.0 * 100) / 100,
         categoriaMaterial: 'concreto',
-        pesoKg: (12 + (idx % 8)) * 1000,
+        pesoKg: Math.round(britaTon * 1000),
         fatorCo2eKg: 0.12,
-        co2eEvitadoKg: Math.round((12 + (idx % 8)) * 1000 * 0.12 * 100) / 100,
+        co2eEvitadoKg: Math.round(britaTon * 1000 * 0.12 * 100) / 100,
         statusCalculo: 'calculado',
       },
       {
@@ -1740,13 +1801,13 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '6810.11.00',
         cfop,
         uCom: 'MIL',
-        qCom: 2 + (idx % 3),
+        qCom: blocosMil,
         vUnCom: 2850.0,
-        vProd: Math.round((2 + (idx % 3)) * 2850.0 * 100) / 100,
+        vProd: Math.round(blocosMil * 2850.0 * 100) / 100,
         categoriaMaterial: 'concreto',
-        pesoKg: (2 + (idx % 3)) * 12000,
+        pesoKg: Math.round(blocosMil * 12000),
         fatorCo2eKg: 0.12,
-        co2eEvitadoKg: Math.round((2 + (idx % 3)) * 12000 * 0.12 * 100) / 100,
+        co2eEvitadoKg: Math.round(blocosMil * 12000 * 0.12 * 100) / 100,
         statusCalculo: 'calculado',
       },
       {
@@ -1756,13 +1817,13 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '7214.20.00',
         cfop,
         uCom: 'KG',
-        qCom: 2500 + (idx % 5) * 500,
+        qCom: acoKg,
         vUnCom: 4.1,
-        vProd: Math.round((2500 + (idx % 5) * 500) * 4.1 * 100) / 100,
+        vProd: Math.round(acoKg * 4.1 * 100) / 100,
         categoriaMaterial: 'aco',
-        pesoKg: 2500 + (idx % 5) * 500,
+        pesoKg: acoKg,
         fatorCo2eKg: 2.18,
-        co2eEvitadoKg: Math.round((2500 + (idx % 5) * 500) * 2.18 * 100) / 100,
+        co2eEvitadoKg: Math.round(acoKg * 2.18 * 100) / 100,
         statusCalculo: 'calculado',
       },
     ]
@@ -1816,9 +1877,14 @@ export async function gerarDocumentoSintetico(params: {
       modelo: '55',
       serie: '1',
       numeroDoc: nNF,
-      codigoAleatorio: `${54000000 + idx}`.slice(0, 8),
+      codigoAleatorio: gerarCodigoAleatorioChave(54000000),
     })
     const cfop = idx % 3 === 0 ? '5949' : idx % 3 === 1 ? '6949' : '1949'
+    const qFontes = Math.round(8 + prng() * 12 + (idx % 4))
+    const qTeclados = Math.round(5 + prng() * 10 + (idx % 3))
+    const qRoteadores = Math.round(3 + prng() * 8 + (idx % 3))
+    const qCabosKg = Math.round((6.0 + prng() * 12.0 + (idx % 4)) * 10) / 10
+
     const itens: ItemDocumentoSintetico[] = [
       {
         nItem: 1,
@@ -1827,13 +1893,13 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '8504.40.10',
         cfop,
         uCom: 'UN',
-        qCom: 10 + (idx % 5),
+        qCom: qFontes,
         vUnCom: 28.5,
-        vProd: Math.round((10 + (idx % 5)) * 28.5 * 100) / 100,
+        vProd: Math.round(qFontes * 28.5 * 100) / 100,
         categoriaMaterial: 'polimeros',
-        pesoKg: Math.round((10 + (idx % 5)) * 0.28 * 100) / 100,
+        pesoKg: Math.round(qFontes * 0.28 * 100) / 100,
         fatorCo2eKg: 1.9,
-        co2eEvitadoKg: Math.round((10 + (idx % 5)) * 0.28 * 1.9 * 100) / 100,
+        co2eEvitadoKg: Math.round(qFontes * 0.28 * 1.9 * 100) / 100,
         statusCalculo: 'calculado',
       },
       {
@@ -1843,13 +1909,13 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '8471.60.52',
         cfop,
         uCom: 'UN',
-        qCom: 6 + (idx % 4),
+        qCom: qTeclados,
         vUnCom: 35.0,
-        vProd: Math.round((6 + (idx % 4)) * 35.0 * 100) / 100,
+        vProd: Math.round(qTeclados * 35.0 * 100) / 100,
         categoriaMaterial: 'aco',
-        pesoKg: Math.round((6 + (idx % 4)) * 0.75 * 100) / 100,
+        pesoKg: Math.round(qTeclados * 0.75 * 100) / 100,
         fatorCo2eKg: 2.18,
-        co2eEvitadoKg: Math.round((6 + (idx % 4)) * 0.75 * 2.18 * 100) / 100,
+        co2eEvitadoKg: Math.round(qTeclados * 0.75 * 2.18 * 100) / 100,
         statusCalculo: 'calculado',
       },
       {
@@ -1859,13 +1925,13 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '8517.62.77',
         cfop,
         uCom: 'UN',
-        qCom: 4 + (idx % 3),
+        qCom: qRoteadores,
         vUnCom: 95.0,
-        vProd: Math.round((4 + (idx % 3)) * 95.0 * 100) / 100,
+        vProd: Math.round(qRoteadores * 95.0 * 100) / 100,
         categoriaMaterial: 'aluminio',
-        pesoKg: Math.round((4 + (idx % 3)) * 0.45 * 100) / 100,
+        pesoKg: Math.round(qRoteadores * 0.45 * 100) / 100,
         fatorCo2eKg: 14.4,
-        co2eEvitadoKg: Math.round((4 + (idx % 3)) * 0.45 * 14.4 * 100) / 100,
+        co2eEvitadoKg: Math.round(qRoteadores * 0.45 * 14.4 * 100) / 100,
         statusCalculo: 'calculado',
       },
       {
@@ -1875,13 +1941,13 @@ export async function gerarDocumentoSintetico(params: {
         ncm: '8504.40.10',
         cfop,
         uCom: 'KG',
-        qCom: 8.5 + (idx % 4),
+        qCom: qCabosKg,
         vUnCom: 32.0,
-        vProd: Math.round((8.5 + (idx % 4)) * 32.0 * 100) / 100,
+        vProd: Math.round(qCabosKg * 32.0 * 100) / 100,
         categoriaMaterial: 'cobre',
-        pesoKg: Math.round((8.5 + (idx % 4)) * 100) / 100,
+        pesoKg: Math.round(qCabosKg * 100) / 100,
         fatorCo2eKg: 5.4,
-        co2eEvitadoKg: Math.round((8.5 + (idx % 4)) * 5.4 * 100) / 100,
+        co2eEvitadoKg: Math.round(qCabosKg * 5.4 * 100) / 100,
         statusCalculo: 'calculado',
       },
     ]
@@ -1938,10 +2004,15 @@ export async function gerarDocumentoSintetico(params: {
     modelo: '55',
     serie: '1',
     numeroDoc: nNF,
-    codigoAleatorio: `${32000000 + idx}`.slice(0, 8),
+    codigoAleatorio: gerarCodigoAleatorioChave(32000000),
   })
   const cfop = idx % 2 === 0 ? '5949' : '6949'
-  const pesoCobre = 350 + (idx % 10) * 20
+  // Faixa realista: mineração urbana / sucata eletrônica PCI ~200 a 800 kg de fração cobre
+  const pesoCobre = Math.round(200 + prng() * 500 + (idx % 6) * 20)
+  const qOuroG = Math.round(80 + prng() * 120 + (idx % 5) * 10)
+  const qPaladioG = Math.round(50 + prng() * 80 + (idx % 4) * 8)
+  const qTerrasKg = Math.round(30 + prng() * 50 + (idx % 5) * 5)
+
   const itens: ItemDocumentoSintetico[] = [
     {
       nItem: 1,
@@ -1967,11 +2038,11 @@ export async function gerarDocumentoSintetico(params: {
       ncm: '8534.00.00',
       cfop,
       uCom: 'G',
-      qCom: 125 + (idx % 5) * 15,
+      qCom: qOuroG,
       vUnCom: 395.0,
-      vProd: Math.round((125 + (idx % 5) * 15) * 395.0 * 100) / 100,
+      vProd: Math.round(qOuroG * 395.0 * 100) / 100,
       categoriaMaterial: 'outros',
-      pesoKg: Math.round(((125 + (idx % 5) * 15) / 1000) * 1000) / 1000,
+      pesoKg: Math.round((qOuroG / 1000) * 1000) / 1000,
       fatorCo2eKg: 0,
       co2eEvitadoKg: 0,
       statusCalculo: 'em_estruturacao_de_catalogo',
@@ -1984,11 +2055,11 @@ export async function gerarDocumentoSintetico(params: {
       ncm: '8548.00.00',
       cfop,
       uCom: 'G',
-      qCom: 85 + (idx % 4) * 10,
+      qCom: qPaladioG,
       vUnCom: 210.0,
-      vProd: Math.round((85 + (idx % 4) * 10) * 210.0 * 100) / 100,
+      vProd: Math.round(qPaladioG * 210.0 * 100) / 100,
       categoriaMaterial: 'outros',
-      pesoKg: Math.round(((85 + (idx % 4) * 10) / 1000) * 1000) / 1000,
+      pesoKg: Math.round((qPaladioG / 1000) * 1000) / 1000,
       fatorCo2eKg: 0,
       co2eEvitadoKg: 0,
       statusCalculo: 'em_estruturacao_de_catalogo',
@@ -2001,11 +2072,11 @@ export async function gerarDocumentoSintetico(params: {
       ncm: '8548.00.00',
       cfop,
       uCom: 'KG',
-      qCom: 45 + (idx % 6) * 5,
+      qCom: qTerrasKg,
       vUnCom: 180.0,
-      vProd: Math.round((45 + (idx % 6) * 5) * 180.0 * 100) / 100,
+      vProd: Math.round(qTerrasKg * 180.0 * 100) / 100,
       categoriaMaterial: 'outros',
-      pesoKg: 45 + (idx % 6) * 5,
+      pesoKg: qTerrasKg,
       fatorCo2eKg: 0,
       co2eEvitadoKg: 0,
       statusCalculo: 'em_estruturacao_de_catalogo',
@@ -2060,7 +2131,10 @@ export async function gerarLoteSintetico(params: {
   quantidade: number
   dataReferencia?: string
   usarCnpjAlfanumerico?: boolean
+  roundSeed?: number
 }): Promise<DocumentoSintetico[]> {
+  // Se nenhuma roundSeed for fornecida, gera uma nova para cada rodada
+  const roundSeed = params.roundSeed ?? gerarSementeRodada()
   const lote: DocumentoSintetico[] = []
   for (let i = 0; i < params.quantidade; i++) {
     const doc = await gerarDocumentoSintetico({
@@ -2068,7 +2142,10 @@ export async function gerarLoteSintetico(params: {
       indice: i,
       dataReferencia: params.dataReferencia,
       usarCnpjAlfanumerico: params.usarCnpjAlfanumerico ?? true,
+      roundSeed,
     })
+    // Grava roundSeed nos dados adicionais para rastreabilidade pericial
+    doc.dadosAdicionais.roundSeed = roundSeed
     lote.push(doc)
   }
   return lote

@@ -68,4 +68,20 @@ describe('cdv_pecas categoria_material schema alignment', () => {
       expect(item.categoriaMaterial).toBe('agro_rastreado')
     }
   })
+
+  it('garante que documentos gerados com qualquer roundSeed preservam categorias válidas no schema', async () => {
+    const permitidas = new Set(catField?.selectValues as string[])
+    for (const roundSeed of [777, 99999]) {
+      const loteAgro = await gerarLoteSintetico({
+        segmento: 'agro',
+        quantidade: 2,
+        roundSeed,
+      })
+      for (const doc of loteAgro) {
+        for (const it of doc.itens) {
+          expect(permitidas.has(it.categoriaMaterial)).toBe(true)
+        }
+      }
+    }
+  })
 })

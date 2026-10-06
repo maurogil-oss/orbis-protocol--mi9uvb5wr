@@ -450,4 +450,31 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
     )
     expect(pecaCriada.material_declarado).toMatch(/Agro|Biomassa|Soja|Milho|Grãos/i)
   })
+
+  it('exibe badge da semente da rodada e varia valores/chaves a cada execução no Sandbox', async () => {
+    render(<ConsoleSandboxIngestaoTab />)
+
+    const btnVol1 = screen.getByRole('button', { name: '1' })
+    fireEvent.click(btnVol1)
+
+    const btnGerar = screen.getByRole('button', { name: /Gerar 1 Docs Sintéticos/i })
+    fireEvent.click(btnGerar)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('badge-round-seed')).toBeInTheDocument()
+    })
+
+    const textoSemente1 = screen.getByTestId('badge-round-seed').textContent
+    expect(textoSemente1).toMatch(/Semente da rodada: #\d+/)
+
+    // Gera segunda rodada
+    fireEvent.click(btnGerar)
+
+    await waitFor(() => {
+      const textoSemente2 = screen.getByTestId('badge-round-seed').textContent
+      expect(textoSemente2).toMatch(/Semente da rodada: #\d+/)
+      // Semente por rodada é gerada a cada clique
+      expect(textoSemente2).not.toBe(textoSemente1)
+    })
+  })
 })
