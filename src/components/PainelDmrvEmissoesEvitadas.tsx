@@ -104,16 +104,17 @@ export function PainelDmrvEmissoesEvitadas({
           verticalEfetiva || undefined,
         )
         setDados(info)
-        // Adoção única do protocolo dominante com guarda:
+        // Adoção única do protocolo dominante / mais recente com guarda:
         // Apenas se a chamada NÃO veio do efeito inicial (onde o estado já foi resetado e não deve disparar re-render),
         // ou quando nenhuma vertical foi solicitada E o estado atual ainda está vazio, sem redefinir o mesmo valor
+        const verticalPadrao = info.verticalMaisRecenteSlug || info.protocoloDominanteSlug || ''
         if (
           origemChamada !== 'efeito_inicial' &&
           !verticalEfetiva &&
-          info.protocoloDominanteSlug &&
-          verticalSelecionadaRef.current !== info.protocoloDominanteSlug
+          verticalPadrao &&
+          verticalSelecionadaRef.current !== verticalPadrao
         ) {
-          setVerticalSelecionada(info.protocoloDominanteSlug)
+          setVerticalSelecionada(verticalPadrao)
         }
       } catch (err: any) {
         console.error('Erro ao carregar dados dMRV:', err)
@@ -344,7 +345,12 @@ export function PainelDmrvEmissoesEvitadas({
               <select
                 id="seletor-vertical-foco"
                 data-testid="seletor-vertical-foco"
-                value={verticalSelecionada || dados.protocoloDominanteSlug || ''}
+                value={
+                  verticalSelecionada ||
+                  dados.verticalMaisRecenteSlug ||
+                  dados.protocoloDominanteSlug ||
+                  ''
+                }
                 onChange={(e) => handleTrocarVertical(e.target.value)}
                 className="bg-transparent text-xs font-bold text-foreground border-none outline-none cursor-pointer pr-1 py-0.5"
               >

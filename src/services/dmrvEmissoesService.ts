@@ -154,6 +154,8 @@ export interface DadosDmrvEmpresa {
   /** Protocolo dominante identificado no conjunto de lotes */
   protocoloDominanteSlug?: string
   protocoloDominanteNome?: string
+  /** Slug do lote com timestamp mais recente entre todos os lotes */
+  verticalMaisRecenteSlug?: string
   /** 4 cards prontos para renderização conforme o catálogo do segmento */
   kpiCards?: CardKpiRenderizavel[]
   /** Relatório com a decomposição analítica completa em 3 níveis */
@@ -188,6 +190,7 @@ export interface ResumoDmrvSegregado {
   }
   protocoloDominanteSlug?: string
   protocoloDominanteNome?: string
+  verticalMaisRecenteSlug?: string
   kpiCards?: CardKpiRenderizavel[]
   verticaisDisponiveis?: VerticalDisponivel[]
 }
@@ -296,12 +299,63 @@ export function normalizarSlugSegmento(raw?: string | null): string {
 }
 
 /**
+ * Extrai o slug do lote pela PRIMEIRA fonte disponível na ordem canônica:
+ * 1. lote.protocolo
+ * 2. lote.protocolo_setorial
+ * 3. lote.segmento
+ * 4. lote.setor
+ * 5. lote.cdv_codigo via regex aceitando sufixo sem dígitos (ex.: SANDBOX-AGRO)
+ * 6. lote.payload_bruto_json (protocoloSetorialSlug, segmentoSlug, segmento, tipoSegmento)
+ * Default: 'automotiva'
+ */
+export function extrairSlugLote(lote: any): string {
+  if (!lote) return 'automotiva'
+
+  if (lote.protocolo) return normalizarSlugSegmento(lote.protocolo)
+  if (lote.protocolo_setorial) return normalizarSlugSegmento(lote.protocolo_setorial)
+  if (lote.segmento) return normalizarSlugSegmento(lote.segmento)
+  if (lote.setor) return normalizarSlugSegmento(lote.setor)
+
+  if (lote.cdv_codigo && typeof lote.cdv_codigo === 'string') {
+    const match = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
+    if (match && match[1]) {
+      return normalizarSlugSegmento(match[1])
+    }
+  }
+
+  if (lote.payload_bruto_json) {
+    try {
+      const p =
+        typeof lote.payload_bruto_json === 'string'
+          ? JSON.parse(lote.payload_bruto_json)
+          : lote.payload_bruto_json
+      if (p?.protocoloSetorialSlug) return normalizarSlugSegmento(p.protocoloSetorialSlug)
+      if (p?.segmentoSlug) return normalizarSlugSegmento(p.segmentoSlug)
+      if (p?.segmento) return normalizarSlugSegmento(p.segmento)
+      if (p?.tipoSegmento) return normalizarSlugSegmento(p.tipoSegmento)
+    } catch {
+      // payload não é JSON válido, segue
+    }
+  }
+
+  return 'automotiva'
+}
+
+/**
  * Deriva o protocolo dominante a partir de uma lista de lotes e peças.
+ * Contagem por LOTES DISTINTOS: cada lote vale exatamente 1 voto para o seu slug.
+ * Desempate: vence o slug cujo lote mais recente é o mais novo de todos.
+ * Adicionalmente retorna verticalMaisRecenteSlug (slug do lote mais recente global).
  */
 export function determinarProtocoloDominante(
   lotes: any[],
   pecas: any[],
-): { slug: string; nome: string; protocolo: ProtocoloSetorial } {
+): {
+  slug: string
+  nome: string
+  protocolo: ProtocoloSetorial
+  verticalMaisRecenteSlug: string
+} {
   const contagem = new Map<string, number>()
   const ultimoTimestamp = new Map<string, number>()
 
@@ -312,56 +366,56 @@ export function determinarProtocoloDominante(
     return isNaN(t) ? 0 : t
   }
 
-  const registrarOcorrencia = (raw?: string | null, peso = 1, ts = 0) => {
-    if (!raw) return
-    const slug = normalizarSlugSegmento(raw)
-    contagem.set(slug, (contagem.get(slug) || 0) + peso)
-    if (ts > (ultimoTimestamp.get(slug) || 0)) {
-      ultimoTimestamp.set(slug, ts)
-    }
-  }
+  let globalMaxTs = -1
+  let verticalMaisRecenteSlug = 'automotiva'
 
-  for (const lote of lotes) {
-    const tsLote = extrairTimestamp(lote)
+  if (Array.isArray(lotes) && lotes.length > 0) {
+    for (const lote of lotes) {
+      const slug = extrairSlugLote(lote)
+      const tsLote = extrairTimestamp(lote)
 
-    // 1. Campos dedicados do lote
-    if (lote.protocolo) registrarOcorrencia(lote.protocolo, 3, tsLote)
-    else if (lote.protocolo_setorial) registrarOcorrencia(lote.protocolo_setorial, 3, tsLote)
-    else if (lote.segmento) registrarOcorrencia(lote.segmento, 3, tsLote)
-    else if (lote.setor) registrarOcorrencia(lote.setor, 3, tsLote)
-    else if (lote.cdv_codigo && typeof lote.cdv_codigo === 'string') {
-      const match = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
-      if (match && match[1]) registrarOcorrencia(match[1], 3, tsLote)
-    }
+      // Exatamente 1 voto por lote distinto
+      contagem.set(slug, (contagem.get(slug) || 0) + 1)
 
-    // 2. Inspecionar payload_bruto_json ou metadados
-    if (lote.payload_bruto_json) {
-      try {
-        const payload =
-          typeof lote.payload_bruto_json === 'string'
-            ? JSON.parse(lote.payload_bruto_json)
-            : lote.payload_bruto_json
-        if (payload?.protocoloSetorialSlug)
-          registrarOcorrencia(payload.protocoloSetorialSlug, 4, tsLote)
-        if (payload?.segmentoSlug) registrarOcorrencia(payload.segmentoSlug, 4, tsLote)
-        if (payload?.tipoSegmento) registrarOcorrencia(payload.tipoSegmento, 3, tsLote)
-      } catch {
-        // payload não é JSON válido, segue
+      const prevTs = ultimoTimestamp.get(slug) || 0
+      if (tsLote > prevTs) {
+        ultimoTimestamp.set(slug, tsLote)
+      }
+
+      // Rastrear o mais recente global
+      if (tsLote > globalMaxTs) {
+        globalMaxTs = tsLote
+        verticalMaisRecenteSlug = slug
       }
     }
   }
 
   // Se não identificou por lotes, inspecionar peças
-  if (contagem.size === 0 && pecas.length > 0) {
+  if (contagem.size === 0 && Array.isArray(pecas) && pecas.length > 0) {
     for (const p of pecas) {
       const tsPeca = extrairTimestamp(p)
-      if (p.protocolo) registrarOcorrencia(p.protocolo, 1, tsPeca)
-      else if (p.segmento) registrarOcorrencia(p.segmento, 1, tsPeca)
-      else if (p.categoria) registrarOcorrencia(p.categoria, 1, tsPeca)
+      let raw: string | null = null
+      if (p.protocolo) raw = p.protocolo
+      else if (p.segmento) raw = p.segmento
+      else if (p.categoria) raw = p.categoria
+
+      if (raw) {
+        const slug = normalizarSlugSegmento(raw)
+        contagem.set(slug, (contagem.get(slug) || 0) + 1)
+        const prevTs = ultimoTimestamp.get(slug) || 0
+        if (tsPeca > prevTs) {
+          ultimoTimestamp.set(slug, tsPeca)
+        }
+        if (tsPeca > globalMaxTs) {
+          globalMaxTs = tsPeca
+          verticalMaisRecenteSlug = slug
+        }
+      }
     }
   }
 
-  // Escolher o slug mais frequente; em caso de empate, vencer o slug com o lote mais recente
+  // Escolher o slug com mais votos (lotes distintos)
+  // Desempate: vence o slug cujo lote mais recente é o mais novo de todos
   let slugDominante = 'automotiva'
   let maxVotos = 0
   let maisRecenteTs = -1
@@ -380,11 +434,17 @@ export function determinarProtocoloDominante(
     }
   }
 
+  // Se verticalMaisRecenteSlug ainda não foi definida a partir de timestamps reais (> -1), usar slugDominante
+  if (globalMaxTs === -1 && contagem.size > 0) {
+    verticalMaisRecenteSlug = slugDominante
+  }
+
   const protocolo = getProtocoloBySlug(slugDominante) || PROTOCOLOS_SETORIAIS.automotiva
   return {
     slug: slugDominante,
     nome: protocolo.nome,
     protocolo,
+    verticalMaisRecenteSlug,
   }
 }
 
@@ -553,28 +613,9 @@ export function construirEstratificacaoDmrv(params: {
 
   const obterSlugDoLote = (lote: any): string => {
     if (!lote) return protocoloDominanteSlug || 'automotiva'
-    if (lote.protocolo) return normalizarSlugSegmento(lote.protocolo)
-    if (lote.protocolo_setorial) return normalizarSlugSegmento(lote.protocolo_setorial)
-    if (lote.segmento) return normalizarSlugSegmento(lote.segmento)
-    if (lote.setor) return normalizarSlugSegmento(lote.setor)
-    if (lote.cdv_codigo && typeof lote.cdv_codigo === 'string') {
-      const m = lote.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
-      if (m && m[1]) return normalizarSlugSegmento(m[1])
-    }
-    if (lote.payload_bruto_json) {
-      try {
-        const p =
-          typeof lote.payload_bruto_json === 'string'
-            ? JSON.parse(lote.payload_bruto_json)
-            : lote.payload_bruto_json
-        if (p?.protocoloSetorialSlug) return normalizarSlugSegmento(p.protocoloSetorialSlug)
-        if (p?.segmentoSlug) return normalizarSlugSegmento(p.segmentoSlug)
-        if (p?.segmento) return normalizarSlugSegmento(p.segmento)
-      } catch {
-        /* ignore */
-      }
-    }
-    return protocoloDominanteSlug || 'automotiva'
+    const extraido = extrairSlugLote(lote)
+    if (extraido && extraido !== 'automotiva') return extraido
+    return extraido || protocoloDominanteSlug || 'automotiva'
   }
 
   // Se tivermos peças, agregamos as grandezas detalhadas de peças
@@ -1246,30 +1287,6 @@ export async function carregarDadosDmrvEmpresa(
 
   // Derivar lista de verticais disponíveis a partir dos lotes carregados
   const mapaLotesPorSlug = new Map<string, number>()
-  const extrairSlugLote = (l: any): string => {
-    if (l.protocolo) return normalizarSlugSegmento(l.protocolo)
-    if (l.protocolo_setorial) return normalizarSlugSegmento(l.protocolo_setorial)
-    if (l.segmento) return normalizarSlugSegmento(l.segmento)
-    if (l.setor) return normalizarSlugSegmento(l.setor)
-    if (l.cdv_codigo && typeof l.cdv_codigo === 'string') {
-      const m = l.cdv_codigo.match(/^[A-Z0-9]+-([A-Z0-9_]+)(?:-\d+)?$/i)
-      if (m && m[1]) return normalizarSlugSegmento(m[1])
-    }
-    if (l.payload_bruto_json) {
-      try {
-        const p =
-          typeof l.payload_bruto_json === 'string'
-            ? JSON.parse(l.payload_bruto_json)
-            : l.payload_bruto_json
-        if (p?.protocoloSetorialSlug) return normalizarSlugSegmento(p.protocoloSetorialSlug)
-        if (p?.segmentoSlug) return normalizarSlugSegmento(p.segmentoSlug)
-        if (p?.segmento) return normalizarSlugSegmento(p.segmento)
-      } catch {
-        /* ignore */
-      }
-    }
-    return 'automotiva'
-  }
 
   for (const l of lotes) {
     const sl = extrairSlugLote(l)
@@ -1278,7 +1295,6 @@ export async function carregarDadosDmrvEmpresa(
 
   // Identificar o protocolo dominante natural dos lotes/peças
   const dom = determinarProtocoloDominante(lotes, pecas)
-
   // Se o dominante não estiver no mapa (ex: determinado por peças ou vazio), incluir
   if (!mapaLotesPorSlug.has(dom.slug)) {
     mapaLotesPorSlug.set(dom.slug, lotes.length)
@@ -1531,6 +1547,7 @@ export async function carregarDadosDmrvEmpresa(
     is_fallback_inventario: isFallback,
     protocoloDominanteSlug: slugAtivo,
     protocoloDominanteNome: protoAtivoSeguro.nome || formatarNomeSlug(slugAtivo),
+    verticalMaisRecenteSlug: dom.verticalMaisRecenteSlug || dom.slug,
     kpiCards: kpiCards || [],
     relatorioEstratificado,
     simuladorReferencial,
@@ -1598,6 +1615,7 @@ export async function carregarResumoDmrvSegregado(
     },
     protocoloDominanteSlug: dados.protocoloDominanteSlug,
     protocoloDominanteNome: dados.protocoloDominanteNome,
+    verticalMaisRecenteSlug: dados.verticalMaisRecenteSlug,
     kpiCards: dados.kpiCards,
     verticaisDisponiveis: dados.verticaisDisponiveis,
   }

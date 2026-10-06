@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   determinarProtocoloDominante,
+  extrairSlugLote,
   construirCardsKpiSetoriais,
   normalizarSlugSegmento,
 } from '@/services/dmrvEmissoesService'
@@ -129,11 +130,54 @@ describe('dmrvIngestaoSegmentos - Ingestão Universal dMRV nos 16 Segmentos', ()
     expect(dom.nome).toBe('Agronegócio & Grãos')
   })
 
-  it('desempate de votos: base com 10 lotes Materiais Críticos antigos + 10 lotes Agro novos → dominante = agro (mais recente vence)', () => {
+  it('5 lotes Cimento antigos + 5 Varejo + 10 SANDBOX-AGRO novos → dominante = agro', () => {
+    const lotesCimento = Array.from({ length: 5 }).map((_, i) => ({
+      id: `lote-cimento-${i}`,
+      segmento: 'cimento',
+      created: '2024-10-01T10:00:00.000Z',
+      payload_bruto_json: {
+        protocoloSetorialSlug: 'cimento',
+        segmentoSlug: 'cimento',
+        tipoSegmento: 'cimento',
+      },
+    }))
+
+    const lotesVarejo = Array.from({ length: 5 }).map((_, i) => ({
+      id: `lote-varejo-${i}`,
+      segmento: 'varejo',
+      created: '2024-10-02T10:00:00.000Z',
+      payload_bruto_json: {
+        protocoloSetorialSlug: 'varejo',
+        segmentoSlug: 'varejo',
+        tipoSegmento: 'varejo',
+      },
+    }))
+
+    const lotesAgro = Array.from({ length: 10 }).map((_, i) => ({
+      id: `lote-agro-${i}`,
+      cdv_codigo: 'SANDBOX-AGRO',
+      created: '2025-03-01T10:00:00.000Z',
+      total_co2e_evitado_kg: 0,
+    }))
+
+    // 5 Cimento + 5 Varejo + 10 Agro => Agro possui 10 votos distintos (maior contagem de lotes)
+    const todosLotes = [...lotesCimento, ...lotesVarejo, ...lotesAgro]
+    const dom = determinarProtocoloDominante(todosLotes, [])
+
+    expect(dom.slug).toBe('agro')
+    expect(dom.nome).toBe('Agronegócio & Grãos')
+    expect(dom.verticalMaisRecenteSlug).toBe('agro')
+  })
+
+  it('10 Materiais Críticos antigos + 10 Agro novos (empate exato) → agro vence pelo lote mais recente', () => {
     const lotesCriticosAntigos = Array.from({ length: 10 }).map((_, i) => ({
       id: `lote-critico-${i}`,
       cdv_codigo: 'SANDBOX-MATERIAIS_CRITICOS',
       created: '2025-01-01T10:00:00.000Z',
+      payload_bruto_json: {
+        protocoloSetorialSlug: 'materiais-criticos-recuperados',
+        segmentoSlug: 'materiais-criticos-recuperados',
+      },
     }))
 
     const lotesAgroNovos = Array.from({ length: 10 }).map((_, i) => ({
@@ -148,6 +192,52 @@ describe('dmrvIngestaoSegmentos - Ingestão Universal dMRV nos 16 Segmentos', ()
     const dom = determinarProtocoloDominante(todosLotes, [])
     expect(dom.slug).toBe('agro')
     expect(dom.nome).toBe('Agronegócio & Grãos')
+    expect(dom.verticalMaisRecenteSlug).toBe('agro')
+  })
+
+  it('extrairSlugLote respeita a ordem estrita de prioridade das fontes', () => {
+    // 1. protocolo tem prioridade sobre tudo
+    expect(
+      extrairSlugLote({
+        protocolo: 'energia',
+        protocolo_setorial: 'cimento',
+        segmento: 'varejo',
+        setor: 'textil',
+        cdv_codigo: 'SANDBOX-AGRO',
+      }),
+    ).toBe('energia')
+
+    // 2. protocolo_setorial tem prioridade sobre segmento
+    expect(
+      extrairSlugLote({
+        protocolo_setorial: 'cimento',
+        segmento: 'varejo',
+        setor: 'textil',
+        cdv_codigo: 'SANDBOX-AGRO',
+      }),
+    ).toBe('cimento')
+
+    // 3. segmento sobre cdv_codigo
+    expect(
+      extrairSlugLote({
+        segmento: 'varejo',
+        cdv_codigo: 'SANDBOX-AGRO',
+      }),
+    ).toBe('varejo')
+
+    // 4. cdv_codigo via regex sem dígitos
+    expect(
+      extrairSlugLote({
+        cdv_codigo: 'SANDBOX-AGRO',
+      }),
+    ).toBe('agro')
+
+    // 5. payload_bruto_json
+    expect(
+      extrairSlugLote({
+        payload_bruto_json: JSON.stringify({ protocoloSetorialSlug: 'logistica' }),
+      }),
+    ).toBe('logistica')
   })
 
   it('lote SANDBOX-AGRO com soja resolve protocolo agro sem TypeError e exibe nome formatado seguro', async () => {

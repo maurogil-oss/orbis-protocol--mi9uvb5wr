@@ -645,4 +645,87 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
     // Troca manual deve somar exatamente 1 chamada adicional (total 2 chamadas)
     expect(callCount).toBe(2)
   })
+
+  it('seletor adota verticalMaisRecenteSlug como default sem disparar múltiplas chamadas de carregar (proteção anti-loop)', async () => {
+    let callCount = 0
+    const spyCarregar = vi
+      .spyOn(dmrvService, 'carregarDadosDmrvEmpresa')
+      .mockImplementation(async (_cnpj, _origem, vertical) => {
+        callCount++
+        const slugAtivo = vertical || 'agro'
+        return {
+          cnpj: '33.000.168/0001-09',
+          origem_filtro: 'producao',
+          total_co2e_evitado_kg: 1000,
+          total_massa_reciclada_kg: 5000,
+          total_pecas_reaproveitadas: 50,
+          total_lotes_processados: 20,
+          emissao_anual_tco2e: 120,
+          escopo1_tco2e: 40,
+          escopo2_tco2e: 20,
+          escopo3_tco2e: 60,
+          serie_temporal: [{ mes: 'Jan/25', co2e_evitado_kg: 1000, massa_kg: 5000 }],
+          relatorios_anteriores: [],
+          protocoloDominanteSlug: 'cimento',
+          protocoloDominanteNome: 'Cimento & Concreto',
+          verticalMaisRecenteSlug: 'agro',
+          verticaisDisponiveis: [
+            { slug: 'cimento', nome: 'Cimento & Concreto', totalLotes: 5 },
+            { slug: 'agro', nome: 'Agro & Biomassa Sustentável', totalLotes: 10 },
+          ],
+          kpiCards: [
+            {
+              id: 'co2e_evitado',
+              rotulo: 'CO₂e Evitado Total',
+              valorFormatado: '1.000,0',
+              valorNumerico: 1000,
+              unidade: 'kg',
+              legenda: 'Emissões evitadas',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos2',
+              rotulo: 'Massa Auditada',
+              valorFormatado: '5.000',
+              valorNumerico: 5000,
+              unidade: 'kg',
+              legenda: 'Balanço',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos3',
+              rotulo: 'Itens Catalogados',
+              valorFormatado: '50',
+              valorNumerico: 50,
+              unidade: 'itens',
+              legenda: 'Itens',
+              natureza: 'gravada',
+            },
+            {
+              id: 'kpi_pos4',
+              rotulo: 'Lotes Fechados',
+              valorFormatado: '20',
+              valorNumerico: 20,
+              unidade: 'lotes',
+              legenda: 'Lotes',
+              natureza: 'gravada',
+            },
+          ],
+        }
+      })
+
+    render(<PainelDmrvEmissoesEvitadas />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('seletor-vertical-foco')).toBeInTheDocument()
+    })
+
+    const seletor = screen.getByTestId('seletor-vertical-foco') as HTMLSelectElement
+    // Deve adotar verticalMaisRecenteSlug ('agro') como padrão no seletor
+    expect(seletor.value).toBe('agro')
+
+    // Deve ter sido chamado exatamente 1 vez na montagem inicial (sem loop infinito)
+    expect(callCount).toBe(1)
+    expect(spyCarregar).toHaveBeenCalledTimes(1)
+  })
 })
