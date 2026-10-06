@@ -2204,7 +2204,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         rotulo: 'CO₂e Evitado (Cobre Recuperado)',
         unidade: 'kg',
         legenda:
-          'Apenas cobre pontua em carbono (5,40 kgCO₂e/kg); metais nobres e terras raras em estruturação sem crédito',
+          'Apenas cobre pontua em carbono (4,10 kgCO₂e/kg); metais nobres e terras raras em estruturação sem crédito',
         tipoAgregacao: 'soma',
         natureza: 'gravada',
         campoOrigem: 'total_co2e_evitado_kg',

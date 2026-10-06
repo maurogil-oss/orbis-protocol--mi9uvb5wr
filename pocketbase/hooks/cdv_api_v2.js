@@ -149,7 +149,7 @@ routerAdd('POST', '/backend/v2/cdv/lotes', (e) => {
     },
     cobre: {
       fe: 4.1,
-      u: 0.045,
+      u_fe: 0.045,
       fonte:
         'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
       tier: 'T3',

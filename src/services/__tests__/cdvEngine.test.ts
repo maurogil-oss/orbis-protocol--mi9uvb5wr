@@ -9,7 +9,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
   it('deve possuir fatores curados de CO2e evitado corretos por material', () => {
     expect(FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg).toBe(2.18)
     expect(FATORES_CDV_MATERIAIS.aluminio.fatorKgCO2ePorKg).toBe(14.4)
-    expect(FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg).toBe(5.4)
+    expect(FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg).toBe(4.1)
     expect(FATORES_CDV_MATERIAIS.polimeros.fatorKgCO2ePorKg).toBe(1.9)
     expect(FATORES_CDV_MATERIAIS.outros.fatorKgCO2ePorKg).toBe(1.5)
   })
@@ -20,10 +20,10 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     const capoCo2e = Number((capoPeso * FATORES_CDV_MATERIAIS.aco.fatorKgCO2ePorKg).toFixed(2))
     expect(capoCo2e).toBe(31.61)
 
-    // Alternador 5,2 kg Cobre -> 5.2 * 5.4 = 28.08 kg
+    // Alternador 5,2 kg Cobre -> 5.2 * 4.1 = 21.32 kg
     const altPeso = 5.2
     const altCo2e = Number((altPeso * FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg).toFixed(2))
-    expect(altCo2e).toBe(28.08)
+    expect(altCo2e).toBe(21.32)
 
     // Parachoque 3,8 kg Polímeros -> 3.8 * 1.9 = 7.22 kg
     const paraPeso = 3.8
@@ -34,7 +34,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
 
     // Total evitado no lote
     const totalEvitado = capoCo2e + altCo2e + paraCo2e
-    expect(totalEvitado).toBe(66.91)
+    expect(totalEvitado).toBe(60.15)
   })
 
   it('deve gerar hash SHA-256 canônico consistente e determinístico', async () => {
@@ -114,7 +114,7 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     // 49 peças 611 recalculadas sob o motor v2:
     // Aço: 2,18 (worldsteel 2025)
     // Alumínio: 14,40 (IAI 2024 global default)
-    // Cobre: 5,40 (CopperMark/ICA 2024)
+    // Cobre: 4,10 (ICA 2024 Global LCI/LCA)
     // Polímeros: 1,90 (PlasticsEurope)
     // Outros: 1,50
     // Fórmula: floor(Q * FE_ref * 1.0 * 0.30)
@@ -249,8 +249,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'cobre',
         sub: 'Elétrica',
         peso: 5.6,
-        fator: 5.4,
-        co2e: Math.floor(5.6 * 5.4 * 1.0 * 0.3 * 100) / 100, // 9.07
+        fator: 4.1,
+        co2e: Math.floor(5.6 * 4.1 * 1.0 * 0.3 * 100) / 100, // 6.88
       },
       {
         selo: 'PR-SEAL-2026-000114',
@@ -259,8 +259,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'cobre',
         sub: 'Elétrica',
         peso: 4.8,
-        fator: 5.4,
-        co2e: Math.floor(4.8 * 5.4 * 1.0 * 0.3 * 100) / 100, // 7.77
+        fator: 4.1,
+        co2e: Math.floor(4.8 * 4.1 * 1.0 * 0.3 * 100) / 100, // 5.90
       },
       {
         selo: 'PR-SEAL-2026-000115',
@@ -269,8 +269,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'cobre',
         sub: 'Elétrica',
         peso: 7.2,
-        fator: 5.4,
-        co2e: Math.floor(7.2 * 5.4 * 1.0 * 0.3 * 100) / 100, // 11.66
+        fator: 4.1,
+        co2e: Math.floor(7.2 * 4.1 * 1.0 * 0.3 * 100) / 100, // 8.85
       },
       {
         selo: 'PR-SEAL-2026-000116',
@@ -289,8 +289,8 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
         cat: 'cobre',
         sub: 'Elétrica',
         peso: 1.9,
-        fator: 5.4,
-        co2e: Math.floor(1.9 * 5.4 * 1.0 * 0.3 * 100) / 100, // 3.07
+        fator: 4.1,
+        co2e: Math.floor(1.9 * 4.1 * 1.0 * 0.3 * 100) / 100, // 2.33
       },
       {
         selo: 'PR-SEAL-2026-000118',
@@ -642,9 +642,9 @@ describe('Módulo CDV Operacional & DPP Engine', () => {
     const massaTotal = pecasDemo.reduce((acc, p) => acc + p.peso, 0)
     expect(massaTotal).toBeCloseTo(437.7, 1)
 
-    // 4. Soma de CO2e evitado sob motor v2 fecha em 451,97 kgCO2e
+    // 4. Soma de CO2e evitado sob motor v2 fecha em 444,37 kgCO2e (com cobre auditado ICA 4,10)
     const co2eTotal = pecasDemo.reduce((acc, p) => acc + p.co2e, 0)
-    expect(co2eTotal).toBeCloseTo(451.97, 1)
+    expect(co2eTotal).toBeCloseTo(444.37, 1)
 
     // 5. Todos os selos seguem o padrão PR-SEAL-2026-XXXXXX e são únicos
     const selosSet = new Set(pecasDemo.map((p) => p.selo))

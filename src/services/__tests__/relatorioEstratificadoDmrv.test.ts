@@ -60,8 +60,8 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
       categoria_material: 'cobre',
       descricao_peca: 'Fio de cobre eletrolítico puro',
       peso_kg: 50,
-      fator_co2e_kg: 5.4,
-      co2e_evitado_kg: 270,
+      fator_co2e_kg: 4.1,
+      co2e_evitado_kg: 205,
       hash_sha256: 'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210',
     },
     {
@@ -80,7 +80,7 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
     const kpiCards = construirCardsKpiSetoriais({
       slugDominante: 'automotiva',
       protocolo: PROTOCOLOS_SETORIAIS.automotiva,
-      totalCo2eKg: 2450,
+      totalCo2eKg: 2385,
       totalMassaKg: 1050.5,
       totalPecas: 3,
       totalLotes: 2,
@@ -101,7 +101,7 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
     const somaCo2eProtocolos = est.porProtocolo.reduce((acc, p) => acc + p.co2e_evitado_kg, 0)
     const somaMassaProtocolos = est.porProtocolo.reduce((acc, p) => acc + p.massa_kg, 0)
 
-    expect(Math.round(somaCo2eProtocolos * 10) / 10).toBe(2450)
+    expect(Math.round(somaCo2eProtocolos * 10) / 10).toBe(2385)
     expect(Math.round(somaMassaProtocolos * 10) / 10).toBe(1050.5)
 
     // 2. Verificação Nível B (Fator & Material): presença de materiais com fator e materiais sem fator
@@ -114,8 +114,8 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
 
     const itemCobre = est.porFatorMaterial.find((m) => m.chave === 'mat_cobre')
     expect(itemCobre).toBeDefined()
-    expect(itemCobre?.fator_co2e_kg).toBe(5.4)
-    expect(itemCobre?.co2e_evitado_kg).toBe(270)
+    expect(itemCobre?.fator_co2e_kg).toBe(4.1)
+    expect(itemCobre?.co2e_evitado_kg).toBe(205)
 
     // 3. Peça de ouro SEM FATOR NÃO SOME: deve aparecer com badge "rastreada, sem CO₂e atribuído"
     const itemOuro = est.porFatorMaterial.find((m) => m.chave.includes('critico_Ouro'))
@@ -142,7 +142,7 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
     )
 
     // 5. Soma de conferência pericial
-    expect(est.totaisConferencia.co2e_evitado_kg).toBe(2450)
+    expect(est.totaisConferencia.co2e_evitado_kg).toBe(2385)
     expect(est.totaisConferencia.massa_kg).toBe(1050.5)
     expect(est.totaisConferencia.total_pecas).toBe(3)
     expect(est.totaisConferencia.total_lotes).toBe(2)
@@ -195,7 +195,7 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
     const kpiCards = construirCardsKpiSetoriais({
       slugDominante: 'automotiva',
       protocolo: PROTOCOLOS_SETORIAIS.automotiva,
-      totalCo2eKg: 2450,
+      totalCo2eKg: 2385,
       totalMassaKg: 1050.5,
       totalPecas: 3,
       totalLotes: 2,
@@ -214,7 +214,7 @@ describe('Relatório Estratificado dMRV - Reconciliação Pericial, Drill-Down e
     const dadosDmrv: DadosDmrvEmpresa = {
       cnpj: '33.000.168/0001-09',
       origem_filtro: 'producao',
-      total_co2e_evitado_kg: 2450,
+      total_co2e_evitado_kg: 2385,
       total_massa_reciclada_kg: 1050.5,
       total_pecas_reaproveitadas: 3,
       total_lotes_processados: 2,

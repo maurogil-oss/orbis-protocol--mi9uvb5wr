@@ -35,8 +35,9 @@ describe('Catálogo Oficial de Fatores CO₂e (Bloco 4 /fatores)', () => {
 
     const cobre = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-cobre')
     expect(cobre).toBeDefined()
-    expect(cobre?.valorFator).toBe(FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg) // 5.4
-    expect(cobre?.fonteOficial).toContain('CopperMark')
+    expect(cobre?.valorFator).toBe(FATORES_CDV_MATERIAIS.cobre.fatorKgCO2ePorKg) // 4.1
+    expect(cobre?.valorFator).toBe(4.1)
+    expect(cobre?.fonteOficial).toContain('International Copper Association')
 
     const polimeros = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-polimeros')
     expect(polimeros).toBeDefined()

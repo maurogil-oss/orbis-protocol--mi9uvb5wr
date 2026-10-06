@@ -16,7 +16,7 @@
  *    Peças sem destinação documental (ex.: em estoque) permanecem como claim potencial.
  * 5. LOTE DE DEMONSTRAÇÃO GOL (3 PEÇAS):
  *    - Capô Dianteiro: aço 10,0 kg, FE 2,18 kgCO₂e/kg, u_FE 3,5%, NF-e 1234 -> Claim Confirmado
- *    - Alternador/Estator: cobre 2,5 kg, FE 5,40 kgCO₂e/kg, u_FE 4,5%, MTR 4410 -> Claim Confirmado
+ *    - Alternador/Estator: cobre 2,5 kg, FE 4,10 kgCO₂e/kg, u_FE 4,5%, MTR 4410 -> Claim Confirmado
  *    - Parachoque dianteiro: polímeros 4,0 kg, FE 1,90 kgCO₂e/kg, u_FE 5,0%, em estoque -> Claim Potencial
  */
 
@@ -198,7 +198,7 @@ describe('Auditoria de Reprodução F6 — Perícia Independente Tecpar (DM-ORB-
         descricao: 'Alternador/Estator',
         material: 'cobre',
         peso_kg: 2.5,
-        fe_ref: 5.4,
+        fe_ref: 4.1,
         u_fe: 0.045, // 4,5%
         destinacao_status: 'reciclada',
         documento_tipo: 'mtr',
@@ -226,9 +226,9 @@ describe('Auditoria de Reprodução F6 — Perícia Independente Tecpar (DM-ORB-
     expect(auditoria.pecas[0].evitado_liquido).toBe(6.54)
     expect(auditoria.pecas[0].status_claim).toBe('confirmado')
 
-    // Alternador/Estator: 2.5 × 5.40 × 1.0 × 0.30 = 4.05 kgCO₂e
-    expect(auditoria.pecas[1].evitado_bruto).toBe(4.05)
-    expect(auditoria.pecas[1].evitado_liquido).toBe(4.05)
+    // Alternador/Estator: 2.5 × 4.10 × 1.0 × 0.30 = 3.07 kgCO₂e
+    expect(auditoria.pecas[1].evitado_bruto).toBe(3.07)
+    expect(auditoria.pecas[1].evitado_liquido).toBe(3.07)
     expect(auditoria.pecas[1].status_claim).toBe('confirmado')
 
     // Parachoque: 4.0 × 1.90 × 1.0 × 0.30 = 2.28 kgCO₂e
@@ -237,24 +237,24 @@ describe('Auditoria de Reprodução F6 — Perícia Independente Tecpar (DM-ORB-
     expect(auditoria.pecas[2].status_claim).toBe('potencial')
 
     // Consolidado do lote:
-    // Confirmado = 6.54 + 4.05 = 10.59 kgCO₂e
-    expect(auditoria.confirmado).toBe(10.59)
+    // Confirmado = 6.54 + 3.07 = 9.61 kgCO₂e
+    expect(auditoria.confirmado).toBe(9.61)
 
     // Potencial = 2.28 kgCO₂e
     expect(auditoria.potencial).toBe(2.28)
 
-    // Total líquido = 6.54 + 4.05 + 2.28 = 12.87 kgCO₂e
-    expect(auditoria.total_liquido).toBe(12.87)
+    // Total líquido = 6.54 + 3.07 + 2.28 = 11.89 kgCO₂e
+    expect(auditoria.total_liquido).toBe(11.89)
 
     // Incerteza do lote por quadratura:
     // u1 = 6.54 × 0.035 = 0.2289 -> u1² = 0.05239521
-    // u2 = 4.05 × 0.045 = 0.18225 -> u2² = 0.0332150625
+    // u2 = 3.07 × 0.045 = 0.13815 -> u2² = 0.0190854225
     // u3 = 2.28 × 0.050 = 0.114 -> u3² = 0.012996
-    // u_massa = 12.87 × 0.01 = 0.1287 -> u_massa² = 0.01656369
-    // soma = 0.1151699625 -> √soma = 0.339367... -> round2 = 0.34
-    // u_pct = (0.34 / 12.87) * 100 = 2.6418... -> round2 = 2.64%
-    expect(auditoria.incerteza_absoluta_kg).toBe(0.34)
-    expect(auditoria.incerteza_relativa_pct).toBe(2.64)
+    // u_massa = 11.89 × 0.01 = 0.1189 -> u_massa² = 0.01413721
+    // soma = 0.0986138425 -> √soma = 0.314028... -> round2 = 0.31
+    // u_pct = (0.31 / 11.89) * 100 = 2.6072... -> round2 = 2.61%
+    expect(auditoria.incerteza_absoluta_kg).toBe(0.31)
+    expect(auditoria.incerteza_relativa_pct).toBe(2.61)
   })
 
   // 2. Confronto Direto Revisor Tecpar vs Motor de Produção cdvEngineV2
@@ -328,19 +328,19 @@ describe('Auditoria de Reprodução F6 — Perícia Independente Tecpar (DM-ORB-
 
     // Confronto Consolidado do Lote
     expect(resultadoMotor.evitado_confirmado_kg).toBe(reproducaoTecpar.confirmado)
-    expect(resultadoMotor.evitado_confirmado_kg).toBe(10.59)
+    expect(resultadoMotor.evitado_confirmado_kg).toBe(9.61)
 
     expect(resultadoMotor.evitado_potencial_kg).toBe(reproducaoTecpar.potencial)
     expect(resultadoMotor.evitado_potencial_kg).toBe(2.28)
 
     expect(resultadoMotor.evitado_liquido_kg).toBe(reproducaoTecpar.total_liquido)
-    expect(resultadoMotor.evitado_liquido_kg).toBe(12.87)
+    expect(resultadoMotor.evitado_liquido_kg).toBe(11.89)
 
     expect(resultadoMotor.incerteza_kg).toBe(reproducaoTecpar.incerteza_absoluta_kg)
-    expect(resultadoMotor.incerteza_kg).toBe(0.34)
+    expect(resultadoMotor.incerteza_kg).toBe(0.31)
 
     expect(resultadoMotor.incerteza_pct).toBe(reproducaoTecpar.incerteza_relativa_pct)
-    expect(resultadoMotor.incerteza_pct).toBe(2.64)
+    expect(resultadoMotor.incerteza_pct).toBe(2.61)
   })
 
   // 3. Regra de Segregação de Claim (§0.3): Peça sem destinação documental não pode somar no confirmado
@@ -376,7 +376,7 @@ describe('Auditoria de Reprodução F6 — Perícia Independente Tecpar (DM-ORB-
   })
 
   // 4. Teste de Sensibilidade a Fatores e Parâmetros Regulatórios do DM-ORB-001 v1.1
-  it('4. Validação de Fatores Oficiais: fatores 2.18, 5.40 e 1.90 e incertezas 3.5%, 4.5% e 5.0% aplicados com fidelidade', () => {
+  it('4. Validação de Fatores Oficiais: fatores 2.18, 4.10 e 1.90 e incertezas 3.5%, 4.5% e 5.0% aplicados com fidelidade', () => {
     const reproducao = auditarLoteTecparIndependente(dadosLoteDemonstracao)
 
     // Capô
@@ -384,7 +384,7 @@ describe('Auditoria de Reprodução F6 — Perícia Independente Tecpar (DM-ORB-
     expect(reproducao.pecas[0].u_fe).toBe(0.035)
 
     // Estator Cobre
-    expect(reproducao.pecas[1].evitado_liquido).toBe(4.05)
+    expect(reproducao.pecas[1].evitado_liquido).toBe(3.07)
     expect(reproducao.pecas[1].u_fe).toBe(0.045)
 
     // Parachoque Polímeros

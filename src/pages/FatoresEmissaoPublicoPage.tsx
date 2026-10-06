@@ -1371,32 +1371,23 @@ export default function FatoresEmissaoPublicoPage() {
                 <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
                   <div className="flex items-center justify-between">
                     <strong className="text-[#F4F7FA] font-mono">
-                      Cobre / Bobinamentos Elétricos: 5,40 kgCO₂e/kg (Tier 3)
+                      Cobre / Bobinamentos Elétricos: 4,10 kgCO₂e/kg (Tier 3)
                     </strong>
                     <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Verificado CopperMark 2024 / ICA
+                      Verificado ICA 2024
                     </span>
                   </div>
                   <p className="text-[#93A3B5]">
-                    Citação formal: The Copper Mark &amp; RMI, &quot;Decarbonizing the Copper
-                    Sector: Discussion Topics and Considerations for a 1.5°C-aligned
-                    Trajectory&quot; (abril/2024, base International Copper Association - ICA),
-                    Seção 2, p. 16. Intensidade de emissão cradle-to-gate de cobre refinado via rota
-                    pirometalúrgica = 5,3 tCO₂e/t (5,30 kgCO₂e/kg). URL:{' '}
-                    <a
-                      href="https://coppermark.org/wp-content/uploads/2024/05/CopperMark_DecarbonizingTheCopperSector_2024.04.18.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#12B886] underline font-mono"
-                    >
-                      coppermark.org/.../CopperMark_DecarbonizingTheCopperSector_2024.04.18.pdf
-                    </a>
-                    .
+                    Citação formal: International Copper Association (ICA), &quot;Global Life Cycle
+                    Assessment (LCA) and Life Cycle Inventory (LCI) Study of Refined Copper&quot;
+                    (cradle-to-gate de cobre primário refinado, média global ponderada; Tier 3,
+                    incerteza u_FE ±4,5%). Intensidade de emissão berço-ao-portão = 4,10 kgCO₂e/kg
+                    (4,10 tCO₂e/t Cu).
                     <span className="block mt-1 text-[#12B886]">
-                      Nota de calibração: Mantido o valor de 5,40 kgCO₂e/kg do catálogo, plenamente
-                      consistente com os 5,3 tCO₂e/t da rota pirometalúrgica ICA/CopperMark,
-                      incorporando margem conservadora de 0,10 kgCO₂e/kg para refino térmico
-                      adicional e trefilação de fios de chicotes veiculares.
+                      Nota de calibração: Fator auditado de 4,10 kgCO₂e/kg derivado diretamente do
+                      inventário global de ciclo de vida (LCI/LCA) da ICA para cátodos e cobre
+                      primário refinado, alinhado à ISO 14040/44 e ISO 14067 (substitui a referência
+                      provisória anterior).
                     </span>
                   </p>
                 </div>
@@ -2054,12 +2045,12 @@ export default function FatoresEmissaoPublicoPage() {
                       <td className="py-2.5 px-3 font-semibold text-[#F4F7FA]">
                         PART-GOL-ESTAT-01 (Estator Alternador)
                       </td>
-                      <td className="py-2.5 px-3 text-[#93A3B5]">Cobre (5,40)</td>
+                      <td className="py-2.5 px-3 text-[#93A3B5]">Cobre (4,10)</td>
                       <td className="py-2.5 px-3 text-right">2,5</td>
-                      <td className="py-2.5 px-3 text-right">5,40</td>
-                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">4,05</td>
+                      <td className="py-2.5 px-3 text-right">4,10</td>
+                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">3,07</td>
                       <td className="py-2.5 px-3 text-right text-[#EF4444]">0,00</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">4,05</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">3,07</td>
                       <td className="py-2.5 px-3 text-center text-[#12B886]">MTR 4410</td>
                       <td className="py-2.5 px-3 text-center">
                         <span className="px-2 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] text-[10px] font-bold">
@@ -2137,7 +2128,7 @@ export default function FatoresEmissaoPublicoPage() {
                     Total Evitado Líquido
                   </span>
                   <span className="font-mono text-base font-bold text-[#12B886]">
-                    812,43 kgCO₂e
+                    811,45 kgCO₂e
                   </span>
                   <span className="text-[10px] text-[#93A3B5] block">Floor 2 casas</span>
                 </div>
@@ -2146,7 +2137,7 @@ export default function FatoresEmissaoPublicoPage() {
                     Claim Confirmado
                   </span>
                   <span className="font-mono text-base font-bold text-[#12B886]">
-                    810,15 kgCO₂e
+                    809,17 kgCO₂e
                   </span>
                   <span className="text-[10px] text-[#93A3B5] block">Com NF-e / MTR</span>
                 </div>

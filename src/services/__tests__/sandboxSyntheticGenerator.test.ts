@@ -113,7 +113,7 @@ describe('sandboxSyntheticGenerator - Suite de Verificação do Sandbox e Isolam
     expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
   })
 
-  it('gera documento sintético para Automotiva / CDVs com fatores oficiais (aço 2,18, alu 14,40, cobre 5,40)', async () => {
+  it('gera documento sintético para Automotiva / CDVs com fatores oficiais (aço 2,18, alu 14,40, cobre 4,10)', async () => {
     const doc = await gerarDocumentoSintetico({
       segmento: 'automotiva',
       indice: 1,
@@ -127,7 +127,7 @@ describe('sandboxSyntheticGenerator - Suite de Verificação do Sandbox e Isolam
 
     expect(aco?.fatorCo2eKg).toBe(2.18)
     expect(alu?.fatorCo2eKg).toBe(14.4)
-    expect(cobre?.fatorCo2eKg).toBe(5.4)
+    expect(cobre?.fatorCo2eKg).toBe(4.1)
     expect(doc.xmlConteudo).toContain(MARCA_SANDBOX_OBRIGATORIA)
   })
 
@@ -145,7 +145,7 @@ describe('sandboxSyntheticGenerator - Suite de Verificação do Sandbox e Isolam
 
     expect(cobre).toBeDefined()
     expect(cobre?.categoriaMaterial).toBe('cobre')
-    expect(cobre?.fatorCo2eKg).toBe(5.4)
+    expect(cobre?.fatorCo2eKg).toBe(4.1)
     expect(cobre?.co2eEvitadoKg).toBeGreaterThan(0)
 
     // Metais nobres e terras raras: NUNCA pontuam crédito de carbono (regra permanente da casa)

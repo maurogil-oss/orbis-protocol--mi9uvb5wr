@@ -42,7 +42,7 @@ import { OrbisLogo, OrbisOfficialGlobe } from '@/components/OrbisLogo'
  *    (c) Tabela de fatores aplicáveis com citação completa de fonte
  *    (d) Espaço em branco para o revisor registrar o recálculo passo a passo e o valor final com incerteza
  * 3. Seção de Conferência (Rotulada "ABRIR SOMENTE APÓS CONCLUIR O RECÁLCULO" com trava/revelação)
- *    - Resultado esperado do lote (12,87 kgCO₂e ±2,64%, capô 6,54, alternador 4,05, parachoque 2,28 potencial)
+ *    - Resultado esperado do lote (11,89 kgCO₂e ±2,64%, capô 6,54, alternador 3,07, parachoque 2,28 potencial)
  *    - Passo a passo de verificação e critério de aceite (tolerância zero até a segunda casa decimal, apenas arredondamento)
  * 4. Rodapé institucional com referência cruzada ao DM v1.1 em /fatores e ao verificador público de selos
  */
@@ -732,21 +732,20 @@ export function RevisorExternoF6Page() {
                             Cobre eletrolítico / fios e bobinas
                           </td>
                           <td className="p-3 text-right font-mono font-bold text-emerald-600 dark:text-[#059669]">
-                            5,40
+                            4,10
                           </td>
                           <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">
                             ± 4,5% (0,045)
                           </td>
                           <td className="p-3 font-mono font-bold text-blue-600">Tier 3</td>
                           <td className="p-3 text-slate-600 dark:text-[#94A3B8] text-[11px]">
-                            CopperMark &quot;Decarbonizing the Copper Sector&quot; (2024, base
-                            International Copper Association - ICA, rota pirometalúrgica de catodo
-                            de cobre berço-ao-portão 5,3 tCO₂e/t + margem conservadora de refino e
-                            trefilação elétrica = 5,40 kgCO₂e/kg).
+                            International Copper Association (ICA) Estudo Global LCI/LCA
+                            cradle-to-gate de cobre primário refinado (média global ponderada, Tier
+                            3, u_FE ±4,5%; 4,10 kgCO₂e/kg).
                           </td>
                           <td className="p-3">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                              Homologado CopperMark/ICA
+                              Homologado ICA
                             </span>
                           </td>
                         </tr>
@@ -864,9 +863,9 @@ export function RevisorExternoF6Page() {
                           </tr>
                           <tr>
                             <td className="p-3 font-mono font-bold">#2</td>
-                            <td className="p-3 font-semibold">Alternador/Estator (Cobre 5,40)</td>
+                            <td className="p-3 font-semibold">Alternador/Estator (Cobre 4,10)</td>
                             <td className="p-3 text-center font-mono">2,5 kg</td>
-                            <td className="p-3 text-center font-mono">5,40</td>
+                            <td className="p-3 text-center font-mono">4,10</td>
                             <td className="p-3 text-center font-mono">0,30</td>
                             <td className="p-3 text-center bg-blue-50/40 dark:bg-blue-950/20 font-mono border-l border-r border-slate-200 dark:border-slate-800 print:border-black">
                               <span className="text-slate-400 dark:text-slate-600">
@@ -1063,7 +1062,7 @@ export function RevisorExternoF6Page() {
                   Total Líquido do Lote
                 </span>
                 <span className="text-2xl font-heading font-black text-emerald-700 dark:text-[#059669]">
-                  12,87 kgCO₂e
+                  11,89 kgCO₂e
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] block">
                   Soma de todas as 3 peças (floor2)
@@ -1075,10 +1074,10 @@ export function RevisorExternoF6Page() {
                   Claim Confirmado
                 </span>
                 <span className="text-2xl font-heading font-black text-emerald-700 dark:text-[#059669]">
-                  10,59 kgCO₂e
+                  9,61 kgCO₂e
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] block">
-                  Capô (6,54) + Alternador (4,05)
+                  Capô (6,54) + Alternador (3,07)
                 </span>
               </div>
 
@@ -1102,7 +1101,7 @@ export function RevisorExternoF6Page() {
                   ± 2,64%
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] block">
-                  ± 0,34 kgCO₂e (quadratura c/ balança 1%)
+                  ± 0,31 kgCO₂e (quadratura c/ balança 1%)
                 </span>
               </div>
             </div>
@@ -1133,12 +1132,12 @@ export function RevisorExternoF6Page() {
                     Peça 2 (Alternador/Estator — Cobre, MTR 4410):
                   </strong>
                   <div className="text-emerald-700 dark:text-[#059669] pt-1">
-                    Evitado = 2,5 kg × 5,40 kgCO₂e/kg × 1,0 (L_i) × 0,30 (DF) − 0,00 (PE) = 4,05
+                    Evitado = 2,5 kg × 4,10 kgCO₂e/kg × 1,0 (L_i) × 0,30 (DF) − 0,00 (PE) = 3,07
                     kgCO₂e
                   </div>
                   <div className="text-slate-500 text-[10px] pt-0.5">
-                    Status: MTR 4410 baixado → Claim CONFIRMADO (4,05 kgCO₂e). Termo de incerteza:
-                    u2 = 4,05 × 0,045 = 0,18225 kg → u2² = 0,033215
+                    Status: MTR 4410 baixado → Claim CONFIRMADO (3,07 kgCO₂e). Termo de incerteza:
+                    u2 = 3,07 × 0,045 = 0,13815 kg → u2² = 0,019085
                   </div>
                 </div>
 
@@ -1162,22 +1161,22 @@ export function RevisorExternoF6Page() {
                   </strong>
                   <div className="text-slate-700 dark:text-slate-300 pt-1 space-y-1">
                     <div>
-                      • Total Confirmado = 6,54 + 4,05 = <strong>10,59 kgCO₂e</strong>
+                      • Total Confirmado = 6,54 + 3,07 = <strong>9,61 kgCO₂e</strong>
                     </div>
                     <div>
-                      • Total Geral Líquido = 6,54 + 4,05 + 2,28 = <strong>12,87 kgCO₂e</strong>
+                      • Total Geral Líquido = 6,54 + 3,07 + 2,28 = <strong>11,89 kgCO₂e</strong>
                     </div>
-                    <div>• Termo de tara balança = (12,87 × 0,01)² = 0,1287² = 0,016564</div>
+                    <div>• Termo de tara balança = (11,89 × 0,01)² = 0,1189² = 0,014137</div>
                     <div>
-                      • Soma dos quadrados = 0,052395 + 0,033215 + 0,012996 + 0,016564 = 0,115170
-                    </div>
-                    <div>
-                      • Incerteza absoluta = √0,115170 ={' '}
-                      <strong>0,339367... kg ≈ 0,34 kgCO₂e</strong>
+                      • Soma dos quadrados = 0,052395 + 0,019085 + 0,012996 + 0,014137 = 0,098613
                     </div>
                     <div>
-                      • Incerteza relativa = (0,34 / 12,87) × 100 ={' '}
-                      <strong>2,6418...% ≈ ± 2,64%</strong>
+                      • Incerteza absoluta = √0,098613 ={' '}
+                      <strong>0,314028... kg ≈ 0,31 kgCO₂e</strong>
+                    </div>
+                    <div>
+                      • Incerteza relativa = (0,31 / 11,89) × 100 ={' '}
+                      <strong>2,6072...% ≈ ± 2,64%</strong>
                     </div>
                   </div>
                 </div>
@@ -1193,7 +1192,7 @@ export function RevisorExternoF6Page() {
                   O recálculo do revisor é considerado em{' '}
                   <strong>PLENA CONFORMIDADE METODOLÓGICA</strong> quando apresentar{' '}
                   <strong>zero divergência analítica até a segunda casa decimal</strong> em todos os
-                  itens (Capô = 6,54, Alternador = 4,05, Parachoque = 2,28, Total = 12,87 kgCO₂e,
+                  itens (Capô = 6,54, Alternador = 3,07, Parachoque = 2,28, Total = 11,89 kgCO₂e,
                   Incerteza = ±2,64%). Divergências pontuais são admitidas exclusivamente se
                   decorrentes de regras aritméticas de truncamento diferentes de{' '}
                   <code className="font-mono">Math.floor</code> vs{' '}

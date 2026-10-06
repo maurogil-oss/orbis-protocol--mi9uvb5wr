@@ -96,7 +96,7 @@ describe('Motor de Cálculo Orbis v2 & DM-ORB-001 v1.1', () => {
   })
 
   it('Critério de aceite (d): Peça mista sem decomposição adota o menor fator entre as opções (conservador)', () => {
-    // Comparando aço (2.18), alumínio (14.4), cobre (5.4) e polímeros (1.9)
+    // Comparando aço (2.18), alumínio (14.4), cobre (4.1) e polímeros (1.9)
     const conservador = obterFatorConservadorParaPecaMista(['aco', 'polimeros'])
     expect(conservador.material).toBe('polimeros')
     expect(conservador.fe_ref).toBe(1.9)

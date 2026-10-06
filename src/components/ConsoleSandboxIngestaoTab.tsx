@@ -212,7 +212,7 @@ export function ConsoleSandboxIngestaoTab() {
   })
 
   // Helper para identificar fator e categoria do material com base no catálogo canônico
-  // Aço 2,18; Alumínio 14,40; Cobre 5,40; Polímeros 1,90; Concreto/agregado reciclado 0,12;
+  // Aço 2,18; Alumínio 14,40; Cobre 4,10; Polímeros 1,90; Concreto/agregado reciclado 0,12;
   // Refrigerante R-134a 1530; R-1234yf 0,50.
   // Sem fator oficial = fator 0, CO₂e 0 e status 'em_estruturacao_de_catalogo' ("massa rastreada sem crédito de carbono").
   // NUNCA inventar número nem usar estimativa fictícia.
@@ -324,7 +324,7 @@ export function ConsoleSandboxIngestaoTab() {
       return {
         categoriaSelect: 'cobre',
         categoriaDescritiva: 'Cobre / Bobinamentos Elétricos',
-        fatorCo2eKg: 5.4,
+        fatorCo2eKg: 4.1,
         statusCalculo: 'calculado',
       }
     }
@@ -758,7 +758,7 @@ export function ConsoleSandboxIngestaoTab() {
         <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
           Gere conjuntos controlados de NF-e e CT-e sintéticos alinhados aos 15 Protocolos Setoriais
           do Orbis Protocol e ao módulo de Materiais Críticos. Cálculo de carbono SOMENTE com
-          fatores oficiais do catálogo canônico (aço 2,18; alumínio 14,40; cobre 5,40; polímeros
+          fatores oficiais do catálogo canônico (aço 2,18; alumínio 14,40; cobre 4,10; polímeros
           1,90; concreto/RCD 0,12). Os dados são gravados com a marca{' '}
           <strong className="text-emerald-400 font-mono">origem: &apos;sintetico&apos;</strong> nas
           coleções selos, cdv_lotes, cdv_pecas e emissoes_inventario, permanecendo estritamente

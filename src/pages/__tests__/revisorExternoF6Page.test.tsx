@@ -83,7 +83,7 @@ describe('Pacote do Revisor Externo da Auditoria de Reprodução F6 (/auditoria-
     expect(screen.getByText(/Claim POTENCIAL/i)).not.toBeNull()
   })
 
-  it('4. Contém a seção de conferência com controle de revelação (gabarito 12,87 kgCO₂e ±2,64%)', () => {
+  it('4. Contém a seção de conferência com controle de revelação (gabarito 11,89 kgCO₂e ±2,64%)', () => {
     render(
       <BrowserRouter>
         <RevisorExternoF6Page />
@@ -107,8 +107,8 @@ describe('Pacote do Revisor Externo da Auditoria de Reprodução F6 (/auditoria-
     fireEvent.click(botaoAbrir)
 
     // Valores oficiais agora visíveis
-    expect(screen.getByText('12,87 kgCO₂e')).not.toBeNull()
-    expect(screen.getByText('10,59 kgCO₂e')).not.toBeNull()
+    expect(screen.getByText('11,89 kgCO₂e')).not.toBeNull()
+    expect(screen.getByText('9,61 kgCO₂e')).not.toBeNull()
     expect(screen.getByText('2,28 kgCO₂e')).not.toBeNull()
     expect(screen.getByText('± 2,64%')).not.toBeNull()
     expect(screen.getByText(/Critério Estrito de Aceite Pericial/i)).not.toBeNull()
