@@ -273,9 +273,9 @@ export function PainelDmrvEmissoesEvitadas({
 
   return (
     <div className="space-y-6">
-      {/* Topo do Painel dMRV com Seletor Real/Sandbox */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-sm">
-        <div className="space-y-1">
+      {/* Topo do Painel dMRV com Seletor Real/Sandbox e Barra de Controles Reorganizada */}
+      <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-5 p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-sm">
+        <div className="space-y-1.5 min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge
               variant="outline"
@@ -296,7 +296,7 @@ export function PainelDmrvEmissoesEvitadas({
             )}
             <span className="text-xs text-muted-foreground font-mono">CNPJ: {dados.cnpj}</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Painel dMRV de Emissões Evitadas & Descarbonização
           </h2>
           <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
@@ -306,83 +306,88 @@ export function PainelDmrvEmissoesEvitadas({
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0 flex-wrap">
-          {/* Seletor Real (Produção) vs Sandbox (Demonstração) */}
-          <div className="inline-flex rounded-xl p-1 bg-muted/60 border border-border">
-            <button
-              type="button"
-              onClick={() => setFiltroOrigem('producao')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                filtroOrigem === 'producao'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Dados Reais (Produção)
-            </button>
-            <button
-              type="button"
-              onClick={() => setFiltroOrigem('sintetico')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                filtroOrigem === 'sintetico'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>Sandbox (Demonstração)</span>
-            </button>
+        {/* Controles do topo: Filtros e Ações reorganizados em blocos que não estouram o contêiner */}
+        <div className="flex flex-col sm:flex-row xl:flex-col items-stretch sm:items-center xl:items-end gap-2.5 w-full xl:w-auto shrink-0">
+          {/* Linha 1 de controles: Alternador de ambiente + Seletor de vertical */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {/* Seletor Real (Produção) vs Sandbox (Demonstração) */}
+            <div className="inline-flex rounded-xl p-1 bg-muted/60 border border-border text-xs">
+              <button
+                type="button"
+                onClick={() => setFiltroOrigem('producao')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  filtroOrigem === 'producao'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Dados Reais (Produção)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltroOrigem('sintetico')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                  filtroOrigem === 'sintetico'
+                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Sandbox (Demonstração)</span>
+              </button>
+            </div>
+
+            {/* Seletor de Vertical em Foco */}
+            {dados.verticaisDisponiveis && dados.verticaisDisponiveis.length > 0 && (
+              <div className="flex items-center gap-1.5 bg-muted/60 border border-border rounded-xl px-2.5 py-1 text-xs max-w-full">
+                <label
+                  htmlFor="seletor-vertical-foco"
+                  className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap shrink-0"
+                >
+                  Vertical em foco:
+                </label>
+                <select
+                  id="seletor-vertical-foco"
+                  data-testid="seletor-vertical-foco"
+                  value={
+                    verticalSelecionada ||
+                    dados.verticalMaisRecenteSlug ||
+                    dados.protocoloDominanteSlug ||
+                    ''
+                  }
+                  onChange={(e) => handleTrocarVertical(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-foreground border-none outline-none cursor-pointer pr-1 py-0.5 max-w-[200px] sm:max-w-[260px] truncate"
+                >
+                  <option value="todas" className="bg-popover text-foreground font-semibold">
+                    Todas as verticais (Agregado Consolidado)
+                  </option>
+                  {dados.verticaisDisponiveis.map((v) => (
+                    <option key={v.slug} value={v.slug} className="bg-popover text-foreground">
+                      {v.nome} ({v.totalLotes} lote{v.totalLotes === 1 ? '' : 's'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
-          {/* Seletor de Vertical em Foco */}
-          {dados.verticaisDisponiveis && dados.verticaisDisponiveis.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-muted/60 border border-border rounded-xl px-2.5 py-1 text-xs">
-              <label
-                htmlFor="seletor-vertical-foco"
-                className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
-              >
-                Vertical em foco:
-              </label>
-              <select
-                id="seletor-vertical-foco"
-                data-testid="seletor-vertical-foco"
-                value={
-                  verticalSelecionada ||
-                  dados.verticalMaisRecenteSlug ||
-                  dados.protocoloDominanteSlug ||
-                  ''
-                }
-                onChange={(e) => handleTrocarVertical(e.target.value)}
-                className="bg-transparent text-xs font-bold text-foreground border-none outline-none cursor-pointer pr-1 py-0.5"
-              >
-                <option value="todas" className="bg-popover text-foreground font-semibold">
-                  Todas as verticais (Agregado Consolidado)
-                </option>
-                {dados.verticaisDisponiveis.map((v) => (
-                  <option key={v.slug} value={v.slug} className="bg-popover text-foreground">
-                    {v.nome} ({v.totalLotes} lote{v.totalLotes === 1 ? '' : 's'})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* Linha 2 de controles: Botões de ação (Atualizar, Imprimir/PDF, Exportar Relatório dMRV) */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto xl:justify-end">
             <Button
               variant="outline"
               size="sm"
               onClick={() => carregar(filtroOrigem)}
               disabled={carregando}
-              className="gap-1.5 text-xs"
+              className="gap-1.5 text-xs flex-1 sm:flex-initial"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${carregando ? 'animate-spin' : ''}`} />
-              Atualizar
+              <span>Atualizar</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setModalPrintAberto(true)}
-              className="gap-1.5 text-xs"
+              className="gap-1.5 text-xs flex-1 sm:flex-initial"
               title="Abrir versão para impressão / PDF formal do relatório estratificado"
             >
               <Printer className="h-3.5 w-3.5 text-primary" />
@@ -392,10 +397,10 @@ export function PainelDmrvEmissoesEvitadas({
               size="sm"
               onClick={handleExportarCsv}
               disabled={exportando}
-              className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto font-medium shadow-sm"
             >
               <FileSpreadsheet className="h-4 w-4" />
-              {exportando ? 'Exportando...' : 'Exportar Relatório dMRV (CSV)'}
+              <span>{exportando ? 'Exportando...' : 'Exportar Relatório dMRV (CSV)'}</span>
             </Button>
           </div>
         </div>

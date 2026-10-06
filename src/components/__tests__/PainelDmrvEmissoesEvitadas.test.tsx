@@ -806,4 +806,39 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
       expect(screen.getByText('Agregado Consolidado')).toBeInTheDocument()
     })
   })
+
+  it('renderiza os botões de ação (Atualizar, Imprimir / PDF, Exportar Relatório dMRV) reorganizados dentro do cabeçalho sem quebrar', async () => {
+    vi.spyOn(dmrvService, 'carregarDadosDmrvEmpresa').mockResolvedValueOnce({
+      cnpj: '00.000.000/0001-91',
+      origem_filtro: 'producao' as const,
+      total_co2e_evitado_kg: 12450.8,
+      total_massa_reciclada_kg: 7850.0,
+      total_pecas_reaproveitadas: 48,
+      total_lotes_processados: 3,
+      emissao_anual_tco2e: 450.5,
+      escopo1_tco2e: 120.2,
+      escopo2_tco2e: 45.3,
+      escopo3_tco2e: 285.0,
+      serie_temporal: [{ mes: 'Jan/26', co2e_evitado_kg: 6200, massa_kg: 3900 }],
+      relatorios_anteriores: [],
+      protocoloDominanteSlug: 'automotiva',
+      protocoloDominanteNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+      verticaisDisponiveis: [
+        { slug: 'automotiva', nome: 'Automotiva & Desmanches Sustentáveis (CDV)', totalLotes: 12 },
+      ],
+    })
+
+    render(<PainelDmrvEmissoesEvitadas />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Painel dMRV de Emissões Evitadas/i)).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('button', { name: /Atualizar/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Imprimir \/ PDF/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Exportar Relatório dMRV/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Dados Reais \(Produção\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Sandbox \(Demonstração\)/i })).toBeInTheDocument()
+    expect(screen.getByTestId('seletor-vertical-foco')).toBeInTheDocument()
+  })
 })
