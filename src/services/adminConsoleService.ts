@@ -235,3 +235,72 @@ export async function listarConsultasInfosimplesAdmin() {
     expand: 'usuario',
   })
 }
+
+export interface SandboxPurgeContagem {
+  lotes: number
+  pecas: number
+  selos: number
+  emissoes: number
+  total: number
+}
+
+export interface SandboxPurgeResultado {
+  sucesso: boolean
+  mensagem: string
+  lotes: number
+  pecas: number
+  selos: number
+  emissoes: number
+}
+
+/**
+ * Consulta a contagem de registros no Sandbox elegíveis para expurgo (is_demo=true ou origem='sintetico').
+ * Lotes reais (is_demo=false) nunca entram nessa contagem.
+ */
+export async function contarRegistrosSandboxPurge(): Promise<SandboxPurgeContagem> {
+  try {
+    const res = await pb.send<SandboxPurgeContagem>('/backend/v1/sandbox/purge-count', {
+      method: 'GET',
+    })
+    return res
+  } catch (err) {
+    // Fallback via SDK cliente se endpoint customizado não responder
+    const [lotes, pecas, selos] = await Promise.allSettled([
+      pb.collection('cdv_lotes').getFullList({
+        filter: "is_demo = true || origem = 'sintetico'",
+        fields: 'id',
+      }),
+      pb.collection('cdv_pecas').getFullList({
+        filter: "is_demo = true || origem = 'sintetico'",
+        fields: 'id',
+      }),
+      pb.collection('selos').getFullList({
+        filter: "is_demo = true || origem = 'sintetico'",
+        fields: 'id',
+      }),
+    ])
+
+    const totalL = lotes.status === 'fulfilled' ? lotes.value.length : 0
+    const totalP = pecas.status === 'fulfilled' ? pecas.value.length : 0
+    const totalS = selos.status === 'fulfilled' ? selos.value.length : 0
+
+    return {
+      lotes: totalL,
+      pecas: totalP,
+      selos: totalS,
+      emissoes: 0,
+      total: totalL + totalP + totalS,
+    }
+  }
+}
+
+/**
+ * Executa o expurgo dos registros demo/sintéticos no Sandbox.
+ * Exige confirmação textual e preserva integralmente lotes reais.
+ */
+export async function executarSandboxPurge(confirmacao: string): Promise<SandboxPurgeResultado> {
+  return pb.send<SandboxPurgeResultado>('/backend/v1/sandbox/purge-execute', {
+    method: 'POST',
+    body: { confirmacao },
+  })
+}

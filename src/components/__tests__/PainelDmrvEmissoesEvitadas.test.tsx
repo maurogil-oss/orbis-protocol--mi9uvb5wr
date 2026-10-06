@@ -724,8 +724,86 @@ describe('PainelDmrvEmissoesEvitadas - Alternância Sandbox vs Produção', () =
     // Deve adotar verticalMaisRecenteSlug ('agro') como padrão no seletor
     expect(seletor.value).toBe('agro')
 
-    // Deve ter sido chamado exatamente 1 vez na montagem inicial (sem loop infinito)
-    expect(callCount).toBe(1)
-    expect(spyCarregar).toHaveBeenCalledTimes(1)
+    // Quando abre sem vertical, o painel seleciona efetivamente a vertical mais recente e busca seus dados
+    expect(callCount).toBe(2)
+    expect(spyCarregar).toHaveBeenLastCalledWith(expect.any(String), expect.any(String), 'agro')
+  })
+
+  it('permite selecionar "Todas as verticais (Agregado Consolidado)" e exibe aviso de visão consolidada', async () => {
+    vi.spyOn(dmrvService, 'carregarDadosDmrvEmpresa').mockResolvedValue({
+      cnpj: '33.000.168/0001-09',
+      origem_filtro: 'sintetico',
+      total_co2e_evitado_kg: 124711.0,
+      total_massa_reciclada_kg: 65000.0,
+      total_pecas_reaproveitadas: 200,
+      total_lotes_processados: 25,
+      emissao_anual_tco2e: 150,
+      escopo1_tco2e: 50,
+      escopo2_tco2e: 20,
+      escopo3_tco2e: 80,
+      serie_temporal: [{ mes: 'Jan/26', co2e_evitado_kg: 124711, massa_kg: 65000 }],
+      relatorios_anteriores: [],
+      protocoloDominanteSlug: 'automotiva',
+      protocoloDominanteNome: 'Automotiva & Desmanches Sustentáveis (CDV)',
+      verticalMaisRecenteSlug: 'automotiva',
+      verticaisDisponiveis: [
+        { slug: 'automotiva', nome: 'Automotiva & Desmanches Sustentáveis (CDV)', totalLotes: 15 },
+        { slug: 'agro', nome: 'Agro & Biomassa Sustentável', totalLotes: 10 },
+      ],
+      kpiCards: [
+        {
+          id: 'co2e_evitado',
+          rotulo: 'CO₂e Evitado Total',
+          valorFormatado: '124.711,0',
+          valorNumerico: 124711,
+          unidade: 'kg',
+          legenda: 'Somatório multicadeia consolidado de todas as verticais',
+          natureza: 'gravada',
+        },
+        {
+          id: 'kpi_pos2',
+          rotulo: 'Massa Auditada',
+          valorFormatado: '65.000',
+          valorNumerico: 65000,
+          unidade: 'kg',
+          legenda: 'Balanço',
+          natureza: 'gravada',
+        },
+        {
+          id: 'kpi_pos3',
+          rotulo: 'Itens Catalogados',
+          valorFormatado: '200',
+          valorNumerico: 200,
+          unidade: 'itens',
+          legenda: 'Itens',
+          natureza: 'gravada',
+        },
+        {
+          id: 'kpi_pos4',
+          rotulo: 'Lotes Fechados',
+          valorFormatado: '25',
+          valorNumerico: 25,
+          unidade: 'lotes',
+          legenda: 'Lotes',
+          natureza: 'gravada',
+        },
+      ],
+    })
+
+    render(<PainelDmrvEmissoesEvitadas />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('seletor-vertical-foco')).toBeInTheDocument()
+    })
+
+    const seletor = screen.getByTestId('seletor-vertical-foco') as HTMLSelectElement
+    fireEvent.change(seletor, { target: { value: 'todas' } })
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Visão Consolidada Multicadeia \(Todas as Verticais\)/i),
+      ).toBeInTheDocument()
+      expect(screen.getByText('Agregado Consolidado')).toBeInTheDocument()
+    })
   })
 })

@@ -175,9 +175,16 @@ onRecordUpdate((e) => {
   }
 }, 'cdv_pecas')
 
-// Trava antes de deletar cdv_pecas
+// Trava antes de deletar cdv_pecas (permite purge de registros sintéticos/demo de testes)
 onRecordDelete((e) => {
   const rec = e.record
+  const isDemo = rec.getBool('is_demo')
+  const origem = rec.getString('origem')
+  if (isDemo || origem === 'sintetico') {
+    // Registros estritamente marcados como sintético ou demo são elegíveis a purge no Sandbox
+    return
+  }
+
   const hash = rec.getString('hash_sha256')
   if (hash && hash.trim() !== '') {
     throw new BadRequestError(
@@ -186,9 +193,16 @@ onRecordDelete((e) => {
   }
 }, 'cdv_pecas')
 
-// Trava antes de deletar cdv_lotes
+// Trava antes de deletar cdv_lotes (permite purge de lotes sintéticos/demo de testes)
 onRecordDelete((e) => {
   const rec = e.record
+  const isDemo = rec.getBool('is_demo')
+  const origem = rec.getString('origem')
+  if (isDemo || origem === 'sintetico') {
+    // Lotes estritamente marcados como sintético ou demo são elegíveis a purge no Sandbox
+    return
+  }
+
   const status = rec.getString('status')
   if (status === 'processado' || status === 'anulado') {
     throw new BadRequestError(

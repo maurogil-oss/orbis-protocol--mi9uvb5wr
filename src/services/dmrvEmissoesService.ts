@@ -532,15 +532,23 @@ export function construirCardsKpiSetoriais(params: {
     badgeKpi3 = `SIN ${fatorSinMwh.toFixed(3).replace('.', ',')} tCO₂e/MWh`
   }
 
+  const isAgroZero = slugDominante === 'agro'
+  const legendaCo2e = isAgroZero
+    ? 'Massa rastreada, sem CO₂e atribuído (DM-ORB-001 em estruturação de catálogo)'
+    : kpi1.legenda
+
   return [
     {
       id: 'co2e_evitado',
       rotulo: kpi1.rotulo,
-      valorFormatado: totalCo2eKg.toLocaleString('pt-BR', { maximumFractionDigits: 1 }),
-      valorNumerico: totalCo2eKg,
+      valorFormatado: (isAgroZero ? 0 : totalCo2eKg).toLocaleString('pt-BR', {
+        maximumFractionDigits: 1,
+      }),
+      valorNumerico: isAgroZero ? 0 : totalCo2eKg,
       unidade: kpi1.unidade,
-      legenda: kpi1.legenda,
+      legenda: legendaCo2e,
       natureza: kpi1.natureza,
+      destaqueBadge: isAgroZero ? 'rastreada, sem CO₂e atribuído' : undefined,
     },
     {
       id: 'kpi_pos2',
@@ -1349,13 +1357,19 @@ export async function carregarDadosDmrvEmpresa(
     },
   )
 
-  // Vertical ativa para exibição: a selecionada explicitamente pelo usuário ou a dominante
-  const slugAtivo = verticalSelecionadaSlug || dom.slug || 'geral'
-  const protoEncontrado = getProtocoloBySlug(slugAtivo) || dom.protocolo
+  // Vertical ativa para exibição: a selecionada explicitamente pelo usuário, 'todas' ou a mais recente
+  const isTodasAsVerticais = verticalSelecionadaSlug === 'todas'
+  const slugAtivo = isTodasAsVerticais
+    ? 'todas'
+    : verticalSelecionadaSlug || dom.verticalMaisRecenteSlug || dom.slug || 'automotiva'
+
+  const protoEncontrado = isTodasAsVerticais ? null : getProtocoloBySlug(slugAtivo) || dom.protocolo
   const protoAtivoSeguro: any = protoEncontrado || {
-    id: slugAtivo,
-    slug: slugAtivo,
-    nome: formatarNomeSlug(slugAtivo),
+    id: isTodasAsVerticais ? 'todas' : slugAtivo,
+    slug: isTodasAsVerticais ? 'todas' : slugAtivo,
+    nome: isTodasAsVerticais
+      ? 'Todas as verticais (Agregado Consolidado)'
+      : formatarNomeSlug(slugAtivo),
     unidadeCanonica: 'lotes',
     rotuloMetricaCanonica: 'Itens Catalogados',
     metodologiaPadrao: 'DM-ORB-001 v1.1 • GHG Protocol',
@@ -1364,7 +1378,9 @@ export async function carregarDadosDmrvEmpresa(
         id: 'co2e_evitado',
         rotulo: 'CO₂e Evitado Total',
         unidade: 'kg',
-        legenda: 'Emissões evitadas calculadas pelo método oficial',
+        legenda: isTodasAsVerticais
+          ? 'Somatório multicadeia consolidado de todas as verticais'
+          : 'Emissões evitadas calculadas pelo método oficial',
         tipoAgregacao: 'soma',
         natureza: 'gravada',
       },
@@ -1400,21 +1416,22 @@ export async function carregarDadosDmrvEmpresa(
     protoAtivoSeguro.nome = formatarNomeSlug(slugAtivo)
   }
 
-  // Se houver seleção de vertical explícita (diferente ou igual), filtrar lotes e peças correspondentes
-  // para recálculo dos 4 cards KPI, série temporal e estratificação
-  const lotesFiltradosVertical = verticalSelecionadaSlug
-    ? lotes.filter((l) => extrairSlugLote(l) === verticalSelecionadaSlug)
-    : lotes
+  // Se vertical selecionada for 'todas', mantemos todos os lotes e peças (agregado consolidado).
+  // Se for uma vertical específica (inclusive se vier vazia, mas com slugAtivo definido),
+  // filtramos estritamente por essa vertical específica.
+  const lotesFiltradosVertical = isTodasAsVerticais
+    ? lotes
+    : lotes.filter((l) => extrairSlugLote(l) === slugAtivo)
 
   const mapaLotesFiltradosIds = new Set(lotesFiltradosVertical.map((l) => l.id).filter(Boolean))
 
-  const pecasFiltradasVertical = verticalSelecionadaSlug
-    ? pecas.filter((p) => {
-        if (p.protocolo) return normalizarSlugSegmento(p.protocolo) === verticalSelecionadaSlug
+  const pecasFiltradasVertical = isTodasAsVerticais
+    ? pecas
+    : pecas.filter((p) => {
+        if (p.protocolo) return normalizarSlugSegmento(p.protocolo) === slugAtivo
         if (p.lote && mapaLotesFiltradosIds.has(p.lote)) return true
         return false
       })
-    : pecas
 
   // Totalizadores de lotes e peças calculados sobre a vertical ativa (ou total caso sem filtro)
   let totalCo2eKg = 0
@@ -1534,10 +1551,12 @@ export async function carregarDadosDmrvEmpresa(
     protocoloDominanteSlug: slugAtivo,
   })
 
+  const co2eConsolidadoEmpresa = slugAtivo === 'agro' ? 0 : Math.round((totalCo2eKg || 0) * 10) / 10
+
   return {
     cnpj: cnpjEmpresa || '33.000.168/0001-09',
     origem_filtro: origem,
-    total_co2e_evitado_kg: Math.round((totalCo2eKg || 0) * 10) / 10,
+    total_co2e_evitado_kg: co2eConsolidadoEmpresa,
     total_massa_reciclada_kg: Math.round((totalMassaKg || 0) * 10) / 10,
     total_pecas_reaproveitadas: pecasFiltradasVertical.length || 0,
     total_lotes_processados: lotesFiltradosVertical.length || 0,

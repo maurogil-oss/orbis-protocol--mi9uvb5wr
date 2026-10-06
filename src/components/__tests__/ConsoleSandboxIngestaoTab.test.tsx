@@ -477,4 +477,69 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
       expect(textoSemente2).not.toBe(textoSemente1)
     })
   })
+
+  it('exibe botão de Purge Demo, modal em 2 etapas com contagem e executa purge com sucesso mantendo lotes reais', async () => {
+    // Mock contagem e execução de purge
+    const adminService = await import('@/services/adminConsoleService')
+    const spyContar = vi.spyOn(adminService, 'contarRegistrosSandboxPurge').mockResolvedValue({
+      lotes: 12,
+      pecas: 85,
+      selos: 15,
+      emissoes: 3,
+      total: 115,
+    })
+
+    const spyExecutar = vi.spyOn(adminService, 'executarSandboxPurge').mockResolvedValue({
+      sucesso: true,
+      mensagem: 'Expurgo concluído: 12 lotes, 85 peças e 15 selos excluídos.',
+      lotes: 12,
+      pecas: 85,
+      selos: 15,
+      emissoes: 3,
+    })
+
+    render(<ConsoleSandboxIngestaoTab />)
+
+    // Localiza o botão de Purge no Sandbox
+    const btnPurge = screen.getByRole('button', {
+      name: /Limpar Base de Testes Sandbox \(Purge Demo\)/i,
+    })
+    expect(btnPurge).toBeInTheDocument()
+
+    // Clica para abrir modal etapa 1
+    fireEvent.click(btnPurge)
+
+    await waitFor(() => {
+      expect(screen.getByText('Expurgo da Base Sandbox (Purge Demo)')).toBeInTheDocument()
+      expect(screen.getByText('Etapa 1 de 2 • Governança Restrita')).toBeInTheDocument()
+      expect(screen.getByText('12')).toBeInTheDocument()
+      expect(screen.getByText('85')).toBeInTheDocument()
+      expect(screen.getByText('15')).toBeInTheDocument()
+    })
+    expect(spyContar).toHaveBeenCalled()
+
+    // Avança para a Etapa 2
+    const btnProsseguir = screen.getByRole('button', { name: /Prosseguir para Confirmação Final/i })
+    fireEvent.click(btnProsseguir)
+
+    await waitFor(() => {
+      expect(screen.getByText('Etapa 2 de 2 • Governança Restrita')).toBeInTheDocument()
+      expect(screen.getByText('EXPURGAR-SANDBOX')).toBeInTheDocument()
+    })
+
+    // Preenche a frase de confirmação
+    const inputConfirmacao = screen.getByPlaceholderText('EXPURGAR-SANDBOX')
+    fireEvent.change(inputConfirmacao, { target: { value: 'EXPURGAR-SANDBOX' } })
+
+    // Confirma expurgo
+    const btnConfirmar = screen.getByRole('button', { name: /Confirmar Expurgo Irreversível/i })
+    fireEvent.click(btnConfirmar)
+
+    await waitFor(() => {
+      expect(spyExecutar).toHaveBeenCalledWith('EXPURGAR-SANDBOX')
+      expect(
+        screen.getByText(/Expurgo concluído: 12 lotes, 85 peças e 15 selos excluídos\./i),
+      ).toBeInTheDocument()
+    })
+  })
 })

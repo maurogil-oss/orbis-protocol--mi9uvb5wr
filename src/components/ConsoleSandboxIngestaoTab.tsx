@@ -29,6 +29,13 @@ import {
   consultarTriadorIngestao,
   TriagemIngestaoCdvResultado,
 } from '@/services/triadorIngestaoCdvService'
+import {
+  contarRegistrosSandboxPurge,
+  executarSandboxPurge,
+  type SandboxPurgeContagem,
+} from '@/services/adminConsoleService'
+import { useAuth } from '@/contexts/AuthContext'
+import { Trash2, ShieldCheck } from 'lucide-react'
 
 export interface PipelineIngestaoResultado {
   sucesso: boolean
@@ -206,6 +213,19 @@ export function ConsoleSandboxIngestaoTab() {
   const [loteGerado, setLoteGerado] = useState<DocumentoSintetico[]>([])
   const [docSelecionado, setDocSelecionado] = useState<DocumentoSintetico | null>(null)
   const [modalXmlAberto, setModalXmlAberto] = useState<boolean>(false)
+
+  // Autenticação para verificar permissão admin/master no expurgo
+  const { user } = useAuth()
+  const isMasterOuAdmin = user?.role === 'master' || user?.role === 'admin'
+
+  // Estados do Modal de Purge Sandbox (2 etapas)
+  const [modalPurgeAberto, setModalPurgeAberto] = useState<boolean>(false)
+  const [etapaPurge, setEtapaPurge] = useState<1 | 2>(1)
+  const [carregandoContagemPurge, setCarregandoContagemPurge] = useState<boolean>(false)
+  const [contagemPurge, setContagemPurge] = useState<SandboxPurgeContagem | null>(null)
+  const [confirmacaoTexto, setConfirmacaoTexto] = useState<string>('')
+  const [executandoPurge, setExecutandoPurge] = useState<boolean>(false)
+  const [resultadoPurge, setResultadoPurge] = useState<string | null>(null)
 
   // Estado de Ingestão no Pipeline
   const [ingestando, setIngestando] = useState<boolean>(false)
@@ -426,6 +446,43 @@ export function ConsoleSandboxIngestaoTab() {
       alert('Erro ao gerar documentos sintéticos: ' + err.message)
     } finally {
       setGerando(false)
+    }
+  }
+
+  // Iniciar fluxo do modal de Purge em 2 etapas
+  const handleAbrirModalPurge = async () => {
+    setModalPurgeAberto(true)
+    setEtapaPurge(1)
+    setConfirmacaoTexto('')
+    setCarregandoContagemPurge(true)
+    try {
+      const cont = await contarRegistrosSandboxPurge()
+      setContagemPurge(cont)
+    } catch (err: any) {
+      alert('Erro ao contar registros elegíveis: ' + err.message)
+    } finally {
+      setCarregandoContagemPurge(false)
+    }
+  }
+
+  const handleConfirmarPurgeEtapa2 = async () => {
+    if (confirmacaoTexto.trim().toUpperCase() !== 'EXPURGAR-SANDBOX') {
+      alert('Digite exatamente EXPURGAR-SANDBOX para autorizar a exclusão.')
+      return
+    }
+
+    setExecutandoPurge(true)
+    try {
+      const res = await executarSandboxPurge('EXPURGAR-SANDBOX')
+      setResultadoPurge(
+        res.mensagem ||
+          `Expurgo concluído: ${res.lotes} lotes, ${res.pecas} peças e ${res.selos} selos excluídos.`,
+      )
+      setModalPurgeAberto(false)
+    } catch (err: any) {
+      alert('Erro ao executar expurgo do Sandbox: ' + (err?.message || 'Falha na exclusão'))
+    } finally {
+      setExecutandoPurge(false)
     }
   }
 
@@ -897,7 +954,7 @@ export function ConsoleSandboxIngestaoTab() {
           </div>
         </div>
 
-        {/* Botão de Ação Gerar Lote */}
+        {/* Botão de Ação Gerar Lote e Ação de Purge */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
           <div className="text-xs text-muted-foreground flex items-center gap-2">
             <Layers className="w-4 h-4 text-emerald-600" />
@@ -907,25 +964,56 @@ export function ConsoleSandboxIngestaoTab() {
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleGerarLote}
-            disabled={gerando || ingestando}
-            className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 text-xs shrink-0"
-          >
-            {gerando ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Gerando Lote...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                <span>Gerar {volume} Docs Sintéticos</span>
-              </>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {isMasterOuAdmin && (
+              <button
+                type="button"
+                onClick={handleAbrirModalPurge}
+                className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-bold flex items-center justify-center gap-2 border border-rose-300 dark:border-rose-800/60 shadow-sm transition-all text-xs shrink-0"
+                title="Limpar exclusivamente lotes, peças e selos de teste/demo, mantendo lotes reais preservados"
+              >
+                <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                <span>Limpar Base de Testes Sandbox (Purge Demo)</span>
+              </button>
             )}
-          </button>
+
+            <button
+              type="button"
+              onClick={handleGerarLote}
+              disabled={gerando || ingestando}
+              className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 text-xs shrink-0"
+            >
+              {gerando ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Gerando Lote...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Gerar {volume} Docs Sintéticos</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Notificação de Expurgo Concluído */}
+        {resultadoPurge && (
+          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="font-semibold">{resultadoPurge}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setResultadoPurge(null)}
+              className="text-emerald-700 hover:text-emerald-900 text-xs font-bold ml-4"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Resumo da Marca Legal Obrigatória */}
         <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-[11px] text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
@@ -1370,6 +1458,183 @@ export function ConsoleSandboxIngestaoTab() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação em 2 Etapas: Purge Demo / Sandbox */}
+      {modalPurgeAberto && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#111820] border-2 border-rose-600 p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-rose-500/10 text-rose-600">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-base text-slate-900 dark:text-slate-100">
+                    Expurgo da Base Sandbox (Purge Demo)
+                  </h3>
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    Etapa {etapaPurge} de 2 • Governança Restrita
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalPurgeAberto(false)}
+                disabled={executandoPurge}
+                className="text-slate-400 hover:text-slate-600 text-lg font-bold disabled:opacity-50"
+              >
+                ✕
+              </button>
+            </div>
+
+            {carregandoContagemPurge ? (
+              <div className="py-8 text-center space-y-2">
+                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-rose-600" />
+                <p className="text-xs text-muted-foreground">
+                  Auditando banco e contabilizando registros de testes (is_demo=true / sintetico)...
+                </p>
+              </div>
+            ) : etapaPurge === 1 ? (
+              <div className="space-y-4 text-xs">
+                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px]">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Atenção: Ação Irreversível</span>
+                  </div>
+                  <p className="opacity-90 leading-relaxed">
+                    Esta operação excluirá definitivamente registros gerados exclusivamente no
+                    Sandbox para testes.
+                  </p>
+                </div>
+
+                {/* Resumo da Contagem Exata */}
+                <div className="space-y-2">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 block uppercase text-[11px]">
+                    Registros Elegíveis para Exclusão:
+                  </span>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-muted-foreground block uppercase font-semibold">
+                        Lotes Demo
+                      </span>
+                      <strong className="text-lg font-mono text-slate-900 dark:text-slate-100 font-black">
+                        {contagemPurge?.lotes ?? 0}
+                      </strong>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-muted-foreground block uppercase font-semibold">
+                        Peças / DPP
+                      </span>
+                      <strong className="text-lg font-mono text-slate-900 dark:text-slate-100 font-black">
+                        {contagemPurge?.pecas ?? 0}
+                      </strong>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-muted-foreground block uppercase font-semibold">
+                        Selos Digitais
+                      </span>
+                      <strong className="text-lg font-mono text-slate-900 dark:text-slate-100 font-black">
+                        {contagemPurge?.selos ?? 0}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Garantia de Proteção de Lotes Reais */}
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-200 flex items-start gap-2.5">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <strong className="block font-semibold">Proteção do Histórico Real</strong>
+                    <p className="text-[11px] opacity-90 leading-relaxed">
+                      Lotes reais com lastro operacional (como o lote Volkswagen Gol ID{' '}
+                      <code>h1dpr8wniludemh</code> com <code>is_demo: false</code>) e peças com
+                      lastro SEFAZ <strong>NUNCA são tocados</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setModalPurgeAberto(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-200"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEtapaPurge(2)}
+                    disabled={(contagemPurge?.total ?? 0) === 0}
+                    className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-all disabled:opacity-50"
+                  >
+                    Prosseguir para Confirmação Final →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 space-y-2">
+                  <p className="font-semibold leading-relaxed">
+                    Para confirmar a exclusão irreversível de{' '}
+                    <strong>{contagemPurge?.lotes ?? 0} lotes</strong>,{' '}
+                    <strong>{contagemPurge?.pecas ?? 0} peças</strong> e{' '}
+                    <strong>{contagemPurge?.selos ?? 0} selos</strong>, digite exatamente a palavra
+                    abaixo:
+                  </p>
+                  <div className="p-2 rounded bg-white dark:bg-black/40 font-mono font-bold text-center text-sm border border-rose-400 tracking-wider">
+                    EXPURGAR-SANDBOX
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold uppercase text-muted-foreground">
+                    Digite a frase de autorização:
+                  </label>
+                  <input
+                    type="text"
+                    value={confirmacaoTexto}
+                    onChange={(e) => setConfirmacaoTexto(e.target.value)}
+                    placeholder="EXPURGAR-SANDBOX"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono font-bold text-sm tracking-wide focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setEtapaPurge(1)}
+                    disabled={executandoPurge}
+                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-200 disabled:opacity-50"
+                  >
+                    ← Voltar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmarPurgeEtapa2}
+                    disabled={
+                      confirmacaoTexto.trim().toUpperCase() !== 'EXPURGAR-SANDBOX' ||
+                      executandoPurge
+                    }
+                    className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-all disabled:opacity-40 flex items-center gap-2"
+                  >
+                    {executandoPurge ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Expurgando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-4 h-4" />
+                        <span>Confirmar Expurgo Irreversível</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

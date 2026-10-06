@@ -98,24 +98,25 @@ export function PainelDmrvEmissoesEvitadas({
       setCarregando(true)
       setErroCarregamento(null)
       try {
-        const info = await carregarDadosDmrvEmpresa(
+        let info = await carregarDadosDmrvEmpresa(
           userCnpj,
           origemEfetiva,
           verticalEfetiva || undefined,
         )
-        setDados(info)
-        // Adoção única do protocolo dominante / mais recente com guarda:
-        // Apenas se a chamada NÃO veio do efeito inicial (onde o estado já foi resetado e não deve disparar re-render),
-        // ou quando nenhuma vertical foi solicitada E o estado atual ainda está vazio, sem redefinir o mesmo valor
-        const verticalPadrao = info.verticalMaisRecenteSlug || info.protocoloDominanteSlug || ''
-        if (
-          origemChamada !== 'efeito_inicial' &&
-          !verticalEfetiva &&
-          verticalPadrao &&
-          verticalSelecionadaRef.current !== verticalPadrao
-        ) {
-          setVerticalSelecionada(verticalPadrao)
+
+        // Se nenhuma vertical foi informada (ex.: abertura inicial ou troca de ambiente sem escolha prévia):
+        // Selecionar efetivamente a vertical mais recentemente ingesta no estado e no serviço.
+        if (!verticalEfetiva) {
+          const verticalPadrao = info.verticalMaisRecenteSlug || info.protocoloDominanteSlug || ''
+          if (verticalPadrao && verticalPadrao !== 'todas') {
+            setVerticalSelecionada(verticalPadrao)
+            verticalSelecionadaRef.current = verticalPadrao
+            // Recarregar os dados já estritamente filtrados para essa vertical padrão
+            info = await carregarDadosDmrvEmpresa(userCnpj, origemEfetiva, verticalPadrao)
+          }
         }
+
+        setDados(info)
       } catch (err: any) {
         console.error('Erro ao carregar dados dMRV:', err)
         setErroCarregamento(
@@ -354,6 +355,9 @@ export function PainelDmrvEmissoesEvitadas({
                 onChange={(e) => handleTrocarVertical(e.target.value)}
                 className="bg-transparent text-xs font-bold text-foreground border-none outline-none cursor-pointer pr-1 py-0.5"
               >
+                <option value="todas" className="bg-popover text-foreground font-semibold">
+                  Todas as verticais (Agregado Consolidado)
+                </option>
                 {dados.verticaisDisponiveis.map((v) => (
                   <option key={v.slug} value={v.slug} className="bg-popover text-foreground">
                     {v.nome} ({v.totalLotes} lote{v.totalLotes === 1 ? '' : 's'})
@@ -443,6 +447,32 @@ export function PainelDmrvEmissoesEvitadas({
         <SimuladorReferencialSection simulacao={dados.simuladorReferencial} />
       ) : (
         <>
+          {/* Aviso explícito de Agregado quando a opção "todas" estiver ativa */}
+          {verticalSelecionada === 'todas' && (
+            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-500/40 text-blue-900 dark:text-blue-200 text-xs flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <strong className="font-bold uppercase tracking-wide">
+                    Visão Consolidada Multicadeia (Todas as Verticais)
+                  </strong>
+                  <Badge
+                    variant="outline"
+                    className="border-blue-500/40 text-blue-600 dark:text-blue-400 text-[10px] font-mono font-bold uppercase"
+                  >
+                    Agregado Consolidado
+                  </Badge>
+                </div>
+                <p className="leading-relaxed opacity-90">
+                  Os cards e indicadores abaixo exibem o somatório consolidado de todas as verticais
+                  e cadeias do ambiente ativo. Para analisar uma cadeia isolada com fatores e
+                  grandezas canônicas específicas, utilize o seletor{' '}
+                  <strong>Vertical em foco</strong> acima.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Tarja informativa de Sandbox quando filtroOrigem === 'sintetico' */}
           {filtroOrigem === 'sintetico' && (
             <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3">
