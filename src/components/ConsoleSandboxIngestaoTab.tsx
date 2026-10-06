@@ -25,6 +25,10 @@ import {
   Layers,
 } from 'lucide-react'
 import { getErrorMessage } from '@/lib/pocketbase/errors'
+import {
+  consultarTriadorIngestao,
+  TriagemIngestaoCdvResultado,
+} from '@/services/triadorIngestaoCdvService'
 
 export interface PipelineIngestaoResultado {
   sucesso: boolean
@@ -205,6 +209,8 @@ export function ConsoleSandboxIngestaoTab() {
 
   // Estado de Ingestão no Pipeline
   const [ingestando, setIngestando] = useState<boolean>(false)
+  const [triandoAgente, setTriandoAgente] = useState<boolean>(false)
+  const [triagemResultado, setTriagemResultado] = useState<TriagemIngestaoCdvResultado | null>(null)
   const [resultadosIngestao, setResultadosIngestao] = useState<PipelineIngestaoResultado[]>([])
   const [progressoIngestao, setProgressoIngestao] = useState<{ atual: number; total: number }>({
     atual: 0,
@@ -369,10 +375,42 @@ export function ConsoleSandboxIngestaoTab() {
     }
   }
 
+  // Executar Triagem Não-Bloqueante com o Agente Nativo Skip Cloud
+  const handleTriarComAgente = async () => {
+    if (loteGerado.length === 0) return
+    setTriandoAgente(true)
+    try {
+      const primeiroDoc = loteGerado[0]
+      const resumoLote = {
+        segmento,
+        totalDocumentos: loteGerado.length,
+        chaveAcesso: primeiroDoc.chaveAcesso,
+        cnpjEmitente: primeiroDoc.cnpjEmitente,
+        razaoSocial: primeiroDoc.razaoSocialEmitente,
+        itens: primeiroDoc.itens.map((it) => ({
+          cProd: it.cProd,
+          xProd: it.xProd,
+          ncm: it.ncm,
+          pesoKg: it.pesoKg,
+          categoriaMaterial: it.categoriaMaterial,
+        })),
+      }
+      const resultado = await consultarTriadorIngestao(resumoLote, 9000)
+      if (resultado) {
+        setTriagemResultado(resultado)
+      }
+    } catch (err) {
+      console.warn('[Triador Ingestão CDV] Triagem não-bloqueante ignorada:', err)
+    } finally {
+      setTriandoAgente(false)
+    }
+  }
+
   // Gerar novo lote sintético
   const handleGerarLote = async () => {
     setGerando(true)
     setResultadosIngestao([])
+    setTriagemResultado(null)
     try {
       const novaSemente = gerarSementeRodada()
       setSementeRodadaAtual(novaSemente)
@@ -513,6 +551,29 @@ export function ConsoleSandboxIngestaoTab() {
       }
     } catch (invErr: any) {
       console.warn('Aviso ao gerar registro sintético em emissoes_inventario:', invErr)
+    }
+
+    // Consulta prévia não-bloqueante ao Triador de Ingestão CDV (Agente Nativo Skip Cloud)
+    try {
+      const docAmostra = loteGerado[0]
+      const resumoTriagem = {
+        segmento,
+        totalDocumentos: loteGerado.length,
+        chaveAcesso: docAmostra.chaveAcesso,
+        cnpjEmitente: docAmostra.cnpjEmitente,
+        itens: docAmostra.itens.map((it) => ({
+          xProd: it.xProd,
+          pesoKg: it.pesoKg,
+          categoriaMaterial: it.categoriaMaterial,
+        })),
+      }
+      consultarTriadorIngestao(resumoTriagem, 5000)
+        .then((res) => {
+          if (res) setTriagemResultado(res)
+        })
+        .catch(() => {})
+    } catch {
+      /* intentionally ignored */
     }
 
     for (let i = 0; i < loteGerado.length; i++) {
@@ -910,6 +971,26 @@ export function ConsoleSandboxIngestaoTab() {
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
+                onClick={handleTriarComAgente}
+                disabled={triandoAgente || ingestando}
+                className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold flex items-center gap-2 transition-colors border border-indigo-200 dark:border-indigo-800 disabled:opacity-50"
+                title="Consultar proposta de classificação e detecção de anomalias com o Agente Nativo Skip Cloud"
+              >
+                {triandoAgente ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Triando com IA...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>Triador IA Skip Cloud</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
                 onClick={handleDownloadLoteCompleto}
                 className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors border border-slate-300 dark:border-slate-700"
               >
@@ -939,6 +1020,88 @@ export function ConsoleSandboxIngestaoTab() {
               </button>
             </div>
           </div>
+
+          {/* Card de Parecer do Triador de Ingestão CDV (Agente Nativo Skip Cloud) */}
+          {triagemResultado && (
+            <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-950 dark:text-indigo-100 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span className="font-heading font-bold text-xs uppercase tracking-wider text-indigo-900 dark:text-indigo-300">
+                    Triador de Ingestão CDV (Agente Nativo Skip Cloud)
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                      triagemResultado.nivel_risco === 'bloqueante'
+                        ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                        : triagemResultado.nivel_risco === 'alto'
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                          : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                    }`}
+                  >
+                    Risco: {triagemResultado.nivel_risco.toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                  Assistência pré-gravação · Decisão final determinística
+                </span>
+              </div>
+
+              <p className="text-xs text-indigo-900/90 dark:text-indigo-200/90">
+                {triagemResultado.resumo_triagem}
+              </p>
+
+              {/* Anomalias Sinalizadas */}
+              {triagemResultado.anomalias_detectadas &&
+                triagemResultado.anomalias_detectadas.length > 0 && (
+                  <div className="p-2.5 rounded-lg bg-amber-100/60 dark:bg-amber-950/40 border border-amber-300/60 dark:border-amber-800/40 text-[11px] space-y-1">
+                    <strong className="block text-[10px] font-bold text-amber-900 dark:text-amber-200 uppercase">
+                      Anomalias Sinalizadas pelo Triador (
+                      {triagemResultado.anomalias_detectadas.length}):
+                    </strong>
+                    <ul className="list-disc list-inside space-y-0.5 font-mono text-[10px] text-amber-900 dark:text-amber-300">
+                      {triagemResultado.anomalias_detectadas.map((ano, aIdx) => (
+                        <li key={aIdx}>
+                          <span className="font-bold">[{ano.codigo}]</span> {ano.descricao}
+                          {ano.sugestao_correcao && (
+                            <span className="italic opacity-85">
+                              {' '}
+                              — Sugestão: {ano.sugestao_correcao}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+              {/* Classificações Propostas */}
+              {triagemResultado.classificacao_proposta &&
+                triagemResultado.classificacao_proposta.length > 0 && (
+                  <div className="text-[11px] space-y-1">
+                    <strong className="block text-[10px] uppercase font-bold text-indigo-800 dark:text-indigo-300">
+                      Proposta de Categorias & Fontes Oficiais:
+                    </strong>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 font-mono text-[10px]">
+                      {triagemResultado.classificacao_proposta.slice(0, 4).map((cp, cIdx) => (
+                        <div
+                          key={cIdx}
+                          className="p-1.5 rounded bg-white/80 dark:bg-slate-900/60 border border-indigo-200/50 dark:border-indigo-800/40"
+                        >
+                          <span className="font-bold block truncate">{cp.descricao}</span>
+                          <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
+                            → {cp.categoria_material}
+                          </span>
+                          <span className="text-slate-500 block truncate text-[9px]">
+                            {cp.observacao_metodologica || cp.justificativa}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
 
           {/* Feedback de Progresso e Ingestão */}
           {resultadosIngestao.length > 0 &&

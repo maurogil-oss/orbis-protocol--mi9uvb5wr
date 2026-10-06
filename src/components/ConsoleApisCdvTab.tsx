@@ -38,6 +38,10 @@ import {
   type ItemCatalogoComPecaLote,
   type SituacaoChecklistPeca,
 } from '@/services/cdvService'
+import {
+  consultarTriadorIngestao,
+  type TriagemIngestaoCdvResultado,
+} from '@/services/triadorIngestaoCdvService'
 import pb from '@/lib/pocketbase/client'
 import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService'
 import { ShieldCheck, Info } from 'lucide-react'
@@ -126,9 +130,11 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
     'orb_cdv_live_detran_pr_0089_demo_key',
   )
   const [isDisparando, setIsDisparando] = useState(false)
-  const [respostaTeste, setRespostaTeste] = useState<IngestaoLoteResponse | null>(null)
+  const [respostaTeste, setRespostaTeste] = useState<any | null>(null)
   const [erroTeste, setErroTeste] = useState<string | null>(null)
-
+  const [isTriandoAgente, setIsTriandoAgente] = useState(false)
+  const [triagemCdvResultado, setTriagemCdvResultado] =
+    useState<TriagemIngestaoCdvResultado | null>(null)
   const carregarChave = async () => {
     try {
       const res = await obterOuCriarApiKeyCdv({
@@ -269,6 +275,21 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
     }
   }
 
+  const handleTriarPayloadAgente = async () => {
+    setIsTriandoAgente(true)
+    try {
+      const parsed = JSON.parse(payloadJsonStr)
+      const resultado = await consultarTriadorIngestao(parsed, 9000)
+      if (resultado) {
+        setTriagemCdvResultado(resultado)
+      }
+    } catch (err: any) {
+      console.warn('[Triador Ingestão CDV] Aviso na triagem assistida:', err)
+    } finally {
+      setIsTriandoAgente(false)
+    }
+  }
+
   const handleDispararTeste = async () => {
     setIsDisparando(true)
     setErroTeste(null)
@@ -276,6 +297,14 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
 
     try {
       const parsed = JSON.parse(payloadJsonStr)
+
+      // Consulta não-bloqueante ao Triador de Ingestão CDV (Agente Nativo Skip Cloud)
+      consultarTriadorIngestao(parsed, 4000)
+        .then((tri) => {
+          if (tri) setTriagemCdvResultado(tri)
+        })
+        .catch(() => {})
+
       const res = await enviarLoteCdvApi(parsed, chaveParaEnvio.trim())
       setRespostaTeste(res)
       // Atualiza listagem de lotes para exibir o novo lote imediatamente
@@ -870,6 +899,17 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
               </div>
               <button
                 type="button"
+                onClick={handleTriarPayloadAgente}
+                disabled={isTriandoAgente || isDisparando}
+                className="px-4 py-2.5 rounded-xl font-bold text-xs bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+                title="Triar classificação e anomalias com o Agente Nativo Skip Cloud"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                <span>{isTriandoAgente ? 'Triando...' : 'Triador IA'}</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={handleDispararTeste}
                 disabled={isDisparando}
                 className="px-5 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 dark:bg-[#2563EB] text-white hover:bg-emerald-700 dark:hover:bg-blue-600 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 shrink-0"
@@ -880,12 +920,34 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
             </div>
           </div>
 
-          {/* Resposta do Endpoint */}
+          {/* Resposta do Endpoint & Triagem do Agente */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-2">
             <span className="text-[#94A3B8] font-mono text-[11px]">
-              Resposta da API (HTTP 201 Created):
+              Resposta da API & Triagem do Agente:
             </span>
             <div className="flex-1 p-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 overflow-y-auto max-h-[380px] font-mono text-xs text-slate-900 dark:text-[#F8FAFC]">
+              {triagemCdvResultado && (
+                <div className="mb-3 p-2.5 rounded-lg border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-950 dark:text-indigo-100 space-y-1.5 font-sans">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-bold flex items-center gap-1 text-indigo-700 dark:text-indigo-300">
+                      <Sparkles className="w-3 h-3 text-indigo-500" />
+                      Triador Skip Cloud
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300">
+                      Risco: {triagemCdvResultado.nivel_risco}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-snug">
+                    {triagemCdvResultado.resumo_triagem}
+                  </p>
+                  {triagemCdvResultado.anomalias_detectadas.length > 0 && (
+                    <div className="text-[9px] text-amber-700 dark:text-amber-400 font-mono">
+                      ⚠️ {triagemCdvResultado.anomalias_detectadas.length} anomalia(s) sinalizada(s)
+                    </div>
+                  )}
+                </div>
+              )}
+
               {erroTeste ? (
                 <div className="p-3 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
