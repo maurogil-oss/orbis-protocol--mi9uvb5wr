@@ -128,7 +128,14 @@ export interface CdvPecaRecord extends RecordModel {
   sku_interno: string
   selo_dpp: string
   descricao_peca: string
-  categoria_material: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'concreto' | 'outros'
+  categoria_material:
+    | 'aco'
+    | 'aluminio'
+    | 'cobre'
+    | 'polimeros'
+    | 'concreto'
+    | 'agro_rastreado'
+    | 'outros'
   material_declarado: string
   peso_kg: number
   ncm?: string
