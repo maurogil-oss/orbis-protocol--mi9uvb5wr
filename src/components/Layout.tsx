@@ -251,22 +251,22 @@ export default function Layout() {
             {/* Brand Logo & Name */}
             <Link
               to="/"
-              className="flex items-center gap-2 sm:gap-3.5 group min-w-0 shrink"
+              className="flex items-center gap-1.5 sm:gap-3.5 group min-w-0 shrink max-w-[calc(100%-80px)] sm:max-w-none"
               title="Orbis Protocol"
             >
               <div className="shrink-0">
                 <div className="block sm:hidden">
-                  <OrbisGlobe size={34} />
+                  <OrbisGlobe size={32} />
                 </div>
                 <div className="hidden sm:block">
                   <OrbisGlobe size={42} />
                 </div>
               </div>
               <div className="flex flex-col items-start sm:items-center text-left sm:text-center min-w-0">
-                <span className="font-heading font-black text-base sm:text-xl tracking-[0.04em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors truncate max-w-[190px] xs:max-w-[210px] sm:max-w-none sm:text-center sm:w-full">
+                <span className="font-heading font-black text-sm sm:text-xl tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors truncate max-w-[170px] xs:max-w-[210px] sm:max-w-none sm:text-center sm:w-full">
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
-                <span className="text-[10px] sm:text-[11px] tracking-[0.14em] sm:tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 whitespace-nowrap sm:text-center sm:w-full">
+                <span className="text-[9.5px] sm:text-[11px] tracking-[0.12em] sm:tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 truncate max-w-[175px] xs:max-w-none whitespace-nowrap sm:text-center sm:w-full">
                   Economia Circular — dMRV
                 </span>
               </div>
@@ -500,15 +500,16 @@ export default function Layout() {
               )}
             </div>
 
-            {/* Mobile Hamburger Toggle */}
-            <div className="lg:hidden flex items-center gap-1 sm:gap-2 shrink-0">
-              <ThemeToggle />
+            {/* Mobile Actions: Theme Toggle + Hamburger — Compacto e sem sobreposição em 360px */}
+            <div className="lg:hidden flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
+              <ThemeToggle size="compact" />
               <button
+                type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="p-2 text-slate-800 dark:text-[#F8FAFC] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors shrink-0"
+                className="p-1.5 sm:p-2 text-slate-800 dark:text-[#F8FAFC] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
                 aria-label="Abrir menu"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
