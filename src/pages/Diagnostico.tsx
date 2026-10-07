@@ -596,15 +596,15 @@ export default function Diagnostico() {
   }
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12] w-full max-w-full min-w-0 overflow-x-hidden">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full min-w-0">
         {/* Header Breadcrumb / Title */}
         <div className="max-w-3xl mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-4">
             <ShieldCheck className="w-4 h-4 text-[#12B886]" />
             FUNIL QUALIFICADO • RADAR FISCAL & EMISSÕES
           </div>
-          <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-3">
+          <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-3 break-words [overflow-wrap:anywhere] max-w-full">
             DIAGNÓSTICO & QUALIFICAÇÃO TRIBUTÁRIA POR CNPJ
           </h1>
           <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">

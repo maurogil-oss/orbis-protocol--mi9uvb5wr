@@ -98,9 +98,12 @@
   }
 
   html,
-  body {
-    max-width: 100%;
+  body,
+  #root {
+    max-width: 100vw;
+    width: 100%;
     overflow-x: hidden;
+    min-width: 0;
   }
 
   body {
@@ -122,6 +125,8 @@
     font-family: 'Archivo', sans-serif;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    overflow-wrap: break-word;
+    word-break: normal;
   }
 
   section[aria-label='Notifications alt+T'] {
@@ -178,6 +183,7 @@
   .animate-marquee {
     display: flex;
     width: max-content;
+    contain: paint;
     animation: marquee 48s linear infinite;
   }
   .animate-marquee:hover {

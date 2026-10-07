@@ -267,18 +267,18 @@ export default function Verificador() {
   }
 
   return (
-    <div className="min-h-screen py-14 md:py-20 bg-[#0A0E12] relative overflow-hidden">
+    <div className="min-h-screen py-14 md:py-20 bg-[#0A0E12] relative overflow-hidden w-full max-w-full min-w-0">
       {/* Background glow suave em gradiente Linear verde-esmeralda e dourado */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] linear-glow-combined pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] max-w-full h-[350px] linear-glow-combined pointer-events-none" />
 
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10 w-full min-w-0">
         {/* Header no padrão Linear */}
         <div className="max-w-3xl mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#12B886] text-xs font-mono font-semibold tracking-wider uppercase mb-4">
             <ShieldCheck className="w-4 h-4 text-[#12B886] stroke-[1.5]" />
             Auditoria Digital Aberta
           </div>
-          <h1 className="font-heading font-black text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-tight mb-3">
+          <h1 className="font-heading font-black text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-tight mb-3 break-words [overflow-wrap:anywhere] max-w-full">
             VERIFICADOR PÚBLICO DE SELOS E LAUDOS
           </h1>
           <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
@@ -465,9 +465,9 @@ export default function Verificador() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between gap-3 bg-[#111820] p-2.5 rounded-lg border border-[rgba(244,247,250,0.08)]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#111820] p-2.5 rounded-lg border border-[rgba(244,247,250,0.08)] min-w-0 max-w-full">
                     <span
-                      className="font-mono text-xs text-[#D9B36C] truncate"
+                      className="font-mono text-xs text-[#D9B36C] break-all max-w-full min-w-0"
                       title={computedHash}
                     >
                       {computedHash || seloEncontrado.hash_integridade || 'SHA-256 Recalculado'}
@@ -539,8 +539,8 @@ export default function Verificador() {
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto max-w-full min-w-0">
+            <table className="w-full text-left text-xs min-w-[600px]">
               <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase font-semibold">
                 <tr>
                   <th className="py-3 px-4">Código</th>

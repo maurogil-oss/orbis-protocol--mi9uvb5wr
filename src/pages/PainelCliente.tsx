@@ -719,8 +719,8 @@ export default function PainelCliente() {
   }
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors">
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
+    <div className="min-h-screen py-12 md:py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors w-full max-w-full min-w-0 overflow-x-hidden">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 w-full min-w-0">
         {/* Welcome Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-6 border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)]">
           <div>
@@ -728,7 +728,7 @@ export default function PainelCliente() {
               <ShieldCheck className="w-4 h-4" />
               PAINEL DO CLIENTE • AMBIENTE AUTENTICADO
             </div>
-            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-[#F4F7FA]">
+            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-[#F4F7FA] break-words [overflow-wrap:anywhere] max-w-full">
               VISÃO GERAL DO PROTOCOLO & CRÉDITOS FISCAIS
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] mt-1">
@@ -796,7 +796,7 @@ export default function PainelCliente() {
         <TrialStatusBanner licenca={licenca} />
 
         {/* SELETOR DE ABAS DO MÓDULO FISCAL & MOTOR PERICIAL */}
-        <div className="flex border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto">
+        <div className="flex border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto max-w-full min-w-0">
           <button
             type="button"
             onClick={() => setAbaFiscalAtiva('dmrv_emissoes')}

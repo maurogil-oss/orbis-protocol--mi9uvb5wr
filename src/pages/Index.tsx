@@ -164,15 +164,17 @@ export default function Index() {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
             {/* Eyebrow rebaixado na hierarquia com pill de segurança */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#0E1A2E]/90 border border-slate-200 dark:border-slate-800 text-emerald-700 dark:text-[#059669] text-xs font-mono font-semibold tracking-wider uppercase mb-6 shadow-xs backdrop-blur-md">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
-              <span>INFRAESTRUTURA DE COMPROVAÇÃO E RASTREABILIDADE</span>
+            <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-white dark:bg-[#0E1A2E]/90 border border-slate-200 dark:border-slate-800 text-emerald-700 dark:text-[#059669] text-[10px] sm:text-xs font-mono font-semibold tracking-normal sm:tracking-wider uppercase mb-6 shadow-xs backdrop-blur-md max-w-full">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669] shrink-0" />
+              <span className="whitespace-normal text-center break-words">
+                INFRAESTRUTURA DE COMPROVAÇÃO E RASTREABILIDADE
+              </span>
             </div>
 
             {/* Headline Principal: Título grafite forte slate-900 com acento esmeralda corporativo */}
-            <h1 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-[1.08] mb-6 max-w-4xl">
+            <h1 className="font-heading font-black text-[1.65rem] xs:text-2xl sm:text-5xl md:text-6xl text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-[1.12] sm:leading-[1.08] mb-6 max-w-4xl w-full break-words [overflow-wrap:anywhere]">
               Lemos cada nota fiscal da sua cadeia e geramos a{' '}
-              <span className="text-emerald-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-[#059669] dark:via-[#2563EB] dark:to-[#D9B36C]">
+              <span className="text-emerald-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-[#059669] dark:via-[#2563EB] dark:to-[#D9B36C] break-words [overflow-wrap:anywhere]">
                 prova de descarbonização
               </span>
             </h1>

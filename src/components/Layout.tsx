@@ -221,14 +221,14 @@ export default function Layout() {
   ]
 
   return (
-    <div className="flex flex-col min-h-screen w-full overflow-x-clip bg-background text-foreground selection:bg-emerald-600/20 selection:text-emerald-900 dark:selection:bg-[#059669]/30 dark:selection:text-white">
+    <div className="flex flex-col min-h-screen w-full max-w-full min-w-0 overflow-x-hidden bg-background text-foreground selection:bg-emerald-600/20 selection:text-emerald-900 dark:selection:bg-[#059669]/30 dark:selection:text-white">
       {/* Cabeçalho Unificado Sticky com z-index alto e largura contida */}
-      <div className="sticky top-0 z-40 w-full">
+      <div className="sticky top-0 z-40 w-full max-w-full min-w-0 overflow-hidden">
         {/* 1. Regulatory Marquee Top Bar — Contraste refinado claro e escuro */}
-        <div className="w-full bg-slate-100 dark:bg-[#0A1628] border-b border-slate-200/80 dark:border-slate-800 py-2 text-xs overflow-hidden transition-colors duration-300">
-          <div className="animate-marquee items-center gap-6 whitespace-nowrap text-slate-600 dark:text-[#94A3B8] font-medium tracking-wider">
+        <div className="w-full max-w-full min-w-0 bg-slate-100 dark:bg-[#0A1628] border-b border-slate-200/80 dark:border-slate-800 py-2 text-xs overflow-hidden transition-colors duration-300">
+          <div className="animate-marquee items-center gap-6 whitespace-nowrap text-slate-600 dark:text-[#94A3B8] font-medium tracking-wider max-w-full">
             {[...regulations, ...regulations].map((reg, idx) => (
-              <span key={idx} className="inline-flex items-center gap-4">
+              <span key={idx} className="inline-flex items-center gap-4 shrink-0">
                 <span className="text-emerald-700 dark:text-[#059669] font-semibold flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
                   {reg}
@@ -241,21 +241,32 @@ export default function Layout() {
 
         {/* 2. Sticky Header — Fundo surface corporativo branco/slate no claro e #0A1628 no escuro */}
         <header
-          className={`w-full transition-all duration-300 bg-white/95 dark:bg-[#0A1628] backdrop-blur-md ${
+          className={`w-full max-w-full min-w-0 transition-all duration-300 bg-white/95 dark:bg-[#0A1628] backdrop-blur-md ${
             isScrolled
               ? 'border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
               : 'border-b border-slate-200/70 dark:border-slate-800/60'
           }`}
         >
-          <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between h-20">
+          <div className="w-full max-w-[1200px] mx-auto px-3 sm:px-6 flex items-center justify-between h-20 min-w-0">
             {/* Brand Logo & Name */}
-            <Link to="/" className="flex items-center gap-3.5 group" title="Orbis Protocol">
-              <OrbisGlobe size={42} />
-              <div className="flex flex-col items-center text-center">
-                <span className="font-heading font-black text-xl tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors text-center w-full">
+            <Link
+              to="/"
+              className="flex items-center gap-2 sm:gap-3.5 group min-w-0 shrink"
+              title="Orbis Protocol"
+            >
+              <div className="shrink-0">
+                <div className="block sm:hidden">
+                  <OrbisGlobe size={34} />
+                </div>
+                <div className="hidden sm:block">
+                  <OrbisGlobe size={42} />
+                </div>
+              </div>
+              <div className="flex flex-col items-start sm:items-center text-left sm:text-center min-w-0">
+                <span className="font-heading font-black text-base sm:text-xl tracking-[0.04em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors truncate max-w-[190px] xs:max-w-[210px] sm:max-w-none sm:text-center sm:w-full">
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
-                <span className="text-[11px] tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 whitespace-nowrap text-center w-full">
+                <span className="text-[10px] sm:text-[11px] tracking-[0.14em] sm:tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 whitespace-nowrap sm:text-center sm:w-full">
                   Economia Circular — dMRV
                 </span>
               </div>
@@ -490,11 +501,11 @@ export default function Layout() {
             </div>
 
             {/* Mobile Hamburger Toggle */}
-            <div className="lg:hidden flex items-center gap-2">
+            <div className="lg:hidden flex items-center gap-1 sm:gap-2 shrink-0">
               <ThemeToggle />
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="p-2 text-slate-800 dark:text-[#F8FAFC] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors"
+                className="p-2 text-slate-800 dark:text-[#F8FAFC] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors shrink-0"
                 aria-label="Abrir menu"
               >
                 <Menu className="w-6 h-6" />
