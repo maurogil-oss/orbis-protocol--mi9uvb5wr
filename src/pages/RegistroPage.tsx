@@ -143,6 +143,14 @@ export default function RegistroPage() {
         )
       }
 
+      // 3. Solicita confirmação de e-mail institucional para contas cliente
+      // (a conta continua nascendo aprovada; a confirmação ativará o trial de 15 dias e 5 notas)
+      try {
+        await pb.collection('users').requestVerification(cleanEmail)
+      } catch (errVerif) {
+        console.log('[RegistroPage] Aviso ao disparar requestVerification:', errVerif)
+      }
+
       setSucesso(true)
 
       // 3. Redirecionamento condicional ao perfil

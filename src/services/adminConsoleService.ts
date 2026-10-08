@@ -121,6 +121,26 @@ export async function atualizarClienteAdmin(userId: string, data: Record<string,
 }
 
 /**
+ * Altera status de acesso da conta cliente (ativo | suspenso) via endpoint seguro.
+ * Autorizado para master e admin. Exige motivo na suspensão.
+ * Grava evento 'cliente_suspenso' ou 'cliente_reativado' no audit_log.
+ */
+export async function alterarClienteAcessoStatus(params: {
+  userId: string
+  status: 'ativo' | 'suspenso'
+  motivo?: string
+}): Promise<{ sucesso: boolean; novo_status: string; status_anterior: string; mensagem: string }> {
+  return pb.send('/backend/v1/admin/cliente-acesso', {
+    method: 'POST',
+    body: {
+      user_id: params.userId,
+      status: params.status,
+      motivo: params.motivo,
+    },
+  })
+}
+
+/**
  * Funções de Governança exclusivas do Gestor Master
  */
 export async function aprovarRecusarContaGestaoMaster(params: {

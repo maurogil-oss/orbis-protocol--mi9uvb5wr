@@ -1043,14 +1043,20 @@ export default function PainelCliente() {
                   />
                   <button
                     type="button"
-                    disabled={isUploading || licenca.bloqueioSuaveAtivo}
+                    disabled={
+                      isUploading || licenca.bloqueioSuaveAtivo || licenca.precisaConfirmarEmail
+                    }
                     onClick={() => fileInputRef.current?.click()}
                     className="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center gap-2 disabled:opacity-50"
+                    title={
+                      licenca.precisaConfirmarEmail
+                        ? 'Confirme seu e-mail para ativar o trial e importar notas'
+                        : undefined
+                    }
                   >
                     <UploadCloud className="w-4 h-4" />
                     <span>{isUploading ? 'Processando...' : 'Importar Documentos Fiscais'}</span>
                   </button>
-
                   <button
                     type="button"
                     disabled={isFechandoCompetencia || nfeList.length === 0}

@@ -304,6 +304,14 @@ onRecordAuthWithPasswordRequest((e) => {
   if (authErro) {
     // Autenticação falhou! Registrar falha para e-mail e IP no audit_log
     const novaContagem = contagemAtiva + 1
+    const statusErro = (authErro && (authErro.status || (authErro.data && authErro.data.code))) || 0
+    const motivoFalha =
+      statusErro === 404
+        ? 'conta_inexistente'
+        : authErro && authErro.message && authErro.message.toLowerCase().includes('password')
+          ? 'senha_incorreta'
+          : 'credenciais_invalidas'
+
     try {
       const auditCol = $app.findCollectionByNameOrId('audit_log')
 
@@ -319,7 +327,37 @@ onRecordAuthWithPasswordRequest((e) => {
 
       const timestampIso = new Date().toISOString()
 
-      // Registrar falha associada ao e-mail
+      // 1. Evento audit_log exigido: 'login_falha' (e-mail informado, motivo, IP)
+      try {
+        const loginFalhaLog = new Record(auditCol)
+        const canonicalFalhaStr = `login_falha|${rawIdentity}|${motivoFalha}|${clientIp}|${timestampIso}|${previousHash}`
+        const chainHashFalha = $security.sha256(canonicalFalhaStr)
+
+        loginFalhaLog.set('acao', 'login_falha')
+        loginFalhaLog.set('entidade', 'users')
+        loginFalhaLog.set('entidade_id', rawIdentity || 'desconhecido')
+        loginFalhaLog.set('ator_id', 'sistema_auth')
+        loginFalhaLog.set('ator_email', rawIdentity || '')
+        loginFalhaLog.set('papel', 'visitante')
+        loginFalhaLog.set('ip', clientIp)
+        loginFalhaLog.set('detalhes', {
+          email_informado: rawIdentity,
+          email_mascarado: emailMascarado,
+          motivo: motivoFalha,
+          status_erro: statusErro,
+          ip: clientIp,
+          data_hora: timestampIso,
+          tentativa_numero: novaContagem,
+          previous_hash: previousHash,
+          chain_hash: chainHashFalha,
+        })
+        $app.save(loginFalhaLog)
+        previousHash = chainHashFalha
+      } catch (errFalhaLog) {
+        console.log('[rate_limiter] Erro ao gravar evento login_falha:', errFalhaLog)
+      }
+
+      // Registrar falha associada ao e-mail para rate-limit
       if (emailKey) {
         const failUserLog = new Record(auditCol)
         const canonicalUserStr = `AUTH_LOGIN_FAILED|${emailKey}|${clientIp}|${novaContagem}|${timestampIso}|${previousHash}`
@@ -336,6 +374,7 @@ onRecordAuthWithPasswordRequest((e) => {
           chave: emailKey,
           email_mascarado: emailMascarado,
           tentativa_numero: novaContagem,
+          motivo: motivoFalha,
           previous_hash: previousHash,
           chain_hash: chainHashUser,
           data_evento: timestampIso,
@@ -344,7 +383,7 @@ onRecordAuthWithPasswordRequest((e) => {
         previousHash = chainHashUser
       }
 
-      // Registrar falha associada ao IP
+      // Registrar falha associada ao IP para rate-limit
       const failIpLog = new Record(auditCol)
       const canonicalIpStr = `AUTH_LOGIN_FAILED|${ipKey}|${clientIp}|${novaContagem}|${timestampIso}|${previousHash}`
       const chainHashIp = $security.sha256(canonicalIpStr)
@@ -360,6 +399,7 @@ onRecordAuthWithPasswordRequest((e) => {
         chave: ipKey,
         email_mascarado: emailMascarado,
         tentativa_numero: novaContagem,
+        motivo: motivoFalha,
         previous_hash: previousHash,
         chain_hash: chainHashIp,
         data_evento: timestampIso,
@@ -404,12 +444,87 @@ onRecordAuthWithPasswordRequest((e) => {
 
     // Se o erro original tiver status específico (ex.: 404 quando o e-mail não existe no PocketBase),
     // preserva o erro original para permitir que o cliente identifique "e-mail não encontrado" vs "senha incorreta"
-    const statusErro = (authErro && (authErro.status || (authErro.data && authErro.data.code))) || 0
     if (statusErro === 404 || (authErro && authErro.status === 404)) {
       throw authErro
     }
 
     // Para outros erros (400 senha inválida, etc.), mantém o lançamento com mensagem controlada
     throw new BadRequestError(MENSAGEM_GENERICA)
+  }
+
+  // SUCESSO NA AUTENTICAÇÃO:
+  // e.record contém o usuário recém-autenticado pelo PocketBase
+  try {
+    const authRec = e.record
+    const timestampIso = new Date().toISOString()
+    let userAgent = ''
+    try {
+      const info = e.requestInfo()
+      if (info && info.headers) {
+        userAgent = String(info.headers['user-agent'] || '').slice(0, 500)
+      }
+    } catch (_) {}
+
+    // 1. Atualizar campo ultimo_acesso no registro do usuário via UPDATE SQL parametrizado
+    // (não interfere no retorno do e.next() nem dispara recursão)
+    if (authRec && authRec.id) {
+      try {
+        $app
+          .db()
+          .newQuery('UPDATE users SET ultimo_acesso = {:ultimo} WHERE id = {:id}')
+          .bind({
+            ultimo: timestampIso,
+            id: authRec.id,
+          })
+          .execute()
+      } catch (errUpd) {
+        console.log('[rate_limiter] Erro ao atualizar ultimo_acesso do usuário:', errUpd)
+      }
+    }
+
+    // 2. Gravar evento 'login_sucesso' no audit_log
+    const auditCol = $app.findCollectionByNameOrId('audit_log')
+    if (auditCol && authRec) {
+      const logSucesso = new Record(auditCol)
+      const userId = authRec.id
+      const userEmail = authRec.getString('email') || rawIdentity
+      const userRole = authRec.getString('role') || 'cliente'
+      const userName = authRec.getString('name') || userEmail
+
+      let previousHash = 'GENESIS_HASH_LOGIN_SUCESSO_ORBIS_2026'
+      try {
+        const ultimos = $app.findRecordsByFilter('audit_log', 'id != ""', '-created', 1, 0)
+        if (ultimos && ultimos.length > 0) {
+          const u = ultimos[0]
+          const d = u.get('detalhes') || {}
+          previousHash = (d && d.chain_hash) || u.getString('hash_sha256') || u.id
+        }
+      } catch (_) {}
+
+      const canonicalStr = `login_sucesso|${userId}|${userEmail}|${userRole}|${clientIp}|${timestampIso}|${previousHash}`
+      const chainHash = $security.sha256(canonicalStr)
+
+      logSucesso.set('acao', 'login_sucesso')
+      logSucesso.set('entidade', 'users')
+      logSucesso.set('entidade_id', userId)
+      logSucesso.set('ator_id', userId)
+      logSucesso.set('ator_email', userEmail)
+      logSucesso.set('papel', userRole)
+      logSucesso.set('ip', clientIp)
+      logSucesso.set('detalhes', {
+        ator_id: userId,
+        ator_nome: userName,
+        ator_email: userEmail,
+        papel: userRole,
+        ip: clientIp,
+        user_agent: userAgent,
+        data_hora: timestampIso,
+        previous_hash: previousHash,
+        chain_hash: chainHash,
+      })
+      $app.save(logSucesso)
+    }
+  } catch (errSucessoLog) {
+    console.log('[rate_limiter] Erro ao registrar login_sucesso no audit_log:', errSucessoLog)
   }
 }, 'users')

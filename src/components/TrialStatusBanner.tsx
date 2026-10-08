@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Clock,
@@ -8,8 +8,12 @@ import {
   ArrowRight,
   Sparkles,
   Lock,
+  Mail,
+  RefreshCw,
+  CheckCircle2,
 } from 'lucide-react'
 import type { EstadoLicencaUsuario } from '@/services/licencaService'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface TrialStatusBannerProps {
   licenca: EstadoLicencaUsuario
@@ -20,6 +24,108 @@ export const TrialStatusBanner: React.FC<TrialStatusBannerProps> = ({
   licenca,
   onContratarClick,
 }) => {
+  const { user, requestVerification } = useAuth()
+  const [reenviando, setReenviando] = useState(false)
+  const [mensagemReenvio, setMensagemReenvio] = useState<string | null>(null)
+  const [cooldownRestante, setCooldownRestante] = useState<number>(0)
+
+  useEffect(() => {
+    if (cooldownRestante <= 0) return
+    const timer = setInterval(() => {
+      setCooldownRestante((prev) => Math.max(0, prev - 1))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [cooldownRestante])
+
+  const handleReenviarEmail = async () => {
+    if (cooldownRestante > 0 || reenviando) return
+    const emailDestino = user?.email
+    if (!emailDestino) {
+      setMensagemReenvio('E-mail do usuário não identificado.')
+      return
+    }
+
+    setReenviando(true)
+    setMensagemReenvio(null)
+    try {
+      const res = await requestVerification(emailDestino)
+      if (res.success) {
+        setMensagemReenvio(
+          'Link de confirmação reenviado com sucesso! Verifique sua caixa de entrada.',
+        )
+        setCooldownRestante(60)
+      } else {
+        setMensagemReenvio(res.error || 'Falha ao reenviar confirmação.')
+      }
+    } catch (err: any) {
+      setMensagemReenvio(err?.message || 'Falha na conexão com o servidor.')
+    } finally {
+      setReenviando(false)
+    }
+  }
+
+  // Se o usuário precisa confirmar o e-mail: Banner "Confirme seu e-mail para ativar o trial"
+  if (licenca.precisaConfirmarEmail) {
+    return (
+      <div className="mb-6 p-5 sm:p-6 rounded-2xl bg-amber-500/10 border-2 border-amber-500/60 dark:border-[#F59F00]/60 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs shadow-md">
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 dark:text-[#F59F00] flex items-center justify-center shrink-0 mt-0.5">
+            <Mail className="w-5 h-5" />
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-heading font-extrabold text-slate-900 dark:text-[#F8FAFC] text-sm">
+                CONFIRME SEU E-MAIL PARA ATIVAR O TRIAL
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-[#F59F00] font-mono text-[10px] font-bold uppercase tracking-wider">
+                CONFIRMAÇÃO PENDENTE
+              </span>
+            </div>
+
+            <p className="text-slate-700 dark:text-[#94A3B8] text-xs leading-relaxed max-w-3xl">
+              Enviamos um link de ativação para{' '}
+              <strong className="text-slate-900 dark:text-[#F4F7FA]">
+                {user?.email || 'seu e-mail institucional'}
+              </strong>
+              . As ações operacionais do trial (importação de notas fiscais e cálculo) estão
+              bloqueadas até a confirmação. O trial de <strong>15 dias sem cartão</strong> com até{' '}
+              <strong>5 notas fiscais</strong> passa a contar imediatamente após a confirmação.
+            </p>
+
+            {mensagemReenvio && (
+              <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-[#12B886] font-medium pt-1">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{mensagemReenvio}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={handleReenviarEmail}
+            disabled={cooldownRestante > 0 || reenviando}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm ${
+              cooldownRestante > 0 || reenviando
+                ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+                : 'bg-amber-600 dark:bg-[#F59F00] text-white dark:text-[#0A0E12] hover:opacity-90'
+            }`}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${reenviando ? 'animate-spin' : ''}`} />
+            <span>
+              {reenviando
+                ? 'Enviando...'
+                : cooldownRestante > 0
+                  ? `Reenviar em ${cooldownRestante}s`
+                  : 'Reenviar E-mail'}
+            </span>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // Se for plano contratado, exibe badge compacto de plano ativo ilimitado
   if (licenca.isPlanoContratado) {
     return (

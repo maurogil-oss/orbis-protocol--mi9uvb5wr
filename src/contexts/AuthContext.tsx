@@ -49,6 +49,8 @@ interface AuthContextType {
     password: string,
     passwordConfirm?: string,
   ) => Promise<{ success: boolean; error?: string; status?: number }>
+  requestVerification: (email: string) => Promise<{ success: boolean; error?: string }>
+  confirmVerification: (token: string) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -227,6 +229,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const requestVerification = async (email: string) => {
+    try {
+      await pb.collection('users').requestVerification(email)
+      return { success: true }
+    } catch (err: any) {
+      const message = err?.message || 'Falha ao enviar e-mail de confirmação.'
+      return { success: false, error: message }
+    }
+  }
+
+  const confirmVerification = async (tokenParam: string) => {
+    try {
+      await pb.collection('users').confirmVerification(tokenParam)
+      if (pb.authStore.isValid) {
+        await pb
+          .collection('users')
+          .authRefresh()
+          .catch(() => {})
+      }
+      refreshAuth()
+      return { success: true }
+    } catch (err: any) {
+      const message = err?.message || 'Token de verificação inválido ou expirado.'
+      return { success: false, error: message }
+    }
+  }
+
   const role = (user as any)?.role || 'cliente'
   const isMaster = role === 'master'
   const isAdmin = role === 'admin' || role === 'master'
@@ -263,6 +292,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshAuth,
         requestPasswordReset,
         confirmPasswordReset,
+        requestVerification,
+        confirmVerification,
       }}
     >
       {children}

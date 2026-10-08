@@ -24,8 +24,12 @@ export interface EstadoLicencaUsuario {
   isTrial: boolean
   isPlanoContratado: boolean
   isFreeCadastro: boolean
+  // Confirmação de e-mail institucional
+  emailVerificado: boolean
+  precisaConfirmarEmail: boolean
   // Dados do trial
   trialAtivo: boolean
+  trialPendenteConfirmacaoEmail: boolean
   trialExpiradoPorTempo: boolean
   trialEsgotadoPorNotas: boolean
   bloqueioSuaveAtivo: boolean
@@ -49,6 +53,8 @@ export interface EstadoLicencaUsuario {
 
 export interface UsuarioLicencaInput {
   id?: string
+  email?: string
+  verified?: boolean
   role?: string
   plano_ativo?: string
   assinatura_status?: string
@@ -58,6 +64,8 @@ export interface UsuarioLicencaInput {
   trial_fim?: string
   trial_notas_limite?: number
   trial_notas_consumidas?: number
+  cliente_acesso_status?: string
+  ultimo_acesso?: string
   created?: string
 }
 
@@ -75,7 +83,10 @@ export function avaliarEstadoLicenca(
       isTrial: false,
       isPlanoContratado: false,
       isFreeCadastro: true,
+      emailVerificado: false,
+      precisaConfirmarEmail: false,
       trialAtivo: false,
+      trialPendenteConfirmacaoEmail: false,
       trialExpiradoPorTempo: false,
       trialEsgotadoPorNotas: false,
       bloqueioSuaveAtivo: false,
@@ -109,13 +120,18 @@ export function avaliarEstadoLicenca(
     user.assinatura_status === 'ativa' ||
     user.licenca_camada === 'plano_contratado'
 
+  const emailVerificado = user.verified === true
+
   if (ehGestorOuPerito || temPlanoAtivo) {
     return {
       camada: 'plano_contratado',
       isTrial: false,
       isPlanoContratado: true,
       isFreeCadastro: false,
+      emailVerificado: true,
+      precisaConfirmarEmail: false,
       trialAtivo: false,
+      trialPendenteConfirmacaoEmail: false,
       trialExpiradoPorTempo: false,
       trialEsgotadoPorNotas: false,
       bloqueioSuaveAtivo: false,
@@ -134,6 +150,11 @@ export function avaliarEstadoLicenca(
     }
   }
 
+  // Se o usuário for cliente e ainda não tiver confirmado o e-mail:
+  // o trial de 15 dias passa a contar/ativar só após a confirmação.
+  // Enquanto verified === false: bloqueia as ações operacionais do trial (importação/cálculo)
+  const precisaConfirmarEmail = !emailVerificado
+
   // Se o usuário está em free_cadastro explícito e sem trial iniciado
   const camadaDeclarada = user.licenca_camada || 'trial' // novos clientes iniciam em trial por padrão
   const ehFreePuro = camadaDeclarada === 'free_cadastro' && !user.trial_inicio && !user.trial_fim
@@ -144,7 +165,10 @@ export function avaliarEstadoLicenca(
       isTrial: false,
       isPlanoContratado: false,
       isFreeCadastro: true,
+      emailVerificado,
+      precisaConfirmarEmail,
       trialAtivo: false,
+      trialPendenteConfirmacaoEmail: false,
       trialExpiradoPorTempo: false,
       trialEsgotadoPorNotas: false,
       bloqueioSuaveAtivo: false,
@@ -174,7 +198,6 @@ export function avaliarEstadoLicenca(
       ? new Date(user.trial_inicio)
       : new Date(dataFim.getTime() - DURACAO_DIAS_TRIAL_PADRAO * 24 * 60 * 60 * 1000)
   } else {
-    // Se ainda não persistido explicitamente, toma como base a data de criação do usuário
     dataInicio = user.created ? new Date(user.created) : agora
     dataFim = new Date(dataInicio.getTime() + DURACAO_DIAS_TRIAL_PADRAO * 24 * 60 * 60 * 1000)
   }
@@ -188,7 +211,6 @@ export function avaliarEstadoLicenca(
       ? user.trial_notas_limite
       : LIMITE_NOTAS_TRIAL_PADRAO
 
-  // As notas consumidas podem vir do banco (contagem real em nfe_upload) ou do campo do usuário
   const notasConsumidas =
     typeof totalNotasBanco === 'number' ? totalNotasBanco : user.trial_notas_consumidas || 0
 
@@ -196,12 +218,15 @@ export function avaliarEstadoLicenca(
   const trialEsgotadoPorNotas = notasRestantes <= 0
 
   const bloqueioSuaveAtivo = trialExpiradoPorTempo || trialEsgotadoPorNotas
-  const trialAtivo = !bloqueioSuaveAtivo
+  const trialAtivo = !bloqueioSuaveAtivo && !precisaConfirmarEmail
 
   let motivoBloqueio: 'dias_expirados' | 'limite_notas_atingido' | undefined
   let mensagemStatus = ''
 
-  if (trialExpiradoPorTempo) {
+  if (precisaConfirmarEmail) {
+    mensagemStatus =
+      'Confirme seu e-mail institucional para ativar o trial de 15 dias sem cartão com 5 notas fiscais.'
+  } else if (trialExpiradoPorTempo) {
     motivoBloqueio = 'dias_expirados'
     mensagemStatus = `Trial de 15 dias encerrado. Seus resultados anteriores continuam preservados. Contrate o plano para importação contínua.`
   } else if (trialEsgotadoPorNotas) {
@@ -216,7 +241,10 @@ export function avaliarEstadoLicenca(
     isTrial: true,
     isPlanoContratado: false,
     isFreeCadastro: false,
+    emailVerificado,
+    precisaConfirmarEmail,
     trialAtivo,
+    trialPendenteConfirmacaoEmail: precisaConfirmarEmail,
     trialExpiradoPorTempo,
     trialEsgotadoPorNotas,
     bloqueioSuaveAtivo,
@@ -228,11 +256,12 @@ export function avaliarEstadoLicenca(
     notasRestantes,
     dataInicioTrial: dataInicio.toISOString(),
     dataFimTrial: dataFim.toISOString(),
-    podeImportarNovasNotas: !bloqueioSuaveAtivo,
-    podeVerPegadaPorNota: true, // No trial o usuário vê a pegada das notas que importou
-    podeVerSituacaoTributariaPorNota: true, // No trial vê a situação tributária das notas
+    // Bloqueia as ações operacionais de importação até que o e-mail esteja confirmado
+    podeImportarNovasNotas: !bloqueioSuaveAtivo && !precisaConfirmarEmail,
+    podeVerPegadaPorNota: true,
+    podeVerSituacaoTributariaPorNota: true,
     podeVerDiagnosticoCnpjCompleto: true,
-    podeEmitirLaudoPericialCompleto: false, // Laudo formal com ART/chancela é do plano contratado
+    podeEmitirLaudoPericialCompleto: false,
     mensagemStatus,
   }
 }

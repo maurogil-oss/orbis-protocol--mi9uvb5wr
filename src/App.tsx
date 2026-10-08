@@ -30,6 +30,7 @@ import Login from './pages/Login'
 import RegistroPage from './pages/RegistroPage'
 import RecuperarSenhaPage from './pages/RecuperarSenhaPage'
 import RedefinirSenhaPage from './pages/RedefinirSenhaPage'
+import ConfirmarEmailPage from './pages/ConfirmarEmailPage'
 import PreferenciasEmailPage from './pages/PreferenciasEmailPage'
 import PainelCliente from './pages/PainelCliente'
 import ConsoleAuditor from './pages/ConsoleAuditor'
@@ -121,7 +122,8 @@ const App = () => (
             <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
             <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
             <Route path="/redefinir-senha/:token" element={<RedefinirSenhaPage />} />
-            <Route path="/preferencias" element={<PreferenciasEmailPage />} />
+            <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
+            <Route path="/preferencias" element={<PreferenciasEmailPage />} />{' '}
             <Route path="/reativacao/opt-out" element={<PreferenciasEmailPage />} />
             <Route path="/registro" element={<RegistroPage />} />
             <Route path="/cadastro" element={<Navigate to="/registro" replace />} />
