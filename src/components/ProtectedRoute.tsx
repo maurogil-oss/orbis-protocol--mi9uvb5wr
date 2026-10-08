@@ -39,6 +39,65 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
+  // 1. Bloqueio de Cliente Suspenso (cliente_acesso_status === 'suspenso')
+  // Aplicável a clientes (inclusive cliente_acp); administradores e gestor master nunca são bloqueados por esta regra.
+  const clienteAcessoStatus = (user as any)?.cliente_acesso_status
+  const isClientRole = role === 'cliente' || role === 'cliente_acp' || (!isAdmin && !isMaster)
+  if (clienteAcessoStatus === 'suspenso' && isClientRole && !isAdmin && !isMaster) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center bg-background px-4 py-16">
+        <div className="max-w-md w-full p-8 rounded-2xl bg-card border border-destructive/40 text-center space-y-4 shadow-2xl">
+          <div className="w-16 h-16 mx-auto rounded-full bg-destructive/10 border border-destructive/30 flex items-center justify-center text-destructive text-2xl font-bold">
+            🛡️
+          </div>
+          <span className="px-3 py-1 rounded-full bg-destructive/20 text-destructive text-[10px] font-mono font-bold uppercase tracking-wider inline-block">
+            Conta Suspensa • Acesso Restrito
+          </span>
+          <h2 className="text-xl font-heading font-black text-foreground">
+            Acesso à Conta Suspenso
+          </h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Seu acesso às funcionalidades operacionais da plataforma <strong>Orbis Protocol</strong>{' '}
+            foi temporariamente suspenso pela administração de governança. Para regularizar sua
+            conta institucional, entre em contato com nosso time de atendimento.
+          </p>
+          <div className="p-3 rounded-lg bg-muted/40 border border-border text-[11px] text-muted-foreground text-left space-y-1 font-mono">
+            <div>
+              • Conta: <strong className="text-foreground">{user?.email}</strong>
+            </div>
+            <div>
+              • Situação: <strong className="text-destructive">Suspenso</strong>
+            </div>
+            <div>
+              • Suporte Oficial:{' '}
+              <a
+                href="mailto:suporte@orbis-protocol.com"
+                className="text-primary hover:underline font-bold"
+              >
+                suporte@orbis-protocol.com
+              </a>
+            </div>
+          </div>
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
+            <a
+              href="mailto:suporte@orbis-protocol.com?subject=Regulariza%C3%A7%C3%A3o%20de%20Acesso%20-%20Conta%20Suspensa"
+              className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground hover:opacity-90 text-xs font-bold transition-all text-center"
+            >
+              Falar com o Suporte
+            </a>
+            <button
+              type="button"
+              onClick={() => window.location.replace('/')}
+              className="flex-1 py-2.5 rounded-xl bg-muted hover:bg-muted/80 text-xs font-bold text-foreground transition-all"
+            >
+              Página Inicial
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Contas Gestão com aprovação pendente: sem acesso à área interna até validação pelo master
   const statusAprovacao = (user as any)?.status_aprovacao
   const isGestao = role === 'admin' || role === 'controller' || role === 'financeiro'

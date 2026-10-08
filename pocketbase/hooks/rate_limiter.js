@@ -527,4 +527,6 @@ onRecordAuthWithPasswordRequest((e) => {
   } catch (errSucessoLog) {
     console.log('[rate_limiter] Erro ao registrar login_sucesso no audit_log:', errSucessoLog)
   }
+
+  e.next()
 }, 'users')

@@ -51,6 +51,7 @@ import {
   AdminKpis,
   listarClientesAdmin,
   atualizarClienteAdmin,
+  alterarClienteAcessoStatus,
   listarCobrancasAdmin,
   listarLeadsAdmin,
   listarConsultasDppAdmin,
@@ -192,6 +193,21 @@ export default function AdminConsolePage() {
   const [editandoArtId, setEditandoArtId] = useState<string | null>(null)
   const [novaValidadeArtInput, setNovaValidadeArtInput] = useState<string>('')
   const [salvandoArt, setSalvandoArt] = useState<boolean>(false)
+
+  // Estado para Modal de Suspensão / Reativação de Conta Cliente
+  const [modalClienteAcesso, setModalClienteAcesso] = useState<{
+    aberto: boolean
+    cliente: any | null
+    acao: 'suspender' | 'reativar'
+    motivo: string
+    submetendo: boolean
+  }>({
+    aberto: false,
+    cliente: null,
+    acao: 'suspender',
+    motivo: '',
+    submetendo: false,
+  })
 
   // Modal / Edição de Produto
   const [editandoProduto, setEditandoProduto] = useState<Partial<ServicoCatalogoRecord> | null>(
@@ -866,6 +882,58 @@ export default function AdminConsolePage() {
     }
   }
 
+  // Suspensão / Reativação de Conta Cliente (Governança Master e Admin)
+  const abrirModalClienteAcesso = (cli: any, acao: 'suspender' | 'reativar') => {
+    if (isReadOnly) return
+    setModalClienteAcesso({
+      aberto: true,
+      cliente: cli,
+      acao,
+      motivo: '',
+      submetendo: false,
+    })
+  }
+
+  const handleExecutarAlteracaoAcessoCliente = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (isReadOnly || !modalClienteAcesso.cliente) return
+
+    const { cliente, acao, motivo } = modalClienteAcesso
+    const novoStatus = acao === 'suspender' ? 'suspenso' : 'ativo'
+
+    if (acao === 'suspender' && (!motivo || motivo.trim().length < 5)) {
+      alert(
+        'O motivo da suspensão é obrigatório (mínimo de 5 caracteres) para registro de governança.',
+      )
+      return
+    }
+
+    setModalClienteAcesso((prev) => ({ ...prev, submetendo: true }))
+    try {
+      const res = await alterarClienteAcessoStatus({
+        userId: cliente.id,
+        status: novoStatus,
+        motivo: motivo.trim() || undefined,
+      })
+      mostrarMensagem(
+        res.mensagem || `Status da conta atualizado para ${novoStatus.toUpperCase()}!`,
+      )
+      setModalClienteAcesso({
+        aberto: false,
+        cliente: null,
+        acao: 'suspender',
+        motivo: '',
+        submetendo: false,
+      })
+      carregarTodosDados()
+    } catch (err: any) {
+      alert(
+        'Erro ao alterar status de acesso do cliente: ' + (err.message || 'Falha de comunicação.'),
+      )
+      setModalClienteAcesso((prev) => ({ ...prev, submetendo: false }))
+    }
+  }
+
   // Retroalimentação defensiva disparada pelo admin on-demand
   const rodarRetroalimentacaoDefensiva = async () => {
     if (!confirm('Deseja rodar a retroalimentação defensiva de cadastro-mestre agora?')) return
@@ -1463,6 +1531,44 @@ export default function AdminConsolePage() {
                                     : 'Pendente'}
                               </span>
                             )}
+                            {/* Badge de Confirmação de E-mail (verified) */}
+                            {cli.verified ? (
+                              <span
+                                className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 flex items-center gap-1"
+                                title="Endereço de e-mail institucional verificado"
+                              >
+                                <CheckCircle2 className="w-3 h-3" />
+                                E-mail verificado
+                              </span>
+                            ) : (
+                              <span
+                                className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30 flex items-center gap-1"
+                                title="Confirmação de e-mail pendente"
+                              >
+                                <AlertTriangle className="w-3 h-3" />
+                                E-mail não verificado
+                              </span>
+                            )}
+                            {/* Badge de Status de Acesso da Conta (cliente_acesso_status) */}
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border flex items-center gap-1 ${
+                                cli.cliente_acesso_status === 'suspenso'
+                                  ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                                  : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                              }`}
+                              title={`Status da conta na governança: ${cli.cliente_acesso_status || 'ativo'}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  cli.cliente_acesso_status === 'suspenso'
+                                    ? 'bg-rose-400'
+                                    : 'bg-emerald-400'
+                                }`}
+                              />
+                              {cli.cliente_acesso_status === 'suspenso'
+                                ? 'Conta Suspensa'
+                                : 'Conta Ativa'}
+                            </span>
                             {/* Destaque Cadastro Incompleto (Item 5 do CFO) */}
                             {isIncompleto && (
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 flex items-center gap-1">
@@ -1524,6 +1630,29 @@ export default function AdminConsolePage() {
                                     Editar Cadastro
                                   </button>
                                 )}
+
+                                {/* Ação de Suspensão / Reativação de Conta Cliente (Governado por master e admin) */}
+                                {cli.role !== 'master' &&
+                                  cli.id !== user?.id &&
+                                  (cli.cliente_acesso_status === 'suspenso' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => abrirModalClienteAcesso(cli, 'reativar')}
+                                      className="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-emerald-500/40 text-[11px] font-bold transition-all shadow-sm"
+                                      title="Reativar acesso da conta cliente à plataforma"
+                                    >
+                                      Reativar Cliente
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => abrirModalClienteAcesso(cli, 'suspender')}
+                                      className="px-2.5 py-1 rounded bg-rose-500/15 hover:bg-rose-500 hover:text-white text-rose-400 border border-rose-500/30 text-[11px] font-semibold transition-all"
+                                      title="Suspender acesso operacional da conta cliente (exige justificativa)"
+                                    >
+                                      Suspender Cliente
+                                    </button>
+                                  ))}
 
                                 {/* Ações de Liberação/Suspensão exclusiva para Parceiro (Requisito 3) */}
                                 {cli.role === 'parceiro' && (
@@ -1622,6 +1751,17 @@ export default function AdminConsolePage() {
                                 </strong>
                               </span>
                             )}
+                            <span>
+                              Último Acesso:{' '}
+                              <strong className="text-[#F4F7FA] font-mono">
+                                {cli.ultimo_acesso
+                                  ? new Date(cli.ultimo_acesso).toLocaleString('pt-BR', {
+                                      dateStyle: 'short',
+                                      timeStyle: 'short',
+                                    })
+                                  : 'Sem registro'}
+                              </strong>
+                            </span>
                           </div>
                         ) : (
                           /* Formulário de Edição Inline do Cadastro-Mestre */
@@ -4079,6 +4219,144 @@ export default function AdminConsolePage() {
                     className="px-5 py-2 rounded-xl bg-[#EF4444] text-white font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-colors hover:bg-[#dc2626]"
                   >
                     {modalAnulacao.submetendo ? 'Anulando Documento...' : 'Confirmar Anulação'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL SUSPENSÃO / REATIVAÇÃO DE CONTA CLIENTE (GOVERNANÇA) */}
+        {modalClienteAcesso.aberto && modalClienteAcesso.cliente && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div
+              className={`w-full max-w-lg rounded-2xl bg-[#111820] border-2 p-6 space-y-5 shadow-2xl ${
+                modalClienteAcesso.acao === 'suspender' ? 'border-rose-500' : 'border-emerald-500'
+              }`}
+            >
+              <div className="flex items-start justify-between border-b border-[rgba(244,247,250,0.1)] pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    {modalClienteAcesso.acao === 'suspender' ? (
+                      <AlertTriangle className="w-5 h-5 text-rose-500" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    )}
+                    <h3 className="font-heading font-extrabold text-lg text-[#F4F7FA]">
+                      {modalClienteAcesso.acao === 'suspender'
+                        ? 'Suspender Acesso de Cliente'
+                        : 'Reativar Acesso de Cliente'}
+                    </h3>
+                  </div>
+                  <span className="text-xs text-[#93A3B5] mt-1 block">
+                    Conta:{' '}
+                    <strong className="text-foreground">{modalClienteAcesso.cliente.email}</strong>{' '}
+                    (
+                    {modalClienteAcesso.cliente.name ||
+                      modalClienteAcesso.cliente.cnpj ||
+                      'Sem nome'}
+                    )
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setModalClienteAcesso({
+                      aberto: false,
+                      cliente: null,
+                      acao: 'suspender',
+                      motivo: '',
+                      submetendo: false,
+                    })
+                  }
+                  className="text-[#93A3B5] hover:text-[#F4F7FA]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div
+                className={`p-4 rounded-xl text-xs space-y-2 border ${
+                  modalClienteAcesso.acao === 'suspender'
+                    ? 'bg-rose-500/10 border-rose-500/30 text-[#F4F7FA]'
+                    : 'bg-emerald-500/10 border-emerald-500/30 text-[#F4F7FA]'
+                }`}
+              >
+                <strong
+                  className={`block uppercase font-bold ${
+                    modalClienteAcesso.acao === 'suspender' ? 'text-rose-400' : 'text-emerald-400'
+                  }`}
+                >
+                  {modalClienteAcesso.acao === 'suspender'
+                    ? 'Atenção: Acesso Operacional Bloqueado'
+                    : 'Confirmação de Reativação Institucional'}
+                </strong>
+                <p className="text-[#93A3B5] leading-relaxed">
+                  {modalClienteAcesso.acao === 'suspender'
+                    ? 'O cliente será impedido de acessar rotas autenticadas da plataforma (ProtectedRoute). Uma tela institucional com contato do suporte será exibida. A operação é registrada na trilha imutável audit_log.'
+                    : 'O acesso da conta cliente será restabelecido imediatamente para todas as funcionalidades contratadas. A reativação é registrada na trilha imutável audit_log.'}
+                </p>
+              </div>
+
+              <form onSubmit={handleExecutarAlteracaoAcessoCliente} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-[#93A3B5] font-semibold mb-1">
+                    Justificativa de Governança{' '}
+                    {modalClienteAcesso.acao === 'suspender'
+                      ? '* (obrigatória, mín. 5 caracteres)'
+                      : '(opcional)'}
+                  </label>
+                  <textarea
+                    rows={3}
+                    required={modalClienteAcesso.acao === 'suspender'}
+                    minLength={modalClienteAcesso.acao === 'suspender' ? 5 : 0}
+                    placeholder={
+                      modalClienteAcesso.acao === 'suspender'
+                        ? 'Descreva o motivo da suspensão (ex: Inadimplência contratual, solicitação jurídica, averiguação cadastral)...'
+                        : 'Observação opcional sobre a regularização...'
+                    }
+                    value={modalClienteAcesso.motivo}
+                    onChange={(e) =>
+                      setModalClienteAcesso({ ...modalClienteAcesso, motivo: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(244,247,250,0.08)]">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModalClienteAcesso({
+                        aberto: false,
+                        cliente: null,
+                        acao: 'suspender',
+                        motivo: '',
+                        submetendo: false,
+                      })
+                    }
+                    className="px-4 py-2 rounded-xl bg-[#16202B] text-xs text-[#93A3B5]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={
+                      modalClienteAcesso.submetendo ||
+                      (modalClienteAcesso.acao === 'suspender' &&
+                        modalClienteAcesso.motivo.trim().length < 5)
+                    }
+                    className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${
+                      modalClienteAcesso.acao === 'suspender'
+                        ? 'bg-rose-500 hover:bg-rose-600 text-white'
+                        : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-emerald-glow'
+                    }`}
+                  >
+                    {modalClienteAcesso.submetendo
+                      ? 'Processando...'
+                      : modalClienteAcesso.acao === 'suspender'
+                        ? 'Confirmar Suspensão'
+                        : 'Confirmar Reativação'}
                   </button>
                 </div>
               </form>
