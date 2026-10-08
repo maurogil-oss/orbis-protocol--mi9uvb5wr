@@ -25,16 +25,17 @@ describe('Diagnostico - Micro-textos Explicativos nos Campos (Confiança Visíve
       isAdmin: false,
       isFinanceiro: false,
       isFinanceiroLeitor: false,
+      isPerito: false,
       isController: false,
-      isClienteAcp: false,
       isParceiro: false,
-      isAdminOrPerito: false,
-      isGestaoPendente: false,
       logout: vi.fn(),
       refreshAuth: vi.fn(),
+      isContaPendente: false,
+      isContaRejeitada: false,
       requestPasswordReset: vi.fn(),
       confirmPasswordReset: vi.fn(),
-    })
+      requestVerification: vi.fn().mockResolvedValue({ success: true }),
+      confirmVerification: vi.fn().mockResolvedValue({ success: true }),    })
 
     render(
       <MemoryRouter initialEntries={['/diagnostico']}>

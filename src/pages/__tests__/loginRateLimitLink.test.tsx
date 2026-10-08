@@ -21,7 +21,7 @@ describe('Login - Padrão de Confiança Visível e Link Esqueci Minha Senha', ()
     })
 
     vi.mocked(AuthContext.useAuth).mockReturnValue({
-      login: mockLogin,
+      login: vi.fn(),
       user: null,
       token: '',
       isAuthenticated: false,
@@ -31,17 +31,18 @@ describe('Login - Padrão de Confiança Visível e Link Esqueci Minha Senha', ()
       isAdmin: false,
       isFinanceiro: false,
       isFinanceiroLeitor: false,
+      isPerito: false,
       isController: false,
-      isClienteAcp: false,
       isParceiro: false,
-      isAdminOrPerito: false,
-      isGestaoPendente: false,
       logout: vi.fn(),
       refreshAuth: vi.fn(),
+      isContaPendente: false,
+      isContaRejeitada: false,
       requestPasswordReset: vi.fn(),
       confirmPasswordReset: vi.fn(),
+      requestVerification: vi.fn().mockResolvedValue({ success: true }),
+      confirmVerification: vi.fn().mockResolvedValue({ success: true }),
     })
-
     render(
       <MemoryRouter initialEntries={['/login']}>
         <Login />
