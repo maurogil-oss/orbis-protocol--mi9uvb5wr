@@ -16,6 +16,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   cadastrarEscola,
   cadastrarEscolasEmLote,
+  CadastrarEscolaInput,
   EscolaRecord,
   PerfilModalidadeEscola,
   RedeEscolar,
@@ -28,13 +29,13 @@ export default function CadastroEscolasPage() {
   const [modoCadastro, setModoCadastro] = useState<'individual' | 'lote'>('individual')
 
   // Form Individual
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CadastrarEscolaInput>({
     nome: '',
     cnpj_inep: '',
     municipio: '',
     uf: 'BA',
-    rede: 'municipal' as RedeEscolar,
-    perfil_modalidade: 'publica_patrocinada' as PerfilModalidadeEscola,
+    rede: 'municipal',
+    perfil_modalidade: 'publica_patrocinada',
     alunos_educacao_infantil: 0,
     alunos_fundamental_1: 0,
     alunos_fundamental_2: 0,
@@ -45,6 +46,7 @@ export default function CadastroEscolasPage() {
     responsavel_pedagogico_telefone: '',
     secretaria_ou_patrocinador: '',
     faixa_preco_comercial: 'Faixa até 500 alunos [Placeholder piloto municipal]',
+    status_adesao: 'inscrita',
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -100,27 +102,34 @@ Colégio Estadual Rui Barbosa;15.555.666/0001-30;Curitiba;PR;estadual;810;Profª
     try {
       // Parser básico CSV
       const linhas = textoLoteCSV.trim().split('\n')
-      const registrosParaCriar: Array<Omit<EscolaRecord, 'id'>> = []
+      const registrosParaCriar: Array<CadastrarEscolaInput> = []
 
       // Pula header se houver
       for (let i = 1; i < linhas.length; i++) {
         const linha = linhas[i].trim()
         if (!linha) continue
         const colunas = linha.split(';').map((c) => c.trim())
-        if (colunas.length < 5) continue
+        if (colunas.length < 3) continue
 
         const [nome, inep, munic, uf, redeStr, alunosStr, respNome, respEmail] = colunas
         const total = Number(alunosStr) || 200
         const f1 = Math.round(total * 0.5)
         const f2 = Math.round(total * 0.5)
 
+        const redeParsed: RedeEscolar =
+          redeStr &&
+          (redeStr.toLowerCase() === 'estadual' || redeStr.toLowerCase() === 'particular')
+            ? (redeStr.toLowerCase() as RedeEscolar)
+            : 'municipal'
+
         registrosParaCriar.push({
-          nome,
-          cnpj_inep: inep,
-          municipio: munic,
+          nome: nome || `Escola Municipal ${i}`,
+          cnpj_inep: inep || `INEP_${i}`,
+          municipio: munic || 'Salvador',
           uf: uf || 'BA',
-          rede: (redeStr.toLowerCase() as RedeEscolar) || 'municipal',
-          perfil_modalidade: 'publica_patrocinada',
+          rede: redeParsed,
+          perfil_modalidade:
+            redeParsed === 'particular' ? 'particular_compradora' : 'publica_patrocinada',
           alunos_educacao_infantil: 0,
           alunos_fundamental_1: f1,
           alunos_fundamental_2: f2,
@@ -518,7 +527,7 @@ Colégio Estadual Rui Barbosa;15.555.666/0001-30;Curitiba;PR;estadual;810;Profª
               {formData.perfil_modalidade === 'publica_patrocinada' ? (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#93A3B5] mb-1">
-                    Secretaria de Educação ou Patrocinador Mantenedor
+                    Secretaria de Educação ou Patrocinador Mantenedor *
                   </label>
                   <input
                     type="text"
@@ -526,15 +535,48 @@ Colégio Estadual Rui Barbosa;15.555.666/0001-30;Curitiba;PR;estadual;810;Profª
                     onChange={(e) =>
                       setFormData({ ...formData, secretaria_ou_patrocinador: e.target.value })
                     }
-                    placeholder="Ex.: Secretaria Municipal de Educação (SMED) ou Empresa Patrocinadora"
+                    placeholder="Ex.: Secretaria Municipal de Educação (SMED) ou Empresa Patrocinadora B2B2C"
                     className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-[#0A1220] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-900 dark:text-white"
                   />
+                  <span className="text-[11px] text-slate-500 mt-1 block">
+                    Escola pública participante: custo zero para a unidade e estudantes, financiada
+                    via convênio ou cota de responsabilidade socioambiental.
+                  </span>
                 </div>
               ) : (
-                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-[#D9B36C] text-xs">
-                  <strong>Camada Comercial Particular:</strong> As faixas de preço para escolas
-                  particulares ficam como placeholders para fechamento oficial após o piloto
-                  municipal.
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#93A3B5] mb-1">
+                      Faixa de Alunos & Camada Comercial (Escola Particular) *
+                    </label>
+                    <select
+                      value={formData.faixa_preco_comercial}
+                      onChange={(e) =>
+                        setFormData({ ...formData, faixa_preco_comercial: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-[#0A1220] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-900 dark:text-white"
+                    >
+                      <option value="Faixa até 300 alunos [Placeholder piloto municipal]">
+                        Até 300 alunos — [Placeholder piloto municipal • Sob consulta]
+                      </option>
+                      <option value="Faixa 301 a 700 alunos [Placeholder piloto municipal]">
+                        301 a 700 alunos — [Placeholder piloto municipal • Sob consulta]
+                      </option>
+                      <option value="Faixa 701 a 1500 alunos [Placeholder piloto municipal]">
+                        701 a 1.500 alunos — [Placeholder piloto municipal • Sob consulta]
+                      </option>
+                      <option value="Faixa acima de 1500 alunos [Placeholder piloto municipal]">
+                        Acima de 1.500 alunos (Rede Completa) — [Placeholder piloto municipal • Sob
+                        consulta]
+                      </option>
+                    </select>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-[#D9B36C] text-xs">
+                    <strong>Camada Comercial Particular (Honestidade Canônica):</strong> As faixas
+                    de preço para escolas particulares ficam como <em>placeholders</em> para
+                    fechamento oficial após a conclusão do piloto municipal. Nenhum valor de
+                    faturamento antecipado é prometido.
+                  </div>
                 </div>
               )}
             </div>

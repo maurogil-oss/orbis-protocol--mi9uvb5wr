@@ -1039,6 +1039,17 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link
+                    to="/educacao"
+                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                  >
+                    <span>Orbis Educação (MEI & Escolas)</span>
+                    <span className="px-1 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[9px] font-mono">
+                      Social
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/equipe"
                     className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
                   >

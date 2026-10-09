@@ -17,21 +17,23 @@ export interface EscolaRecord {
   uf: string
   rede: RedeEscolar
   perfil_modalidade: PerfilModalidadeEscola
-  alunos_educacao_infantil: number
-  alunos_fundamental_1: number
-  alunos_fundamental_2: number
-  alunos_ensino_medio: number
-  total_alunos: number
-  graus_turmas_atendidas: string
+  alunos_educacao_infantil?: number
+  alunos_fundamental_1?: number
+  alunos_fundamental_2?: number
+  alunos_ensino_medio?: number
+  total_alunos?: number
+  graus_turmas_atendidas?: string
   responsavel_pedagogico_nome: string
   responsavel_pedagogico_email: string
   responsavel_pedagogico_telefone?: string
   secretaria_ou_patrocinador?: string
   lote_inscricao_id?: string
   faixa_preco_comercial?: string
-  status_adesao: StatusAdesaoEscola
+  status_adesao?: StatusAdesaoEscola
   created?: string
 }
+
+export type CadastrarEscolaInput = Omit<EscolaRecord, 'id' | 'created'>
 
 export interface MetricasEscolaPainel {
   escolaId: string
@@ -119,22 +121,28 @@ export const ESCOLAS_DEMO_INICIAIS: EscolaRecord[] = [
 /**
  * Cadastra uma escola individual na coleção 'escolas'
  */
-export async function cadastrarEscola(escola: Omit<EscolaRecord, 'id'>): Promise<EscolaRecord> {
+export async function cadastrarEscola(escola: CadastrarEscolaInput): Promise<EscolaRecord> {
   const totalAlunos =
-    Number(escola.alunos_educacao_infantil || 0) +
-    Number(escola.alunos_fundamental_1 || 0) +
-    Number(escola.alunos_fundamental_2 || 0) +
-    Number(escola.alunos_ensino_medio || 0)
+    escola.total_alunos !== undefined && escola.total_alunos > 0
+      ? escola.total_alunos
+      : Number(escola.alunos_educacao_infantil || 0) +
+        Number(escola.alunos_fundamental_1 || 0) +
+        Number(escola.alunos_fundamental_2 || 0) +
+        Number(escola.alunos_ensino_medio || 0)
 
-  const payload = {
+  const payload: EscolaRecord = {
     ...escola,
+    alunos_educacao_infantil: Number(escola.alunos_educacao_infantil || 0),
+    alunos_fundamental_1: Number(escola.alunos_fundamental_1 || 0),
+    alunos_fundamental_2: Number(escola.alunos_fundamental_2 || 0),
+    alunos_ensino_medio: Number(escola.alunos_ensino_medio || 0),
     total_alunos: totalAlunos,
     status_adesao: escola.status_adesao || 'inscrita',
   }
 
   try {
     const res = await pb.collection('escolas').create(payload)
-    return { id: res.id, ...res } as EscolaRecord
+    return { id: res.id, ...payload } as EscolaRecord
   } catch (err) {
     console.warn('[EscolasService] Falha ao gravar no PocketBase, usando retorno local:', err)
     return {
@@ -148,7 +156,7 @@ export async function cadastrarEscola(escola: Omit<EscolaRecord, 'id'>): Promise
  * Importação em lote de escolas (ex.: Secretaria de Educação)
  */
 export async function cadastrarEscolasEmLote(
-  escolas: Array<Omit<EscolaRecord, 'id'>>,
+  escolas: Array<CadastrarEscolaInput>,
   secretariaNome: string,
 ): Promise<{ criadas: number; erros: number; registros: EscolaRecord[] }> {
   const loteId = `LOTE_${new Date().getFullYear()}_${Math.random().toString(36).substring(2, 6).toUpperCase()}`
@@ -199,7 +207,8 @@ export async function obterMetricasPainelEducacional(): Promise<{
 
   const escolasMetricas: MetricasEscolaPainel[] = escolas.map((esc, idx) => {
     // Fatores de engajamento pedagógico calibrados
-    const alcancados = Math.round(esc.total_alunos * (idx === 0 ? 0.72 : idx === 1 ? 0.65 : 0.48))
+    const total = esc.total_alunos || 0
+    const alcancados = Math.round(total * (idx === 0 ? 0.72 : idx === 1 ? 0.65 : 0.48))
     const conclusao = idx === 0 ? 84 : idx === 1 ? 78 : 55
     const atestados = Math.round(alcancados * (conclusao / 100))
 
@@ -210,7 +219,7 @@ export async function obterMetricasPainelEducacional(): Promise<{
       uf: esc.uf,
       rede: esc.rede,
       perfil: esc.perfil_modalidade,
-      totalAlunos: esc.total_alunos,
+      totalAlunos: total,
       alunosAlcancados: alcancados,
       percentualConclusaoTrilha: conclusao,
       atestadosEmitidos: atestados,

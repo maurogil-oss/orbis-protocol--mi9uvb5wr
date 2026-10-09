@@ -2036,6 +2036,26 @@ export default function Diagnostico() {
                           faixa_emissoes: 'nao_sei_calcular',
                           exporta_ue_cbam: 'nao',
                           cbam_bens: '',
+                          segmento_economico: 'geral',
+                          dados_alimentacao: {
+                            tipo_estabelecimento: 'restaurante',
+                            porte_funcionarios: '5_a_15',
+                            porte_faturamento_mensal: '30k_a_100k',
+                            principais_insumos: [
+                              'carnes',
+                              'embalagens_plasticas',
+                              'oleo_fritura',
+                              'bebidas',
+                            ],
+                            fontes_energia: ['eletrica_concessionaria', 'glp_botijao'],
+                            residuos_gerados: [
+                              'organicos',
+                              'oleo_fritura_usado',
+                              'reciclaveis_secos',
+                            ],
+                            origem_insumos: 'mista',
+                            logistica_reversa_embalagens: 'em_estruturacao',
+                          },
                           aceite_lgpd: false,
                         })
                       }}

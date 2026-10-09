@@ -40,6 +40,9 @@ import TestCatalog from './pages/TestCatalog'
 import Privacidade from './pages/Privacidade'
 import TermosUsoPage from './pages/TermosUsoPage'
 import Planos from './pages/Planos'
+import EducacaoPublicPage from './pages/EducacaoPublicPage'
+import CadastroEscolasPage from './pages/CadastroEscolasPage'
+import PainelEducacionalPage from './pages/PainelEducacionalPage'
 import Capital from './pages/Capital'
 import RadarRegulatorio from './pages/RadarRegulatorio'
 import RadarSemanalPublicPage from './pages/RadarSemanalPublicPage'
@@ -139,6 +142,12 @@ const App = () => (
             <Route path="/mover" element={<MoverPublicPage />} />
             <Route path="/materiais-criticos" element={<MateriaisCriticosPublicPage />} />
             <Route path="/equipe" element={<EquipePage />} />
+            {/* Orbis Educação & Cadastro/Painel de Escolas */}
+            <Route path="/educacao" element={<EducacaoPublicPage />} />
+            <Route path="/orbis-educacao" element={<Navigate to="/educacao" replace />} />
+            <Route path="/escolas/cadastro" element={<CadastroEscolasPage />} />
+            <Route path="/escolas/painel" element={<PainelEducacionalPage />} />
+            <Route path="/educacao/painel" element={<Navigate to="/escolas/painel" replace />} />
             {/* Protected Routes (Require Authentication) */}
             <Route
               path="/dossie-mover"
