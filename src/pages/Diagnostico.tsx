@@ -20,6 +20,15 @@ import {
 import { ComparativoTributarioView } from '@/components/ComparativoTributarioView'
 import { PROTOCOLOS_SETORIAIS } from '@/data/protocolosSetoriais'
 import {
+  SegmentoDiagnosticoId,
+  SEGMENTOS_DIAGNOSTICO,
+  PerguntasSegmentoAlimentacao,
+  calcularDiagnosticoAlimentacao,
+  ResultadoComparativoSegmentoAlimentacao,
+} from '@/services/diagnosticoSegmentosService'
+import { FormularioSegmentoAlimentacao } from '@/components/FormularioSegmentoAlimentacao'
+import { ResultadoSegmentoAlimentacaoView } from '@/components/ResultadoSegmentoAlimentacaoView'
+import {
   ShieldCheck,
   Search,
   CheckCircle2,
@@ -123,6 +132,20 @@ export default function Diagnostico() {
       | 'nao_sei_calcular',
     exporta_ue_cbam: 'nao' as 'sim' | 'nao',
     cbam_bens: '',
+    // Segmentação setorial (Flagship Alimentação / Turismo em estruturação / MEI em estruturação)
+    segmento_economico: 'geral' as SegmentoDiagnosticoId,
+    dados_alimentacao: {
+      tipo_estabelecimento: 'restaurante' as PerguntasSegmentoAlimentacao['tipo_estabelecimento'],
+      porte_funcionarios: '5_a_15' as PerguntasSegmentoAlimentacao['porte_funcionarios'],
+      porte_faturamento_mensal:
+        '30k_a_100k' as PerguntasSegmentoAlimentacao['porte_faturamento_mensal'],
+      principais_insumos: ['carnes', 'embalagens_plasticas', 'oleo_fritura', 'bebidas'],
+      fontes_energia: ['eletrica_concessionaria', 'glp_botijao'],
+      residuos_gerados: ['organicos', 'oleo_fritura_usado', 'reciclaveis_secos'],
+      origem_insumos: 'mista' as PerguntasSegmentoAlimentacao['origem_insumos'],
+      logistica_reversa_embalagens:
+        'em_estruturacao' as PerguntasSegmentoAlimentacao['logistica_reversa_embalagens'],
+    },
     aceite_lgpd: false,
   })
 
@@ -156,6 +179,8 @@ export default function Diagnostico() {
     vinculo_institucional?: string
     enquadramento_sbce?: string
     comparativo?: ResultadoComparativoTributario
+    segmento?: SegmentoDiagnosticoId
+    resultadoAlimentacao?: ResultadoComparativoSegmentoAlimentacao
   } | null>(null)
 
   // Retomada: Lead carregado para revisão/consulta do comparativo
@@ -233,6 +258,9 @@ export default function Diagnostico() {
       )
       if (sugestao) {
         setSugestaoCnaeTrilha(sugestao)
+        if (sugestao.protocoloSlug === 'alimentos') {
+          setFormData((prev) => ({ ...prev, segmento_economico: 'alimentacao' }))
+        }
       }
 
       setFormData((prev) => ({
@@ -399,6 +427,10 @@ export default function Diagnostico() {
 
     const isDemo = isModelMode || Boolean(obterModeloDemonstracao(formData.cnpj))
     const enquadramentoPreliminar = calcularEnquadramentoSBCE(formData.faixa_emissoes)
+    const resultadoAlimentacao =
+      formData.segmento_economico === 'alimentacao'
+        ? calcularDiagnosticoAlimentacao(formData.dados_alimentacao)
+        : undefined
 
     try {
       let createdUserId = ''
@@ -450,6 +482,14 @@ export default function Diagnostico() {
         faixa_impacto_tributario: comparativoCalculado.faixaImpacto,
         comparativo_tributario_json: comparativoCalculado,
         status: 'novo',
+        segmento_economico: formData.segmento_economico,
+        diagnostico_segmento_json:
+          formData.segmento_economico === 'alimentacao'
+            ? {
+                dados_formulario: formData.dados_alimentacao,
+                resultado_estimado: resultadoAlimentacao,
+              }
+            : null,
         demonstracao: isDemo,
         ...(createdUserId ? { usuario: createdUserId } : {}),
       }
@@ -516,6 +556,8 @@ export default function Diagnostico() {
         vinculo_institucional: leadRecord.vinculo_institucional || formData.vinculo_institucional,
         enquadramento_sbce: enquadramentoPreliminar,
         comparativo: comparativoCalculado,
+        segmento: formData.segmento_economico,
+        resultadoAlimentacao: resultadoAlimentacao,
       })
       setStep(7) // Success screen (Etapa 7)
     } catch (err: unknown) {
@@ -1510,6 +1552,85 @@ export default function Diagnostico() {
                     </div>
                   </div>
 
+                  {/* SEGMENTAÇÃO SETORIAL: Flagship Alimentação & Em Estruturação */}
+                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.12)] space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-[#F4F7FA]">
+                          Trilha por Segmento Econômico
+                        </label>
+                        <span className="text-[11px] text-[#12B886] font-semibold">
+                          Flagship Alimentação Disponível
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#93A3B5] mt-0.5">
+                        Selecione seu segmento para habilitar perguntas operacionais e comparativo
+                        setorial calibrado.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {SEGMENTOS_DIAGNOSTICO.map((seg) => {
+                        const isAtivo = seg.status === 'ativo'
+                        const isSelected = formData.segmento_economico === seg.id
+                        return (
+                          <div
+                            key={seg.id}
+                            onClick={() => {
+                              if (isAtivo) {
+                                setFormData({ ...formData, segmento_economico: seg.id })
+                              }
+                            }}
+                            className={`p-3 rounded-xl border text-xs transition-all ${
+                              isSelected
+                                ? 'bg-[#12B886]/15 border-[#12B886] text-[#F4F7FA] shadow-sm'
+                                : isAtivo
+                                  ? 'bg-[#111820] border-[rgba(244,247,250,0.1)] text-[#93A3B5] hover:border-[#12B886]/40 cursor-pointer'
+                                  : 'bg-[#111820]/40 border-[rgba(244,247,250,0.06)] text-[#93A3B5]/60 cursor-not-allowed'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <span className="font-semibold text-xs leading-tight">
+                                {seg.nome}
+                              </span>
+                              {seg.status === 'em_estruturacao' ? (
+                                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                                  em estruturação
+                                </span>
+                              ) : seg.id === 'alimentacao' ? (
+                                <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] text-[9px] font-bold uppercase tracking-wider shrink-0">
+                                  Flagship
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                                  Geral
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-[#93A3B5] leading-normal">
+                              {seg.subtitulo}
+                            </p>
+                            {seg.descricaoStatus && (
+                              <p className="text-[10px] text-amber-400/80 mt-1 italic leading-tight">
+                                ℹ️ {seg.descricaoStatus}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Questionário Setorial do Segmento Alimentação (Flagship) */}
+                    {formData.segmento_economico === 'alimentacao' && (
+                      <FormularioSegmentoAlimentacao
+                        dados={formData.dados_alimentacao}
+                        onChange={(novosDados) =>
+                          setFormData({ ...formData, dados_alimentacao: novosDados })
+                        }
+                      />
+                    )}
+                  </div>
+
                   {/* Faixa de Emissões Anuais */}
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
@@ -1774,8 +1895,20 @@ export default function Diagnostico() {
                   {/* Etiqueta de honestidade obrigatória */}
                   <div className="max-w-xl mx-auto p-3 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-700 dark:text-[#D9B36C] text-xs font-medium text-center">
                     ⚠️ Resumo preliminar — não substitui laudo pericial probatório. Cadastro
-                    gratuito entrega o diagnóstico completo do CNPJ sem valores de nota.
+                    gratuito entrega o diagnóstico completo do CNPJ sem valores de nota. Pegada por
+                    nota e produto disponível no trial de 15 dias (5 notas) e no plano contratado.
                   </div>
+
+                  {/* Resultado Setorial Alimentação (se aplicável) */}
+                  {protocoloGerado.resultadoAlimentacao && (
+                    <div className="max-w-2xl mx-auto">
+                      <ResultadoSegmentoAlimentacaoView
+                        resultado={protocoloGerado.resultadoAlimentacao}
+                        razaoSocial={protocoloGerado.razao_social}
+                        cnpj={protocoloGerado.cnpj}
+                      />
+                    </div>
+                  )}
 
                   {/* Summary Card */}
                   <div className="p-6 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 text-left max-w-xl mx-auto space-y-3 relative overflow-hidden">

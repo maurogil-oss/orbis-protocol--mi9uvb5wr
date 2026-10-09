@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-08T14:27:41.946Z",
+  "generatedAt": "2026-10-09T20:55:13.777Z",
   "collections": [
     {
       "name": "users",
@@ -435,6 +435,24 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "segmento_economico",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "diagnostico_segmento_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "protocolo_dx_codigo",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -516,6 +534,18 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "tipo_documento",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "atestado_conformidade",
+            "passaporte_dpp",
+            "atestado_participacao",
+            "laudo_dmrv"
+          ]
         }
       ],
       "indexes": [
@@ -5386,6 +5416,298 @@
         "CREATE INDEX idx_reativacao_toque ON reativacao_envios (toque)",
         "CREATE INDEX idx_reativacao_status ON reativacao_envios (status)",
         "CREATE INDEX idx_reativacao_created ON reativacao_envios (created DESC)"
+      ]
+    },
+    {
+      "name": "escolas",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'gestor_master' || @request.auth.role = 'admin')"
+      },
+      "fields": [
+        {
+          "name": "nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj_inep",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "municipio",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "uf",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "rede",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["municipal", "estadual", "particular"]
+        },
+        {
+          "name": "perfil_modalidade",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["publica_patrocinada", "particular_compradora"]
+        },
+        {
+          "name": "alunos_educacao_infantil",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "alunos_fundamental_1",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "alunos_fundamental_2",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "alunos_ensino_medio",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_alunos",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "graus_turmas_atendidas",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "responsavel_pedagogico_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "responsavel_pedagogico_email",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "responsavel_pedagogico_telefone",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "secretaria_ou_patrocinador",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "lote_inscricao_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "faixa_preco_comercial",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_adesao",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["inscrita", "piloto_ativo", "concluida", "em_negociacao"]
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_escolas_cnpj_inep ON escolas (cnpj_inep)",
+        "CREATE INDEX idx_escolas_rede ON escolas (rede)",
+        "CREATE INDEX idx_escolas_municipio_uf ON escolas (municipio, uf)",
+        "CREATE INDEX idx_escolas_perfil ON escolas (perfil_modalidade)"
+      ]
+    },
+    {
+      "name": "educacao_participantes",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'gestor_master' || @request.auth.role = 'admin')"
+      },
+      "fields": [
+        {
+          "name": "tipo_publico",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["mei", "escola_aluno", "escola_turma", "gestor_escolar"]
+        },
+        {
+          "name": "nome_participante",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "documento_identificador",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "whatsapp",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "municipio",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "uf",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "escola_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "escola_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "turma_grau",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "patrocinador_entidade",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "progresso_licoes_concluidas",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_licoes",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "percentual_conclusao",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_trilha",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["inscrito", "em_andamento", "concluido"]
+        },
+        {
+          "name": "codigo_atestado",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_sha256",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_conclusao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_educacao_part_tipo ON educacao_participantes (tipo_publico)",
+        "CREATE INDEX idx_educacao_part_escola ON educacao_participantes (escola_id)",
+        "CREATE INDEX idx_educacao_part_atestado ON educacao_participantes (codigo_atestado)"
       ]
     }
   ]

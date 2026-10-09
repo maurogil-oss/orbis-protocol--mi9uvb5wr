@@ -260,6 +260,38 @@ const REGRAS_CNAE: MapeamentoCNAERegra[] = [
     },
   },
 
+  // 7.1. Bares, Restaurantes, Lanchonetes, Padarias & Delivery -> Protocolo Alimentos & Trilha Flagship
+  {
+    prefixos: [
+      '5611201', // Restaurantes e similares
+      '5611202', // Bares e outros estabelecimentos especializados em servir bebidas, com entretenimento
+      '5611203', // Lanchonetes, casas de chá, de sucos e similares
+      '5611204', // Bares e outros estabelecimentos especializados em servir bebidas, sem entretenimento
+      '5611205', // Bares e outros estabelecimentos especializados em servir bebidas com serviço completo
+      '5620101', // Fornecimento de alimentos preparados preponderantemente para empresas
+      '5620102', // Serviços de alimentação para eventos e recepções - bufê
+      '5620104', // Fornecimento de alimentos preparados preponderantemente para consumo domiciliar (Delivery / Dark Kitchen)
+      '1091102', // Padaria e confeitaria com predominância de produção própria
+      '4721102', // Padaria e confeitaria com predominância de revenda
+      '561', // Alimentação
+      '562', // Serviços de catering, bufê e outros serviços de comida preparada
+      '56', // Divisão 56: Alimentação
+    ],
+    sugestao: {
+      protocoloSlug: 'alimentos',
+      protocoloNome: 'Alimentos & Bebidas (Food Service)',
+      nomeSegmento: 'Alimentação / Bares / Restaurantes / Lanchonetes / Delivery',
+      descricaoSugestao:
+        'Sua atividade está enquadrada na trilha flagship de Alimentação. Avalie a pegada de carbono por nota dos insumos (carnes, grãos, embalagens de delivery), logística reversa de embalagens (PNRS) e destinação de óleo vegetal.',
+      destaquesRegulatorios: [
+        'Pegada de Carbono por Nota Fiscal de Insumos',
+        'Logística Reversa de Embalagens e Descartáveis (PNRS)',
+        'Destinação de Óleo de Fritura e Rastreabilidade de Resíduos',
+      ],
+      vinculoInstitucionalSugerido: 'Mercado Nacional (Bahia, SP, Brasil)',
+    },
+  },
+
   // 8. Serviços Periciais, Contabilidade, Engenharia, Advocacia -> Trilha Peritos Técnicos
   {
     prefixos: [
