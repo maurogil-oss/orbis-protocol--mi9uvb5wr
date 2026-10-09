@@ -222,9 +222,9 @@ export default function Layout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full max-w-full min-w-0 overflow-x-hidden bg-background text-foreground selection:bg-emerald-600/20 selection:text-emerald-900 dark:selection:bg-[#059669]/30 dark:selection:text-white">
-      {/* Cabeçalho Unificado Sticky com z-index alto e largura contida */}
-      <div className="sticky top-0 z-40 w-full max-w-full min-w-0 overflow-hidden">
-        {/* 1. Regulatory Marquee Top Bar — Contraste refinado claro e escuro */}
+      {/* Cabeçalho Unificado Sticky com z-index alto (z-50) e sem overflow-hidden no contêiner para não cortar menus flutuantes */}
+      <div className="sticky top-0 z-50 w-full max-w-full min-w-0">
+        {/* 1. Regulatory Marquee Top Bar — Contraste refinado claro e escuro (overflow-hidden contido na barra) */}
         <div className="w-full max-w-full min-w-0 bg-slate-100 dark:bg-[#0A1628] border-b border-slate-200/80 dark:border-slate-800 py-2 text-xs overflow-hidden transition-colors duration-300">
           <div className="animate-marquee items-center gap-6 whitespace-nowrap text-slate-600 dark:text-[#94A3B8] font-medium tracking-wider max-w-full">
             {[...regulations, ...regulations].map((reg, idx) => (
@@ -241,7 +241,7 @@ export default function Layout() {
 
         {/* 2. Sticky Header — Fundo surface corporativo branco/slate no claro e #0A1628 no escuro */}
         <header
-          className={`w-full max-w-full min-w-0 transition-all duration-300 bg-white/95 dark:bg-[#0A1628] backdrop-blur-md ${
+          className={`w-full max-w-full min-w-0 transition-all duration-300 bg-white/95 dark:bg-[#0A1628] backdrop-blur-md relative z-50 ${
             isScrolled
               ? 'border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
               : 'border-b border-slate-200/70 dark:border-slate-800/60'
