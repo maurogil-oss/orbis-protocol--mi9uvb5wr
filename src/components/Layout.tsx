@@ -251,7 +251,7 @@ export default function Layout() {
             {/* Brand Logo & Name */}
             <Link
               to="/"
-              className="flex items-center gap-1.5 sm:gap-3.5 group min-w-0 shrink max-w-[calc(100%-80px)] sm:max-w-none"
+              className="flex items-center gap-2 sm:gap-3.5 group min-w-0 shrink max-w-[calc(100%-88px)] sm:max-w-none"
               title="Orbis Protocol"
             >
               <div className="shrink-0">
@@ -263,10 +263,10 @@ export default function Layout() {
                 </div>
               </div>
               <div className="flex flex-col items-start sm:items-center text-left sm:text-center min-w-0">
-                <span className="font-heading font-black text-sm sm:text-xl tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors truncate max-w-[170px] xs:max-w-[210px] sm:max-w-none sm:text-center sm:w-full">
+                <span className="font-heading font-black text-[13px] min-[380px]:text-sm sm:text-xl tracking-[0.01em] min-[380px]:tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors whitespace-nowrap sm:text-center sm:w-full">
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
-                <span className="text-[9.5px] sm:text-[11px] tracking-[0.12em] sm:tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 truncate max-w-[175px] xs:max-w-none whitespace-nowrap sm:text-center sm:w-full">
+                <span className="text-[9px] min-[380px]:text-[9.5px] sm:text-[11px] tracking-[0.04em] min-[380px]:tracking-[0.08em] sm:tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 whitespace-nowrap sm:text-center sm:w-full">
                   Economia Circular — dMRV
                 </span>
               </div>

@@ -74,6 +74,15 @@ describe('ThemeToggle & Mobile Header (Samsung ~360px)', () => {
     // Título ORBIS.PROTOCOL
     expect(screen.getByText(/ORBIS/i)).toBeDefined()
 
+    // Logotipo e tagline NUNCA devem ter a classe 'truncate' no cabeçalho
+    const logoBrandText = screen.getByText(/ORBIS/i).closest('span')
+    expect(logoBrandText?.className).not.toContain('truncate')
+    expect(logoBrandText?.className).toContain('whitespace-nowrap')
+
+    const headerTagline = screen.getAllByText('Economia Circular — dMRV')[0]
+    expect(headerTagline.className).not.toContain('truncate')
+    expect(headerTagline.className).toContain('whitespace-nowrap')
+
     // Botão hamburger sempre visível e com aria-label correto
     const hamburgerBtn = screen.getByRole('button', { name: /abrir menu/i })
     expect(hamburgerBtn).toBeDefined()

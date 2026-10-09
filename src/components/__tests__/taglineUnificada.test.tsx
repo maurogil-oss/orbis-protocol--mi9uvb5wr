@@ -18,7 +18,7 @@ describe('Layout - Tagline Unificada da Marca', () => {
 
     // Cabeçalho desktop tem a classe de 11px centralizada e tracking largo
     const desktopTagline = container.querySelector(
-      'header span.text-\\[11px\\].tracking-\\[0\\.22em\\]',
+      'header span.sm\\:text-\\[11px\\].sm\\:tracking-\\[0\\.22em\\]',
     )
     expect(desktopTagline).not.toBeNull()
     expect(desktopTagline?.textContent?.trim()).toBe('Economia Circular — dMRV')
