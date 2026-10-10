@@ -78,7 +78,7 @@ export const REFRIGERANTES_CATALOGO_V2: Record<string, FatorRefrigeranteV2> = {
 
 // Fatores de referência e incertezas relativas u_FE
 export interface FatorMaterialV2 {
-  material: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
+  material: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'la_de_rocha' | 'outros'
   nome: string
   fe_ref: number // kgCO₂e/kg
   u_fe: number // incerteza relativa do fator (ex: 0.035 = 3.5%)
@@ -92,6 +92,7 @@ const fAco = MAPA_FATORES_CANONICOS.aco
 const fAlu = MAPA_FATORES_CANONICOS.aluminio
 const fCob = MAPA_FATORES_CANONICOS.cobre
 const fPol = MAPA_FATORES_CANONICOS.polimeros
+const fLdr = MAPA_FATORES_CANONICOS.la_de_rocha
 const fOut = MAPA_FATORES_CANONICOS.outros
 
 export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
@@ -143,6 +144,17 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     tier: fPol?.tier || 'T2',
     pendente_verificacao: fPol?.pendenteVerificacao ?? true,
   },
+  la_de_rocha: {
+    material: 'la_de_rocha',
+    nome: fLdr?.nomeMaterial || 'Lã de Rocha (Núcleo Isolante)',
+    fe_ref: fLdr?.valorFator ?? 1.5,
+    u_fe: fLdr?.incertezaRelativaUfe ?? 0.1, // ±10.0%
+    fonte:
+      fLdr?.fonteOficial || 'Proxy Tier 1 Orbis dMRV (±10%) • [Pendente de verificação de fonte]',
+    vigencia: fLdr?.vigencia || '2025-01-01/2026-12-31',
+    tier: 'T1',
+    pendente_verificacao: true,
+  },
   outros: {
     material: 'outros',
     nome: fOut?.nomeMaterial || 'Outros Materiais (Estimativa Conservadora)',
@@ -173,7 +185,7 @@ export function round2(valor: number): number {
 }
 
 export interface ComposicaoMaterialItem {
-  material: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
+  material: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'la_de_rocha' | 'outros'
   percentual: number // soma idealmente 100%
 }
 
@@ -253,7 +265,7 @@ export interface PecaCalculoResultadoV2 {
   sku: string
   descricao: string
   peso_kg: number
-  material_categoria: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros'
+  material_categoria: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'la_de_rocha' | 'outros'
   fe_ref_aplicado: number
   li_aplicado: number
   df_aplicado: number
@@ -314,9 +326,17 @@ export interface LoteCalculoResultadoV2 {
  */
 export function identificarCategoriaMaterial(
   materialRaw?: string,
-): 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros' {
+): 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'la_de_rocha' | 'outros' {
   if (!materialRaw) return 'outros'
   const matLower = materialRaw.toLowerCase().trim()
+  if (
+    matLower.includes('lã de rocha') ||
+    matLower.includes('la de rocha') ||
+    matLower.includes('rockwool') ||
+    matLower.includes('mineral wool')
+  ) {
+    return 'la_de_rocha'
+  }
   if (
     matLower.includes('aço') ||
     matLower.includes('aco') ||
@@ -441,7 +461,8 @@ export function calcularLoteOrbisV2(input: LoteInputV2): LoteCalculoResultadoV2 
     }
 
     // Material e fatores
-    let categoriaEscolhida: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'outros' = 'outros'
+    let categoriaEscolhida: 'aco' | 'aluminio' | 'cobre' | 'polimeros' | 'la_de_rocha' | 'outros' =
+      'outros'
     let fatorObj: FatorMaterialV2 = FATORES_MATERIAIS_V2.outros
     let evitadoBrutoPeca = 0
 

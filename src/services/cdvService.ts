@@ -56,6 +56,13 @@ export const FATORES_CDV_MATERIAIS: Record<string, FatorCdvMaterial> = {
     fonte: cPol?.fonteOficial || 'PlasticsEurope Eco-profiles (PP at gate)',
     ano: cPol?.anoReferencia || 2023,
   },
+  la_de_rocha: {
+    categoria: 'la_de_rocha' as any,
+    nome: 'Lã de Rocha (Núcleo Isolante)',
+    fatorKgCO2ePorKg: 1.5,
+    fonte: 'Proxy Tier 1 Orbis dMRV (±10%) • [Pendente de verificação de fonte]',
+    ano: 2024,
+  },
   concreto: {
     categoria: 'concreto' as any,
     nome: cConc?.nomeMaterial || 'Concreto / Agregado Reciclado RCD',
@@ -145,6 +152,7 @@ export interface CdvPecaRecord extends RecordModel {
     | 'aluminio'
     | 'cobre'
     | 'polimeros'
+    | 'la_de_rocha'
     | 'concreto'
     | 'agro_rastreado'
     | 'outros'

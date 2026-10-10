@@ -85,7 +85,7 @@ export const METADADOS_CATALOGO_FATORES: MetadadosCatalogoFatores = {
     'Snapshot Imutável: O fator de emissão ou descarbonização aplicado a cada peça, lote, nota fiscal ou laudo é estritamente congelado no corpo do documento no momento exato de sua emissão e incorporado ao hash SHA-256 canônico. Atualizações, calibrações ou novas versões deste catálogo têm vigência estritamente prospectiva e jamais retroagem para recalcular registros já assinados.',
   reservaPreLaudo:
     'Reserva Metodológica Pré-Laudo: Os fatores curados neste catálogo refletem o estado da arte de inventários de ciclo de vida (ACV) e balanços de massa oficiais. Para emissão de créditos transacionáveis de carbono em bolsas voluntárias ou cumprimento de metas compulsórias do SBCE (Lei 15.042/2024), os relatórios mantêm o status pré-laudo até homologação por Organismo de Verificação e Validação (VVB) credenciado.',
-  totalFatores: 16,
+  totalFatores: 17,
 }
 
 export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
@@ -216,6 +216,32 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     tierIncerteza: 'Tier 2',
     incertezaPct: 8.0,
     detalheTecnico: 'Evita a extração e britagem virgem de rochas e agregados naturais.',
+  },
+  {
+    id: 'mat-la-de-rocha',
+    categoria: 'cdv_materiais',
+    codigoMaterial: 'la_de_rocha',
+    nomeMaterial:
+      'Lã de Rocha (Núcleo Isolante Termoacústico) • [Pendente de verificação de fonte]',
+    descricao:
+      'Núcleo isolante de painéis sanduíche termoacústicos industriais (alta densidade ~120-130 kg/m³, ex.: Pan Urania IW29).',
+    valorFator: 1.5,
+    unidade: 'kgCO₂e/kg',
+    incertezaRelativaUfe: 0.1, // 10.0%
+    tier: 'T1',
+    fonteOficial: 'Proxy Tier 1 Orbis dMRV (±10%) • [Pendente de verificação de fonte]',
+    anoReferencia: 2024,
+    versaoRegistro: 'v2025.2',
+    dataAtualizacao: '2026-10-08',
+    vigencia: '2025-01-01/2026-12-31',
+    pendenteVerificacao: true,
+    permiteEpdSubstituicao: true,
+    tipoImpacto: 'emissao_evitada',
+    normaPadrao: 'ISO 354 • ISO 140-3 • EN 13501-1 • Proxy Tier 1',
+    tierIncerteza: 'Tier 1',
+    incertezaPct: 10.0,
+    detalheTecnico:
+      'Núcleo isolante termoacústico mineral. Fator proxy Tier 1 de 1,50 kgCO₂e/kg adotado conservadoramente com flag [Pendente de verificação de fonte] enquanto pendente EPD específica ou fator curado de ACV nacional.',
   },
   {
     id: 'mat-outros',
