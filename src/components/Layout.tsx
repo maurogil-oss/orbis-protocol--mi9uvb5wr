@@ -255,11 +255,11 @@ export default function Layout() {
               : 'border-b border-slate-200/70 dark:border-slate-800/60'
           }`}
         >
-          <div className="w-full max-w-[1200px] mx-auto px-3 sm:px-6 flex items-center justify-between h-20 min-w-0">
-            {/* Brand Logo & Name */}
+          <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 flex items-center justify-between h-20 min-w-0 gap-2 xl:gap-4">
+            {/* Brand Logo & Name — shrink-0 garante que o logo nunca seja comprimido ou invadido pela navegação */}
             <Link
               to="/"
-              className="flex items-center gap-2 sm:gap-3.5 group min-w-0 shrink max-w-[calc(100%-88px)] sm:max-w-none"
+              className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0"
               title="Orbis Protocol"
             >
               <div className="shrink-0">
@@ -267,11 +267,11 @@ export default function Layout() {
                   <OrbisGlobe size={32} />
                 </div>
                 <div className="hidden sm:block">
-                  <OrbisGlobe size={42} />
+                  <OrbisGlobe size={40} />
                 </div>
               </div>
-              <div className="flex flex-col items-start sm:items-center text-left sm:text-center min-w-0">
-                <span className="font-heading font-black text-[13px] min-[380px]:text-sm sm:text-xl tracking-[0.01em] min-[380px]:tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors whitespace-nowrap sm:text-center sm:w-full">
+              <div className="flex flex-col items-start sm:items-center text-left sm:text-center min-w-0 shrink-0">
+                <span className="font-heading font-black text-[13px] min-[380px]:text-sm sm:text-lg lg:text-xl tracking-[0.01em] min-[380px]:tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors whitespace-nowrap sm:text-center sm:w-full">
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
                 <span className="text-[9px] min-[380px]:text-[9.5px] sm:text-[11px] tracking-[0.04em] min-[380px]:tracking-[0.08em] sm:tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 whitespace-nowrap sm:text-center sm:w-full">
@@ -280,11 +280,11 @@ export default function Layout() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - Enxuta: Início · Trilhas · Soluções ▾ · Consultar Selo */}
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-7 ml-6 xl:ml-8 mr-6 xl:mr-8">
+            {/* Desktop Navigation - lg:flex com gap responsivo (gap-2.5 em lg, gap-5 em xl, gap-6 em 2xl) */}
+            <nav className="hidden lg:flex items-center gap-2.5 xl:gap-5 2xl:gap-6 shrink min-w-0">
               <Link
                 to="/"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap ${
                   location.pathname === '/' && !location.hash
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
                     : 'text-slate-600 dark:text-[#94A3B8]'
@@ -295,7 +295,7 @@ export default function Layout() {
 
               <Link
                 to="/trilhas"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap ${
                   location.pathname.startsWith('/trilhas')
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
                     : 'text-slate-600 dark:text-[#94A3B8]'
@@ -306,7 +306,7 @@ export default function Layout() {
 
               <Link
                 to="/educacao"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] inline-flex items-center gap-1.5 ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] inline-flex items-center gap-1 xl:gap-1.5 whitespace-nowrap ${
                   location.pathname.startsWith('/educacao')
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
                     : 'text-slate-600 dark:text-[#94A3B8]'
@@ -336,7 +336,7 @@ export default function Layout() {
                   }}
                   aria-expanded={solutionsDropdownOpen}
                   aria-haspopup="true"
-                  className={`inline-flex items-center gap-1.5 text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] py-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-600 dark:focus-visible:ring-[#2563EB] rounded ${
+                  className={`inline-flex items-center gap-1 xl:gap-1.5 text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] py-2 whitespace-nowrap focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-600 dark:focus-visible:ring-[#2563EB] rounded ${
                     isSolutionsActive
                       ? 'text-emerald-600 dark:text-[#059669] font-semibold'
                       : 'text-slate-600 dark:text-[#94A3B8]'
@@ -459,7 +459,7 @@ export default function Layout() {
 
               <Link
                 to="/verificador"
-                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap ${
                   location.pathname === '/verificador'
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
                     : 'text-slate-600 dark:text-[#94A3B8]'
@@ -469,52 +469,54 @@ export default function Layout() {
               </Link>
             </nav>
 
-            {/* Header Action Buttons & Theme Toggle — Respiro generoso garantido (0.0.74 e 0.0.76) */}
-            <div className="hidden md:flex items-center gap-3.5 pl-4 xl:pl-6">
+            {/* Header Action Buttons & Theme Toggle — shrink-0 garante que os botões não quebrem ou comprimam */}
+            <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
               <ThemeToggle />
 
               <Link
                 to="/diagnostico"
-                className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#2563EB] dark:text-white dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm"
+                className="inline-flex items-center justify-center px-2.5 xl:px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#2563EB] dark:text-white dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0"
               >
-                Iniciar Diagnóstico
+                <span className="hidden xl:inline">Iniciar Diagnóstico</span>
+                <span className="inline xl:hidden">Diagnóstico</span>
               </Link>
 
               <Link
                 to="/demo"
-                className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-[#94A3B8] hover:border-emerald-600/50 dark:hover:border-[#059669]/50 hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:bg-slate-50 dark:hover:bg-[#0E1A2E] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 transition-all duration-200 bg-white dark:bg-[#0A1628]"
+                className="inline-flex items-center justify-center px-2.5 xl:px-3.5 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-[#94A3B8] hover:border-emerald-600/50 dark:hover:border-[#059669]/50 hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:bg-slate-50 dark:hover:bg-[#0E1A2E] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 transition-all duration-200 bg-white dark:bg-[#0A1628] shrink-0"
               >
-                Ver Demonstração
+                <span className="hidden xl:inline">Ver Demonstração</span>
+                <span className="inline xl:hidden">Demonstração</span>
               </Link>
 
               {isAuthenticated ? (
-                <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-1.5 xl:gap-2 pl-2 xl:pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
                   <Link
                     to={isParceiro ? '/parceiro-painel' : '/painel'}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-[#F8FAFC] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-emerald-700 dark:hover:text-[#059669] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0E1A2E]"
+                    className="inline-flex items-center gap-1.5 px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-[#F8FAFC] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-emerald-700 dark:hover:text-[#059669] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0"
                   >
-                    <LayoutDashboard className="w-4 h-4 text-emerald-600 dark:text-[#059669] stroke-[1.5]" />
-                    {isParceiro ? 'Painel do Parceiro' : 'Painel'}
+                    <LayoutDashboard className="w-4 h-4 text-emerald-600 dark:text-[#059669] stroke-[1.5] shrink-0" />
+                    <span>{isParceiro ? 'Painel do Parceiro' : 'Painel'}</span>
                   </Link>
                   <button
                     onClick={logout}
                     title="Sair"
-                    className="p-2 rounded-xl text-slate-500 dark:text-[#94A3B8] hover:text-rose-600 dark:hover:text-[#F03E54] border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-[#F03E54]/40 transition-all duration-200 bg-white dark:bg-[#0E1A2E]"
+                    className="p-2 rounded-xl text-slate-500 dark:text-[#94A3B8] hover:text-rose-600 dark:hover:text-[#F03E54] border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-[#F03E54]/40 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0"
                   >
                     <LogOut className="w-4 h-4 stroke-[1.5]" />
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-1.5 xl:gap-2 pl-2 xl:pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-[#94A3B8] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0A1628]"
+                    className="inline-flex items-center justify-center px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-[#94A3B8] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0A1628] shrink-0"
                   >
                     Entrar
                   </Link>
                   <Link
                     to="/registro"
-                    className="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-50 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] hover:bg-emerald-600 hover:text-white dark:hover:bg-[#2563EB] dark:hover:text-white hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
+                    className="inline-flex items-center justify-center px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold whitespace-nowrap bg-emerald-50 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] hover:bg-emerald-600 hover:text-white dark:hover:bg-[#2563EB] dark:hover:text-white hover:-translate-y-0.5 transition-all duration-200 shadow-sm shrink-0"
                   >
                     Criar conta
                   </Link>
@@ -522,7 +524,7 @@ export default function Layout() {
               )}
             </div>
 
-            {/* Mobile Actions: Theme Toggle + Hamburger — Compacto e sem sobreposição em 360px */}
+            {/* Mobile / Tablet Actions: Theme Toggle + Hamburger */}
             <div className="lg:hidden flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
               <ThemeToggle size="compact" />
               <button

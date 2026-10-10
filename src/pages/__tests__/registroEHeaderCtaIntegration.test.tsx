@@ -78,13 +78,13 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     expect(entrarLinks.length).toBeGreaterThanOrEqual(1)
 
     // Botão Iniciar Diagnóstico está visível no cabeçalho
-    const diagnosticoLinks = screen.getAllByRole('link', { name: /Iniciar Diagnóstico/i })
+    const diagnosticoLinks = screen.getAllByRole('link', { name: /Diagnóstico/i })
     expect(diagnosticoLinks.length).toBeGreaterThanOrEqual(1)
     expect(diagnosticoLinks.some((l) => l.getAttribute('href') === '/diagnostico')).toBe(true)
 
     // Botão de acesso à demonstração: exatamente UM no header desktop (além do link do footer)
     // Procuramos os links que apontam para /demo
-    const headerDemoLink = screen.getAllByRole('link', { name: /Ver Demonstração/i })
+    const headerDemoLink = screen.getAllByRole('link', { name: /Demonstração/i })
     expect(headerDemoLink.length).toBeGreaterThanOrEqual(1)
     const demoLinks = headerDemoLink.filter((l) => l.getAttribute('href') === '/demo')
     expect(demoLinks.length).toBeGreaterThanOrEqual(1)
@@ -94,7 +94,7 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     const desktopDemoLinks = Array.from(headerElement.querySelectorAll('a[href="/demo"]'))
     // Exatamente UM link para /demo no cabeçalho desktop
     expect(desktopDemoLinks.length).toBe(1)
-    expect(desktopDemoLinks[0].textContent?.trim()).toBe('Ver Demonstração')
+    expect(desktopDemoLinks[0].textContent).toContain('Demonstração')
 
     // Não deve haver botão ou badge grudado "Demo" residual no cabeçalho
     expect(headerElement.textContent).not.toMatch(/Demo$/)
