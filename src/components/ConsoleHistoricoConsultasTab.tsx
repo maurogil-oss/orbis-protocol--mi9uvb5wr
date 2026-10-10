@@ -201,8 +201,8 @@ export function ConsoleHistoricoConsultasTab() {
           </div>
           <p className="text-xs text-slate-600 dark:text-[#93A3B5] max-w-3xl leading-relaxed">
             Visão unificada e auditável de NFs consultadas (<code>nfe_upload</code>), consultas
-            fiscais SEFAZ com custos em créditos (<code>infosimples_consultas</code>), lotes via API
-            CDVerde (<code>cdv_lotes</code>) e laudos periciais exportados com hash de verificação (
+            fiscais SEFAZ com custos em créditos (<code>infosimples_consultas</code>), lotes dMRV (
+            <code>cdv_lotes</code>) e laudos periciais exportados com hash de verificação (
             <code>relatorios_exportados</code>).
           </p>
         </div>
@@ -365,14 +365,14 @@ export function ConsoleHistoricoConsultasTab() {
           className="p-4 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm"
         >
           <div className="flex items-center justify-between text-slate-500 dark:text-[#93A3B5]">
-            <span className="text-[10px] uppercase font-bold tracking-wider">Lotes CDVerde</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider">Lotes dMRV</span>
             <Boxes className="w-3.5 h-3.5 text-amber-600 dark:text-[#D9B36C]" />
           </div>
           <span className="font-heading font-black text-2xl text-slate-900 dark:text-[#F4F7FA] block mt-1">
             {metricas.contagemPorTipo.cdv_lote}
           </span>
           <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
-            via API de desmonte
+            acervo probatório dMRV
           </span>
         </div>
 
@@ -490,7 +490,7 @@ export function ConsoleHistoricoConsultasTab() {
               <option value="todos">Todos os Tipos (4 Coleções)</option>
               <option value="nfe_upload">NF-e (nfe_upload)</option>
               <option value="infosimples">InfoSimples Fiscal (infosimples_consultas)</option>
-              <option value="cdv_lote">Lotes API CDVerde (cdv_lotes)</option>
+              <option value="cdv_lote">Lotes dMRV (cdv_lotes)</option>
               <option value="relatorio_exportado">Laudos Exportados (relatorios_exportados)</option>
             </select>
           </div>
@@ -820,16 +820,28 @@ export function ConsoleHistoricoConsultasTab() {
               </div>
             )}
 
-            {/* Se for Lote CDVerde */}
+            {/* Se for Lote dMRV */}
             {itemSelecionado.tipo === 'cdv_lote' && (
               <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1">
                 <strong className="text-amber-800 dark:text-amber-300 font-bold block">
-                  Veículo: {itemSelecionado.dadosCompletos?.veiculo_marca_modelo || 'Não informado'}
+                  {itemSelecionado.dadosCompletos?.veiculo_marca_modelo
+                    ? `Veículo: ${itemSelecionado.dadosCompletos.veiculo_marca_modelo}`
+                    : `Lote dMRV: ${itemSelecionado.referencia || 'Acervo probatório'}`}
                 </strong>
                 <div className="text-[11px] text-slate-600 dark:text-[#93A3B5]">
-                  Baixa DETRAN: {itemSelecionado.dadosCompletos?.veiculo_baixa_detran || '-'} •
-                  Peças: {itemSelecionado.dadosCompletos?.total_pecas || 0} • Peso:{' '}
+                  {itemSelecionado.dadosCompletos?.veiculo_baixa_detran && (
+                    <span>
+                      Baixa DETRAN: {itemSelecionado.dadosCompletos.veiculo_baixa_detran} •{' '}
+                    </span>
+                  )}
+                  Itens/Peças: {itemSelecionado.dadosCompletos?.total_pecas || 0} • Peso:{' '}
                   {itemSelecionado.dadosCompletos?.total_peso_kg || 0} kg
+                  {itemSelecionado.dadosCompletos?.total_co2e_evitado_kg !== undefined && (
+                    <span>
+                      {' '}
+                      • CO₂e Evitado: {itemSelecionado.dadosCompletos.total_co2e_evitado_kg} kg
+                    </span>
+                  )}
                 </div>
               </div>
             )}

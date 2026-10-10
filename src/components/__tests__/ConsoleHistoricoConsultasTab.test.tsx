@@ -95,8 +95,14 @@ describe('ConsoleHistoricoConsultasTab Component', () => {
     // Contagem por tipo
     expect(screen.getByTestId('card-metrica-nfe-upload').textContent).toContain('1')
     expect(screen.getByTestId('card-metrica-infosimples').textContent).toContain('1')
-    expect(screen.getByTestId('card-metrica-cdv-lotes').textContent).toContain('1')
+    const cardLotes = screen.getByTestId('card-metrica-cdv-lotes')
+    expect(cardLotes.textContent).toContain('1')
+    expect(cardLotes.textContent).toContain('Lotes dMRV')
     expect(screen.getByTestId('card-metrica-relatorios').textContent).toContain('1')
+
+    // Rótulos de "Lotes dMRV" no filtro e cards, e NUNCA "Lotes CDVerde"
+    expect(screen.getByRole('option', { name: /Lotes dMRV \(cdv_lotes\)/i })).toBeDefined()
+    expect(screen.queryByText(/Lotes CDVerde/i)).toBeNull()
   })
 
   it('permite filtrar por cliente (CNPJ) e recalcula métricas e itens da tabela', async () => {

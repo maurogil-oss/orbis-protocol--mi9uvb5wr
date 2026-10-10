@@ -507,7 +507,7 @@ export const ConsoleHonorariosTab: React.FC<ConsoleHonorariosTabProps> = ({ isRe
                     onChange={(e) => setNovoForm({ ...novoForm, tipo_laudo: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-slate-900 dark:text-[#F4F7FA]"
                   >
-                    <option value="laudo_lote_cdverde">Laudo de Lote CDVerde</option>
+                    <option value="laudo_lote_cdverde">Laudo Pericial de Lote dMRV</option>
                     <option value="atestado_orbis_verificacao">Atestado Orbis (com ART/RRT)</option>
                     <option value="auditoria_f6_reproducao">
                       Auditoria F6 (Reprodução de Cálculo)

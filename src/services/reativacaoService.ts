@@ -416,7 +416,7 @@ export function exportarEnviosReativacaoCsv(envios: ReativacaoEnvioRecord[]): {
     'Destinatário (E-mail)',
     'Status',
     'NFs Consultadas',
-    'Lotes CDV',
+    'Lotes dMRV',
     'Laudos Emitidos',
     'Dias Inatividade',
     'Reativou Atividade?',

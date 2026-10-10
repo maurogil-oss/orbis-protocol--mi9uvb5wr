@@ -112,9 +112,9 @@ describe('historicoConsultasService - Agregação e Normalização das 4 Coleç�
   it('normaliza cdv_lotes e relatorios_exportados', () => {
     const lote = normalizarCdvLote(mockCdvLote)
     expect(lote.tipo).toBe('cdv_lote')
+    expect(lote.tipoRotulo).toBe('Lote dMRV / Acervo Probatório')
     expect(lote.referencia).toBe('LOTE-CDV-2025-089')
     expect(lote.empresaCnpj).toBe('22.333.444/0001-88')
-
     const laudo = normalizarRelatorioExportado(mockRelatorioExportado)
     expect(laudo.tipo).toBe('relatorio_exportado')
     expect(laudo.referencia).toBe('VRF-2025-998811')

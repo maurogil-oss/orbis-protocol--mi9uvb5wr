@@ -1161,7 +1161,7 @@ export default function AdminConsolePage() {
                 {kpis.totalConsultasDpp}
               </span>
               <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] block mt-0.5">
-                {kpis.totalLotesCdv} lotes CDV
+                {kpis.totalLotesCdv} lotes dMRV
               </span>
             </div>
 
@@ -1890,8 +1890,8 @@ export default function AdminConsolePage() {
                 Uso & Consumo da Plataforma Orbis
               </h2>
               <p className="text-xs text-[#93A3B5]">
-                Monitoramento de consultas aos DPPs (Passaportes de Peças), lotes CDV ingeridos e
-                revisões periciais dMRV.
+                Monitoramento de consultas aos DPPs (Passaportes de Peças), lotes dMRV ingeridos e
+                revisões periciais.
               </p>
             </div>
 
@@ -1937,7 +1937,7 @@ export default function AdminConsolePage() {
               <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#3B82F6]">
-                    Lotes CDV Ingeridos ({lotes.length})
+                    Lotes dMRV Ingeridos ({lotes.length})
                   </span>
                   <Layers className="w-4 h-4 text-[#3B82F6]" />
                 </div>

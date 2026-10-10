@@ -763,7 +763,7 @@ export function ConsoleSandboxIngestaoTab() {
             regLoteId = regLote.id
           } catch (loteErr: any) {
             const msg = getErrorMessage(loteErr) || loteErr?.message || 'Falha ao criar cdv_lotes'
-            throw new Error(`[Coleção cdv_lotes]: ${msg}`)
+            throw new Error(`[Lotes dMRV]: ${msg}`)
           }
 
           const errosPecas: string[] = []
@@ -806,7 +806,7 @@ export function ConsoleSandboxIngestaoTab() {
 
           if (errosPecas.length > 0) {
             throw new Error(
-              `[Coleção cdv_pecas]: ${errosPecas.length} de ${itensProcessados.length} peças falharam: ${errosPecas[0]}`,
+              `[Rastreabilidade dMRV]: ${errosPecas.length} de ${itensProcessados.length} peças falharam: ${errosPecas[0]}`,
             )
           }
         }

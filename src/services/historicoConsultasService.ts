@@ -184,7 +184,7 @@ export function normalizarCdvLote(rec: any): ItemLinhaDoTempoConsulta {
   return {
     id: `cdv-${rec.id}`,
     tipo: 'cdv_lote',
-    tipoRotulo: 'Lote API CDVerde / Desmonte',
+    tipoRotulo: 'Lote dMRV / Acervo Probatório',
     referencia: rec.cdv_codigo || rec.veiculo_baixa_detran || `LOTE-${rec.id.slice(0, 8)}`,
     dataHora: rec.created || new Date().toISOString(),
     status: rec.status || 'processado',
@@ -194,7 +194,7 @@ export function normalizarCdvLote(rec: any): ItemLinhaDoTempoConsulta {
     empresaCnpj: rec.cdv_cnpj || '',
     empresaNome: rec.cdv_nome || 'Centro de Desmontagem',
     usuarioId: '',
-    usuarioNome: rec.cdv_nome || 'CDVerde / API Externa',
+    usuarioNome: rec.cdv_nome || 'API Externa / Ingestão dMRV',
     usuarioEmail: '',
     origem: rec.origem || rec.origem_envio || 'api',
     isSandbox: Boolean(isSintetico),
@@ -454,7 +454,7 @@ export async function carregarDadosHistoricoConsultas(): Promise<{
   for (const lote of cdvRes) {
     if (lote.cdv_cnpj && lote.cdv_cnpj.trim()) {
       const nomeExistente = mapaCnpjs.get(lote.cdv_cnpj.trim())
-      mapaCnpjs.set(lote.cdv_cnpj.trim(), nomeExistente || lote.cdv_nome || 'CDVerde / Desmonte')
+      mapaCnpjs.set(lote.cdv_cnpj.trim(), nomeExistente || lote.cdv_nome || 'Titular do Lote dMRV')
     }
   }
 

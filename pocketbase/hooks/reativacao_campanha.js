@@ -207,7 +207,7 @@ cronAdd('reativacao_diaria_orbis', '0 8 * * *', () => {
                   <table width="100%" style="font-size: 13px; color: #e2e8f0; line-height: 1.8;">
                     <tr><td style="color: #94A3B8;">Documentos / NF-e consultadas:</td><td align="right"><strong>${nfeCount}</strong></td></tr>
                     <tr><td style="color: #94A3B8;">Consultas SEFAZ (InfoSimples):</td><td align="right"><strong>${infosimplesCount}</strong></td></tr>
-                    <tr><td style="color: #94A3B8;">Lotes CDVerde vinculados:</td><td align="right"><strong>${cdvCount}</strong></td></tr>
+                    <tr><td style="color: #94A3B8;">Lotes dMRV vinculados:</td><td align="right"><strong>${cdvCount}</strong></td></tr>
                     <tr><td style="color: #94A3B8;">Laudos periciais emitidos:</td><td align="right"><strong>${relatoriosCount}</strong></td></tr>
                     <tr><td style="color: #94A3B8;">Última movimentação:</td><td align="right"><strong>${dataUltLote}</strong></td></tr>
                   </table>
@@ -559,7 +559,7 @@ routerAdd('POST', '/backend/v1/reativacao/executar-job', (e) => {
                   <table width="100%" style="font-size: 13px; color: #e2e8f0; line-height: 1.8;">
                     <tr><td style="color: #94A3B8;">Documentos / NF-e consultadas:</td><td align="right"><strong>${nfeCount}</strong></td></tr>
                     <tr><td style="color: #94A3B8;">Consultas SEFAZ (InfoSimples):</td><td align="right"><strong>${infosimplesCount}</strong></td></tr>
-                    <tr><td style="color: #94A3B8;">Lotes CDVerde vinculados:</td><td align="right"><strong>${cdvCount}</strong></td></tr>
+                    <tr><td style="color: #94A3B8;">Lotes dMRV vinculados:</td><td align="right"><strong>${cdvCount}</strong></td></tr>
                     <tr><td style="color: #94A3B8;">Laudos periciais emitidos:</td><td align="right"><strong>${relatoriosCount}</strong></td></tr>
                     <tr><td style="color: #94A3B8;">Última movimentação:</td><td align="right"><strong>${dataUltLote}</strong></td></tr>
                   </table>

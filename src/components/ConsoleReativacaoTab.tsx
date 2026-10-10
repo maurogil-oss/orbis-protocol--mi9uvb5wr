@@ -231,7 +231,7 @@ export function ConsoleReativacaoTab() {
           </h2>
           <p className="text-xs text-slate-600 dark:text-[#93A3B5] max-w-3xl leading-relaxed">
             Identificação diária e reengajamento de contas inativas com dados reais do acervo
-            probatório (NF-e, lotes CDVerde, InfoSimples e laudos emitidos), governança de opt-out e
+            probatório (NF-e, lotes dMRV, InfoSimples e laudos emitidos), governança de opt-out e
             deduplicação mensal estrita.
           </p>
         </div>
@@ -574,7 +574,7 @@ export function ConsoleReativacaoTab() {
                         <div className="text-[11px] space-y-0.5 text-slate-600 dark:text-[#93A3B5]">
                           <span>
                             <strong>{snap.nfe_consultadas ?? 0}</strong> NFs •{' '}
-                            <strong>{snap.lotes_cdv ?? 0}</strong> lotes CDV
+                            <strong>{snap.lotes_cdv ?? 0}</strong> lotes dMRV
                           </span>
                           <span className="block text-[10px] text-slate-400">
                             {snap.laudos_exportados ?? 0} laudos emitidos (
@@ -674,7 +674,7 @@ export function ConsoleReativacaoTab() {
                     <td className="p-3.5">
                       <div className="text-[11px] text-slate-600 dark:text-[#cbd5e1] space-y-0.5">
                         <span>{u.snapshot.nfe_consultadas} NFs</span> •{' '}
-                        <span>{u.snapshot.lotes_cdv} Lotes CDV</span>
+                        <span>{u.snapshot.lotes_cdv} Lotes dMRV</span>
                         <span className="block text-[10px] text-slate-400">
                           {u.snapshot.laudos_exportados} laudos emitidos
                         </span>

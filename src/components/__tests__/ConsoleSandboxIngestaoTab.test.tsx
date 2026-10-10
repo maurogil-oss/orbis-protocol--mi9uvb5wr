@@ -100,7 +100,7 @@ describe('ConsoleSandboxIngestaoTab - Tratamento de Erros e Gravação Real', ()
     expect(screen.getByText(/Selo OK · Lote 400/i)).toBeInTheDocument()
     // Mensagem exata de recusa do PocketBase na UI
     expect(screen.getByText(/Recusa pelo PocketBase:/i)).toBeInTheDocument()
-    expect(screen.getByText(/\[Coleção cdv_lotes\]: Failed to create record/i)).toBeInTheDocument()
+    expect(screen.getByText(/\[Lotes dMRV\]: Failed to create record/i)).toBeInTheDocument()
 
     // Borda lateral vermelha forte aplicada na linha da tabela
     const linhaComFalha = screen.getByText(/FALHA NA GRAVAÇÃO/i).closest('tr')
