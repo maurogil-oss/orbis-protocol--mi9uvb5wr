@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-10T22:47:54.324Z",
+  "generatedAt": "2026-10-10T23:01:53.922Z",
   "collections": [
     {
       "name": "users",
@@ -1553,6 +1553,7 @@
             "polimeros",
             "concreto",
             "agro_rastreado",
+            "la_de_rocha",
             "outros"
           ]
         },

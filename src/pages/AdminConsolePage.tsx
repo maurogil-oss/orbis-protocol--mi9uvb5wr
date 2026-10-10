@@ -1959,9 +1959,14 @@ export default function AdminConsolePage() {
                           <strong className="text-[#F4F7FA] truncate">
                             {lt.veiculo_marca_modelo}
                           </strong>
-                          {(lt.origem === 'sintetico' || lt.is_demo) && (
+                          {lt.origem === 'importado_manual_com_documento' ||
+                          (lt.origem !== 'sintetico' && !lt.is_demo) ? (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-[#10B981] border border-emerald-500/30 shrink-0">
+                              Real (Documentado)
+                            </span>
+                          ) : (
                             <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 shrink-0">
-                              Demonstração
+                              Sandbox DEMO
                             </span>
                           )}
                         </div>
@@ -2090,10 +2095,16 @@ export default function AdminConsolePage() {
                           <strong className="text-[#F4F7FA] truncate">
                             {peca.descricao || peca.codigo_peca}
                           </strong>
-                          {peca.origem === 'sintetico' && (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 shrink-0">
-                              Demonstração
+                          {peca.origem === 'importado_manual_com_documento' ? (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-[#10B981] border border-emerald-500/30 shrink-0">
+                              Real (Documentado)
                             </span>
+                          ) : (
+                            peca.origem === 'sintetico' && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 shrink-0">
+                                Sandbox DEMO
+                              </span>
+                            )
                           )}
                         </div>
                         <span

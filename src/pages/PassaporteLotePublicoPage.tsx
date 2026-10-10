@@ -44,6 +44,7 @@ import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
 import { BalancoMassaVeiculoSection } from '@/components/BalancoMassaVeiculoSection'
 import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
+import { BadgeOrigemLote } from '@/components/BadgeOrigemLote'
 
 // Mapeamento amigável e ordenado das categorias de materiais / subsistemas veiculares
 const CATEGORIAS_CONFIG: Record<string, { label: string; cor: string }> = {
@@ -608,12 +609,14 @@ export default function PassaporteLotePublicoPage() {
                       <Sparkles className="w-3 h-3" />
                       RESUMO DO DPP CONSOLIDADO
                     </div>
-                    {lote.is_demo && (
-                      <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F59E0B]/20 border border-[#F59E0B] text-[#F59E0B] text-[10px] font-extrabold uppercase tracking-wider">
-                        <AlertTriangle className="w-3 h-3" />
-                        <span>DEMO</span>
-                      </div>
-                    )}
+                    <BadgeOrigemLote
+                      origem={(lote as any).origem}
+                      isDemo={lote.is_demo}
+                      tamanho="sm"
+                    />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-amber-500/15 text-amber-700 dark:text-[#D9B36C] border border-amber-500/30">
+                      preliminar — não substitui laudo pericial
+                    </span>
                   </div>
 
                   {/* Identificação do Lote / Veículo */}
@@ -1182,12 +1185,15 @@ export default function PassaporteLotePublicoPage() {
                           PASSAPORTE DIGITAL DE PRODUTO CONSOLIDADO (DPP-LOTE)
                         </div>
 
-                        {lote.is_demo && (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F59E0B]/20 border border-[#F59E0B] text-[#F59E0B] text-[11px] font-extrabold uppercase tracking-wider shadow-sm print:bg-amber-100 print:border-amber-500 print:text-amber-900">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>LOTE DE DEMONSTRAÇÃO • REFERÊNCIA TÉCNICA</span>
-                          </div>
-                        )}
+                        <BadgeOrigemLote
+                          origem={(lote as any).origem}
+                          isDemo={lote.is_demo}
+                          tamanho="md"
+                        />
+
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/15 text-amber-700 dark:text-[#D9B36C] border border-amber-500/30 print:border-amber-400 print:text-amber-900 print:bg-amber-50">
+                          preliminar — não substitui laudo pericial
+                        </span>
                       </div>
                       <h1 className="font-heading font-black text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide print:text-slate-900">
                         REGISTRO VERIFICÁVEL DE CUSTÓDIA • dMRV ORBIS

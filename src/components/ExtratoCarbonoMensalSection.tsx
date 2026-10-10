@@ -436,14 +436,27 @@ export default function ExtratoCarbonoMensalSection({
               {/* Etiqueta preliminar obrigatória */}
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-[#D9B36C] border border-amber-200 dark:border-[#D9B36C]/30">
                 <Info className="w-3 h-3 text-amber-600 dark:text-[#D9B36C]" />
-                Preliminar — não substitui laudo pericial
+                preliminar — não substitui laudo pericial
               </span>
 
-              {/* Badge quando o modo de demonstração estiver ativo */}
-              {isDemonstracao && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 dark:bg-[#059669]/20 text-emerald-800 dark:text-[#10B981] border border-emerald-300 dark:border-[#059669]/40 animate-pulse">
-                  <Sparkles className="w-3 h-3" />
-                  Demonstração ativa
+              {/* Badge de Origem Documental Real vs Sandbox/Demo */}
+              {isDemonstracao ? (
+                <span
+                  data-testid="badge-extrato-demo"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-[#D9B36C] border border-amber-500/40"
+                  title="Extrato em modo Sandbox dMRV / Demonstração com dados sintéticos"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-600 dark:text-[#D9B36C]" />
+                  <span>Sandbox dMRV • DEMO</span>
+                </span>
+              ) : (
+                <span
+                  data-testid="badge-extrato-real"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-700 dark:text-[#10B981] border border-emerald-500/40 shadow-sm"
+                  title="Extrato calculado nota a nota com base em documentos fiscais reais sincronizados"
+                >
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-[#10B981]" />
+                  <span>Origem Documental Verificada</span>
                 </span>
               )}
             </div>
@@ -793,11 +806,16 @@ export default function ExtratoCarbonoMensalSection({
               </div>
             </div>
 
-            {/* Linha Metodológica Canônica Obrigatória */}
-            <div className="pt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-[#94A3B8] font-mono border-t border-slate-200/60 dark:border-slate-800/60">
-              <span className="flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                <span>Metodologia: média das empresas do seu segmento e porte na plataforma.</span>
+            {/* Linha Metodológica Canônica Obrigatória com distinção de Base Real vs Demonstrativa */}
+            <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px] text-slate-500 dark:text-[#94A3B8] font-mono border-t border-slate-200/60 dark:border-slate-800/60">
+              <span className="flex items-center gap-1.5 flex-wrap">
+                <Info className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                <span>Metodologia: média setorial na plataforma Orbis.</span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {isDemonstracao
+                    ? 'Referencial Sandbox/Demonstrativo ativo'
+                    : 'Base Real Documentada'}
+                </span>
               </span>
               <span className="hidden sm:inline">Taxonomia GHG Protocol & IPCC AR6</span>
             </div>
