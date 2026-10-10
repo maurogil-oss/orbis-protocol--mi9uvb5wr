@@ -26,6 +26,7 @@ import {
   BookOpen,
   Car,
   Compass,
+  GraduationCap,
 } from 'lucide-react'
 
 export default function Layout() {
@@ -146,6 +147,13 @@ export default function Layout() {
           path: '/materiais-criticos',
           icon: ShieldCheck,
           badge: 'DCP',
+        },
+        {
+          title: 'Orbis Educação (MEI & Escolas)',
+          desc: 'Programa socioeducativo para escolas e microempreendedores em economia circular.',
+          path: '/educacao',
+          icon: GraduationCap,
+          badge: 'Social',
         },
       ],
     },
@@ -294,6 +302,20 @@ export default function Layout() {
                 }`}
               >
                 Trilhas
+              </Link>
+
+              <Link
+                to="/educacao"
+                className={`text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] inline-flex items-center gap-1.5 ${
+                  location.pathname.startsWith('/educacao')
+                    ? 'text-emerald-600 dark:text-[#059669] font-semibold'
+                    : 'text-slate-600 dark:text-[#94A3B8]'
+                }`}
+              >
+                <span>Orbis Educação</span>
+                <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/15 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[10px] font-mono font-semibold">
+                  Social
+                </span>
               </Link>
 
               {/* Dropdown Soluções */}
@@ -574,6 +596,24 @@ export default function Layout() {
                   }`}
                 >
                   <span>Trilhas</span>
+                  <ChevronRight className="w-4 h-4 opacity-50" />
+                </Link>
+
+                <Link
+                  to="/educacao"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname.startsWith('/educacao')
+                      ? 'bg-[#059669]/10 text-[#059669]'
+                      : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#111827]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>Orbis Educação</span>
+                    <span className="px-1.5 py-0.5 rounded bg-[#059669]/20 text-[#059669] border border-[#059669]/30 text-[10px] font-mono font-semibold">
+                      Social
+                    </span>
+                  </div>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 

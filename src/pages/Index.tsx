@@ -99,6 +99,7 @@ export default function Index() {
       destaque: 'Auditoria digital contínua de carbono (dMRV)',
       itens: [
         'Enquadramento automático nos limiares do SBCE (reporte a partir de 10.000 tCO2e/ano e metas obrigatórias acima de 25.000 tCO2e/ano).',
+        'Diferencial de intensidade real: o que bancos estimam por categoria de gasto (Extrato C6), a Orbis apura pelo dado real da NF-e insumo por insumo, com CO₂e por nota e por R$ faturado.',
         'Inventário de GEE nos Escopos 1, 2 e 3 com fatores oficiais de emissão (MCTI, IPCC AR6, SIN) e taxonomia GHG Protocol.',
         'Divulgações de sustentabilidade e clima elaboradas segundo os padrões globais IFRS S1/S2 — hoje de adoção voluntária no Brasil (Resolução CVM 244/2026) e cada vez mais exigidas por bancos, fundos de pensão e seguradoras na concessão de crédito e investimento.',
         'Eliminação do greenwashing por meio de hashes SHA-256 canônicos e chancela de peritos com ART/RRT acoplada.',

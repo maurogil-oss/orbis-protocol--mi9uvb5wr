@@ -81,6 +81,7 @@ describe('Navegação e Dropdown de Soluções no Layout', () => {
     expect(screen.getByText('Diagnóstico & Mercado de Carbono (SBCE)')).toBeDefined()
     expect(screen.getByText('Planos & Certificação')).toBeDefined()
     expect(screen.getByText('Portal Corporativo')).toBeDefined()
+    expect(screen.getByText('Orbis Educação (MEI & Escolas)')).toBeDefined()
     expect(screen.getByText('Case CDVerde')).toBeDefined()
     expect(screen.getByText('Descarbonização via MOVER')).toBeDefined()
     expect(screen.getByText('Radar Semanal (Assinatura)')).toBeDefined()

@@ -75,6 +75,7 @@ import {
 } from '@/services/licencaService'
 import { TrialStatusBanner } from '@/components/TrialStatusBanner'
 import { BloqueioSuaveImportacao } from '@/components/BloqueioSuaveImportacao'
+import ExtratoCarbonoMensalSection from '@/components/ExtratoCarbonoMensalSection'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -794,6 +795,29 @@ export default function PainelCliente() {
 
         {/* CONTADOR DE TRIAL VISÍVEL E BLOQUEIO SUAVE */}
         <TrialStatusBanner licenca={licenca} />
+
+        {/* ENTREGA 1 — EXTRATO DE CARBONO MENSAL (NO TOPO DA VISÃO DO CLIENTE) */}
+        <div className="mb-8">
+          <ExtratoCarbonoMensalSection
+            nfeList={nfeList}
+            numFuncionarios={
+              (currentLead as any)?.diagnostico_segmento_json?.porte_funcionarios ||
+              (currentLead as any)?.dados_adicionais_json?.porte_funcionarios ||
+              (currentLead as any)?.dados_adicionais_json?.num_funcionarios ||
+              (currentLead as any)?.num_funcionarios ||
+              (currentLead as any)?.numero_funcionarios ||
+              null
+            }
+            segmento={
+              currentLead?.categoria_profissional ||
+              currentLead?.vinculo_institucional ||
+              'Indústria & Serviços Gerais'
+            }
+            porte={currentLead?.faixa_emissoes || 'Médio Porte'}
+            razaoSocial={currentLead?.razao_social}
+            cnpj={currentLead?.cnpj}
+          />
+        </div>
 
         {/* SELETOR DE ABAS DO MÓDULO FISCAL & MOTOR PERICIAL */}
         <div className="flex border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto max-w-full min-w-0">

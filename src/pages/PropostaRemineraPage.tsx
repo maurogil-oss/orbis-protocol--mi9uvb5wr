@@ -411,7 +411,7 @@ export const PropostaRemineraPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-bold uppercase text-[#12B886] tracking-wider flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    CAMADA ORBIS PROTOCOL
+                    CAMADA ORBIS PROTOCOL • DIFERENCIAL DE INTENSIDADE REAL
                   </span>
                   <span className="px-2.5 py-0.5 rounded text-[10px] font-mono bg-[#12B886]/15 text-[#12B886] border border-[#12B886]/30">
                     Camada Probatória Externa
@@ -420,6 +420,14 @@ export const PropostaRemineraPage: React.FC = () => {
                 <h3 className="font-heading font-bold text-lg text-[#F4F7FA]">
                   Infraestrutura de Prova Documental (dMRV)
                 </h3>
+                <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[#12B886]/30 text-xs text-[#F4F7FA] leading-relaxed">
+                  <strong className="text-[#12B886]">Diferencial de Intensidade:</strong> o que os
+                  bancos fazem por estimativa de categorias de gasto (Extrato de Carbono do C6), a
+                  Orbis faz pelo dado real da nota fiscal — insumo por insumo. Indicadores de
+                  intensidade (<strong className="text-[#12B886]">CO₂e por nota</strong>,{' '}
+                  <strong className="text-[#12B886]">CO₂e por R$ faturado</strong>) como números que
+                  nenhum concorrente mostra.
+                </div>
                 <ul className="space-y-2 text-xs sm:text-sm text-[#93A3B5]">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
