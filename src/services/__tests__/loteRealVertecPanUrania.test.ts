@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  CATALOGO_FATORES_OFICIAIS,
-  obterFatorOficialPorId,
-  obterFatorPorCodigoMaterial,
-} from '../catalogoFatoresOficiais'
+import { CATALOGO_FATORES_CO2E, MAPA_FATORES_CANONICOS } from '../catalogoFatoresOficiais'
 import {
   calcularLoteOrbisV2,
   identificarCategoriaMaterial,
@@ -13,7 +9,7 @@ import { isRegistroReal } from '@/components/BadgeOrigemLote'
 
 describe('Validação do Fator Lã de Rocha no Catálogo Oficial e Motor V2', () => {
   it('deve conter o material lã de rocha com fator 1,50 kgCO2e/kg e flag pendente de verificação', () => {
-    const fator = CATALOGO_FATORES_OFICIAIS.find((f) => f.codigoMaterial === 'la_de_rocha')
+    const fator = CATALOGO_FATORES_CO2E.find((f) => f.codigoMaterial === 'la_de_rocha')
     expect(fator).toBeDefined()
     expect(fator?.valorFator).toBe(1.5)
     expect(fator?.unidade).toBe('kgCO₂e/kg')
@@ -23,12 +19,12 @@ describe('Validação do Fator Lã de Rocha no Catálogo Oficial e Motor V2', ()
     expect(fator?.nomeMaterial).toContain('[Pendente de verificação de fonte]')
   })
 
-  it('deve permitir recuperação de lã de rocha por id e código', () => {
-    const fId = obterFatorOficialPorId('mat-la-de-rocha')
+  it('deve permitir recuperação de lã de rocha por id e código canônico', () => {
+    const fId = CATALOGO_FATORES_CO2E.find((f) => f.id === 'mat-la-de-rocha')
     expect(fId).toBeDefined()
     expect(fId?.valorFator).toBe(1.5)
 
-    const fCod = obterFatorPorCodigoMaterial('la_de_rocha')
+    const fCod = MAPA_FATORES_CANONICOS.la_de_rocha
     expect(fCod).toBeDefined()
     expect(fCod?.valorFator).toBe(1.5)
   })
@@ -80,7 +76,16 @@ describe('Cálculo Reproduzível do Lote Real VERTEC Pan Urania IW29', () => {
     expect(pesoTotal).toBeCloseTo(2134.08, 2)
 
     const resultado = calcularLoteOrbisV2({
-      lote_id: 'VERTEC-IW29-2022',
+      cdv: {
+        nome: 'Pan Urania / VERTEC Engenheiros Associados Ltda',
+        cnpj: '03.366.187/0001-30',
+        codigo: 'VERTEC-IW29-2022',
+      },
+      veiculo_doador: {
+        marca_modelo: 'Painel Sanduíche Termoacústico Pan Urania IW29',
+        baixa_detran: 'DOC-PANU-IW29',
+        tara_fonte: 'pesado',
+      },
       df_config: 0.3,
       li_config: 1.0,
       pecas: [
@@ -89,19 +94,27 @@ describe('Cálculo Reproduzível do Lote Real VERTEC Pan Urania IW29', () => {
           descricao: 'Chapas de Aço (0,5 mm perfurada + 0,7 mm sólida)',
           material: 'aço laminado estrutural',
           peso_kg: pesoAco,
-          tara_fonte: 'balança',
+          tara_fonte: 'balanca_calibrada',
         },
         {
           sku: 'VERTEC-IW29-LDR',
           descricao: 'Núcleo Lã de Rocha 50 mm (~124 kg/m³)',
           material: 'lã de rocha mineral basáltica',
           peso_kg: pesoLdr,
-          tara_fonte: 'balança',
+          tara_fonte: 'balanca_calibrada',
         },
       ],
       destinacao: [
-        { sku: 'VERTEC-IW29-ACO', status: 'vendida', evidencia: 'NF 157/158 Pan Urania' },
-        { sku: 'VERTEC-IW29-LDR', status: 'vendida', evidencia: 'NF 157/158 Pan Urania' },
+        {
+          sku: 'VERTEC-IW29-ACO',
+          status: 'vendida',
+          evidencia: { tipo: 'nfe', numero: '157/158', destinador: 'Pan Urania' },
+        },
+        {
+          sku: 'VERTEC-IW29-LDR',
+          status: 'vendida',
+          evidencia: { tipo: 'nfe', numero: '157/158', destinador: 'Pan Urania' },
+        },
       ],
     })
 
