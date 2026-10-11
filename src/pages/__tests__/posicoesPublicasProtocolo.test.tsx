@@ -112,6 +112,7 @@ describe('Páginas de Posição Pública: /posicao-credito-carbono e /posicao-es
       // Quando faz / não faz sentido
       expect(screen.getByText(/Quando NÃO faz sentido buscar registro externo/i)).toBeDefined()
       expect(screen.getByText(/Quando faz sentido buscar registro externo/i)).toBeDefined()
+      expect(screen.getByText(/foram desenhados para atender ao GHG Protocol/i)).toBeDefined()
     })
 
     it('contém FAQ com as 4+ perguntas mandatórias e respostas honestas', () => {
@@ -138,6 +139,20 @@ describe('Páginas de Posição Pública: /posicao-credito-carbono e /posicao-es
 
       const linkEscopo3 = screen.getByRole('link', { name: /Escopo 3 e insetting/i })
       expect(linkEscopo3.getAttribute('href')).toBe('/posicao-escopo-3')
+    })
+
+    it('exibe o aviso informativo de conformidade jurídica/contábil no rodapé do conteúdo', () => {
+      render(
+        <MemoryRouter initialEntries={['/posicao-credito-carbono']}>
+          <PosicaoCreditoCarbonoPage />
+        </MemoryRouter>,
+      )
+
+      expect(
+        screen.getByText(
+          /Conteúdo informativo sobre posicionamento público da Orbis Protocol\. Não constitui oferta, garantia de resultado nem aconselhamento jurídico/i,
+        ),
+      ).toBeDefined()
     })
   })
 
@@ -201,9 +216,9 @@ describe('Páginas de Posição Pública: /posicao-credito-carbono e /posicao-es
 
       expect(screen.getByText(/Uso único: a guarda criptográfica de dupla contagem/i)).toBeDefined()
       expect(screen.getAllByText(/RETIRED_FOR_INSETTING/i).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getByText('Status no Registro de Integridade Orbis')).toBeDefined()
       expect(screen.getByText(/A claim é estritamente única/i)).toBeDefined()
     })
-
     it('descreve os componentes do Dossiê de Escopo 3 com transparência sobre polímeros e fatores DM-ORB-001', () => {
       render(
         <MemoryRouter initialEntries={['/posicao-escopo-3']}>
@@ -217,6 +232,9 @@ describe('Páginas de Posição Pública: /posicao-credito-carbono e /posicao-es
       expect(screen.getByText(/ICA 4,10/i)).toBeDefined()
       expect(screen.getByText(/pendente de verificação de fonte/i)).toBeDefined()
       expect(screen.getByText(/Cadeia de custódia SHA-256/i)).toBeDefined()
+      expect(
+        screen.getByText(/registro de uso único \(aposentadoria para insetting\)/i),
+      ).toBeDefined()
     })
 
     it('trata honestidade sobre verificação independente (Audit Grade ≠ ISO 14064-3 de terceira parte)', () => {
@@ -235,6 +253,23 @@ describe('Páginas de Posição Pública: /posicao-credito-carbono e /posicao-es
       expect(
         screen.getAllByText(/Atestado de Conformidade Orbis \(com ART\/RRT\)/i).length,
       ).toBeGreaterThanOrEqual(1)
+      expect(
+        screen.getByText(/como evidência primária auditável da cadeia de valor/i),
+      ).toBeDefined()
+    })
+
+    it('exibe o aviso informativo de conformidade jurídica/contábil no rodapé do conteúdo', () => {
+      render(
+        <MemoryRouter initialEntries={['/posicao-escopo-3']}>
+          <PosicaoEscopo3Page />
+        </MemoryRouter>,
+      )
+
+      expect(
+        screen.getByText(
+          /Conteúdo informativo sobre posicionamento público da Orbis Protocol\. Não constitui oferta, garantia de resultado nem aconselhamento jurídico/i,
+        ),
+      ).toBeDefined()
     })
 
     it('possui cross-link apontando para /posicao-credito-carbono', () => {

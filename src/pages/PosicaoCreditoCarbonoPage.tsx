@@ -268,8 +268,8 @@ export default function PosicaoCreditoCarbonoPage() {
                 Quando o objetivo corporativo é comprovar redução de emissões no relatório anual
                 ESG, atender metas do Programa MOVER, demonstrar eco-eficiência perante clientes
                 corporativos ou instruir auditorias da CVM 193 / IFRS S2. Nesses casos, o Atestado
-                Orbis com ART/RRT e o Dossiê de Escopo 3 atendem plenamente ao GHG Protocol sem
-                custos desnecessários de certificadoras externas.
+                Orbis com ART/RRT e o Dossiê de Escopo 3 foram desenhados para atender ao GHG
+                Protocol sem custos desnecessários de certificadoras externas.
               </p>
             </div>
 
@@ -365,6 +365,13 @@ export default function PosicaoCreditoCarbonoPage() {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </section>
+
+        {/* Aviso informativo de conformidade */}
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed text-center sm:text-left">
+          Conteúdo informativo sobre posicionamento público da Orbis Protocol. Não constitui oferta,
+          garantia de resultado nem aconselhamento jurídico, contábil ou financeiro — decisões de
+          reporte devem ser validadas com os assessores responsáveis da empresa.
+        </p>
 
         {/* 7. NAVEGAÇÃO DE VOLTA AO HUB */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800 text-xs">

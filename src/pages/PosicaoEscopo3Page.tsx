@@ -240,7 +240,7 @@ export default function PosicaoEscopo3Page() {
 
           <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 text-white dark:bg-slate-950 border border-slate-800 font-mono text-xs space-y-2">
             <div className="flex items-center justify-between text-slate-400 text-[11px] pb-2 border-b border-slate-800">
-              <span>Status no Livro-Razão Orbis</span>
+              <span>Status no Registro de Integridade Orbis</span>
               <span className="text-emerald-400 font-bold">RETIRED_FOR_INSETTING</span>
             </div>
             <p className="text-slate-300 leading-relaxed">
@@ -330,8 +330,8 @@ export default function PosicaoEscopo3Page() {
                 Declaração de titularidade
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Termo expresso de atribuição exclusiva da claim à empresa adquirente e certificado
-                de uso único (aposentadoria para insetting).
+                Termo expresso de atribuição exclusiva da claim à empresa adquirente e registro de
+                uso único (aposentadoria para insetting).
               </p>
             </div>
           </div>
@@ -370,8 +370,8 @@ export default function PosicaoEscopo3Page() {
               <li>
                 <strong>Segundo Nível (Auditor Externo da Empresa):</strong> quando a empresa
                 submete seu inventário consolidado a uma empresa de auditoria independente (Big Four
-                ou VVB), o auditor examina o Dossiê de Escopo 3 fornecido pela Orbis como a
-                evidência primária auditável mais robusta disponível no mercado nacional.
+                ou VVB), o auditor examina o Dossiê de Escopo 3 fornecido pela Orbis como evidência
+                primária auditável da cadeia de valor.
               </li>
             </ul>
           </div>
@@ -439,6 +439,13 @@ export default function PosicaoEscopo3Page() {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </section>
+
+        {/* Aviso informativo de conformidade */}
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed text-center sm:text-left">
+          Conteúdo informativo sobre posicionamento público da Orbis Protocol. Não constitui oferta,
+          garantia de resultado nem aconselhamento jurídico, contábil ou financeiro — decisões de
+          reporte devem ser validadas com os assessores responsáveis da empresa.
+        </p>
 
         {/* 9. NAVEGAÇÃO DE VOLTA AO HUB */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800 text-xs">
