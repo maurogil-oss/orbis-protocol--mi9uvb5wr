@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import {
   ShieldCheck,
   Layers,
@@ -91,6 +93,15 @@ export default function MateriaisCriticosPublicPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-6">
+        <BreadcrumbOrbis
+          items={[
+            { label: 'Soluções', href: '/solucoes' },
+            { label: 'Materiais Críticos Recuperados' },
+          ]}
+        />
+      </div>
+
       {/* 1. HERO INSTITUCIONAL */}
       <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 border-b border-[rgba(244,247,250,0.08)] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(18,184,134,0.15),rgba(255,255,255,0))]" />
@@ -628,6 +639,11 @@ export default function MateriaisCriticosPublicPage() {
               <Link to="/diagnostico">Diagnóstico por CNPJ</Link>
             </Button>
           </div>
+        </div>
+
+        {/* Bloco de Outras Soluções */}
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <BlocoOutrasSolucoes solucaoAtualHref="/materiais-criticos" />
         </div>
       </section>
     </div>

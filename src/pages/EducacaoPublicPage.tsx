@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import {
   GraduationCap,
   Sparkles,
@@ -149,6 +150,12 @@ export default function EducacaoPublicPage() {
   return (
     <div className="min-h-screen py-10 md:py-16 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F4F7FA] w-full max-w-full overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full">
+        <div className="mb-6">
+          <BreadcrumbOrbis
+            items={[{ label: 'Trilhas', href: '/trilhas' }, { label: 'Orbis Educação' }]}
+          />
+        </div>
+
         {/* HERO / APRESENTAÇÃO */}
         <div className="max-w-3xl mb-8 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-[#12B886] text-xs font-bold tracking-wider uppercase mb-3">

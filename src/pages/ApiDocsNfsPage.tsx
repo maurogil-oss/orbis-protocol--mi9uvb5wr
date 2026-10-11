@@ -19,6 +19,7 @@ import {
   Layers,
 } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 
 export function ApiDocsNfsPage() {
   const [copiado, setCopiado] = useState<string | null>(null)
@@ -119,16 +120,10 @@ export function ApiDocsNfsPage() {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-12">
         {/* Top Breadcrumb */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#93A3B5]">
-            <Link to="/" className="hover:text-[#12B886] transition-colors">
-              Orbis Protocol
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-            <Link to="/painel" className="hover:text-[#12B886] transition-colors">
-              Hub Fiscal
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-            <span className="text-[#12B886] font-semibold">API de NFs v1</span>
+          <div className="w-full sm:w-auto">
+            <BreadcrumbOrbis
+              items={[{ label: 'Protocolo', href: '/protocolo' }, { label: 'API de NFs v1' }]}
+            />
           </div>
 
           <div className="flex items-center gap-2">

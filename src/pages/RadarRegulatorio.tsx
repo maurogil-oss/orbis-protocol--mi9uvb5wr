@@ -8,6 +8,7 @@ import {
   StatusNorma,
 } from '@/data/radarRegulatorioData'
 import { PROTOCOLOS_SETORIAIS, ProtocoloSetorial } from '@/data/protocolosSetoriais'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import {
   ShieldCheck,
   Calendar,
@@ -270,8 +271,14 @@ export default function RadarRegulatorio() {
   }
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12] text-[#F4F7FA]">
+    <div className="min-h-screen py-8 md:py-16 bg-[#0A0E12] text-[#F4F7FA]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+        <div className="mb-6">
+          <BreadcrumbOrbis
+            items={[{ label: 'Protocolo', href: '/protocolo' }, { label: 'Radar Regulatório' }]}
+          />
+        </div>
+
         {/* Top Header Badge */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-[rgba(244,247,250,0.1)]">
           <div>

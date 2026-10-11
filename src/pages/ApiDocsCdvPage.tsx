@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import { FATORES_CDV_MATERIAIS } from '@/services/cdvService'
 import pb from '@/lib/pocketbase/client'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 
 interface CodeBlockProps {
   title?: string
@@ -321,16 +322,13 @@ export default function ApiDocsCdvPage() {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-12">
         {/* Breadcrumb / Top Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#93A3B5]">
-            <Link to="/" className="hover:text-[#12B886] transition-colors">
-              Orbis Protocol
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-            <Link to="/solucoes/case-cdverde" className="hover:text-[#12B886] transition-colors">
-              CDVerde
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-            <span className="text-[#12B886] font-semibold">Documentação da API v2</span>
+          <div className="w-full sm:w-auto">
+            <BreadcrumbOrbis
+              items={[
+                { label: 'Protocolo', href: '/protocolo' },
+                { label: 'API de Ingestão CDV v2' },
+              ]}
+            />
           </div>
 
           <div className="flex items-center gap-2">

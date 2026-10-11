@@ -18,6 +18,8 @@ import {
   Compass,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import {
   PLANOS_RADAR_SEMANAL,
   AVISO_LEGAL_RADAR,
@@ -84,6 +86,12 @@ export default function RadarSemanalPublicPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA] selection:bg-[#12B886]/30">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-6">
+        <BreadcrumbOrbis
+          items={[{ label: 'Soluções', href: '/solucoes' }, { label: 'Radar Semanal' }]}
+        />
+      </div>
+
       {/* Banner de Indicação se ?ref estiver presente */}
       {refParam && (
         <div className="bg-[#12B886]/10 border-b border-[#12B886]/30 py-2.5 px-4 text-center text-xs">
@@ -576,6 +584,11 @@ export default function RadarSemanalPublicPage() {
           </div>
         </div>
       </section>
+
+      {/* Bloco de Outras Soluções */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-10">
+        <BlocoOutrasSolucoes solucaoAtualHref="/radar-semanal" />
+      </div>
 
       {/* Rodapé de Posicionamento Mandatório */}
       <footer className="py-10 bg-gradient-to-b from-[#0A0E12] via-[#080B0F] to-[#070A0D] text-center border-t border-[rgba(244,247,250,0.06)]">

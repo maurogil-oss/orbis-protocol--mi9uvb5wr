@@ -310,11 +310,12 @@ export default function Layout() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - lg:flex com gap responsivo (gap-2.5 em lg, gap-5 em xl, gap-6 em 2xl) */}
+            {/* Desktop Navigation - 5 Destinos Públicos: Início, Soluções, Trilhas, Protocolo, Diagnóstico */}
             <nav
               aria-label="Navegação principal"
               className="hidden lg:flex items-center gap-2.5 xl:gap-5 2xl:gap-6 shrink min-w-0"
             >
+              {/* 1. Início */}
               <Link
                 to="/"
                 className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
@@ -326,64 +327,47 @@ export default function Layout() {
                 Início
               </Link>
 
-              <Link
-                to="/trilhas"
-                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
-                  location.pathname.startsWith('/trilhas')
-                    ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                    : 'text-slate-700 dark:text-slate-300'
-                }`}
-              >
-                Trilhas
-              </Link>
-
-              <Link
-                to="/educacao"
-                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] inline-flex items-center gap-1 xl:gap-1.5 whitespace-nowrap min-h-[44px] ${
-                  location.pathname.startsWith('/educacao')
-                    ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                    : 'text-slate-700 dark:text-slate-300'
-                }`}
-              >
-                <span>Orbis Educação</span>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/15 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[12px] font-mono font-semibold">
-                  Social
-                </span>
-              </Link>
-
-              {/* Dropdown Soluções */}
+              {/* 2. Soluções (Link direto para /solucoes + Dropdown flutuante de atalhos da árvore) */}
               <div
                 ref={dropdownRef}
                 className="relative"
                 onMouseEnter={handleDropdownMouseEnter}
                 onMouseLeave={handleDropdownMouseLeave}
               >
-                <button
-                  type="button"
-                  onClick={() => setSolutionsDropdownOpen((prev) => !prev)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      setSolutionsDropdownOpen(true)
-                    }
-                  }}
-                  aria-expanded={solutionsDropdownOpen}
-                  aria-haspopup="true"
-                  className={`inline-flex items-center gap-1 xl:gap-1.5 text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] py-2 whitespace-nowrap min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:focus-visible:ring-[#2563EB] rounded ${
-                    isSolutionsActive
-                      ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                      : 'text-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  <span>Soluções</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      solutionsDropdownOpen
-                        ? 'rotate-180 text-emerald-600 dark:text-[#059669]'
-                        : 'opacity-70'
+                <div className="flex items-center">
+                  <Link
+                    to="/solucoes"
+                    className={`inline-flex items-center text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] py-2 whitespace-nowrap min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:focus-visible:ring-[#2563EB] rounded ${
+                      isSolutionsActive
+                        ? 'text-emerald-600 dark:text-[#059669] font-semibold'
+                        : 'text-slate-700 dark:text-slate-300'
                     }`}
-                  />
-                </button>
+                  >
+                    Soluções
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setSolutionsDropdownOpen((prev) => !prev)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setSolutionsDropdownOpen(true)
+                      }
+                    }}
+                    aria-expanded={solutionsDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label="Expandir atalhos de Soluções"
+                    className="p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  >
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        solutionsDropdownOpen
+                          ? 'rotate-180 text-emerald-600 dark:text-[#059669]'
+                          : 'opacity-70'
+                      }`}
+                    />
+                  </button>
+                </div>
 
                 {/* Dropdown / Mega Menu Flutuante */}
                 {solutionsDropdownOpen && (
@@ -395,14 +379,14 @@ export default function Layout() {
                     <div className="w-[580px] max-w-[92vw] p-4 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl backdrop-blur-xl max-h-[85vh] overflow-y-auto">
                       <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between mb-3">
                         <span className="text-xs font-semibold tracking-wider text-emerald-600 dark:text-[#059669]">
-                          Soluções por perfil
+                          Árvore de Decisão & Soluções
                         </span>
                         <Link
                           to="/solucoes"
                           onClick={() => setSolutionsDropdownOpen(false)}
                           className="text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-[#059669] transition-colors"
                         >
-                          Ver visão geral →
+                          Ver árvore completa →
                         </Link>
                       </div>
 
@@ -490,16 +474,45 @@ export default function Layout() {
                 )}
               </div>
 
-              {/* Caminho fixo do comprador: Verificar Atestado sempre visível */}
+              {/* 3. Trilhas (absorve Orbis Educação e formação técnica) */}
               <Link
-                to="/verificador"
+                to="/trilhas"
                 className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
-                  location.pathname === '/verificador'
+                  location.pathname.startsWith('/trilhas') ||
+                  location.pathname.startsWith('/educacao')
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
                     : 'text-slate-700 dark:text-slate-300'
                 }`}
               >
-                Verificar Atestado
+                Trilhas
+              </Link>
+
+              {/* 4. Protocolo (novo hub metodológico e regulatório) */}
+              <Link
+                to="/protocolo"
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
+                  location.pathname === '/protocolo' ||
+                  location.pathname === '/fatores' ||
+                  location.pathname === '/radar-regulatorio' ||
+                  location.pathname === '/api-docs-cdv' ||
+                  location.pathname === '/api-docs-nfs'
+                    ? 'text-emerald-600 dark:text-[#059669] font-semibold'
+                    : 'text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                Protocolo
+              </Link>
+
+              {/* 5. Diagnóstico */}
+              <Link
+                to="/diagnostico"
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
+                  location.pathname === '/diagnostico'
+                    ? 'text-emerald-600 dark:text-[#059669] font-semibold'
+                    : 'text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                Diagnóstico
               </Link>
             </nav>
 
@@ -651,7 +664,7 @@ export default function Layout() {
               </div>
 
               <div className="mt-6 flex flex-col gap-1 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
-                {/* Itens Principais */}
+                {/* 5 Destinos Públicos: Início, Soluções, Trilhas, Protocolo, Diagnóstico */}
                 <Link
                   to="/"
                   onClick={() => setMobileMenuOpen(false)}
@@ -666,62 +679,73 @@ export default function Layout() {
                 </Link>
 
                 <Link
-                  to="/trilhas"
+                  to="/solucoes"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname.startsWith('/trilhas')
+                    location.pathname.startsWith('/solucoes')
                       ? 'bg-[#059669]/10 text-[#059669]'
                       : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#111827]'
                   }`}
                 >
-                  <span>Trilhas</span>
+                  <span>Soluções (Árvore de Decisão)</span>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 
                 <Link
-                  to="/educacao"
+                  to="/trilhas"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname.startsWith('/trilhas') ||
                     location.pathname.startsWith('/educacao')
                       ? 'bg-[#059669]/10 text-[#059669]'
                       : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#111827]'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span>Orbis Educação</span>
-                    <span className="px-1.5 py-0.5 rounded bg-[#059669]/20 text-[#059669] border border-[#059669]/30 text-[10px] font-mono font-semibold">
-                      Social
-                    </span>
-                  </div>
+                  <span>Trilhas & Educação</span>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 
                 <Link
-                  to="/verificador"
+                  to="/protocolo"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === '/verificador'
+                    location.pathname === '/protocolo' ||
+                    location.pathname === '/fatores' ||
+                    location.pathname === '/radar-regulatorio'
                       ? 'bg-[#059669]/10 text-[#059669]'
                       : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#111827]'
                   }`}
                 >
-                  <span>Consultar atestado</span>
+                  <span>Protocolo (Metodologia & APIs)</span>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 
-                {/* Grupo Soluções em 3 personas */}
+                <Link
+                  to="/diagnostico"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === '/diagnostico'
+                      ? 'bg-[#059669]/10 text-[#059669]'
+                      : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#111827]'
+                  }`}
+                >
+                  <span>Diagnóstico</span>
+                  <ChevronRight className="w-4 h-4 opacity-50" />
+                </Link>
+
+                {/* Subseções / Atalhos Rápidos da Árvore de Soluções */}
                 <div className="pt-3 mt-2 border-t border-slate-800">
                   <div className="px-3 pb-2 flex items-center justify-between">
                     <span className="text-xs uppercase font-bold tracking-wider text-[#059669] flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5 text-[#059669]" />
-                      Soluções por perfil
+                      Atalhos Rápidos
                     </span>
                     <Link
                       to="/solucoes"
                       onClick={() => setMobileMenuOpen(false)}
                       className="text-xs text-[#94A3B8] hover:text-[#059669]"
                     >
-                      Ver tudo
+                      Ver árvore
                     </Link>
                   </div>
 

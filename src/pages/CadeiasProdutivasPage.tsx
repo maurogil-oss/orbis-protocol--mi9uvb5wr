@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CADEIAS_PRODUTIVAS, CadeiaProdutiva } from '@/data/cadeias'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import { ShieldCheck, CheckCircle2, ArrowRight, ArrowLeft, X, Search, Sparkles } from 'lucide-react'
 
 export default function CadeiasProdutivasPage() {
@@ -15,16 +17,12 @@ export default function CadeiasProdutivasPage() {
   )
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
+    <div className="min-h-screen py-8 md:py-16 bg-[#0A0E12]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="mb-6">
-          <Link
-            to="/solucoes"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar para Hub de Soluções</span>
-          </Link>
+          <BreadcrumbOrbis
+            items={[{ label: 'Soluções', href: '/solucoes' }, { label: 'Cadeias Produtivas' }]}
+          />
         </div>
 
         {/* Header */}
@@ -94,6 +92,9 @@ export default function CadeiasProdutivasPage() {
             </div>
           ))}
         </div>
+
+        {/* Bloco de Outras Soluções */}
+        <BlocoOutrasSolucoes solucaoAtualHref="/cadeias-produtivas" />
 
         {/* Detail Modal */}
         {selectedCadeia && (

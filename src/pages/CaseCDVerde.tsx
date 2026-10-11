@@ -1,5 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import {
   Car,
   BatteryCharging,
@@ -34,16 +36,12 @@ export default function CaseCDVerde() {
   ]
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
+    <div className="min-h-screen py-8 md:py-16 bg-[#0A0E12]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="mb-6">
-          <Link
-            to="/solucoes"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar para Hub de Soluções</span>
-          </Link>
+          <BreadcrumbOrbis
+            items={[{ label: 'Soluções', href: '/solucoes' }, { label: 'Case CDVerde' }]}
+          />
         </div>
 
         {/* Hero Card */}
@@ -142,6 +140,9 @@ export default function CaseCDVerde() {
             readOnly={false}
           />
         </div>
+
+        {/* Bloco de Outras Soluções */}
+        <BlocoOutrasSolucoes solucaoAtualHref="/case-cdverde" />
       </div>
     </div>
   )

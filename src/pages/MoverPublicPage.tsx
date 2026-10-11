@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import {
   ShieldCheck,
   CheckCircle2,
@@ -37,8 +39,12 @@ export function MoverPublicPage() {
   }
 
   return (
-    <div className="min-h-screen py-10 md:py-16 bg-[#0A0E12] text-[#F4F7FA]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-12">
+    <div className="min-h-screen py-8 md:py-14 bg-[#0A0E12] text-[#F4F7FA]">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-10">
+        <BreadcrumbOrbis
+          items={[{ label: 'Soluções', href: '/solucoes' }, { label: 'Programa MOVER' }]}
+        />
+
         {/* Banner Superior de Reserva Metodológica Obrigatória */}
         <div className="p-4 rounded-xl bg-[#16202B]/80 border border-[#D9B36C]/40 text-xs text-[#D9B36C] flex items-start gap-3 shadow-lg">
           <AlertCircle className="w-5 h-5 flex-shrink-0 text-[#D9B36C] mt-0.5" />
@@ -298,6 +304,9 @@ export function MoverPublicPage() {
             </Link>
           </div>
         </section>
+
+        {/* Bloco de Outras Soluções do Ecossistema */}
+        <BlocoOutrasSolucoes solucaoAtualHref="/mover" />
       </div>
     </div>
   )

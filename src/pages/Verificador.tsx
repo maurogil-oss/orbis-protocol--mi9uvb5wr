@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useAuth } from '@/contexts/AuthContext'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import { cleanCNPJ, isValidCNPJ } from '@/services/cnpj'
 import {
   ShieldCheck,
@@ -278,6 +279,12 @@ export default function Verificador() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] max-w-full h-[350px] linear-glow-combined pointer-events-none" />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10 w-full min-w-0">
+        <div className="mb-8">
+          <BreadcrumbOrbis
+            items={[{ label: 'Protocolo', href: '/protocolo' }, { label: 'Verificador Público' }]}
+          />
+        </div>
+
         {/* Header no padrão Linear */}
         <div className="max-w-3xl mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[rgba(244,247,250,0.12)] text-[#12B886] text-xs font-mono font-semibold tracking-wider uppercase mb-4">

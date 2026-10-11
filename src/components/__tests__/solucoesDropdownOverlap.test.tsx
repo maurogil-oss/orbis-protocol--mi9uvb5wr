@@ -62,8 +62,8 @@ describe('Navegação e Dropdown de Soluções no Layout', () => {
       </MemoryRouter>,
     )
 
-    // Botão Soluções
-    const solucoesBtn = screen.getByRole('button', { name: /soluções/i })
+    // Botão Soluções (expandir atalhos)
+    const solucoesBtn = screen.getByRole('button', { name: /expandir atalhos de soluções/i })
     expect(solucoesBtn).toBeDefined()
     expect(solucoesBtn.getAttribute('aria-expanded')).toBe('false')
 
@@ -101,7 +101,7 @@ describe('Navegação e Dropdown de Soluções no Layout', () => {
       </MemoryRouter>,
     )
 
-    const solucoesBtn = screen.getByRole('button', { name: /soluções/i })
+    const solucoesBtn = screen.getByRole('button', { name: /expandir atalhos de soluções/i })
     fireEvent.click(solucoesBtn)
 
     const dropdownMenu = screen.getByRole('menu', { name: /submenu soluções/i })

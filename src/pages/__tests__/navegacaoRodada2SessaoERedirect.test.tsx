@@ -101,8 +101,8 @@ describe('Rodada 2: Navegação Dinâmica por Sessão, Redirects e Verificador',
       )
 
       const header = screen.getByRole('banner')
-      // Não exibe CTA Iniciar Diagnóstico nem Entrar
-      expect(header.querySelector('a[href="/diagnostico"]')).toBeNull()
+      // Não exibe CTA Iniciar Diagnóstico de marketing nem Entrar
+      expect(header.textContent).not.toContain('Iniciar Diagnóstico')
       expect(header.querySelector('a[href="/login"]')).toBeNull()
 
       // Exibe "Meu Portal" apontando para /painel
@@ -128,7 +128,7 @@ describe('Rodada 2: Navegação Dinâmica por Sessão, Redirects e Verificador',
 
       const header = screen.getByRole('banner')
       // Sem Iniciar Diagnóstico
-      expect(header.querySelector('a[href="/diagnostico"]')).toBeNull()
+      expect(header.textContent).not.toContain('Iniciar Diagnóstico')
 
       // Exibe "Console" apontando para /admin
       const consoleLinks = screen.getAllByRole('link', { name: /Console/i })
@@ -151,7 +151,7 @@ describe('Rodada 2: Navegação Dinâmica por Sessão, Redirects e Verificador',
       )
 
       const header = screen.getByRole('banner')
-      expect(header.querySelector('a[href="/diagnostico"]')).toBeNull()
+      expect(header.textContent).not.toContain('Iniciar Diagnóstico')
 
       const revisaoLinks = screen.getAllByRole('link', { name: /Revisão Pericial/i })
       expect(revisaoLinks.length).toBeGreaterThanOrEqual(1)
@@ -172,7 +172,7 @@ describe('Rodada 2: Navegação Dinâmica por Sessão, Redirects e Verificador',
       )
 
       const header = screen.getByRole('banner')
-      expect(header.querySelector('a[href="/diagnostico"]')).toBeNull()
+      expect(header.textContent).not.toContain('Iniciar Diagnóstico')
 
       const portalLinks = screen.getAllByRole('link', { name: /Meu Portal/i })
       expect(portalLinks.length).toBeGreaterThanOrEqual(1)

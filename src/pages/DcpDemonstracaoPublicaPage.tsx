@@ -24,6 +24,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import { AVISO_LEGAL_LASTRO } from '@/services/lastroCcrlrService'
 import { calcularHashCanonicoMateriais } from '@/services/materiaisCriticosCanonicoService'
 
@@ -165,6 +167,13 @@ export function DcpDemonstracaoPublicaPage() {
   return (
     <div className="min-h-screen bg-[#0A0E12] text-[#F4F7FA] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 selection:bg-[#12B886]/30">
       <div className="max-w-4xl mx-auto space-y-6">
+        <BreadcrumbOrbis
+          items={[
+            { label: 'Soluções', href: '/solucoes' },
+            { label: 'Passaporte Digital de Produto (DCP)' },
+          ]}
+        />
+
         {/* BARRA SUPERIOR DE NAVEGAÇÃO E IDENTIFICAÇÃO */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
@@ -497,6 +506,9 @@ export function DcpDemonstracaoPublicaPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Bloco de Outras Soluções */}
+        <BlocoOutrasSolucoes solucaoAtualHref="/dcp" />
       </div>
     </div>
   )

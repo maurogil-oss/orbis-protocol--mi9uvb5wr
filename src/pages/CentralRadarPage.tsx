@@ -19,6 +19,8 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import {
   listarEdicoesRadar,
   RadarEdicaoRecord,
@@ -228,6 +230,10 @@ export default function CentralRadarPage() {
       </div>
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <BreadcrumbOrbis
+          items={[{ label: 'Soluções', href: '/solucoes' }, { label: 'Central do Radar' }]}
+        />
+
         {/* Cabeçalho da Central */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.08)]">
           <div>
@@ -530,6 +536,9 @@ export default function CentralRadarPage() {
             )}
           </div>
         </div>
+
+        {/* Bloco de Outras Soluções */}
+        <BlocoOutrasSolucoes solucaoAtualHref="/central-radar" />
 
         {/* Rodapé Informativo */}
         <div className="pt-6 border-t border-[rgba(244,247,250,0.06)] text-center text-xs text-[#64748b]">

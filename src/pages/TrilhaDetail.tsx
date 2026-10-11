@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { TRILHAS_DATA } from '@/data/trilhas'
 import { useAuth } from '@/contexts/AuthContext'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import { TabelaPublicaHonorariosSection } from '@/components/TabelaPublicaHonorariosSection'
 import {
   ShieldCheck,
@@ -37,13 +38,9 @@ export default function TrilhaDetail() {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         {/* Navigation Breadcrumb */}
         <div className="mb-6">
-          <Link
-            to="/trilhas"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar para todas as trilhas</span>
-          </Link>
+          <BreadcrumbOrbis
+            items={[{ label: 'Trilhas', href: '/trilhas' }, { label: trilha.titulo }]}
+          />
         </div>
 
         {/* Trilha Header Banner */}

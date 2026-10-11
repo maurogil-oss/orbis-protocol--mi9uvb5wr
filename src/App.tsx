@@ -15,6 +15,7 @@ import Diagnostico from './pages/Diagnostico'
 import TrilhasIndex from './pages/TrilhasIndex'
 import TrilhaDetail from './pages/TrilhaDetail'
 import SolucoesIndex from './pages/SolucoesIndex'
+import ProtocoloIndexPage from './pages/ProtocoloIndexPage'
 import BureauACP from './pages/BureauACP'
 import PortalCorporativo from './pages/PortalCorporativo'
 import ModoCorporativoDemoPage from './pages/ModoCorporativoDemoPage'
@@ -88,6 +89,7 @@ const App = () => (
             <Route path="/trilhas" element={<TrilhasIndex />} />
             <Route path="/trilhas/:slug" element={<TrilhaDetail />} />
             <Route path="/solucoes" element={<SolucoesIndex />} />
+            <Route path="/protocolo" element={<ProtocoloIndexPage />} />
             <Route path="/solucoes/bureau-acp" element={<BureauACP />} />
             <Route path="/bureau" element={<BureauACP />} />
             <Route path="/corporativo" element={<ModoCorporativoDemoPage />} />

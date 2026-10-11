@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import {
   Scale,
   ShieldCheck,
@@ -151,18 +152,13 @@ export default function FatoresEmissaoPublicoPage() {
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-10">
         {/* Top Breadcrumb & Status Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#93A3B5]">
-            <Link to="/" className="hover:text-[#12B886] transition-colors">
-              Orbis Protocol
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-            <Link to="/radar-regulatorio" className="hover:text-[#12B886] transition-colors">
-              Governança dMRV
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-            <span className="text-[#12B886] font-semibold">
-              Documento Metodológico DM-ORB-001 v1.2
-            </span>{' '}
+          <div className="w-full sm:w-auto">
+            <BreadcrumbOrbis
+              items={[
+                { label: 'Protocolo', href: '/protocolo' },
+                { label: 'Documento Metodológico DM-ORB-001 v1.2' },
+              ]}
+            />
           </div>
 
           <div className="flex items-center gap-2">
