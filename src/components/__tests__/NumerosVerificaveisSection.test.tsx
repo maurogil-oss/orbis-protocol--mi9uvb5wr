@@ -12,7 +12,7 @@ describe('NumerosVerificaveisSection Component (Caso Real VERTEC)', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Caso real de produção: lote VERTEC')).toBeDefined()
+    expect(screen.getByText('CASO REAL DE PRODUÇÃO: LOTE VERTEC')).toBeDefined()
     expect(screen.getByText(/VERTEC-IW29-2022/)).toBeDefined()
     expect(screen.getByText(/Pan Urania \(NFs 157 e 158\)/)).toBeDefined()
   })

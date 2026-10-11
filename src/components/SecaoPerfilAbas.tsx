@@ -169,8 +169,8 @@ export function SecaoPerfilAbas({ className = '', id = 'perfis-orbis' }: SecaoPe
             />
             <span>SOLUÇÕES DIRECIONADAS</span>
           </div>
-          <h2 className="font-heading font-black text-2xl sm:text-3xl md:text-4xl text-slate-900 dark:text-[#F8FAFC] tracking-tight mb-3">
-            Como o Orbis Protocol atende o seu perfil
+          <h2 className="font-heading font-black text-xs sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl text-slate-900 dark:text-[#F8FAFC] tracking-tight mb-3 whitespace-nowrap overflow-hidden text-ellipsis">
+            COMO O ORBIS PROTOCOLO ATENDE O SEU PERFIL
           </h2>
           <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
             Selecione o seu papel na cadeia de valor para acessar o fluxo técnico, probatório e

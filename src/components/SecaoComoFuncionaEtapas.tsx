@@ -55,8 +55,8 @@ export function SecaoComoFuncionaEtapas({
             <span>FLUXO SIMPLES EM 3 ETAPAS</span>
           </div>
 
-          <h2 className="font-heading font-black text-2xl sm:text-3xl md:text-4xl text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-tight">
-            Da nota fiscal ao documento verificável
+          <h2 className="font-heading font-black text-xs sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+            DA NOTA FISCAL AO DOCUMENTO VERIFICÁVEL
           </h2>
 
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-[#94A3B8] leading-relaxed">

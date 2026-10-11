@@ -80,7 +80,7 @@ describe('Hero Section - Home (Index)', () => {
     expect(secao).not.toBeNull()
 
     // Título da seção
-    expect(screen.getByText('Da nota fiscal ao documento verificável')).toBeDefined()
+    expect(screen.getByText('DA NOTA FISCAL AO DOCUMENTO VERIFICÁVEL')).toBeDefined()
 
     // Destaque "Você só participa da primeira"
     expect(screen.getByText('Você só participa da primeira.')).toBeDefined()

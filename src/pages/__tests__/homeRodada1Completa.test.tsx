@@ -107,7 +107,7 @@ describe('Nova Home Orbis Protocol - Rodada 1 Completa', () => {
     )
 
     // Título da seção
-    expect(screen.getByText('Regulação que muda o jogo para a empresa')).toBeDefined()
+    expect(screen.getByText('REGULAÇÃO QUE MUDA O JOGO PARA A EMPRESA')).toBeDefined()
 
     // 4 itens presentes
     expect(screen.getByText('Lei 15.042/2024')).toBeDefined()
