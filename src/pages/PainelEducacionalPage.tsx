@@ -16,6 +16,7 @@ import {
   PlusCircle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   obterMetricasPainelEducacional,
   MetricasEscolaPainel,
@@ -23,6 +24,7 @@ import {
 } from '@/services/escolasService'
 
 export default function PainelEducacionalPage() {
+  const { user } = useAuth()
   const [metricasEscolas, setMetricasEscolas] = useState<MetricasEscolaPainel[]>([])
   const [consolidado, setConsolidado] = useState<ConsolidadoRedeMetricas>({
     totalEscolas: 0,
@@ -231,11 +233,54 @@ export default function PainelEducacionalPage() {
           </div>
         )}
 
-        {/* TABELA / RELATÓRIO ESTRATIFICADO POR ESCOLA */}
+        {/* CONTEXTO DA ESCOLA AUTENTICADA (QUANDO LOGADO OU GESTOR ESCOLAR) */}
+        {user && (
+          <div className="p-5 mb-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-emerald-500/30 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <School className="w-5 h-5 text-emerald-600 dark:text-[#12B886]" />
+                <span className="font-heading font-bold text-sm text-slate-900 dark:text-[#F8FAFC]">
+                  Ambiente da Escola Autenticada
+                </span>
+              </div>
+              <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                Sessão Ativa: {user.name || user.email}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A1220] border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-[#94A3B8] block text-[11px]">
+                  Situação do Programa
+                </span>
+                <strong className="text-emerald-700 dark:text-[#12B886] font-semibold text-sm">
+                  Piloto Ativo / Em Execução
+                </strong>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A1220] border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-[#94A3B8] block text-[11px]">
+                  Graus & Níveis Atendidos
+                </span>
+                <strong className="text-slate-800 dark:text-[#F8FAFC] font-semibold text-sm">
+                  Infantil, Fund. I/II, Médio e Técnico
+                </strong>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A1220] border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-[#94A3B8] block text-[11px]">
+                  Contratação Direta Particular
+                </span>
+                <strong className="text-blue-700 dark:text-blue-400 font-semibold text-sm">
+                  Disponível via /escolas/cadastro
+                </strong>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TABELA / RELATÓRIO ESTRATIFICADO POR ESCOLA COM NÍVEIS DE EDUCAÇÃO */}
         <div className="bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] rounded-2xl shadow-xl overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] flex items-center justify-between">
             <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 dark:text-[#F4F7FA]">
-              Relatório Estratificado por Unidade Escolar
+              Relatório Estratificado por Unidade Escolar & Níveis de Educação
             </h3>
             <span className="text-xs text-slate-500 dark:text-[#93A3B5]">
               {escolasFiltradas.length} unidade(s) listada(s)
@@ -249,6 +294,7 @@ export default function PainelEducacionalPage() {
                   <th className="py-3 px-4">Instituição de Ensino</th>
                   <th className="py-3 px-3">Município / UF</th>
                   <th className="py-3 px-3">Rede / Modalidade</th>
+                  <th className="py-3 px-3">Níveis Atendidos</th>
                   <th className="py-3 px-3 text-right">Total Alunos</th>
                   <th className="py-3 px-3 text-right">Alcançados</th>
                   <th className="py-3 px-3 text-center">% Conclusão</th>
@@ -258,7 +304,7 @@ export default function PainelEducacionalPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-[rgba(244,247,250,0.06)]">
                 {escolasFiltradas.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                    <td colSpan={8} className="py-8 text-center text-slate-500">
                       Nenhuma escola encontrada para os filtros selecionados.
                     </td>
                   </tr>
@@ -285,6 +331,37 @@ export default function PainelEducacionalPage() {
                           }`}
                         >
                           {esc.rede}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-3 text-[11px] text-slate-600 dark:text-[#93A3B5]">
+                        <span className="inline-flex flex-wrap gap-1">
+                          {esc.alunosPorNivel?.infantil ? (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px]">
+                              Infantil
+                            </span>
+                          ) : null}
+                          {esc.alunosPorNivel?.fundamental1 || esc.alunosPorNivel?.fundamental2 ? (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px]">
+                              Fundamental
+                            </span>
+                          ) : null}
+                          {esc.alunosPorNivel?.medio ? (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px]">
+                              Médio
+                            </span>
+                          ) : null}
+                          {esc.alunosPorNivel?.tecnico ? (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px]">
+                              Técnico
+                            </span>
+                          ) : null}
+                          {!esc.alunosPorNivel?.infantil &&
+                            !esc.alunosPorNivel?.fundamental1 &&
+                            !esc.alunosPorNivel?.fundamental2 &&
+                            !esc.alunosPorNivel?.medio &&
+                            !esc.alunosPorNivel?.tecnico && (
+                              <span className="text-[10px] text-slate-400">Regular</span>
+                            )}
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right font-mono text-slate-700 dark:text-[#CBD5E1]">

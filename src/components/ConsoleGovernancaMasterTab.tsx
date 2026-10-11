@@ -617,8 +617,8 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-[#94A3B8] leading-relaxed">
-              Acesso ao painel de parceiro (<code>/parceiro-painel</code>), link de indicação, lista
-              de clientes indicados e comissões com anexação de nota/RPA.
+              Acesso ao painel de parceiro (<code>/parceiro</code>), link de indicação, lista de
+              clientes indicados e comissões com anexação de nota/RPA.
             </p>
           </div>
 

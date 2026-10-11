@@ -94,7 +94,7 @@ export const PERFIS_ABAS: PerfilTabInfo[] = [
       'Emissão simplificada do passaporte sustentável da empresa associada',
     ],
     botaoTexto: 'Portal do Parceiro',
-    botaoDestino: '/parceiro-painel',
+    botaoDestino: '/parceiro',
     icon: Sparkles,
   },
 ]
@@ -112,7 +112,7 @@ export interface SecaoPerfilAbasProps {
  *   - Empresa -> Iniciar Diagnóstico (/diagnostico)
  *   - Comprador -> Verificar Atestado (/verificador)
  *   - Perito -> apresentação da revisão pericial (/revisor-f6)
- *   - Associado ACP -> portal do parceiro (/parceiro-painel)
+ *   - Associado ACP -> portal do parceiro (/parceiro)
  * - Contraste >= 4.5:1, sem textos < 12px
  */
 export function SecaoPerfilAbas({ className = '', id = 'perfis-orbis' }: SecaoPerfilAbasProps) {

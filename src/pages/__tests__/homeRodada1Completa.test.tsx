@@ -96,7 +96,7 @@ describe('Nova Home Orbis Protocol - Rodada 1 Completa', () => {
 
     // Botão próprio de Associado ACP
     const btnAcp = screen.getByRole('link', { name: /Portal do Parceiro/i })
-    expect(btnAcp.getAttribute('href')).toBe('/parceiro-painel')
+    expect(btnAcp.getAttribute('href')).toBe('/parceiro')
   })
 
   it('exibe a Lista Regulatória Fixa estática com os 4 itens e sem marquee', () => {

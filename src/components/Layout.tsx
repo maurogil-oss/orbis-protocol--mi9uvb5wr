@@ -819,7 +819,7 @@ export default function Layout() {
                 {isParceiro && (
                   <div className="pt-2 mt-2 border-t border-slate-800">
                     <Link
-                      to="/parceiro-painel"
+                      to="/parceiro"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center justify-between py-2.5 px-3 rounded-lg text-xs font-medium text-[#059669] hover:bg-[#111827] transition-colors"
                     >

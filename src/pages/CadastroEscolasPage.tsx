@@ -40,6 +40,7 @@ export default function CadastroEscolasPage() {
     alunos_fundamental_1: 0,
     alunos_fundamental_2: 0,
     alunos_ensino_medio: 0,
+    alunos_tecnico_profissionalizante: 0,
     graus_turmas_atendidas: '',
     responsavel_pedagogico_nome: '',
     responsavel_pedagogico_email: '',
@@ -361,9 +362,9 @@ Colégio Estadual Rui Barbosa;15.555.666/0001-30;Curitiba;PR;estadual;810;Profª
             {/* Alunos por Etapa */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F4F7FA] border-b border-slate-200 dark:border-[rgba(244,247,250,0.08)] pb-2">
-                2. Número de Alunos por Etapa de Ensino
+                2. Número de Alunos por Etapa de Ensino (Graus de Educação)
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#93A3B5] mb-1">
                     Educação Infantil
@@ -435,6 +436,24 @@ Colégio Estadual Rui Barbosa;15.555.666/0001-30;Curitiba;PR;estadual;810;Profª
                     className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A1220] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-900 dark:text-white"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#93A3B5] mb-1">
+                    Técnico / Profissional
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formData.alunos_tecnico_profissionalizante}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        alunos_tecnico_profissionalizante: Number(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-[#0A1220] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-xs text-slate-900 dark:text-white"
+                  />
+                </div>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-100 dark:bg-[#0A1220] text-xs flex justify-between items-center font-semibold">
@@ -445,7 +464,8 @@ Colégio Estadual Rui Barbosa;15.555.666/0001-30;Curitiba;PR;estadual;810;Profª
                   {Number(formData.alunos_educacao_infantil) +
                     Number(formData.alunos_fundamental_1) +
                     Number(formData.alunos_fundamental_2) +
-                    Number(formData.alunos_ensino_medio)}{' '}
+                    Number(formData.alunos_ensino_medio) +
+                    Number(formData.alunos_tecnico_profissionalizante)}{' '}
                   alunos
                 </span>
               </div>

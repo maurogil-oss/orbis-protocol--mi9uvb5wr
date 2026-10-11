@@ -467,7 +467,7 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
       ['financeiro', '/admin?tab=receita'],
       ['financeiro_leitor', '/admin?tab=receita'],
       ['perito', '/credenciamento'],
-      ['parceiro', '/parceiro-painel'],
+      ['parceiro', '/parceiro'],
       ['cliente', '/painel'],
       ['cliente_acp', '/painel'],
     ])('papel %s redireciona pós-login para %s', async (papelTestado, rotaEsperada) => {

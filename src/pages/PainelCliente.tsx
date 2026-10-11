@@ -64,6 +64,7 @@ import {
 import { HubConexaoFiscal } from '@/components/HubConexaoFiscal'
 import { formatarFinalidade } from '@/services/greenCapitalEngine'
 import { Terminal, Car, Network, Radio, Leaf } from 'lucide-react'
+import { MeusDocumentosHub } from '@/components/MeusDocumentosHub'
 import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
 import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
 import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
@@ -714,11 +715,10 @@ export default function PainelCliente() {
       })
     : null
 
-  // Isolamento estrito de painel: papel parceiro deve usar /parceiro-painel e não o painel do cliente
-  if (isParceiro) {
-    return <Navigate to="/parceiro-painel" replace />
+  // Isolamento estrito de painel: papel parceiro deve usar /parceiro e não o painel do cliente
+  if (role === 'parceiro') {
+    return <Navigate to="/parceiro" replace />
   }
-
   return (
     <div className="min-h-screen py-12 md:py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-900 dark:text-[#F4F7FA] transition-colors w-full max-w-full min-w-0 overflow-x-hidden">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 w-full min-w-0">
@@ -1515,140 +1515,16 @@ export default function PainelCliente() {
           </div>
         </div>
 
-        {/* 4. GRID: SELO OBTIDO & LAUDOS EMITIDOS */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
-          <div className="lg:col-span-5 p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] flex flex-col justify-between shadow-sm">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Award className="w-6 h-6 text-amber-600 dark:text-[#D9B36C]" />
-                <h3 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
-                  ATESTADO ORBIS EMITIDO
-                </h3>
-              </div>
-
-              {currentSelo ? (
-                <div className="p-6 rounded-xl bg-gradient-to-b from-slate-50 to-white dark:from-[#16202B] dark:to-[#0A0E12] border border-[#12B886] space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-[#93A3B5] font-semibold">
-                      Chancela dMRV
-                    </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#12B886]/20 text-[#12B886] text-[10px] font-bold uppercase">
-                      Ativo
-                    </span>
-                  </div>
-
-                  <div>
-                    <div className="font-heading font-black text-2xl text-[#12B886] tracking-wider">
-                      {currentSelo.codigo_selo}
-                    </div>
-                    <div className="text-xs text-slate-900 dark:text-[#F4F7FA] font-medium mt-1">
-                      {currentSelo.empresa}
-                    </div>
-                    <div className="text-[11px] font-mono text-amber-700 dark:text-[#D9B36C]">
-                      CNPJ: {currentSelo.cnpj}
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] text-slate-500 dark:text-[#93A3B5] border-t border-slate-200 dark:border-[rgba(244,247,250,0.08)] pt-3 flex justify-between">
-                    <span>Validade até:</span>
-                    <span className="text-slate-900 dark:text-[#F4F7FA] font-semibold">
-                      {new Date(currentSelo.data_validade).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-dashed border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-center text-xs text-slate-500 dark:text-[#93A3B5]">
-                  Atestado Orbis em fase de emissão final após conferência das notas e balanço de
-                  emissões.
-                </div>
-              )}
-            </div>
-
-            <div className="pt-6">
-              <Link
-                to="/verificador"
-                className="w-full py-3 rounded-xl text-xs font-semibold border border-slate-200 dark:border-[rgba(244,247,250,0.2)] text-slate-700 dark:text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all flex items-center justify-center gap-2 shadow-sm"
-              >
-                <span>Consultar no Verificador Público</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-7 p-8 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#12B886]" />
-                <h3 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA]">
-                  LAUDOS PERICIAIS & DOCUMENTOS EMITIDOS
-                </h3>
-              </div>
-              <span className="text-xs font-mono text-slate-500 dark:text-[#93A3B5]">
-                3 documentos
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                {
-                  titulo: 'Laudo Pericial Preliminar de Descarbonização',
-                  tipo: 'Preparatório para o SBCE (Lei 15.042/2024)',
-                  data: '15/09/2024',
-                  status: 'Homologado',
-                  art: 'ART-CREA/CRC 2024-9481',
-                },
-                {
-                  titulo: 'Dossiê Verde para Spread Bancário',
-                  tipo: 'Preparação para Exigências ESG de Credores (Res. BCB 4.945/2021)',
-                  data: '10/09/2024',
-                  status: 'Válido',
-                  art: 'Diretrizes PRSAC Instituições Financeiras',
-                },
-                {
-                  titulo: 'Passaporte Digital de Produto (DPP)',
-                  tipo: 'Programa MOVER (Lei 14.902/2024)',
-                  data: '02/09/2024',
-                  status: 'Emitido',
-                  art: 'Selo DETRAN Vinculado',
-                },
-              ].map((doc, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/40 transition-all flex items-center justify-between gap-4"
-                >
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-900 dark:text-[#F4F7FA] mb-0.5">
-                      {doc.titulo}
-                    </h4>
-                    <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-[#93A3B5]">
-                      <span>{doc.tipo}</span>
-                      <span>•</span>
-                      <span className="text-amber-700 dark:text-[#D9B36C]">{doc.art}</span>
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0 flex items-center gap-3">
-                    <div>
-                      <span className="inline-block px-2 py-0.5 rounded bg-emerald-100 dark:bg-[#12B886]/20 text-[#12B886] font-bold text-[10px] uppercase">
-                        {doc.status}
-                      </span>
-                      <span className="block text-[10px] text-slate-500 dark:text-[#93A3B5] mt-1">
-                        {doc.data}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleExportarDossieCompleto}
-                      className="p-2 rounded-lg bg-white dark:bg-[#16202B] text-slate-600 dark:text-[#93A3B5] hover:text-[#12B886] hover:bg-emerald-50 dark:hover:bg-[#12B886]/10 transition-colors shadow-sm"
-                      title="Baixar Laudo em PDF"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* 4. BLOCO MEUS DOCUMENTOS (HUB CONSOLIDADO DE ENTREGÁVEIS dMRV) */}
+        <div className="mb-10">
+          <MeusDocumentosHub
+            cnpj={currentLead?.cnpj || 'CNPJ em análise'}
+            razaoSocial={currentLead?.razao_social || 'Empresa Cadastrada'}
+            codigoAtestado={currentSelo?.codigo_selo}
+            totalNotas={totaisNfe.totalNotas}
+            onExportarLaudoPdf={handleExportarDossieCompleto}
+            isExportandoPdf={isExportandoPdf}
+          />
         </div>
 
         {/* 5. ATALHO AOS PLANOS & FATURAMENTO */}

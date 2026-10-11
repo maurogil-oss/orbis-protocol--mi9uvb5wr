@@ -114,13 +114,20 @@ export default function AreaParceiroPage() {
     }
   }, [isAuthenticated, user?.id, (user as any)?.parceiro_acesso_status])
 
-  const linkIndicacao = parceiro
-    ? `${window.location.origin}/checkout?ref=${parceiro.codigo_parceiro}`
-    : ''
+  const [tipoLink, setTipoLink] = useState<'checkout' | 'cadastro' | 'home'>('cadastro')
 
-  const handleCopiarLink = () => {
-    if (!linkIndicacao) return
-    navigator.clipboard.writeText(linkIndicacao)
+  const codigoRef = parceiro?.codigo_parceiro || ''
+  const linkCadastro = codigoRef ? `${window.location.origin}/registro?ref=${codigoRef}` : ''
+  const linkCheckout = codigoRef ? `${window.location.origin}/checkout?ref=${codigoRef}` : ''
+  const linkHome = codigoRef ? `${window.location.origin}/?ref=${codigoRef}` : ''
+
+  const linkAtivo =
+    tipoLink === 'cadastro' ? linkCadastro : tipoLink === 'checkout' ? linkCheckout : linkHome
+
+  const handleCopiarLink = (urlParaCopiar?: string) => {
+    const url = urlParaCopiar || linkAtivo
+    if (!url) return
+    navigator.clipboard.writeText(url)
     setCopiado(true)
     setTimeout(() => setCopiado(false), 3000)
   }
@@ -308,13 +315,13 @@ export default function AreaParceiroPage() {
           </div>
         )}
 
-        {/* Link de Indicação & Destaque */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-50/50 to-slate-100 dark:from-[#111820] dark:to-[#16202B] border border-emerald-300 dark:border-[#12B886]/30 space-y-3 shadow-sm">
-          <div className="flex items-center justify-between">
+        {/* Link de Indicação Co-branded Rastreável (?ref=) & Destaque */}
+        <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-50/50 to-slate-100 dark:from-[#111820] dark:to-[#16202B] border border-emerald-300 dark:border-[#12B886]/30 space-y-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Share2 className="w-4 h-4 text-[#12B886]" />
               <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-[#F4F7FA]">
-                Seu Link Exclusivo de Indicação
+                Link de Indicação Rastreável Co-branded (?ref={parceiro.codigo_parceiro})
               </span>
             </div>
             <span className="text-[10px] text-amber-800 dark:text-[#D9B36C] font-mono">
@@ -322,15 +329,53 @@ export default function AreaParceiroPage() {
             </span>
           </div>
 
+          {/* Abas para escolher o destino do link */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setTipoLink('cadastro')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                tipoLink === 'cadastro'
+                  ? 'bg-[#12B886] text-[#0A0E12]'
+                  : 'bg-white dark:bg-[#0A0E12] text-slate-700 dark:text-[#93A3B5] border border-slate-300 dark:border-slate-800'
+              }`}
+            >
+              Cadastro / Trial (/registro?ref=)
+            </button>
+            <button
+              type="button"
+              onClick={() => setTipoLink('checkout')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                tipoLink === 'checkout'
+                  ? 'bg-[#12B886] text-[#0A0E12]'
+                  : 'bg-white dark:bg-[#0A0E12] text-slate-700 dark:text-[#93A3B5] border border-slate-300 dark:border-slate-800'
+              }`}
+            >
+              Checkout Direto (/checkout?ref=)
+            </button>
+            <button
+              type="button"
+              onClick={() => setTipoLink('home')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                tipoLink === 'home'
+                  ? 'bg-[#12B886] text-[#0A0E12]'
+                  : 'bg-white dark:bg-[#0A0E12] text-slate-700 dark:text-[#93A3B5] border border-slate-300 dark:border-slate-800'
+              }`}
+            >
+              Home Co-branded (/?ref=)
+            </button>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <input
               type="text"
               readOnly
-              value={linkIndicacao}
+              value={linkAtivo}
               className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-[#0A0E12] border border-slate-300 dark:border-[rgba(244,247,250,0.15)] text-xs text-[#12B886] font-mono select-all focus:outline-none"
             />
             <button
-              onClick={handleCopiarLink}
+              type="button"
+              onClick={() => handleCopiarLink()}
               className="px-5 py-2.5 rounded-xl bg-[#12B886] text-[#0A0E12] font-bold text-xs flex items-center justify-center gap-2 shadow-emerald-glow shrink-0 transition-transform active:scale-95"
             >
               {copiado ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -338,9 +383,11 @@ export default function AreaParceiroPage() {
             </button>
           </div>
           <p className="text-[11px] text-slate-600 dark:text-[#93A3B5]">
-            Compartilhe este link com seus clientes. Todas as contratações em{' '}
-            <strong>/checkout?ref={parceiro.codigo_parceiro}</strong> vincularão automaticamente{' '}
-            {parceiro.percentual_comissao}% de comissão após o pagamento via PIX.
+            Compartilhe este link com seus clientes. A origem com parâmetro{' '}
+            <strong className="font-mono text-[#12B886]">?ref={parceiro.codigo_parceiro}</strong> é
+            gravada no lead/cadastro gerado e vincula automaticamente{' '}
+            <strong>{parceiro.percentual_comissao}% de comissão</strong> nas contratações liquidadas
+            pela plataforma.
           </p>
         </div>
 

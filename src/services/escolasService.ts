@@ -21,6 +21,7 @@ export interface EscolaRecord {
   alunos_fundamental_1?: number
   alunos_fundamental_2?: number
   alunos_ensino_medio?: number
+  alunos_tecnico_profissionalizante?: number
   total_alunos?: number
   graus_turmas_atendidas?: string
   responsavel_pedagogico_nome: string
@@ -46,6 +47,13 @@ export interface MetricasEscolaPainel {
   alunosAlcancados: number
   percentualConclusaoTrilha: number
   atestadosEmitidos: number
+  alunosPorNivel?: {
+    infantil: number
+    fundamental1: number
+    fundamental2: number
+    medio: number
+    tecnico: number
+  }
 }
 
 export interface ConsolidadoRedeMetricas {
@@ -128,7 +136,8 @@ export async function cadastrarEscola(escola: CadastrarEscolaInput): Promise<Esc
       : Number(escola.alunos_educacao_infantil || 0) +
         Number(escola.alunos_fundamental_1 || 0) +
         Number(escola.alunos_fundamental_2 || 0) +
-        Number(escola.alunos_ensino_medio || 0)
+        Number(escola.alunos_ensino_medio || 0) +
+        Number(escola.alunos_tecnico_profissionalizante || 0)
 
   const payload: EscolaRecord = {
     ...escola,
@@ -136,6 +145,7 @@ export async function cadastrarEscola(escola: CadastrarEscolaInput): Promise<Esc
     alunos_fundamental_1: Number(escola.alunos_fundamental_1 || 0),
     alunos_fundamental_2: Number(escola.alunos_fundamental_2 || 0),
     alunos_ensino_medio: Number(escola.alunos_ensino_medio || 0),
+    alunos_tecnico_profissionalizante: Number(escola.alunos_tecnico_profissionalizante || 0),
     total_alunos: totalAlunos,
     status_adesao: escola.status_adesao || 'inscrita',
   }
@@ -223,6 +233,13 @@ export async function obterMetricasPainelEducacional(): Promise<{
       alunosAlcancados: alcancados,
       percentualConclusaoTrilha: conclusao,
       atestadosEmitidos: atestados,
+      alunosPorNivel: {
+        infantil: Number(esc.alunos_educacao_infantil || 0),
+        fundamental1: Number(esc.alunos_fundamental_1 || 0),
+        fundamental2: Number(esc.alunos_fundamental_2 || 0),
+        medio: Number(esc.alunos_ensino_medio || 0),
+        tecnico: Number(esc.alunos_tecnico_profissionalizante || 0),
+      },
     }
   })
 
