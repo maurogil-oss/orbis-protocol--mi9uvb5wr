@@ -15,7 +15,7 @@
  * - Fatores canônicos: DM-ORB-001 v1.1.
  */
 
-import { pb } from '@/lib/pocketbase/client'
+import pb from '@/lib/pocketbase/client'
 import { CdvLoteRecord, CdvPecaRecord } from '@/services/cdvService'
 
 export const ETIQUETA_CARBONO_EVITADO_CANONICA =

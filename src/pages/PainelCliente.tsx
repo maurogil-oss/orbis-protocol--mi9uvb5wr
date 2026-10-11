@@ -125,8 +125,7 @@ interface SeloRecord extends RecordModel {
 }
 
 export default function PainelCliente() {
-  const { user, isMaster, isAdmin } = useAuth()
-  const isParceiro = user?.role === 'parceiro'
+  const { user, isMaster, isAdmin, role, isParceiro } = useAuth()
   const [modalAlterarSenhaAberto, setModalAlterarSenhaAberto] = useState(false)
 
   const [leads, setLeads] = useState<LeadDiagnostico[]>([])
