@@ -37,7 +37,21 @@ export default function Layout() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const location = useLocation()
-  const { isAuthenticated, user, logout, isAdminOrPerito, isParceiro } = useAuth()
+  const { isAuthenticated, user, logout, role, isMaster, isAdmin, isAdminOrPerito, isParceiro } =
+    useAuth()
+
+  // Determinação precisa do papel para exibição no cabeçalho
+  const isGestao =
+    isMaster ||
+    isAdmin ||
+    role === 'master' ||
+    role === 'admin' ||
+    role === 'controller' ||
+    role === 'financeiro' ||
+    role === 'financeiro_leitor'
+  const isPerito = role === 'perito'
+  const isCliente =
+    role === 'cliente' || role === 'cliente_acp' || (!isGestao && !isPerito && !isParceiro)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -489,60 +503,100 @@ export default function Layout() {
               </Link>
             </nav>
 
-            {/* Header Action Buttons & Theme Toggle — CTA ÚNICO "Iniciar Diagnóstico" com links discretos Entrar e Verificar Atestado */}
+            {/* Header Action Buttons & Theme Toggle — Dinâmico por Sessão (Rodada 2) */}
             <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
               <ThemeToggle />
 
-              {/* Link discreto para Verificar Atestado (caminho do comprador, sempre visível) */}
+              {/* Link discreto para Verificar Atestado (caminho fixo do comprador, sempre visível para todos) */}
               <Link
                 to="/verificador"
-                className="hidden xl:inline-flex items-center justify-center px-3 py-2 text-xs xl:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline min-h-[44px]"
+                className="hidden xl:inline-flex items-center justify-center px-3 py-2 text-xs xl:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline min-h-[44px] whitespace-nowrap shrink-0"
               >
                 Verificar Atestado
               </Link>
 
-              {/* CTA ÚNICO principal */}
-              <Link
-                to="/diagnostico"
-                className="inline-flex items-center justify-center px-4 xl:px-5 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#2563EB] dark:text-white dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
-              >
-                Iniciar Diagnóstico
-              </Link>
-
-              {isAuthenticated ? (
-                <div className="flex items-center gap-1.5 xl:gap-2 pl-2 xl:pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
+              {/* 1. Visitante NÃO autenticado */}
+              {!isAuthenticated ? (
+                <>
                   <Link
-                    to={isParceiro ? '/parceiro-painel' : '/painel'}
-                    className="inline-flex items-center gap-1.5 px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-[#F8FAFC] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-emerald-700 dark:hover:text-[#059669] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0 min-h-[44px]"
+                    to="/diagnostico"
+                    className="inline-flex items-center justify-center px-4 xl:px-5 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#2563EB] dark:text-white dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
                   >
-                    <LayoutDashboard className="w-4 h-4 text-emerald-600 dark:text-[#059669] stroke-[1.5] shrink-0" />
-                    <span>{isParceiro ? 'Painel do Parceiro' : 'Painel'}</span>
+                    Iniciar Diagnóstico
                   </Link>
-                  <button
-                    onClick={logout}
-                    title="Sair"
-                    className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-[#F03E54] border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-[#F03E54]/40 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
-                  >
-                    <LogOut className="w-4 h-4 stroke-[1.5]" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 xl:gap-2 pl-2 xl:pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
-                  <Link
-                    to="/login"
-                    className="inline-flex items-center justify-center px-3 py-2 text-xs xl:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:underline whitespace-nowrap min-h-[44px]"
-                  >
-                    Entrar
-                  </Link>
-                  {/* Se não for Home, mantém link secundário discreto para registro */}
-                  {!isHomePage && (
+                  <div className="flex items-center gap-1.5 xl:gap-2 pl-2 xl:pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
                     <Link
-                      to="/registro"
-                      className="inline-flex items-center justify-center px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-slate-900 dark:hover:text-white transition-all bg-white dark:bg-[#0A1628] shrink-0 min-h-[44px]"
+                      to="/login"
+                      className="inline-flex items-center justify-center px-3 py-2 text-xs xl:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:underline whitespace-nowrap min-h-[44px]"
                     >
-                      Criar conta
+                      Entrar
+                    </Link>
+                    {!isHomePage && (
+                      <Link
+                        to="/registro"
+                        className="inline-flex items-center justify-center px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-slate-900 dark:hover:text-white transition-all bg-white dark:bg-[#0A1628] shrink-0 min-h-[44px]"
+                      >
+                        Criar conta
+                      </Link>
+                    )}
+                  </div>
+                </>
+              ) : (
+                /* 2. Usuário Autenticado: sem CTAs de aquisição/marketing ("Iniciar Diagnóstico" some) */
+                <div className="flex items-center gap-1.5 xl:gap-2 shrink-0">
+                  {/* Papel GESTÃO (master, admin, controller, financeiro) -> "Console" (/admin) */}
+                  {isGestao && (
+                    <Link
+                      to="/admin"
+                      className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700 dark:bg-[#2563EB] dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
+                    >
+                      <Lock className="w-4 h-4 stroke-[1.8] shrink-0" />
+                      <span>Console</span>
                     </Link>
                   )}
+
+                  {/* Papel PERITO -> "Revisão Pericial" (/revisor-f6) */}
+                  {isPerito && (
+                    <Link
+                      to="/revisor-f6"
+                      className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
+                    >
+                      <FileCheck2 className="w-4 h-4 stroke-[1.8] shrink-0" />
+                      <span>Revisão Pericial</span>
+                    </Link>
+                  )}
+
+                  {/* Papel PARCEIRO -> "Meu Portal" (/parceiro) */}
+                  {isParceiro && (
+                    <Link
+                      to="/parceiro"
+                      className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
+                    >
+                      <LayoutDashboard className="w-4 h-4 stroke-[1.8] shrink-0" />
+                      <span>Meu Portal</span>
+                    </Link>
+                  )}
+
+                  {/* Papel CLIENTE (inclui cliente_acp e default) -> "Meu Portal" (/painel) */}
+                  {isCliente && !isGestao && !isPerito && !isParceiro && (
+                    <Link
+                      to="/painel"
+                      className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
+                    >
+                      <LayoutDashboard className="w-4 h-4 stroke-[1.8] shrink-0" />
+                      <span>Meu Portal</span>
+                    </Link>
+                  )}
+
+                  <div className="flex items-center pl-1.5 xl:pl-2 border-l border-slate-200 dark:border-slate-800 shrink-0">
+                    <button
+                      onClick={logout}
+                      title="Sair"
+                      className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-[#F03E54] border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-[#F03E54]/40 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
+                    >
+                      <LogOut className="w-4 h-4 stroke-[1.5]" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -755,13 +809,7 @@ export default function Layout() {
             </div>
 
             <div className="pt-6 border-t border-slate-800 flex flex-col gap-3">
-              <Link
-                to="/diagnostico"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-3 rounded-lg text-sm font-bold bg-[#2563EB] text-white hover:bg-blue-600 transition-all duration-200 shadow-sm min-h-[44px] flex items-center justify-center"
-              >
-                Iniciar Diagnóstico
-              </Link>
+              {/* O link "Verificar Atestado" permanece FIXO no drawer mobile para TODOS os públicos */}
               <Link
                 to="/verificador"
                 onClick={() => setMobileMenuOpen(false)}
@@ -769,15 +817,74 @@ export default function Layout() {
               >
                 Verificar Atestado
               </Link>
-              {isAuthenticated ? (
-                <div className="flex flex-col gap-2 pt-1 border-t border-slate-800">
+
+              {/* Visitante não autenticado vê CTA Iniciar Diagnóstico e Entrar */}
+              {!isAuthenticated ? (
+                <>
                   <Link
-                    to={isParceiro ? '/parceiro-painel' : '/painel'}
+                    to="/diagnostico"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-[#F8FAFC] hover:border-[#059669] min-h-[44px] flex items-center justify-center"
+                    className="w-full text-center py-3 rounded-lg text-sm font-bold bg-[#2563EB] text-white hover:bg-blue-600 transition-all duration-200 shadow-sm min-h-[44px] flex items-center justify-center"
                   >
-                    {isParceiro ? 'Painel do Parceiro' : 'Meu Painel'} ({user?.name || user?.email})
+                    Iniciar Diagnóstico
                   </Link>
+                  <div className="flex flex-col gap-2 pt-1 border-t border-slate-800">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-slate-300 hover:border-[#059669] min-h-[44px] flex items-center justify-center"
+                    >
+                      Entrar na Conta
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                /* Autenticado: sem CTA Iniciar Diagnóstico; direcionamento dinâmico pelo papel */
+                <div className="flex flex-col gap-2 pt-1 border-t border-slate-800">
+                  {isGestao && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-[#2563EB] text-white hover:bg-blue-600 min-h-[44px] flex items-center justify-center gap-2"
+                    >
+                      <Lock className="w-4 h-4" />
+                      <span>Console</span>
+                    </Link>
+                  )}
+
+                  {isPerito && (
+                    <Link
+                      to="/revisor-f6"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 min-h-[44px] flex items-center justify-center gap-2"
+                    >
+                      <FileCheck2 className="w-4 h-4" />
+                      <span>Revisão Pericial</span>
+                    </Link>
+                  )}
+
+                  {isParceiro && (
+                    <Link
+                      to="/parceiro"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 min-h-[44px] flex items-center justify-center gap-2"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span>Meu Portal</span>
+                    </Link>
+                  )}
+
+                  {isCliente && !isGestao && !isPerito && !isParceiro && (
+                    <Link
+                      to="/painel"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 min-h-[44px] flex items-center justify-center gap-2"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span>Meu Portal</span>
+                    </Link>
+                  )}
+
                   <button
                     onClick={() => {
                       logout()
@@ -787,16 +894,6 @@ export default function Layout() {
                   >
                     Desconectar Sessão
                   </button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2 pt-1 border-t border-slate-800">
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-slate-300 hover:border-[#059669] min-h-[44px] flex items-center justify-center"
-                  >
-                    Entrar na Conta
-                  </Link>
                 </div>
               )}
             </div>

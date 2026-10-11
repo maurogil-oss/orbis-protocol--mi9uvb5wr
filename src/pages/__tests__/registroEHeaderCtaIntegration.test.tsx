@@ -105,8 +105,9 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     expect(verifLinks.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('Layout oculta "Criar conta" e "Entrar" e exibe "Painel" quando autenticado', () => {
+  it('Layout oculta "Criar conta", "Entrar" e CTA "Iniciar Diagnóstico" e exibe "Meu Portal" para cliente autenticado', () => {
     mockAuthState.isAuthenticated = true
+    mockAuthState.role = 'cliente'
     mockAuthState.user = { id: 'usr-1', email: 'cliente@empresa.com.br', name: 'Cliente Teste' }
 
     render(
@@ -119,8 +120,14 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     expect(screen.queryByRole('link', { name: /^Criar conta$/i })).toBeNull()
     expect(screen.queryByRole('link', { name: /^Entrar$/i })).toBeNull()
 
-    // Deve exibir link para Painel
-    expect(screen.getAllByRole('link', { name: /Painel/i }).length).toBeGreaterThanOrEqual(1)
+    // Não deve exibir o CTA de marketing "Iniciar Diagnóstico" no topo para cliente já autenticado
+    const headerElement = screen.getByRole('banner')
+    expect(headerElement.querySelector('a[href="/diagnostico"]')).toBeNull()
+
+    // Deve exibir link para Meu Portal (/painel)
+    const portalLinks = screen.getAllByRole('link', { name: /Meu Portal/i })
+    expect(portalLinks.length).toBeGreaterThanOrEqual(1)
+    expect(portalLinks.some((l) => l.getAttribute('href') === '/painel')).toBe(true)
   })
 
   it('Página /registro renderiza formulário com opções de cliente e perito e link para /login', () => {

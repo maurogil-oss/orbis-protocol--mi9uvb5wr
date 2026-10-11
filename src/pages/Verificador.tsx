@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { useRealtime } from '@/hooks/use-realtime'
+import { useAuth } from '@/contexts/AuthContext'
 import { cleanCNPJ, isValidCNPJ } from '@/services/cnpj'
 import {
   ShieldCheck,
@@ -12,6 +13,7 @@ import {
   Copy,
   Check,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react'
 
 import type { RecordModel } from 'pocketbase'
@@ -96,6 +98,10 @@ export default function Verificador() {
   const [hasSearched, setHasSearched] = useState(false)
   const [copiedHash, setCopiedHash] = useState(false)
   const [todosSelos, setTodosSelos] = useState<SeloRecord[]>([])
+
+  const { isAuthenticated, role } = useAuth()
+  // O CTA de diagnóstico NÃO deve aparecer para quem já é cliente autenticado
+  const isClienteAutenticado = isAuthenticated && (role === 'cliente' || role === 'cliente_acp')
 
   // Load initial list of known active seals
   const loadSelos = async () => {
@@ -373,7 +379,7 @@ export default function Verificador() {
 
         {/* Verification Result Card */}
         {hasSearched && (
-          <div className="max-w-3xl mb-16 animate-fade-in">
+          <div className="max-w-3xl mb-16 animate-fade-in space-y-6">
             {seloEncontrado ? (
               <div className="p-8 rounded-2xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886] shadow-emerald-glow space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.1)]">
@@ -518,6 +524,42 @@ export default function Verificador() {
                   Verifique se o código foi digitado exatamente como emitido (ex.: ORB-2024-0001) ou
                   se o CNPJ consultado possui certificação homologada.
                 </p>
+              </div>
+            )}
+
+            {/* Bloco de Conversão / CTA de Diagnóstico pós-resultado (Rodada 2) */}
+            {/* Não exibir para clientes já autenticados */}
+            {!isClienteAutenticado && (
+              <div
+                data-testid="cta-diagnostico-verificador"
+                className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[#111820] via-[#0E1A2E] to-[#0A0E12] border border-emerald-500/30 shadow-xl space-y-4 text-left"
+              >
+                <div className="flex items-center gap-2 text-emerald-400 text-xs font-mono font-semibold uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <span>Prova documental da economia circular</span>
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="font-heading font-bold text-lg sm:text-xl text-[#F4F7FA] leading-snug">
+                    Seu fornecedor já comprova descarbonização com prova documental?
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
+                    Solicite o diagnóstico gratuito da sua empresa e descubra seu enquadramento
+                    preliminar no SBCE (Lei 15.042/2024) e o impacto tributário do IVA dual com
+                    laudo preliminar — não substitui laudo pericial.
+                  </p>
+                </div>
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <Link
+                    to="/diagnostico"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-emerald-glow text-xs sm:text-sm min-h-[44px]"
+                  >
+                    <span>Iniciar diagnóstico</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <span className="text-[12px] text-[#93A3B5] text-center sm:text-left">
+                    Diagnóstico preliminar gratuito em 6 etapas por CNPJ
+                  </span>
+                </div>
               </div>
             )}
           </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
 import {
@@ -24,7 +24,14 @@ export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const fromState = (location.state as any)?.from?.pathname
+  const [searchParams] = useSearchParams()
+
+  // Destino salvo de rota protegida ou parâmetro ?next= / ?returnUrl=
+  const fromState =
+    (location.state as any)?.from?.pathname ||
+    (typeof (location.state as any)?.from === 'string' ? (location.state as any).from : null)
+  const nextParam = searchParams.get('next') || searchParams.get('returnUrl')
+  const returnTarget = nextParam || fromState
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,34 +46,45 @@ export default function Login() {
     if (res.success) {
       // Obter o usuário recém-autenticado no client PocketBase para direcionamento estrito por papel
       const userRecord = (await import('@/lib/pocketbase/client')).default.authStore.record as any
-      const userRole = userRecord?.role || 'cliente'
-      const statusAprovacao = userRecord?.status_aprovacao
+      const userRole = String(userRecord?.role || 'cliente').toLowerCase()
 
-      // Se veio com redirect explícito seguro
-      if (fromState && fromState !== '/login') {
-        navigate(fromState, { replace: true })
+      // 1. Prioridade absoluta: parâmetro de retorno explícito (?next= ou location.state.from)
+      if (
+        returnTarget &&
+        returnTarget !== '/login' &&
+        returnTarget.startsWith('/') &&
+        !returnTarget.startsWith('//')
+      ) {
+        navigate(returnTarget, { replace: true })
         return
       }
 
-      // Redirecionamento por papel pós-login:
-      // - master: Console com aba de governança (/admin?tab=governanca)
-      // - admin / controller: Console (/admin)
-      // - perito: credenciamento e lotes designados (/credenciamento ou /console-do-auditor)
-      // - financeiro / financeiro_leitor: painel financeiro (/admin?tab=receita)
-      // - parceiro: painel parceiro (/parceiro-painel)
-      // - cliente / cliente_acp: painel do cliente (/painel)
-      if (userRole === 'master') {
-        navigate('/admin?tab=governanca', { replace: true })
-      } else if (userRole === 'admin') {
-        navigate('/admin', { replace: true })
-      } else if (userRole === 'controller') {
-        navigate('/admin?tab=auditoria', { replace: true })
-      } else if (userRole === 'financeiro' || userRole === 'financeiro_leitor') {
-        navigate('/admin?tab=receita', { replace: true })
+      // 2. Redirecionamento pós-login por papel (Rodada 2):
+      // - gestão (master, admin, controller, financeiro, financeiro_leitor): /admin
+      // - perito: /revisor-f6 (rota canônica de revisão pericial)
+      // - parceiro: /parceiro (área do parceiro)
+      // - cliente / cliente_acp / outros: /painel
+      const isGestao =
+        userRole === 'master' ||
+        userRole === 'admin' ||
+        userRole === 'controller' ||
+        userRole === 'financeiro' ||
+        userRole === 'financeiro_leitor'
+
+      if (isGestao) {
+        if (userRole === 'master') {
+          navigate('/admin?tab=governanca', { replace: true })
+        } else if (userRole === 'controller') {
+          navigate('/admin?tab=auditoria', { replace: true })
+        } else if (userRole === 'financeiro' || userRole === 'financeiro_leitor') {
+          navigate('/admin?tab=receita', { replace: true })
+        } else {
+          navigate('/admin', { replace: true })
+        }
       } else if (userRole === 'perito') {
-        navigate('/credenciamento', { replace: true })
+        navigate('/revisor-f6', { replace: true })
       } else if (userRole === 'parceiro') {
-        navigate('/parceiro-painel', { replace: true })
+        navigate('/parceiro', { replace: true })
       } else {
         navigate('/painel', { replace: true })
       }

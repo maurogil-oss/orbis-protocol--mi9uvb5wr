@@ -75,10 +75,9 @@ describe('Header Desktop Layout Responsivo & Anti-Sobreposição', () => {
     expect(diagnosticoBtn?.className).toContain('whitespace-nowrap')
     expect(diagnosticoBtn?.className).toContain('shrink-0')
 
-    const demoBtn = header?.querySelector('a[href="/demo"]')
-    expect(demoBtn).not.toBeNull()
-    expect(demoBtn?.className).toContain('whitespace-nowrap')
-    expect(demoBtn?.className).toContain('shrink-0')
+    const verificadorBtn = header?.querySelector('a[href="/verificador"]')
+    expect(verificadorBtn).not.toBeNull()
+    expect(verificadorBtn?.className).toContain('whitespace-nowrap')
 
     // Links de navegação desktop
     const navLinks = header?.querySelectorAll('nav a')
@@ -87,10 +86,11 @@ describe('Header Desktop Layout Responsivo & Anti-Sobreposição', () => {
     })
   })
 
-  it('no modo autenticado (/painel), botões e link Painel mantêm shrink-0 e whitespace-nowrap', () => {
+  it('no modo autenticado (/painel), botões e link Meu Portal mantêm shrink-0 e whitespace-nowrap', () => {
     mockAuthState = {
       ...mockAuthState,
       isAuthenticated: true,
+      role: 'cliente',
       user: { id: 'usr-1', email: 'gestor@empresa.com.br', name: 'Gestor Alfa' },
     }
 
@@ -101,10 +101,11 @@ describe('Header Desktop Layout Responsivo & Anti-Sobreposição', () => {
     )
 
     const header = container.querySelector('header')
-    const painelLink = header?.querySelector('a[href="/painel"]')
-    expect(painelLink).not.toBeNull()
-    expect(painelLink?.className).toContain('whitespace-nowrap')
-    expect(painelLink?.className).toContain('shrink-0')
+    const portalLink = header?.querySelector('a[href="/painel"]')
+    expect(portalLink).not.toBeNull()
+    expect(portalLink?.textContent).toContain('Meu Portal')
+    expect(portalLink?.className).toContain('whitespace-nowrap')
+    expect(portalLink?.className).toContain('shrink-0')
 
     const logoutBtn = header?.querySelector('button[title="Sair"]')
     expect(logoutBtn).not.toBeNull()

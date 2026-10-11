@@ -610,7 +610,23 @@ export default function Diagnostico() {
         try {
           const authRes = await login(lead.email, retomarSenha)
           if (authRes.success) {
-            navigate('/painel')
+            const role = (pb.authStore.record as any)?.role || 'cliente'
+            const isGestao =
+              role === 'master' ||
+              role === 'admin' ||
+              role === 'controller' ||
+              role === 'financeiro' ||
+              role === 'financeiro_leitor'
+
+            if (isGestao) {
+              navigate('/admin')
+            } else if (role === 'perito') {
+              navigate('/revisor-f6')
+            } else if (role === 'parceiro') {
+              navigate('/parceiro')
+            } else {
+              navigate('/painel')
+            }
             return
           }
         } catch (_) {
@@ -2005,7 +2021,25 @@ export default function Diagnostico() {
                   {/* Next Step Action */}
                   <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button
-                      onClick={() => navigate('/painel')}
+                      onClick={() => {
+                        const currentRole = (pb.authStore.record as any)?.role || 'cliente'
+                        const isGestao =
+                          currentRole === 'master' ||
+                          currentRole === 'admin' ||
+                          currentRole === 'controller' ||
+                          currentRole === 'financeiro' ||
+                          currentRole === 'financeiro_leitor'
+
+                        if (isGestao) {
+                          navigate('/admin')
+                        } else if (currentRole === 'perito') {
+                          navigate('/revisor-f6')
+                        } else if (currentRole === 'parceiro') {
+                          navigate('/parceiro')
+                        } else {
+                          navigate('/painel')
+                        }
+                      }}
                       className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow"
                     >
                       Acessar Meu Painel do Cliente

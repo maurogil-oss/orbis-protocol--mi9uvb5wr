@@ -153,19 +153,19 @@ export default function RegistroPage() {
 
       setSucesso(true)
 
-      // 3. Redirecionamento condicional ao perfil
+      // 3. Redirecionamento condicional ao perfil (Rodada 2)
       setTimeout(() => {
-        if (isGestaoPerfil) {
-          // Usuário de gestão pendente de aprovação: vai para a rota protegida que exibe o bloqueio formal
-          navigate('/admin', { replace: true })
-        } else if (from) {
+        if (from) {
           navigate(from, { replace: true })
+        } else if (isGestaoPerfil) {
+          // Usuário de gestão: direciona para /admin
+          navigate('/admin', { replace: true })
         } else if (role === 'parceiro') {
-          // Parceiro vai direto ao seu painel financeiro (/parceiro-painel)
-          navigate('/parceiro-painel', { replace: true })
+          // Parceiro vai direto para a área do parceiro (/parceiro)
+          navigate('/parceiro', { replace: true })
         } else if (role === 'perito') {
-          // Perito vai direto ao credenciamento para homologar ART/RRT
-          navigate('/credenciamento', { replace: true })
+          // Perito: direciona para revisão pericial (/revisor-f6)
+          navigate('/revisor-f6', { replace: true })
         } else if (role === 'cliente_acp') {
           // Cliente ACP vai direto à área autenticada do painel (sem funil de diagnóstico)
           navigate('/painel', { replace: true })
