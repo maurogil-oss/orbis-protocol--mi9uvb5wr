@@ -65,6 +65,8 @@ import DossieMoverPage from './pages/DossieMoverPage'
 import MateriaisCriticosPublicPage from './pages/MateriaisCriticosPublicPage'
 import PropostaRemineraPage from './pages/PropostaRemineraPage'
 import EquipePage from './pages/EquipePage'
+import PosicaoCreditoCarbonoPage from './pages/PosicaoCreditoCarbonoPage'
+import PosicaoEscopo3Page from './pages/PosicaoEscopo3Page'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -143,7 +145,9 @@ const App = () => (
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />
             <Route path="/api-docs-nfs" element={<ApiDocsNfsPage />} />
             <Route path="/fatores" element={<FatoresEmissaoPublicoPage />} />
-            <Route path="/mover" element={<MoverPublicPage />} />
+            <Route path="/posicao-credito-carbono" element={<PosicaoCreditoCarbonoPage />} />
+            <Route path="/posicao-escopo-3" element={<PosicaoEscopo3Page />} />
+            <Route path="/mover" element={<MoverPublicPage />} />{' '}
             <Route path="/materiais-criticos" element={<MateriaisCriticosPublicPage />} />
             <Route path="/equipe" element={<EquipePage />} />
             {/* Orbis Educação & Cadastro/Painel de Escolas */}

@@ -24,6 +24,8 @@ import RadarRegulatorio from '@/pages/RadarRegulatorio'
 import ApiDocsCdvPage from '@/pages/ApiDocsCdvPage'
 import { ApiDocsNfsPage } from '@/pages/ApiDocsNfsPage'
 import EducacaoPublicPage from '@/pages/EducacaoPublicPage'
+import PosicaoCreditoCarbonoPage from '@/pages/PosicaoCreditoCarbonoPage'
+import PosicaoEscopo3Page from '@/pages/PosicaoEscopo3Page'
 
 // Mock simples de autenticação configurável
 let mockAuthState = {
@@ -142,6 +144,10 @@ describe('Rodada 3: Árvore de Hubs da Vitrine Pública', () => {
       // Links para páginas-filhas
       expect(screen.getByText(/Metodologia & Fatores Oficiais \(DM-ORB-001\)/i)).toBeDefined()
       expect(screen.getByText(/Consultar Atestado \(Verificador Público\)/i)).toBeDefined()
+      expect(
+        screen.getByText(/Carbono evitado e crédito de carbono — nossa posição/i),
+      ).toBeDefined()
+      expect(screen.getByText(/Escopo 3 e insetting — quem reivindica o quê/i)).toBeDefined()
       expect(screen.getByText(/Radar Regulatório/i)).toBeDefined()
       expect(screen.getByText(/API de Ingestão CDV v2/i)).toBeDefined()
       expect(screen.getByText(/API de NFs v1/i)).toBeDefined()
@@ -375,8 +381,9 @@ describe('Rodada 3: Árvore de Hubs da Vitrine Pública', () => {
         { nome: 'api-docs-cdv', componente: <ApiDocsCdvPage /> },
         { nome: 'api-docs-nfs', componente: <ApiDocsNfsPage /> },
         { nome: 'educacao', componente: <EducacaoPublicPage /> },
+        { nome: 'posicao-credito-carbono', componente: <PosicaoCreditoCarbonoPage /> },
+        { nome: 'posicao-escopo-3', componente: <PosicaoEscopo3Page /> },
       ]
-
       paginasFilhas.forEach(({ nome, componente }) => {
         const { unmount } = render(<MemoryRouter initialEntries={['/']}>{componente}</MemoryRouter>)
 

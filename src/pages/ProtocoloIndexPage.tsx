@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Calculator,
   Search,
+  Layers,
 } from 'lucide-react'
 
 export interface DestinoProtocolo {
@@ -45,6 +46,24 @@ export const DESTINOS_PROTOCOLO: DestinoProtocolo[] = [
     caminho: '/verificador',
     badge: 'SHA-256 Público',
     icone: ShieldCheck,
+  },
+  {
+    titulo: 'Carbono evitado e crédito de carbono — nossa posição',
+    subtitulo: 'Por que a Orbis não emite créditos e a distinção com eco-eficiência de inventário.',
+    descricao:
+      'Posição pública: por que a Orbis não emite nem comercializa créditos de carbono, a etiqueta obrigatória de indicador preliminar, a situação real do Verra S3S e FAQ honesto.',
+    caminho: '/posicao-credito-carbono',
+    badge: 'Posição Pública',
+    icone: FileText,
+  },
+  {
+    titulo: 'Escopo 3 e insetting — quem reivindica o quê',
+    subtitulo: 'Matriz de titularidade de claims, uso único e o Dossiê de Escopo 3.',
+    descricao:
+      'Entenda insetting sob o GHG Protocol Scope 3 e ISO 14064-1, a Matriz de Titularidade (comprador vs fornecedor), a trava RETIRED_FOR_INSETTING e os componentes do Dossiê.',
+    caminho: '/posicao-escopo-3',
+    badge: 'Governança GHG',
+    icone: Layers,
   },
   {
     titulo: 'Radar Regulatório',
@@ -147,20 +166,41 @@ export default function ProtocoloIndexPage() {
               </div>
 
               {/* Bloco 3: Evitado é preliminar */}
-              <div className="space-y-2 p-4 rounded-2xl bg-slate-800/60 dark:bg-slate-900/60 border border-slate-700/60">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold font-mono text-sm">
-                  3
+              <div className="space-y-2 p-4 rounded-2xl bg-slate-800/60 dark:bg-slate-900/60 border border-slate-700/60 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold font-mono text-sm">
+                    3
+                  </div>
+                  <h3 className="font-heading font-bold text-base text-white">
+                    O &quot;evitado&quot; é indicador preliminar
+                  </h3>
+                  <p>
+                    O carbono evitado calculado pelo motor é um{' '}
+                    <strong className="text-amber-300">
+                      indicador preliminar de eco-eficiência
+                    </strong>
+                    . Ele <strong>não constitui crédito de carbono negociável</strong> nem ativo do
+                    SBCE. A emissão de créditos, caso ocorra, segue exclusivamente via organismo
+                    validador independente (VVB) formalmente contratado.
+                  </p>
                 </div>
-                <h3 className="font-heading font-bold text-base text-white">
-                  O &quot;evitado&quot; é indicador preliminar
-                </h3>
-                <p>
-                  O carbono evitado calculado pelo motor é um{' '}
-                  <strong className="text-amber-300">indicador preliminar de eco-eficiência</strong>
-                  . Ele <strong>não constitui crédito de carbono negociável</strong> nem ativo do
-                  SBCE. A emissão de créditos, caso ocorra, segue exclusivamente via organismo
-                  validador independente (VVB) formalmente contratado.
-                </p>
+                <div className="pt-3 border-t border-slate-700/60 flex flex-col sm:flex-row gap-2 text-xs font-semibold">
+                  <Link
+                    to="/posicao-credito-carbono"
+                    className="text-amber-400 hover:text-amber-300 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Posição sobre créditos</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <span className="hidden sm:inline text-slate-600">•</span>
+                  <Link
+                    to="/posicao-escopo-3"
+                    className="text-emerald-400 hover:text-emerald-300 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Escopo 3 e insetting</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </div>
 

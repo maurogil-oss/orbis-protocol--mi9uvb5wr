@@ -493,6 +493,8 @@ export default function Layout() {
                 className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
                   location.pathname === '/protocolo' ||
                   location.pathname === '/fatores' ||
+                  location.pathname === '/posicao-credito-carbono' ||
+                  location.pathname === '/posicao-escopo-3' ||
                   location.pathname === '/radar-regulatorio' ||
                   location.pathname === '/api-docs-cdv' ||
                   location.pathname === '/api-docs-nfs'
@@ -711,6 +713,8 @@ export default function Layout() {
                   className={`flex items-center justify-between py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${
                     location.pathname === '/protocolo' ||
                     location.pathname === '/fatores' ||
+                    location.pathname === '/posicao-credito-carbono' ||
+                    location.pathname === '/posicao-escopo-3' ||
                     location.pathname === '/radar-regulatorio'
                       ? 'bg-[#059669]/10 text-[#059669]'
                       : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#111827]'
@@ -1134,6 +1138,22 @@ export default function Layout() {
                     className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
                     Metodologia
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/posicao-credito-carbono"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Posição sobre crédito de carbono
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/posicao-escopo-3"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Escopo 3 e insetting
                   </Link>
                 </li>
                 <li>
