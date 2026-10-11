@@ -195,10 +195,11 @@ export default function ApiDocsCdvPage() {
   },
   "totais": {
     "peso_kg": 16.5,
-    "co2e_evitado_liquido_total_kg": 12.87,
-    "evitado_confirmado_kg": 10.59,
+    "co2e_evitado_liquido_total_kg": 11.89,
+    "evitado_confirmado_kg": 9.61,
     "evitado_potencial_kg": 2.28,
     "incerteza_analitica_pct": 2.64,
+    "incerteza_absoluta_kg": 0.31,
     "metodologia": "DM-ORB-001 v1.1 (DF=0,30, L_i=1,0)"
   },
   "pecas": [
@@ -214,7 +215,7 @@ export default function ApiDocsCdvPage() {
       "sku": "PART-GOL-ALT-02",
       "selo_dpp": "PR-SEAL-2026-991824",
       "peso_kg": 2.5,
-      "evitado_liquido_kg": 4.05,
+      "evitado_liquido_kg": 3.07,
       "status_claim": "confirmado",
       "hash_sha256": "a4b75ebff3a5ffccf90e9d6d5c64b5478440cc077755f1f77432f8373b9e4ec3"
     },
