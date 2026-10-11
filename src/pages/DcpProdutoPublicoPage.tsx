@@ -23,6 +23,7 @@ import {
   Sparkles,
   FileCheck2,
 } from 'lucide-react'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import pb from '@/lib/pocketbase/client'
 import {
@@ -268,6 +269,15 @@ export default function DcpProdutoPublicoPage() {
       `}</style>
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 print:max-w-none print:px-0">
+        <div className="mb-4 no-print">
+          <BreadcrumbOrbis
+            items={[
+              { label: 'Soluções', href: '/solucoes' },
+              { label: 'Passaporte Digital de Produto (DCP)' },
+            ]}
+          />
+        </div>
+
         {/* Barra Superior de Controles e Navegação (Oculta na impressão) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 pb-4 border-b border-[rgba(244,247,250,0.1)] no-print">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">

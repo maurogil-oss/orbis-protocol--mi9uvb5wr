@@ -8,21 +8,41 @@ import TrilhasIndex from '@/pages/TrilhasIndex'
 import Layout from '@/components/Layout'
 import BreadcrumbOrbis from '@/components/BreadcrumbOrbis'
 import BlocoOutrasSolucoes from '@/components/BlocoOutrasSolucoes'
+import MoverPublicPage from '@/pages/MoverPublicPage'
+import MateriaisCriticosPublicPage from '@/pages/MateriaisCriticosPublicPage'
+import DcpDemonstracaoPublicaPage from '@/pages/DcpDemonstracaoPublicaPage'
+import DcpProdutoPublicoPage from '@/pages/DcpProdutoPublicoPage'
+import ModoCorporativoDemoPage from '@/pages/ModoCorporativoDemoPage'
+import PortalCorporativo from '@/pages/PortalCorporativo'
+import CaseCDVerde from '@/pages/CaseCDVerde'
+import CadeiasProdutivasPage from '@/pages/CadeiasProdutivasPage'
+import RadarSemanalPublicPage from '@/pages/RadarSemanalPublicPage'
+import CentralRadarPage from '@/pages/CentralRadarPage'
+import FatoresEmissaoPublicoPage from '@/pages/FatoresEmissaoPublicoPage'
+import Verificador from '@/pages/Verificador'
+import RadarRegulatorio from '@/pages/RadarRegulatorio'
+import ApiDocsCdvPage from '@/pages/ApiDocsCdvPage'
+import { ApiDocsNfsPage } from '@/pages/ApiDocsNfsPage'
+import EducacaoPublicPage from '@/pages/EducacaoPublicPage'
 
-// Mock simples de autenticação
+// Mock simples de autenticação configurável
+let mockAuthState = {
+  user: null as any,
+  token: '',
+  isAuthenticated: false,
+  isLoading: false,
+  role: 'cliente',
+  isMaster: false,
+  isAdmin: false,
+  isAdminOrPerito: false,
+  isParceiro: false,
+  login: vi.fn(),
+  logout: vi.fn(),
+  refreshAuth: vi.fn(),
+}
+
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: null,
-    token: '',
-    isAuthenticated: false,
-    isLoading: false,
-    role: 'cliente',
-    isAdminOrPerito: false,
-    isParceiro: false,
-    login: vi.fn(),
-    logout: vi.fn(),
-    refreshAuth: vi.fn(),
-  }),
+  useAuth: () => mockAuthState,
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
@@ -143,8 +163,41 @@ describe('Rodada 3: Árvore de Hubs da Vitrine Pública', () => {
     })
   })
 
-  describe('4. Cabeçalho Dinâmico (5 Destinos Públicos)', () => {
-    it('cabeçalho renderiza exatamente os 5 destinos da vitrine pública no desktop', () => {
+  describe('4. Cabeçalho Dinâmico (Exatamente os 5 Destinos Públicos nos Diferentes Estados de Sessão)', () => {
+    const validar5Destinos = (navDesktop: HTMLElement) => {
+      const links = navDesktop.querySelectorAll('a')
+      // Devem existir os 5 destinos mandatórios
+      expect(navDesktop.querySelector('a[href="/"]')?.textContent?.trim()).toBe('Início')
+      expect(navDesktop.querySelector('a[href="/solucoes"]')?.textContent?.trim()).toBe('Soluções')
+      expect(navDesktop.querySelector('a[href="/trilhas"]')?.textContent?.trim()).toBe('Trilhas')
+      expect(navDesktop.querySelector('a[href="/protocolo"]')?.textContent?.trim()).toBe(
+        'Protocolo',
+      )
+      expect(navDesktop.querySelector('a[href="/diagnostico"]')?.textContent?.trim()).toBe(
+        'Diagnóstico',
+      )
+
+      // E a lista de links diretos de navegação de primeiro nível possui exatamente esses 5
+      const labels = Array.from(links).map((l) => l.textContent?.trim())
+      expect(labels).toEqual(['Início', 'Soluções', 'Trilhas', 'Protocolo', 'Diagnóstico'])
+    }
+
+    it('estado de sessão: VISITANTE NÃO AUTENTICADO preserva exatamente os 5 destinos no desktop', () => {
+      mockAuthState = {
+        user: null,
+        token: '',
+        isAuthenticated: false,
+        isLoading: false,
+        role: 'cliente',
+        isMaster: false,
+        isAdmin: false,
+        isAdminOrPerito: false,
+        isParceiro: false,
+        login: vi.fn(),
+        logout: vi.fn(),
+        refreshAuth: vi.fn(),
+      }
+
       render(
         <MemoryRouter initialEntries={['/']}>
           <Layout />
@@ -152,17 +205,135 @@ describe('Rodada 3: Árvore de Hubs da Vitrine Pública', () => {
       )
 
       const navDesktop = screen.getByRole('navigation', { name: /navegação principal/i })
+      validar5Destinos(navDesktop)
 
-      // 1. Início
-      expect(navDesktop.querySelector('a[href="/"]')?.textContent).toBe('Início')
-      // 2. Soluções
-      expect(navDesktop.querySelector('a[href="/solucoes"]')?.textContent).toBe('Soluções')
-      // 3. Trilhas
-      expect(navDesktop.querySelector('a[href="/trilhas"]')?.textContent).toBe('Trilhas')
-      // 4. Protocolo
-      expect(navDesktop.querySelector('a[href="/protocolo"]')?.textContent).toBe('Protocolo')
-      // 5. Diagnóstico
-      expect(navDesktop.querySelector('a[href="/diagnostico"]')?.textContent).toBe('Diagnóstico')
+      // CTA Iniciar Diagnóstico presente no header para visitante
+      const header = screen.getByRole('banner')
+      expect(header.textContent).toContain('Iniciar Diagnóstico')
+      expect(header.textContent).toContain('Entrar')
+    })
+
+    it('estado de sessão: CLIENTE AUTENTICADO preserva exatamente os 5 destinos no desktop', () => {
+      mockAuthState = {
+        user: { id: 'usr-c1', email: 'cliente@empresa.com.br' },
+        token: 'token-c1',
+        isAuthenticated: true,
+        isLoading: false,
+        role: 'cliente',
+        isMaster: false,
+        isAdmin: false,
+        isAdminOrPerito: false,
+        isParceiro: false,
+        login: vi.fn(),
+        logout: vi.fn(),
+        refreshAuth: vi.fn(),
+      }
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Layout />
+        </MemoryRouter>,
+      )
+
+      const navDesktop = screen.getByRole('navigation', { name: /navegação principal/i })
+      validar5Destinos(navDesktop)
+
+      // Não exibe CTA Iniciar Diagnóstico nem Entrar, exibe Meu Portal
+      const header = screen.getByRole('banner')
+      expect(header.textContent).not.toContain('Iniciar Diagnóstico')
+      expect(header.querySelector('a[href="/login"]')).toBeNull()
+      expect(screen.getAllByRole('link', { name: /Meu Portal/i }).length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('estado de sessão: GESTÃO / ADMIN AUTENTICADO preserva exatamente os 5 destinos no desktop', () => {
+      mockAuthState = {
+        user: { id: 'usr-a1', email: 'admin@orbis.com' },
+        token: 'token-a1',
+        isAuthenticated: true,
+        isLoading: false,
+        role: 'admin',
+        isMaster: false,
+        isAdmin: true,
+        isAdminOrPerito: true,
+        isParceiro: false,
+        login: vi.fn(),
+        logout: vi.fn(),
+        refreshAuth: vi.fn(),
+      }
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Layout />
+        </MemoryRouter>,
+      )
+
+      const navDesktop = screen.getByRole('navigation', { name: /navegação principal/i })
+      validar5Destinos(navDesktop)
+
+      // Exibe Console
+      expect(screen.getAllByRole('link', { name: /Console/i }).length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('estado de sessão: PERITO AUTENTICADO preserva exatamente os 5 destinos no desktop', () => {
+      mockAuthState = {
+        user: { id: 'usr-p1', email: 'perito@crea.com' },
+        token: 'token-p1',
+        isAuthenticated: true,
+        isLoading: false,
+        role: 'perito',
+        isMaster: false,
+        isAdmin: false,
+        isAdminOrPerito: true,
+        isParceiro: false,
+        login: vi.fn(),
+        logout: vi.fn(),
+        refreshAuth: vi.fn(),
+      }
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Layout />
+        </MemoryRouter>,
+      )
+
+      const navDesktop = screen.getByRole('navigation', { name: /navegação principal/i })
+      validar5Destinos(navDesktop)
+
+      expect(
+        screen.getAllByRole('link', { name: /Revisão Pericial/i }).length,
+      ).toBeGreaterThanOrEqual(1)
+    })
+
+    it('estado de sessão: PARCEIRO AUTENTICADO preserva exatamente os 5 destinos no desktop', () => {
+      mockAuthState = {
+        user: { id: 'usr-par1', email: 'parceiro@acp.com' },
+        token: 'token-par1',
+        isAuthenticated: true,
+        isLoading: false,
+        role: 'parceiro',
+        isMaster: false,
+        isAdmin: false,
+        isAdminOrPerito: false,
+        isParceiro: true,
+        login: vi.fn(),
+        logout: vi.fn(),
+        refreshAuth: vi.fn(),
+      }
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Layout />
+        </MemoryRouter>,
+      )
+
+      const navDesktop = screen.getByRole('navigation', { name: /navegação principal/i })
+      validar5Destinos(navDesktop)
+
+      expect(
+        screen
+          .getAllByRole('link', { name: /Meu Portal/i })
+          .some((l) => l.getAttribute('href') === '/parceiro'),
+      ).toBe(true)
     })
   })
 
@@ -184,6 +355,42 @@ describe('Rodada 3: Árvore de Hubs da Vitrine Pública', () => {
 
       const currentItem = screen.getByText('Programa MOVER')
       expect(currentItem.getAttribute('aria-current')).toBe('page')
+    })
+
+    it('presença do BreadcrumbOrbis e acessibilidade em todas as páginas-filhas obrigatórias', () => {
+      const paginasFilhas = [
+        { nome: 'mover', componente: <MoverPublicPage /> },
+        { nome: 'materiais-criticos', componente: <MateriaisCriticosPublicPage /> },
+        { nome: 'dcp-demo', componente: <DcpDemonstracaoPublicaPage /> },
+        { nome: 'dcp-produto', componente: <DcpProdutoPublicoPage /> },
+        { nome: 'corporativo-modo', componente: <ModoCorporativoDemoPage /> },
+        { nome: 'corporativo-portal', componente: <PortalCorporativo /> },
+        { nome: 'case-cdverde', componente: <CaseCDVerde /> },
+        { nome: 'cadeias-produtivas', componente: <CadeiasProdutivasPage /> },
+        { nome: 'radar-semanal', componente: <RadarSemanalPublicPage /> },
+        { nome: 'central-radar', componente: <CentralRadarPage /> },
+        { nome: 'fatores', componente: <FatoresEmissaoPublicoPage /> },
+        { nome: 'verificador', componente: <Verificador /> },
+        { nome: 'radar-regulatorio', componente: <RadarRegulatorio /> },
+        { nome: 'api-docs-cdv', componente: <ApiDocsCdvPage /> },
+        { nome: 'api-docs-nfs', componente: <ApiDocsNfsPage /> },
+        { nome: 'educacao', componente: <EducacaoPublicPage /> },
+      ]
+
+      paginasFilhas.forEach(({ nome, componente }) => {
+        const { unmount } = render(<MemoryRouter initialEntries={['/']}>{componente}</MemoryRouter>)
+
+        const nav = screen.getByRole('navigation', { name: /navegação estrutural/i })
+        expect(nav, `BreadcrumbOrbis não encontrado na página-filha ${nome}`).toBeDefined()
+
+        const currentItem = nav.querySelector('[aria-current="page"]')
+        expect(
+          currentItem,
+          `Item ativo aria-current="page" ausente na página ${nome}`,
+        ).not.toBeNull()
+
+        unmount()
+      })
     })
 
     it('BlocoOutrasSolucoes filtra a solução ativa atual e exibe soluções alternativas', () => {

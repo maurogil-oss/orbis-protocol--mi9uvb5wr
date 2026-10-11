@@ -98,7 +98,9 @@ const App = () => (
             <Route path="/dcp" element={<DcpProdutoPublicoPage />} />
             <Route path="/solucoes/portal-corporativo" element={<PortalCorporativo />} />
             <Route path="/solucoes/case-cdverde" element={<CaseCDVerde />} />
+            <Route path="/case-cdverde" element={<CaseCDVerde />} />
             <Route path="/solucoes/cadeias-produtivas" element={<CadeiasProdutivasPage />} />
+            <Route path="/cadeias-produtivas" element={<CadeiasProdutivasPage />} />
             <Route path="/protocolos/:slug" element={<ProtocoloDetailPage />} />
             <Route path="/credenciamento" element={<CredenciamentoPage />} />
             <Route path="/verificador" element={<Verificador />} />

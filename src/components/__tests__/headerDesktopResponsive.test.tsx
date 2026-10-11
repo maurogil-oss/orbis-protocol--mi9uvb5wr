@@ -69,11 +69,15 @@ describe('Header Desktop Layout Responsivo & Anti-Sobreposição', () => {
     const header = container.querySelector('header')
     expect(header).not.toBeNull()
 
-    // Botões CTA do cabeçalho
-    const diagnosticoBtn = header?.querySelector('a[href="/diagnostico"]')
-    expect(diagnosticoBtn).not.toBeNull()
-    expect(diagnosticoBtn?.className).toContain('whitespace-nowrap')
-    expect(diagnosticoBtn?.className).toContain('shrink-0')
+    // Botões CTA do cabeçalho (Iniciar Diagnóstico)
+    const diagnosticoBtns = header?.querySelectorAll('a[href="/diagnostico"]')
+    expect(diagnosticoBtns?.length).toBeGreaterThanOrEqual(1)
+    const ctaDiagnostico = Array.from(diagnosticoBtns || []).find((b) =>
+      b.textContent?.includes('Iniciar Diagnóstico'),
+    )
+    expect(ctaDiagnostico).toBeDefined()
+    expect(ctaDiagnostico?.className).toContain('whitespace-nowrap')
+    expect(ctaDiagnostico?.className).toContain('shrink-0')
 
     const verificadorBtn = header?.querySelector('a[href="/verificador"]')
     expect(verificadorBtn).not.toBeNull()

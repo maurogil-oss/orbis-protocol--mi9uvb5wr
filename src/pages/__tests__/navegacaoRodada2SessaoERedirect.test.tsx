@@ -105,6 +105,10 @@ describe('Rodada 2: Navegação Dinâmica por Sessão, Redirects e Verificador',
       expect(header.textContent).not.toContain('Iniciar Diagnóstico')
       expect(header.querySelector('a[href="/login"]')).toBeNull()
 
+      // O destino da navegação "Diagnóstico" continua presente nos 5 destinos
+      const navDesktop = screen.getByRole('navigation', { name: /navegação principal/i })
+      expect(navDesktop.querySelector('a[href="/diagnostico"]')?.textContent).toBe('Diagnóstico')
+
       // Exibe "Meu Portal" apontando para /painel
       const portalLinks = screen.getAllByRole('link', { name: /Meu Portal/i })
       expect(portalLinks.length).toBeGreaterThanOrEqual(1)
@@ -127,8 +131,12 @@ describe('Rodada 2: Navegação Dinâmica por Sessão, Redirects e Verificador',
       )
 
       const header = screen.getByRole('banner')
-      // Sem Iniciar Diagnóstico
+      // Sem Iniciar Diagnóstico de CTA de aquisição
       expect(header.textContent).not.toContain('Iniciar Diagnóstico')
+
+      // O destino da navegação "Diagnóstico" continua presente nos 5 destinos
+      const navDesktop = screen.getByRole('navigation', { name: /navegação principal/i })
+      expect(navDesktop.querySelector('a[href="/diagnostico"]')?.textContent).toBe('Diagnóstico')
 
       // Exibe "Console" apontando para /admin
       const consoleLinks = screen.getAllByRole('link', { name: /Console/i })

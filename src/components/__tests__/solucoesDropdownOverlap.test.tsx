@@ -76,15 +76,19 @@ describe('Navegação e Dropdown de Soluções no Layout', () => {
     expect(dropdownMenu).toBeDefined()
     expect(dropdownMenu.className).toContain('z-50')
 
-    // Itens das soluções visíveis
-    expect(screen.getByText('Orbis LPF — Leitura Pré-Faturamento')).toBeDefined()
-    expect(screen.getByText('Diagnóstico & Mercado de Carbono (SBCE)')).toBeDefined()
-    expect(screen.getByText('Planos & Certificação')).toBeDefined()
-    expect(screen.getByText('Portal Corporativo')).toBeDefined()
-    expect(screen.getByText('Orbis Educação (MEI & Escolas)')).toBeDefined()
-    expect(screen.getByText('Case CDVerde')).toBeDefined()
-    expect(screen.getByText('Descarbonização via MOVER')).toBeDefined()
-    expect(screen.getByText('Radar Semanal (Assinatura)')).toBeDefined()
+    // Itens das soluções visíveis no submenu
+    expect(
+      screen.getAllByText('Orbis LPF — Leitura Pré-Faturamento').length,
+    ).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getAllByText('Diagnóstico & Mercado de Carbono (SBCE)').length,
+    ).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Planos & Certificação').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Portal Corporativo').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Orbis Educação (MEI & Escolas)').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Case CDVerde').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Descarbonização via MOVER').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Radar Semanal (Assinatura)').length).toBeGreaterThanOrEqual(1)
 
     // Fecha ao pressionar Escape
     fireEvent.keyDown(document, { key: 'Escape' })

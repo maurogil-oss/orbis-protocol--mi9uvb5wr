@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import {
   Building2,
   ShieldCheck,
@@ -254,6 +255,10 @@ export default function ModoCorporativoDemoPage() {
   return (
     <div className="min-h-screen py-8 md:py-12 bg-[#0A0E12] text-[#F4F7FA]">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6">
+        <BreadcrumbOrbis
+          items={[{ label: 'Soluções', href: '/solucoes' }, { label: 'Portal Corporativo' }]}
+        />
+
         {/* 1. BANNER OBRIGATÓRIO E PERSISTENTE DE MODO DEMONSTRAÇÃO */}
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#D9B36C]/20 via-[#16202B] to-[#12B886]/20 border-2 border-[#D9B36C] shadow-2xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
