@@ -1,4 +1,3 @@
-import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import {
@@ -6,2138 +5,418 @@ import {
   ShieldCheck,
   Lock,
   Layers,
-  Search,
-  Filter,
-  Info,
-  ExternalLink,
-  ChevronRight,
   BookOpen,
   ArrowRight,
-  Flame,
-  Zap,
-  Truck,
-  Recycle,
   Sparkles,
   FileCheck,
   CheckCircle2,
-  Calendar,
-  Download,
-  AlertTriangle,
-  FileText,
+  ExternalLink,
   HelpCircle,
-  Copy,
-  Check,
-  ShieldAlert,
-  Database,
-  Calculator,
+  FileText,
+  Search,
 } from 'lucide-react'
-import {
-  CATALOGO_FATORES_CO2E,
-  METADADOS_CATALOGO_FATORES,
-  GWP_IPCC_AR6_OFICIAL,
-  type FatorCatalogoItem,
-} from '@/services/catalogoFatoresOficiais'
-import {
-  FATORES_MATERIAIS_V2,
-  GWP_AR6_R134A,
-  GWP_AR6_R1234YF,
-  DF_REFRIGERANTE_PADRAO,
-  VERSAO_METODOLOGIA_CDV_V2,
-} from '@/services/cdvEngineV2'
+
+interface ReferenciaCanonica {
+  id: string
+  sigla: string
+  nome: string
+  organizacao: string
+  foco: string
+  descricao: string
+  anoOuEdicao: string
+  tipo: 'Internacional' | 'Nacional' | 'Setorial'
+  linkExterno?: string
+  linkInterno?: string
+}
+
+const REFERENCIAS_CANONICAS: ReferenciaCanonica[] = [
+  {
+    id: 'ipcc-ar6',
+    sigla: 'IPCC AR6',
+    nome: 'Sixth Assessment Report (WG1 Capítulo 7)',
+    organizacao: 'Intergovernmental Panel on Climate Change (IPCC)',
+    foco: 'Métricas GWP-100 e gases refrigerantes automotivos',
+    descricao:
+      'Referencial internacional para potenciais de aquecimento global (GWP-100) com feedbacks climáticos para gases refrigerantes de climatização veicular (HFC-134a, HFO-1234yf) e gases de efeito estufa da cesta de Paris.',
+    anoOuEdicao: 'AR6 WG1 (2021/2023)',
+    tipo: 'Internacional',
+    linkExterno: 'https://www.ipcc.ch/report/ar6/wg1/',
+  },
+  {
+    id: 'worldsteel',
+    sigla: 'worldsteel',
+    nome: 'Sustainability Indicators',
+    organizacao: 'World Steel Association',
+    foco: 'Intensidade de emissões berço-ao-portão do aço bruto',
+    descricao:
+      'Coleta global de dados de intensidade de emissões de GEE (CO₂ data collection) com base em médias ponderadas de rotas de produção siderúrgica (BF-BOF, scrap-EAF e DRI-EAF).',
+    anoOuEdicao: 'Edição 2024/2025',
+    tipo: 'Internacional',
+    linkExterno: 'https://worldsteel.org/wider-sustainability/sustainability-indicators/',
+  },
+  {
+    id: 'iai-2024',
+    sigla: 'IAI 2024',
+    nome: 'Primary Aluminium Greenhouse Gas Emissions Intensity',
+    organizacao: 'International Aluminium Institute (IAI)',
+    foco: 'Intensidade de emissões berço-ao-portão de alumínio primário',
+    descricao:
+      'Indicadores globais de intensidade de emissão de GEE para alumínio primário berço-ao-portão (eletricidade, processos, PFCs, energia térmica e insumos auxiliares).',
+    anoOuEdicao: 'Emissão 2024',
+    tipo: 'Internacional',
+    linkExterno:
+      'https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity-primary-aluminium/',
+  },
+  {
+    id: 'ica',
+    sigla: 'ICA',
+    nome: 'Global Life Cycle Assessment & LCI of Refined Copper',
+    organizacao: 'International Copper Association',
+    foco: 'Inventário de ciclo de vida berço-ao-portão do cobre refinado',
+    descricao:
+      'Inventário global de ciclo de vida (LCI/LCA) para cátodos e refino de cobre, alinhado aos padrões internacionais de avaliação de ciclo de vida ISO 14040/14044.',
+    anoOuEdicao: 'Estudo Global 2024',
+    tipo: 'Internacional',
+    linkExterno: 'https://copperalliance.org/',
+  },
+  {
+    id: 'ghg-protocol',
+    sigla: 'GHG Protocol',
+    nome: 'Corporate Value Chain (Scope 3) Standard',
+    organizacao: 'WRI / WBCSD',
+    foco: 'Escopo 3 — Categorias 1 (Bens e Serviços Adquiridos) e 12 (Fim de Vida)',
+    descricao:
+      'Padrão canônico para quantificação e relato corporativo de emissões indiretas de cadeia de valor, cobrindo aquisição de insumos reciclados e tratamento de fim de vida.',
+    anoOuEdicao: 'Scope 3 Standard',
+    tipo: 'Internacional',
+    linkExterno: 'https://ghgprotocol.org/standards/scope-3-standard',
+  },
+  {
+    id: 'iso-14064-1',
+    sigla: 'ISO 14064-1',
+    nome: 'Gases de Efeito Estufa — Especificação e Orientação para Inventários Organizacionais',
+    organizacao: 'International Organization for Standardization (ISO)',
+    foco: 'Quantificação e relato de emissões diretas e remoções/evitados',
+    descricao:
+      'Norma internacional que estabelece princípios e requisitos para elaboração, desenvolvimento, gestão e relato de inventários de emissões de GEE de organizações.',
+    anoOuEdicao: 'ISO 14064-1:2018',
+    tipo: 'Internacional',
+    linkExterno: 'https://www.iso.org/standard/66453.html',
+  },
+  {
+    id: 'lei-15042',
+    sigla: 'Lei 15.042/2024',
+    nome: 'Sistema Brasileiro de Comércio de Emissões de GEE (SBCE)',
+    organizacao: 'Presidência da República / Congresso Nacional',
+    foco: 'Marco legal do mercado regulado brasileiro de emissões',
+    descricao:
+      'Marco regulatório federal que institui o SBCE, disciplinando limites de emissões, governança de relatos corporativos e critérios para instrumentos econômicos climáticos.',
+    anoOuEdicao: 'Lei Federal nº 15.042/2024',
+    tipo: 'Nacional',
+  },
+  {
+    id: 'lei-14902',
+    sigla: 'Lei 14.902/2024',
+    nome: 'Programa Mobilidade Verde e Inovação (Programa MOVER)',
+    organizacao: 'Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC)',
+    foco: 'Descarbonização veicular do berço ao túmulo e reciclabilidade',
+    descricao:
+      'Legislação federal que estabelece requisitos de sustentabilidade, medição berço-ao-túmulo da pegada de carbono automotiva e estímulos à circularidade na cadeia automotiva nacional.',
+    anoOuEdicao: 'Lei Federal nº 14.902/2024',
+    tipo: 'Nacional',
+  },
+  {
+    id: 'ifrs-s1-s2',
+    sigla: 'IFRS S1 / S2',
+    nome: 'Normas Globais de Divulgação de Sustentabilidade e Clima',
+    organizacao: 'International Sustainability Standards Board (ISSB)',
+    foco: 'Relato financeiro de riscos climáticos e descarbonização de escopo 1, 2 e 3',
+    descricao:
+      'Diretrizes contábeis globais adotadas pelo marco regulatório brasileiro (CVM) para reporte auditável de riscos, metas e indicadores climáticos em cadeias produtivas.',
+    anoOuEdicao: 'IFRS S1 / IFRS S2 (2023)',
+    tipo: 'Internacional',
+    linkExterno: 'https://www.ifrs.org/issued-standards/sustainability-reporting-standards/',
+  },
+  {
+    id: 'pnrs',
+    sigla: 'PNRS — Lei 12.305/2010',
+    nome: 'Política Nacional de Resíduos Sólidos',
+    organizacao: 'Governo Federal / MMA',
+    foco: 'Logística reversa, rastreabilidade MTR/SINIR e responsabilidade compartilhada',
+    descricao:
+      'Marco legal de gestão de resíduos sólidos no Brasil, estabelecendo logística reversa obrigatória, custódia documental com MTR e tratamento prioritário de resíduos e peças pós-consumo.',
+    anoOuEdicao: 'Lei Federal nº 12.305/2010',
+    tipo: 'Nacional',
+  },
+  {
+    id: 'dm-orb-001',
+    sigla: 'Diretriz Técnica DM-ORB-001 v1.1',
+    nome: 'Documento Metodológico Interno de Quantificação e Custódia dMRV',
+    organizacao: 'Comitê Técnico Metodológico Orbis Protocol',
+    foco: 'Arquitetura de cálculo, critérios de elegibilidade, incerteza em quadratura e deduplicação',
+    descricao:
+      'Especificação técnica protegida que rege a apuração matemática, snapshots criptográficos prospectivos, fronteiras berço-ao-portão e regras de integridade pericial aplicadas a cada lote.',
+    anoOuEdicao: 'Versão 1.1 (Norma Restrita)',
+    tipo: 'Setorial',
+    linkInterno: '/norma-dm-orb-001',
+  },
+]
 
 export default function FatoresEmissaoPublicoPage() {
-  const [abaAtiva, setAbaAtiva] = useState<'documento' | 'catalogo' | 'calculadora'>('documento')
-  const [busca, setBusca] = useState('')
-  const [categoriaFiltro, setCategoriaFiltro] = useState<string>('todos')
-  const [tierFiltro, setTierFiltro] = useState<string>('todos')
-  const [mostrarAr6Gwp, setMostrarAr6Gwp] = useState(false)
-  const [copiouChave, setCopiouChave] = useState(false)
-
-  // Itens filtrados para o catálogo
-  const fatoresFiltrados = useMemo(() => {
-    return CATALOGO_FATORES_CO2E.filter((item) => {
-      if (categoriaFiltro !== 'todos' && item.categoria !== categoriaFiltro) {
-        return false
-      }
-      if (tierFiltro !== 'todos' && item.tierIncerteza !== tierFiltro) {
-        return false
-      }
-      if (!busca.trim()) return true
-      const termo = busca.toLowerCase().trim()
-      return (
-        item.nomeMaterial.toLowerCase().includes(termo) ||
-        item.descricao.toLowerCase().includes(termo) ||
-        item.fonteOficial.toLowerCase().includes(termo) ||
-        item.normaPadrao.toLowerCase().includes(termo) ||
-        item.unidade.toLowerCase().includes(termo)
-      )
-    })
-  }, [busca, categoriaFiltro, tierFiltro])
-
-  const categorias = [
-    { id: 'todos', label: 'Todos os Fatores', icon: Layers },
-    { id: 'cdv_materiais', label: 'Desmontagem CDV (DPP)', icon: Recycle },
-    { id: 'combustiveis', label: 'Combustíveis (Escopo 1)', icon: Flame },
-    { id: 'energia_eletrica', label: 'Eletricidade (Escopo 2)', icon: Zap },
-    { id: 'transporte_logistica', label: 'Transporte & Frete', icon: Truck },
-    { id: 'utilidades_residuos', label: 'Utilidades & Insetting', icon: Sparkles },
-  ]
-
-  const formatarValorFator = (item: FatorCatalogoItem) => {
-    const valor = item.valorFator
-    if (valor === 0) return '0,00'
-    if (Math.abs(valor) < 0.01) {
-      return valor.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })
-    }
-    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 })
-  }
-
-  // Camada 1: CSV Público Resumido (fator, unidade, fonte, incerteza — sem contextos de aplicação e fallbacks do motor)
-  const exportarCatalogoCsvResumido = () => {
-    const headers = [
-      'Material / Insumo',
-      'Fator CO2e',
-      'Unidade',
-      'Fonte Oficial',
-      'Nível de Incerteza',
-      'Incerteza Padrão (%)',
-      'Status da Fonte',
-    ]
-
-    const linhas = CATALOGO_FATORES_CO2E.map((f) => [
-      `"${f.nomeMaterial.replace(/"/g, '""')}"`,
-      `"${f.valorFator}"`,
-      `"${f.unidade}"`,
-      `"${f.fonteOficial.replace(/"/g, '""')}"`,
-      `"${f.tierIncerteza}"`,
-      `"±${f.incertezaPct}%"`,
-      `"${f.pendenteVerificacao ? 'Pendente de verificação de fonte' : 'Curado dMRV'}"`,
-    ])
-
-    const csvContent =
-      'data:text/csv;charset=utf-8,\uFEFF' +
-      [headers.join(';'), ...linhas.map((l) => l.join(';'))].join('\n')
-
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
-    link.setAttribute(
-      'download',
-      `orbis_catalogo_fatores_resumido_${METADADOS_CATALOGO_FATORES.versao}.csv`,
-    )
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  const copiarChaveDedupExemplo = () => {
-    navigator.clipboard?.writeText('9BWAA05U0DP***204_PART-GOL-CAPO-01_PR-BX-2026-991204')
-    setCopiouChave(true)
-    setTimeout(() => setCopiouChave(false), 2000)
-  }
-
   return (
     <div className="min-h-screen py-8 md:py-14 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-10">
-        {/* Top Breadcrumb & Status Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(244,247,250,0.08)] pb-4">
-          <div className="w-full sm:w-auto">
-            <BreadcrumbOrbis
-              items={[
-                { label: 'Protocolo', href: '/protocolo' },
-                { label: 'Documento Metodológico DM-ORB-001 v1.2' },
-              ]}
-            />
-          </div>
-
+        {/* Top Breadcrumb */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+          <BreadcrumbOrbis
+            items={[
+              { label: 'Protocolo', href: '/protocolo' },
+              { label: 'Métricas e Referências' },
+            ]}
+          />
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-[#12B886]/15 border border-[#12B886]/40 text-[#12B886] text-[11px] font-mono font-bold flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#12B886] animate-pulse" />
-              {VERSAO_METODOLOGIA_CDV_V2} • VIGÊNCIA ATIVA
+            <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-[#059669]/15 border border-emerald-300 dark:border-[#059669]/40 text-emerald-800 dark:text-[#12B886] text-xs font-mono font-bold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-[#12B886] animate-pulse" />
+              FONTES PRIMÁRIAS CANÔNICAS
             </span>
-            <button
-              onClick={exportarCatalogoCsvResumido}
-              className="px-3 py-1 rounded-lg bg-[#16202B] hover:bg-[#12B886]/20 border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA] hover:text-[#12B886] transition-all flex items-center gap-1.5 font-mono"
-              title="Baixar fatores públicos resumidos em CSV"
-            >
-              <Download className="w-3.5 h-3.5 text-[#12B886]" />
-              <span>Exportar CSV Público</span>
-            </button>
           </div>
         </div>
 
-        {/* HERO INSTITUCIONAL DO DOCUMENTO METODOLÓGICO */}
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-white via-slate-50 to-white dark:from-[#0E1A2E] dark:via-[#111827] dark:to-[#0E1A2E] border border-emerald-300 dark:border-[#059669]/40 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#12B886]/5 rounded-full blur-3xl pointer-events-none" />
+        {/* HERO INSTITUCIONAL */}
+        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-white via-slate-50 to-white dark:from-[#0E1A2E] dark:via-[#111827] dark:to-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="max-w-4xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-mono font-bold uppercase tracking-wider">
-              <Scale className="w-3.5 h-3.5 text-[#12B886]" />
-              <span>Documento Normativo Público • DM-ORB-001 v1.2</span>
+          <div className="max-w-4xl space-y-5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#12B886] text-xs font-mono font-bold uppercase tracking-wider">
+              <Scale className="w-3.5 h-3.5" />
+              <span>Governança Metodológica & Transparência Técnica</span>
             </div>
-            <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#F4F7FA] tracking-tight">
-              Metodologia de Quantificação de Emissões Evitadas na Desmontagem Veicular
+
+            <h1 className="font-heading font-black text-3xl sm:text-5xl text-slate-900 dark:text-[#F8FAFC] tracking-tight">
+              Métricas e Referências
             </h1>
 
-            <p className="text-base sm:text-lg text-[#12B886] font-medium leading-relaxed">
-              Especificação técnica formal do motor dMRV Orbis v2: critérios de elegibilidade,
-              equações de baseline, regime de incerteza em quadratura, segregação fóssil/biogênica e
-              deduplicação inter-CDVs.
+            <p className="text-base sm:text-lg text-emerald-800 dark:text-[#12B886] font-medium leading-relaxed">
+              A Orbis Protocol aplica fatores de emissão de fontes primárias reconhecidas
+              internacionalmente e alinhadas às diretrizes regulatórias e normativas mais rigorosas
+              de descarbonização.
             </p>
 
-            <p className="text-sm sm:text-base text-[#93A3B5] leading-relaxed">
-              O presente documento rege as apurações públicas em passaportes digitais de produto
-              (DPP), dossiês de elegibilidade do Programa MOVER (Lei nº 14.902/2024) e laudos
-              periciais com ART/RRT. Todo cálculo executado pela API e motor segue estritamente as
-              fórmulas, prazos de snapshot e travas aqui estabelecidos.
+            <p className="text-sm sm:text-base text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+              Os fatores aplicados a cada lote são divulgados exclusivamente no resultado do
+              Verificador, vinculados ao hash SHA-256 do documento e congelados no momento do
+              processamento (snapshot prospectivo imutável). Essa sistemática assegura
+              rastreabilidade pericial ponta a ponta sem divulgar réguas descontextualizadas da
+              custódia documental.
             </p>
 
-            {/* Metadados Técnicos em Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A1628]/80 border border-slate-200 dark:border-slate-800">
-                <span className="text-[10px] uppercase font-mono text-[#93A3B5] flex items-center gap-1">
-                  <FileCheck className="w-3 h-3 text-[#12B886]" />
-                  Código Metodológico
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3">
+              <div className="p-3.5 rounded-xl bg-white dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-[11px] uppercase font-mono text-slate-500 dark:text-[#94A3B8] flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886]" />
+                  Fontes Primárias
                 </span>
-                <span className="font-mono text-xs sm:text-sm font-bold text-[#12B886]">
-                  {VERSAO_METODOLOGIA_CDV_V2}
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#0A0E12]/80 border border-[rgba(244,247,250,0.08)]">
-                <span className="text-[10px] uppercase font-mono text-[#93A3B5] flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-[#D9B36C]" />
-                  Data de Vigência
-                </span>
-                <span className="font-mono text-xs font-bold text-[#D9B36C]">
-                  {METADADOS_CATALOGO_FATORES.dataVigencia}
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-[#F8FAFC] block mt-1">
+                  Reconhecidas Internacionalmente
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#0A0E12]/80 border border-[rgba(244,247,250,0.08)]">
-                <span className="text-[10px] uppercase font-mono text-[#93A3B5] flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-[#3B82F6]" />
-                  Regra de Snapshot
+              <div className="p-3.5 rounded-xl bg-white dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-[11px] uppercase font-mono text-slate-500 dark:text-[#94A3B8] flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-blue-600 dark:text-[#3B82F6]" />
+                  Vínculo Criptográfico
                 </span>
-                <span className="font-mono text-xs font-bold text-[#3B82F6]">
-                  Prospectiva Imutável
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-[#F8FAFC] block mt-1">
+                  Hash SHA-256 por Lote
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#0A0E12]/80 border border-[rgba(244,247,250,0.08)]">
-                <span className="text-[10px] uppercase font-mono text-[#93A3B5] flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-[#F4F7FA]" />
-                  Status Regulatório
+              <div className="p-3.5 rounded-xl bg-white dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-[11px] uppercase font-mono text-slate-500 dark:text-[#94A3B8] flex items-center gap-1.5">
+                  <FileCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886]" />
+                  Instrumento Pericial
                 </span>
-                <span className="font-mono text-xs font-bold text-[#F4F7FA]">SBCE / MOVER</span>
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-[#F8FAFC] block mt-1">
+                  Atestado Orbis (com ART/RRT)
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* NAVEGAÇÃO ENTRE ABAS PRINCIPAIS */}
-        <div className="flex border-b border-[rgba(244,247,250,0.1)] gap-2 overflow-x-auto">
-          <button
-            onClick={() => setAbaAtiva('documento')}
-            className={`px-4 py-3 text-xs sm:text-sm font-heading font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
-              abaAtiva === 'documento'
-                ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Texto Integral DM-ORB-001 v1.2</span>
-          </button>
-          <button
-            onClick={() => setAbaAtiva('catalogo')}
-            className={`px-4 py-3 text-xs sm:text-sm font-heading font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
-              abaAtiva === 'catalogo'
-                ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
-            }`}
-          >
-            <Database className="w-4 h-4" />
-            <span>Catálogo Curado de Fatores ({CATALOGO_FATORES_CO2E.length})</span>
-          </button>
-
-          <button
-            onClick={() => setAbaAtiva('calculadora')}
-            className={`px-4 py-3 text-xs sm:text-sm font-heading font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
-              abaAtiva === 'calculadora'
-                ? 'border-[#12B886] text-[#12B886]'
-                : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA]'
-            }`}
-          >
-            <Calculator className="w-4 h-4" />
-            <span>Apêndices & Memória de Cálculo (DEMO)</span>
-          </button>
-        </div>
-
-        {/* ========================================================= */}
-        {/* ABA 1: TEXTO INTEGRAL DO DOCUMENTO METODOLÓGICO DM-ORB-001 v1.2 */}
-        {/* ========================================================= */}
-        {abaAtiva === 'documento' && (
-          <div className="space-y-10">
-            {/* ÍNDICE RÁPIDO DO DOCUMENTO */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-[#12B886] font-bold block mb-3">
-                Sumário do Documento Metodológico DM-ORB-001 v1.2
+        {/* AVISO DISCRETO: CATÁLOGO PERICIAL COM VALORES É RESTRITO */}
+        <div className="p-6 rounded-2xl bg-slate-100 dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC]">
+              <Lock className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
+              <span className="font-heading font-bold text-sm">
+                Catálogo Pericial com Valores Numéricos é Restrito
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                <a
-                  href="#sec-1"
-                  className="p-2 rounded-lg bg-slate-100 dark:bg-[#111827] hover:bg-slate-200 dark:hover:bg-[#111827]/80 text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§1</span>
-                  <span className="truncate">Objetivo, Gatilho SBCE & Art. 6</span>
-                </a>
-                <a
-                  href="#sec-3a"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§3-A</span>
-                  <span className="truncate">5 Condições de Aplicabilidade</span>
-                </a>
-                <a
-                  href="#sec-51"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§5.1</span>
-                  <span className="truncate">Classificação de Materiais</span>
-                </a>
-                <a
-                  href="#sec-53"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§5.3</span>
-                  <span className="truncate">Dedup Inter-CDVs & HTTP 409</span>
-                </a>
-                <a
-                  href="#sec-54"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§5.4</span>
-                  <span className="truncate">
-                    Reivindicação Única & Vedação Dupla Contabilidade
-                  </span>
-                </a>
-                <a
-                  href="#sec-61"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§6.1</span>
-                  <span className="truncate">Refrigerantes R-134a, R-1234yf & GWP AR6</span>
-                </a>
-                <a
-                  href="#sec-63-7"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§6.3–7</span>
-                  <span className="truncate">Metodologia Protegida (Camada 2)</span>
-                </a>
-                <a
-                  href="#sec-8"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§8</span>
-                  <span className="truncate">Registro Verificável de Custódia</span>
-                </a>
-                <a
-                  href="#sec-9"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§9</span>
-                  <span className="truncate">Atestado Orbis vs Certificadora VVB</span>
-                </a>
-                <a
-                  href="#sec-10"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§10</span>
-                  <span className="truncate">Poder de Ajuste & Não-Retroatividade</span>
-                </a>
-                <a
-                  href="#apendice-b"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>Ap. B</span>
-                  <span className="truncate">Citação de Fontes & Status</span>
-                </a>
-                <a
-                  href="#apendice-e"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>Ap. E</span>
-                  <span className="truncate">Glossário das 8 Métricas</span>
-                </a>
-              </div>
             </div>
-
-            {/* SEÇÃO 1: OBJETIVO E ESCOPO RESTROITO */}
-            <section
-              id="sec-1"
-              className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <BookOpen className="w-4 h-4" />
-                <span>Seção 1 • Fundamentação e Escopo Normativo</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §1. Objetivo, Escopo Restrito e Cláusula de Gatilho SBCE / Artigo 6
-              </h2>
-              <div className="space-y-3 text-sm text-[#93A3B5] leading-relaxed">
-                <p>
-                  <strong className="text-[#F4F7FA]">1.1 Objetivo:</strong> O presente documento
-                  metodológico estabelece os critérios objetivos, premissas de conservadorismo e
-                  equações matemáticas para quantificação, registro e monitoramento dMRV (digital
-                  Measurement, Reporting and Verification) de emissões de gases de efeito estufa
-                  (GEE) evitadas decorrentes da recuperação, desmontagem técnica e reinserção de
-                  peças e materiais automotivos em Centros de Desmontagem Veicular (CDVs)
-                  credenciados.
-                </p>
-                <p>
-                  <strong className="text-[#F4F7FA]">1.2 Escopo Restrito:</strong> A aplicação desta
-                  metodologia é estritamente restrita a fluxos de desmontagem que satisfaçam
-                  cumulativamente a totalidade das condições de aplicabilidade estabelecidas no
-                  §3-A. Nenhum lote, componente ou material que descumpra qualquer dos requisitos do
-                  §3-A será admitido pelo motor de cálculo ou receberá chancela dMRV.
-                </p>
-                <div className="p-4 rounded-xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/40 space-y-2">
-                  <div className="flex items-center gap-2 text-[#D9B36C] font-mono text-xs font-bold uppercase">
-                    <ShieldAlert className="w-4 h-4 shrink-0" />
-                    <span>
-                      Cláusula de Gatilho Regulatório — SBCE e Artigo 6 do Acordo de Paris
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    <strong className="text-[#F4F7FA]">1.3 Cláusula de Gatilho:</strong> Os
-                    registros gerados sob este documento constituem infraestrutura de prova
-                    documental e comprovação pericial de insetting circular. Em estrita observância
-                    à Lei Federal nº 15.042/2024 (Sistema Brasileiro de Comércio de Emissões de GEE
-                    — SBCE) e às diretrizes do Artigo 6 do Acordo de Paris, qualquer conversão,
-                    fungibilidade externa ou transação destes registros como créditos de
-                    descarbonização ou permissões de emissão fica{' '}
-                    <strong className="text-[#D9B36C]">
-                      expressamente condicionada à validação e verificação independente por
-                      Organismo de Verificação e Validação (VVB) credenciado
-                    </strong>{' '}
-                    pela autoridade climática nacional competente ou entidade de acreditação oficial
-                    (INMETRO / UNFCCC).
-                  </p>
-                </div>
-
-                {/* NOTA 1.4: Bateria de Tração Fora de Escopo v2.1 */}
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-blue-300 dark:border-[#2563EB]/40 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#3B82F6] uppercase flex items-center gap-1.5">
-                      <ShieldAlert className="w-4 h-4 shrink-0 text-[#3B82F6]" />
-                      §1.4 Delimitação de Escopo • Pack de Baterias de Tração Li-ion (NMC / LFP)
-                      Fora de Escopo v2.1
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-[#3B82F6]/15 text-[#3B82F6] font-mono text-[10px] font-bold">
-                      FORA DE ESCOPO v2.1
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    <strong className="text-[#F4F7FA]">
-                      Tratamento como Informação e Custódia (Sem Fator de Carbono):
-                    </strong>{' '}
-                    Packs de baterias de tração de veículos elétricos e híbridos (químicas NMC, LFP
-                    e congêneres) estão{' '}
-                    <strong className="text-[#D9B36C]">
-                      estritamente fora do escopo de cálculo de emissão evitada da versão 2.1
-                    </strong>{' '}
-                    do DM-ORB-001. A plataforma trata esses componentes exclusivamente como{' '}
-                    <strong className="text-[#F4F7FA]">
-                      massa residual com segregação obrigatória e cadeia de custódia
-                    </strong>
-                    , com fator fixado em{' '}
-                    <code className="text-[#12B886] font-mono">0,00 kgCO₂e/kg</code>.
-                  </p>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    <strong className="text-[#F4F7FA]">
-                      Fundamentação Técnica e Variabilidade da Literatura:
-                    </strong>{' '}
-                    A pegada de fabricação de baterias Li-ion na literatura acadêmica varia de{' '}
-                    <strong className="text-[#D9B36C]">~28 a ~118 kgCO₂e/kWh</strong> conforme a
-                    química da célula (LFP vs. NMC) e a matriz energética do país de manufatura
-                    (Chalmers University of Technology 2024; o ICCT utiliza 175 kgCO₂e/kWh como
-                    estimativa histórica central para frotas de ciclo misto). Traduzir essa
-                    amplitude em um fator por quilograma de material recuperado exigiria metodologia
-                    de alocação de massa e balanço celular que ainda não possui norma de consenso
-                    verificada para desmanches.
-                  </p>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    <strong className="text-[#F4F7FA]">
-                      Conexão Regulatória PNRS e Resíduo Perigoso:
-                    </strong>{' '}
-                    Baterias são classificadas como resíduo perigoso Classe I segundo a{' '}
-                    <strong className="text-[#F4F7FA]">ABNT NBR 10004</strong> e pilhas/baterias
-                    constituem setor de logística reversa prioritário mandatório pelo{' '}
-                    <strong className="text-[#F4F7FA]">
-                      artigo 33 da Lei Federal nº 12.305/2010 (PNRS)
-                    </strong>
-                    . A plataforma Orbis opera o módulo de logística reversa e custódia documental
-                    &quot;em estruturação&quot; para registro do MTR e destinação a recicladores
-                    credenciados, sem promessa de emissão de créditos ou compromisso com prazos
-                    regulatórios externos.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 3-A: 5 CONDIÇÕES DE APLICABILIDADE */}
-            <section
-              id="sec-3a"
-              className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Seção 3-A • Critérios Mandatórios de Elegibilidade</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §3-A. As Cinco Condições Cumulativas de Aplicabilidade
-              </h2>
-              <p className="text-sm text-[#93A3B5]">
-                O motor Orbis v2 executa checagem algorítmica destas 5 condições antes de qualquer
-                confirmação de claim:
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                {/* Condição 1 */}
-                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#12B886]">CONDIÇÃO (i)</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
-                      Mandatória
-                    </span>
-                  </div>
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                    Destinação Documentada Obrigatória
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Para que uma peça tenha seu claim classificado como{' '}
-                    <strong className="text-[#12B886]">CONFIRMADO</strong>, é obrigatória a
-                    vinculação de evidência fiscal e ambiental de saída definitiva — NF-e de venda
-                    comercial (chave de 44 dígitos) ou Manifesto de Transporte de Resíduos
-                    (MTR/SINIR). Peças em estoque permanecem como{' '}
-                    <strong className="text-[#D9B36C]">CLAIM POTENCIAL</strong> e são segregadas do
-                    saldo líquido confirmado.
-                  </p>
-                </div>
-
-                {/* Condição 2 */}
-                <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#12B886]">
-                      CONDIÇÃO (ii)
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
-                      Massa &gt; 1%
-                    </span>
-                  </div>
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                    Dado Medido para Itens Relevantes
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Todo componente cuja massa individual represente mais de{' '}
-                    <strong className="text-[#F4F7FA]">1,0% da massa total do lote</strong> deve
-                    obrigatoriamente possuir medição direta de massa via instrumento calibrado
-                    (balança rastreável com certificado metrológico válido) associado à evidência
-                    fotográfica ou tara fiscal.
-                  </p>
-                </div>
-
-                {/* Condição 3 */}
-                <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#12B886]">
-                      CONDIÇÃO (iii)
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
-                      Conservadorismo
-                    </span>
-                  </div>
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                    Conservadorismo em Toda Direção Incerta
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Havendo dúvida na identificação de liga, especificação de polímero ou fronteira
-                    de projeto, o motor aplica compulsoriamente a alternativa de{' '}
-                    <strong className="text-[#F4F7FA]">menor benefício de carbono</strong> (piso de
-                    emissão evitada) e{' '}
-                    <strong className="text-[#F4F7FA]">
-                      maior penalidade de emissões de projeto (PE)
-                    </strong>
-                    , eliminando o risco de inflação metodológica.
-                  </p>
-                </div>
-
-                {/* Condição 4 */}
-                <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#12B886]">
-                      CONDIÇÃO (iv)
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
-                      Anti-Duplicidade
-                    </span>
-                  </div>
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                    Vedação Absoluta de Dupla Contagem Inter-CDVs
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    É categoricamente vedada a coexistência de dois claims ativos sobre o mesmo
-                    chassi e componente. A plataforma rejeita com código HTTP 409 qualquer submissão
-                    concorrente sobre veículo já atestado por outro estabelecimento.
-                  </p>
-                </div>
-
-                {/* Condição 5 (Full Width) */}
-                <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] space-y-2 md:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#12B886]">CONDIÇÃO (v)</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
-                      Fronteira ISO 14040
-                    </span>
-                  </div>
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                    Fronteira Declarada Berço-ao-Portão (Cradle-to-Gate)
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    A fronteira do sistema abrange desde a entrada do veículo sinistrado ou em fim
-                    de vida no pátio do CDV, despoluição de fluidos obrigatória (Resoluções CONAMA
-                    267/2000 e 340/2003), desmontagem, triagem, estocagem, eventual
-                    recondicionamento elétrico/mecânico até o portão de expedição comercial (gate).
-                    Emissões da fase de uso posterior pelo comprador e reciclagem pós-reúso ficam
-                    fora da fronteira imediata do DPP.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 5.1: CLASSIFICAÇÃO DE MATERIAIS */}
-            <section
-              id="sec-51"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <Recycle className="w-4 h-4" />
-                <span>Seção 5.1 • Catálogo Físico e Matriz de Materiais</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §5.1 Classificação de Materiais e Regra Conservadora para Peças Mistas
-              </h2>
-              <p className="text-sm text-[#93A3B5] leading-relaxed">
-                A taxonomia física do DM-ORB-001 v1.2 espelha exatamente a estrutura do motor de
-                cálculo v2 e da API v2 da plataforma, dividida em 5 categorias oficiais de
-                materiais:
-              </p>
-              {/* Tabela de Materiais Oficial 1:1 */}
-              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1628]">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] font-mono text-[10px] uppercase">
-                    <tr>
-                      <th className="py-3 px-4">Material (Chave API)</th>
-                      <th className="py-3 px-4">Nome Normativo</th>
-                      <th className="py-3 px-4 text-right">FE_ref (kgCO₂e/kg)</th>
-                      <th className="py-3 px-4 text-center">Incerteza u_FE</th>
-                      <th className="py-3 px-4 text-center">Tier</th>
-                      <th className="py-3 px-4">Status da Fonte</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
-                    {Object.values(FATORES_MATERIAIS_V2).map((item) => (
-                      <tr key={item.material} className="hover:bg-[#16202B]/40 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-[#12B886]">
-                          {item.material}
-                        </td>
-                        <td className="py-3 px-4 font-medium">{item.nome}</td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-[#12B886]">
-                          {item.fe_ref.toFixed(2)}
-                        </td>
-                        <td className="py-3 px-4 text-center font-mono text-[#D9B36C]">
-                          ±{(item.u_fe * 100).toFixed(1)}%
-                        </td>
-                        <td className="py-3 px-4 text-center font-mono">{item.tier}</td>
-                        <td className="py-3 px-4 text-[11px] text-[#93A3B5]">
-                          {item.pendente_verificacao ? (
-                            <span className="text-[#D9B36C] font-mono">
-                              [Pendente de verificação de fonte]
-                            </span>
-                          ) : (
-                            <span className="text-[#12B886] font-mono">Curado dMRV</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/30 space-y-2">
-                <span className="text-xs font-mono font-bold text-[#12B886] uppercase block">
-                  Regra Conservadora para Peças Mistas sem Laudo de Decomposição
-                </span>
-                <p className="text-xs text-[#93A3B5] leading-relaxed">
-                  Quando uma peça automotiva for composta por múltiplos materiais (ex.: portas com
-                  chaparia de aço e forração plástica, ou alternador com carcaça de alumínio e
-                  bobinamento de cobre) e o CDV{' '}
-                  <strong className="text-[#F4F7FA]">
-                    não apresentar laudo laboratorial ou decomposição percentual explícita
-                  </strong>{' '}
-                  no payload, o motor aplica compulsoriamente a{' '}
-                  <strong className="text-[#12B886]">
-                    regra do menor fator da composição provável
-                  </strong>{' '}
-                  (conforme executado pela função{' '}
-                  <code className="text-[#12B886] font-mono">
-                    obterFatorConservadorParaPecaMista
-                  </code>
-                  ). Por exemplo: numa peça mista entre aço (2,18) e polímeros (1,90), adota-se 1,90
-                  kgCO₂e/kg para a massa total até que haja prova em contrário.
-                </p>
-              </div>
-            </section>
-
-            {/* SEÇÃO 5.3: DEDUP INTER-CDVS */}
-            <section
-              id="sec-53"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#3B82F6] text-xs font-mono font-bold uppercase">
-                <Lock className="w-4 h-4" />
-                <span>Seção 5.3 • Integridade Criptográfica de Custódia</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §5.3 Deduplicação Inter-CDVs, Chave Canônica e Consulta Pública LGPD
-              </h2>
-              <div className="space-y-3 text-sm text-[#93A3B5] leading-relaxed">
-                <p>
-                  Para assegurar a unicidade de custódia ambiental e mitigar vetores de dupla
-                  apropriação entre estabelecimentos recicladores, a plataforma mantém a coleção
-                  pública <code className="text-[#12B886] font-mono">cdv_claims</code> indexada por
-                  uma chave de deduplicação exclusiva e determinística:
-                </p>
-
-                {/* Bloco de Chave Canônica */}
-                <div className="p-4 rounded-xl bg-blue-50 dark:bg-[#0A1628] border border-blue-200 dark:border-[#2563EB]/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono text-[#3B82F6] font-bold uppercase">
-                      Chave Canônica de Deduplicação Inter-CDV
-                    </span>
-                    <button
-                      onClick={copiarChaveDedupExemplo}
-                      className="px-2 py-1 rounded bg-[#16202B] hover:bg-[#3B82F6]/20 text-[10px] font-mono text-[#F4F7FA] flex items-center gap-1 transition-colors"
-                    >
-                      {copiouChave ? (
-                        <Check className="w-3 h-3 text-[#12B886]" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
-                      <span>{copiouChave ? 'Copiado' : 'Copiar Exemplo'}</span>
-                    </button>
-                  </div>
-                  <pre className="font-mono text-xs sm:text-sm text-emerald-700 dark:text-[#059669] bg-white dark:bg-[#111827] p-3 rounded-lg overflow-x-auto border border-slate-200 dark:border-slate-800">
-                    CHASSI + "_" + SKU + "_" + DATA_BAIXA_DETRAN
-                  </pre>
-                  <p className="text-[11px] text-[#93A3B5]">
-                    Exemplo normalizado:{' '}
-                    <code className="text-[#F4F7FA] font-mono">
-                      9BWAA05U0DP***204_PART-GOL-CAPO-01_PR-BX-2026-991204
-                    </code>
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2">
-                    <strong className="text-xs font-mono font-bold text-[#EF4444] block uppercase">
-                      Rejeição HTTP 409 CONFLITO_DE_CUSTODIA
-                    </strong>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Caso outro CDV submeta um lote contendo uma peça cujo chassi e baixa DETRAN já
-                      pertençam a um claim registrado previamente por outro CNPJ, a API v2 aborta
-                      imediatamente a gravação com o status{' '}
-                      <strong className="text-[#EF4444] font-mono">409 CONFLITO_DE_CUSTODIA</strong>
-                      , garantindo a primazia do primeiro detentor com baixa documentada.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
-                    <strong className="text-xs font-mono font-bold text-[#12B886] block uppercase">
-                      Consulta Pública e Proteção LGPD
-                    </strong>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Qualquer terceiro, comprador ou auditor pode consultar o histórico de custódia
-                      na rota pública{' '}
-                      <code className="text-[#12B886] font-mono">
-                        /backend/v2/verificador/claim/:chassi
-                      </code>
-                      . Os dados societários e cadastrais de proprietários anteriores são ofuscados
-                      em estrita observância à Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 5.4: REGRA DE GOVERNANÇA DE REIVINDICAÇÃO ÚNICA E VEDAÇÃO À DUPLA CONTABILIDADE */}
-            <section
-              id="sec-54"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-6"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <ShieldAlert className="w-4 h-4 text-[#12B886]" />
-                <span>Seção 5.4 • Governança de Reivindicação Única & Integridade dMRV</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §5.4 Regra de Governança de Reivindicação Única e Vedação à Dupla Contabilidade do
-                CO₂e Evitado
-              </h2>
-
-              <div className="space-y-5 text-sm text-[#93A3B5] leading-relaxed">
-                {/* 5.4.1 */}
-                <div className="space-y-2">
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    5.4.1 Princípio da Reivindicação Única Pelo Detentor do Lastro de Transformação
-                  </h3>
-                  <p>
-                    Cada quilograma de CO₂e classificado como &quot;evitado&quot; (burden avoided de
-                    reciclagem e reúso funcional) possui unicidade estrita de atribuição. Sob o
-                    protocolo dMRV Orbis, o benefício ambiental preliminar do material recuperado só
-                    pode ser reivindicado por uma única entidade jurídica em toda a cadeia de valor:
-                    a pessoa jurídica que detém a prova documental comprovada da transformação
-                    física ou desmontagem técnica (lote com NF-e/DANFE de saída ou MTR/SINIR cujos
-                    hashes SHA-256 e chaves de acesso de 44 dígitos estejam devidamente validados e
-                    custodiados). O detentor da custódia do lote é o único reivindicador admitido no
-                    sistema.
-                  </p>
-                </div>
-
-                {/* 5.4.2 */}
-                <div className="space-y-2">
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    5.4.2 Segregação Gerador vs. Reciclador / Processador
-                  </h3>
-                  <p>
-                    É expressamente vedada a apropriação simultânea do indicador de evitado pelo
-                    gerador originário do material/resíduo e pelo reciclador, desmanche ou
-                    processador secundário:
-                  </p>
-                  <ol className="list-decimal pl-5 space-y-1.5 text-xs sm:text-sm">
-                    <li>
-                      <strong className="text-[#F4F7FA]">Vedação ao Gerador Originário:</strong> o
-                      gerador (ex.: seguradora, frotista, montadora ou indústria descaracterizadora)
-                      que aliena ou transfere o bem inservível a terceiro não adquire o direito de
-                      reivindicar o evitado; quem aliena transfere com ele a possibilidade de
-                      reivindicação.
-                    </li>
-                    <li>
-                      <strong className="text-[#F4F7FA]">Vedação ao Processador Secundário:</strong>{' '}
-                      o reciclador ou desmanche só pode reivindicar o evitado amparado na própria
-                      prova documental de transformação (NF-e de saída ou MTR/SINIR validado), nunca
-                      na prova do gerador.
-                    </li>
-                    <li>
-                      <strong className="text-[#F4F7FA]">Identificador Único:</strong> uma mesma
-                      chave de NF-e (44 dígitos), manifesto de transporte (MTR/SINIR) ou hash
-                      SHA-256 não pode respaldar declarações de inventário duplo em quaisquer
-                      entidades.
-                    </li>
-                  </ol>
-                </div>
-
-                {/* 5.4.3 */}
-                <div className="p-5 rounded-2xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/30 space-y-2.5">
-                  <h3 className="font-heading font-bold text-base text-amber-900 dark:text-[#D9B36C] flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-[#D9B36C] shrink-0" />
-                    <span>5.4.3 Mecanismo de Bloqueio Automatizado</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-700 dark:text-[#93A3B5] leading-relaxed">
-                    Identificada colisão documental entre lotes custodiados (mesma chave de NF-e,
-                    MTR/SINIR ou hash SHA-256), a plataforma comuta o status do lote para{' '}
-                    <code className="text-rose-600 dark:text-[#EF4444] font-mono font-bold">
-                      conflito_reivindicacao
-                    </code>
-                    , zera o indicador de evitado (
-                    <strong className="text-rose-600 dark:text-[#EF4444] font-mono">
-                      0,00 kgCO₂e
-                    </strong>
-                    ) e registra justificativa na trilha de auditoria append-only,{' '}
-                    <strong className="text-slate-900 dark:text-[#F4F7FA]">
-                      PRESERVANDO integralmente o inventário físico e as emissões brutas
-                    </strong>
-                    . A reivindicação, quando admitida, é sempre sobre o evitado LÍQUIDO (aplicado o
-                    fator de conservação DF = 0,30). Reafirma-se a natureza não-creditícia do
-                    indicador: o CO₂e evitado é métrica de impacto preliminar, sem validação
-                    externa, e não constitui ativo negociável ou crédito de carbono.
-                  </p>
-                </div>
-
-                {/* 5.4.4 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                    5.4.4 Limitação Declarada
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    A checagem automatizada atua sobre identificadores documentais exatos (chave de
-                    NF-e de 44 dígitos, hash SHA-256, MTR/SINIR). Rateio fracionado de massa entre
-                    gerador e processador na mesma cadeia não é detectável automaticamente e
-                    constitui procedimento de auditoria pericial externa (ART/RRT).
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 6.1: FATORES E REFRIGERANTES R-134a & R-1234yf */}
-            <section
-              id="sec-61"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <Sparkles className="w-4 h-4" />
-                <span>Seção 6.1 • Gases de Efeito Estufa e Drenagem de Climatização</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §6.1 Fatores Consolidados em CO₂e e Tratamento Mandatório do R-134a e R-1234yf
-              </h2>
-              <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
-                <p>
-                  <strong className="text-[#F4F7FA]">Consolidação em CO₂e sem Duplo GWP:</strong> Os
-                  fatores aplicados pelo motor já consolidam a cesta de GEE da norma (CO₂, CH₄, N₂O)
-                  expressos diretamente em quilogramas de CO₂ equivalente (kgCO₂e), sendo
-                  expressamente vedada a multiplicação repetida ou sobreposição de taxas de
-                  aquecimento global em etapas subsequentes da cadeia.
-                </p>
-
-                {/* Grade dos dois refrigerantes veiculares oficiais */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* R-134a */}
-                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/40 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-[#12B886] uppercase">
-                        R-134a (HFC-134a) • Veículos até ~2017
-                      </span>
-                      <span className="font-mono text-[11px] text-[#D9B36C]">
-                        GWP = {GWP_AR6_R134A}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Fluido tradicional de ar-condicionado veicular. O DM-ORB-001 v1.2 adota o
-                      valor oficial do{' '}
-                      <strong className="text-[#F4F7FA]">
-                        IPCC AR6 WG1 Capítulo 7, Tabela 7.15 (GWP100 = 1.530 com feedbacks de
-                        carbono)
-                      </strong>
-                      . Fator de deslocamento DF_refrig = {DF_REFRIGERANTE_PADRAO.toFixed(1)}.
-                    </p>
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-emerald-700 dark:text-[#059669]">
-                      Evitado = m_R134a × 1.530 × DF_refrig
-                    </div>
-                  </div>
-
-                  {/* R-1234yf */}
-                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border border-blue-300 dark:border-[#2563EB]/40 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-[#3B82F6] uppercase">
-                        R-1234yf (HFO-1234yf) • Veículos pós-~2017
-                      </span>
-                      <span className="font-mono text-[11px] text-[#D9B36C]">
-                        GWP = {GWP_AR6_R1234YF.toFixed(2)} (IPCC AR6)
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Padrão automotivo global moderno (hidrofluoroolefina) introduzido para
-                      substituir o HFC-134a. Fonte oficial:{' '}
-                      <strong className="text-[#F4F7FA]">
-                        IPCC AR6 WG1 Capítulo 7, Tabela 7.SM.7 (HFO-1234yf, CF₃CF=CH₂, Lifetime
-                        0,033 anos; GWP100 = 0,501 com feedbacks; adotado valor conservador de 0,50
-                        kgCO₂e/kg)
-                      </strong>
-                      . Literatura cita GWP &lt; 1; adota-se a ponta conservadora documentada.
-                    </p>
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-blue-700 dark:text-[#60A5FA]">
-                      Evitado = m_R1234yf × 0,50 × DF_refrig
-                    </div>
-                  </div>
-                </div>
-
-                {/* Nota de aplicação e disciplina regulatória */}
-                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-amber-200 dark:border-[#D9B36C]/30 text-xs text-slate-600 dark:text-[#94A3B8]">
-                  <strong className="text-[#D9B36C]">
-                    Declaração Mandatória de Subestimação Conservadora:
-                  </strong>{' '}
-                  Caso o lote veicular não apresente comprovante de drenagem técnica (com peso e MTR
-                  de recolhimento), o benefício do gás refrigerante é fixado em{' '}
-                  <strong className="text-[#F4F7FA]">0,00 kgCO₂e</strong> com a declaração expressa:
-                  <em className="text-[#D9B36C] block mt-1">
-                    &quot;Refrigerante não capturado no gate de despoluição — evitado subestimado
-                    por conservativeness.&quot;
-                  </em>
-                  <span className="block mt-2 text-[11px] text-[#93A3B5]">
-                    Nota regulatória: A inserção do R-1234yf e do R-134a segue estritamente como
-                    fator de catálogo do motor dMRV sob o regime do DM-ORB-001 v1.2, tendo por
-                    fundamento técnico as Resoluções CONAMA nº 267/2000 e nº 340/2003 (recolhimento,
-                    acondicionamento e destinação de fluidos frigoríficos automotivos). É
-                    terminantemente vedada a promessa de créditos de carbono adicionais sobre esses
-                    fluidos além da infraestrutura probatória documental já estabelecida. Fluidos de
-                    HVAC industrial (como R-407C e R-410A) permanecem documentados como misturas
-                    específicas sob demanda e entram no inventário apenas com EPD/laudo verificado
-                    por instalação.
-                  </span>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 6.3 & 7: METODOLOGIA INTEGRAL BLINDADA (CAMADA 2) */}
-            <section
-              id="sec-63-7"
-              className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border-2 border-emerald-500/40 shadow-lg space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <Lock className="w-4 h-4 text-[#12B886]" />
-                <span>Seções 6.3 & 7 • Metodologia Completa & Regime Matemático</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-[#F4F7FA]">
-                §6.3 e §7. Equações de Baseline, Regime de Incerteza e Regras Prescritivas
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
-                Em conformidade com a arquitetura de 3 camadas da governança Orbis, os valores de
-                fatores, unidades, fontes primárias e níveis de incerteza permanecem públicos (aba
-                Catálogo acima). A formulação matemática integral (equações de baseline do motor v2,
-                dedução de PE, regime de incerteza em quadratura e tiers detalhados) integra a norma
-                oficial protegida.
-              </p>
-
-              {/* Bloco Discreto CTA para Camada 2 */}
-              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-[#0A1628] border border-emerald-200 dark:border-[#059669]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <FileCheck className="w-4 h-4 text-emerald-700 dark:text-[#12B886]" />
-                    <span className="font-heading font-bold text-sm text-slate-900 dark:text-[#F4F7FA]">
-                      Documento Completo da Norma DM-ORB-001 v1.1
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 dark:text-[#93A3B5]">
-                    Acesse a íntegra metodológica com cadastro gratuito e aceite do termo de
-                    confidencialidade.
-                  </p>
-                </div>
-                <Link
-                  to="/norma-dm-orb-001"
-                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs font-mono flex items-center justify-center gap-2 transition-all shadow-sm shrink-0"
-                >
-                  <span>Acessar Norma Completa</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </section>
-
-            {/* SEÇÃO 8: REGISTRO VERIFICÁVEL DE CUSTÓDIA */}
-            <section
-              id="sec-8"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <Database className="w-4 h-4" />
-                <span>Seção 8 • Vocabulário Oficial e Arquitetura de Registro</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §8. Registro Verificável de Custódia — dMRV Orbis
-              </h2>
-              <div className="space-y-3 text-sm text-[#93A3B5] leading-relaxed">
-                <p>
-                  <strong className="text-[#F4F7FA]">Vocabulário Técnico Padronizado:</strong> A
-                  denominação oficial do registro emitido pela plataforma é{' '}
-                  <strong className="text-[#12B886]">
-                    &quot;Registro Verificável de Custódia — dMRV Orbis&quot;
-                  </strong>
-                  . Fica vedada a utilização de termos como &quot;Certificado de Carbono&quot; ou
-                  &quot;Crédito Registrado&quot; na ausência de processo de validação por VVB
-                  externo.
-                </p>
-                <p>
-                  Cada lote processado gera um registro público imutável contendo o selo canônico (
-                  <code className="text-[#12B886] font-mono">PR-SEAL-AAAA-NNNNNN</code>), o hash
-                  SHA-256 da cadeia de custódia, a identificação criptográfica da baixa DETRAN e o
-                  status de confirmação documental do claim.
-                </p>
-              </div>
-            </section>
-
-            {/* SEÇÃO 9: ATESTADO ORBIS vs VVB CREDENCIADO */}
-            <section
-              id="sec-9"
-              className="p-8 rounded-3xl bg-[#111820] border border-[#12B886]/30 space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Seção 9 • Governança, Papéis e Delimitação Institucional</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §9. Não Somos Certificadora: Atestado de Conformidade Orbis (com ART/RRT) ≠
-                Verificação ISO 14064-3
-              </h2>
-              <div className="space-y-3 text-sm text-[#93A3B5] leading-relaxed">
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#EF4444]/40 text-xs space-y-2">
-                  <div className="flex items-center gap-2 text-[#EF4444] font-mono font-bold uppercase">
-                    <ShieldAlert className="w-4 h-4" />
-                    <span>Delimitação Regulatória Expressa</span>
-                  </div>
-                  <p className="leading-relaxed text-[#93A3B5]">
-                    <strong className="text-[#F4F7FA]">
-                      A Orbis Protocol NÃO é entidade certificadora climática
-                    </strong>
-                    . A plataforma atua exclusivamente como infraestrutura tecnológica de prova
-                    documental, telemetria dMRV e custódia criptográfica de dados de desmontagem e
-                    descarbonização.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
-                    <span className="text-xs font-mono font-bold text-[#12B886] uppercase block">
-                      Atestado de Conformidade Orbis (com ART/RRT)
-                    </span>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Instrumento técnico-pericial assinado por perito ou engenheiro legalmente
-                      habilitado junto ao respectivo Conselho de Classe (CREA/CAU/CFT), atestando a
-                      exatidão da contabilidade física de massas, o cumprimento das regras do
-                      DM-ORB-001 v1.2 e a idoneidade das notas fiscais e manifestos MTR apresentados
-                      pelo CDV.{' '}
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
-                    <span className="text-xs font-mono font-bold text-[#D9B36C] uppercase block">
-                      Verificação Externa VVB (ISO 14064-3)
-                    </span>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Auditoria de terceira parte conduzida por Organismo de Verificação e Validação
-                      (VVB) independente credenciado.{' '}
-                      <strong className="text-[#F4F7FA]">
-                        Qualquer emissão de créditos de carbono, no âmbito do SBCE ou mercado
-                        voluntário internacional, decorre exclusivamente de relatório favorável
-                        emitido por VVB independente credenciado
-                      </strong>
-                      , sendo o Atestado Orbis o substrato comprobatório da auditoria.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 10: COMPETÊNCIA DE AJUSTE E NÃO-RETROATIVIDADE */}
-            <section
-              id="sec-10"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <Lock className="w-4 h-4" />
-                <span>Seção 10 • Governança Metodológica e Segurança Jurídica</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §10. Competência de Ajuste Metodológico, Poder de Redução e Snapshot Prospectivo
-              </h2>
-              <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/40 space-y-2">
-                  <span className="text-xs font-mono font-bold text-[#D9B36C] uppercase block">
-                    Poder de Redução do Resultado Divulgado
-                  </span>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    O Comitê Técnico Metodológico da Orbis detém a prerrogativa permanente de{' '}
-                    <strong className="text-[#F4F7FA]">REDUZIR</strong> os fatores de emissão ou o
-                    resultado evitado divulgado de qualquer família de materiais, caso novos
-                    inventários de ciclo de vida (ACV) oficiais ou estudos empíricos indiquem
-                    conservadorismo insuficiente na versão vigente. O ajuste retroativo para maior é
-                    terminantemente proibido.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-2">
-                  <span className="text-xs font-mono font-bold text-[#12B886] uppercase block">
-                    Snapshot Prospectivo Imutável (Garantia de Não-Retroatividade)
-                  </span>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    O conjunto de fatores aplicado a cada peça ou lote é congelado (
-                    <em className="text-[#F4F7FA]">snapshot criptográfico</em>) no momento exato da
-                    emissão do DPP e incorporado ao hash SHA-256 do lote.
-                    <strong className="text-[#12B886]">
-                      {' '}
-                      Lotes fechados não recalculam retroativamente
-                    </strong>{' '}
-                    caso o catálogo seja atualizado no futuro, exceto na hipótese excepcional de
-                    erro material cabalmente demonstrado em processo de auditoria pericial formal.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* APÊNDICE B: CITAÇÃO DE FONTES COM STATUS EXPLÍCITO */}
-            <section
-              id="apendice-b"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#D9B36C] text-xs font-mono font-bold uppercase">
-                <BookOpen className="w-4 h-4" />
-                <span>Apêndice B • Rastreabilidade Completa de Fontes e Citações</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                Apêndice B: Citação de Fontes Oficiais e Status de Validação
-              </h2>
-              <p className="text-sm text-[#93A3B5]">
-                Em estrita observância à verdade pericial e transparência técnica da Reforma do
-                Modelo Orbis (DM-ORB-001 v1.2), a tabela abaixo discrimina a fundamentação
-                bibliográfica integral com documento, indicador, tabela, ano e página/URL pública
-                verificada para cada fator:
-              </p>
-              <div className="space-y-3 pt-2">
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Aço Laminado / Estampado: 2,18 kgCO₂e/kg (Tier 3)
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Verificado worldsteel 2025
-                    </span>
-                  </div>
-                  <p className="text-[#93A3B5]">
-                    Citação formal: worldsteel Association, &quot;Sustainability Indicators Report
-                    2025&quot;, Indicador 1a (GHG emissions intensity 2024 = 2,18 tCO₂e/t de aço
-                    bruto; Indicador 1b CO₂ intensity = 1,92 tCO₂/t). Metodologia: &quot;worldsteel
-                    CO2 data collection&quot;, média ponderada global cobrindo 51% da produção
-                    mundial (rotas BF-BOF, scrap-EAF e DRI-EAF; Escopos 1, 2 e 3 Categoria 1). URL:{' '}
-                    <a
-                      href="https://worldsteel.org/wider-sustainability/sustainability-indicators/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#12B886] underline font-mono"
-                    >
-                      https://worldsteel.org/wider-sustainability/sustainability-indicators/
-                    </a>
-                    .
-                    <span className="block mt-1 text-[#12B886]">
-                      Nota técnica de ajuste conservador: Não tendo sido identificada base
-                      brasileira oficial publicada com página que sustente 2,85, o fator foi
-                      ajustado para baixo (de 2,85 para 2,18 kgCO₂e/kg), direção estritamente
-                      conservadora em prol da integridade do claim.
-                    </span>
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Alumínio Primário Automotivo: Estruturado em Dois Cenários (Tier 3)
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Dois Cenários: Global Fallback 14,40 × Regional BR ~10,00
-                    </span>
-                  </div>
-
-                  {/* Sub-bloco Cenário 1: Global Fallback (Padrão do Motor) */}
-                  <div className="p-3 rounded-lg bg-[#111820] border border-[#12B886]/30 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-[#12B886] text-[11px]">
-                        1. Fator Global Fallback (Padrão do Motor): 14,40 kgCO₂e/kg
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] font-mono text-[9px] font-bold">
-                        DEFAULT DO MOTOR
-                      </span>
-                    </div>
-                    <p className="text-[#93A3B5] leading-relaxed">
-                      <strong className="text-[#F4F7FA]">Citação formal:</strong> International
-                      Aluminium Institute (IAI), &quot;Primary Aluminium Greenhouse Gas Emissions
-                      Intensity&quot;, emissão 2024, tabela Primary Aluminium — Total
-                      Cradle-to-Gate: eletricidade-indireta 8,5 + PFC-direto 0,9 + processo
-                      CO₂-direto 1,5 + materiais auxiliares-indireto 1,3 + energia térmica 1,6 +
-                      transporte 0,5 = <strong className="text-[#12B886]">14,4 tCO₂e/t Al</strong>{' '}
-                      (14,40 kgCO₂e/kg). URL oficial:{' '}
-                      <a
-                        href="https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity-primary-aluminium/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#12B886] underline font-mono break-all"
-                      >
-                        https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity-primary-aluminium/
-                      </a>
-                      .
-                    </p>
-                  </div>
-
-                  {/* Sub-bloco Cenário 2: Regional BR Hidrelétrica (Não-default) */}
-                  <div className="p-3 rounded-lg bg-[#111820] border border-[#D9B36C]/30 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-[#D9B36C] text-[11px]">
-                        2. Cenário Regional BR (Hidrelétrica): ~10,00 kgCO₂e/kg (Indicativo)
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded bg-[#D9B36C]/15 text-[#D9B36C] font-mono text-[9px] font-bold">
-                        NÃO-DEFAULT • CONDICIONADO A EVIDÊNCIA
-                      </span>
-                    </div>
-                    <p className="text-[#93A3B5] leading-relaxed">
-                      <strong className="text-[#F4F7FA]">Derivação e status:</strong> Derivado do
-                      gráfico indicativo por fonte de eletricidade das IAI &quot;Aluminium Carbon
-                      Footprint FAQs&quot; (hidrelétrica ~10, gás ~13, carvão ~30 tCO₂e/t). URL:{' '}
-                      <a
-                        href="https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#D9B36C] underline font-mono break-all"
-                      >
-                        https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/
-                      </a>
-                      . Valor estritamente <strong className="text-[#F4F7FA]">INDICATIVO</strong> —
-                      o IAI não publica fator regional Brasil formal em fonte aberta com
-                      página/tabela. Este cenário{' '}
-                      <strong className="text-[#D9B36C]">NÃO é o default do motor</strong>; só pode
-                      ser ativado com evidência documental própria por peça/lote (EPD de fundição ou
-                      LCI regional), em estrito cumprimento da hierarquia de fatores do §7 do
-                      DM-ORB-001 (fator específico com laudo &gt; fator oficial &gt; default).
-                    </p>
-                  </div>
-
-                  {/* Nota de Decisão do Titular */}
-                  <div className="p-2.5 rounded-lg bg-[#111820] border border-[rgba(244,247,250,0.08)] text-[11px] text-[#93A3B5]">
-                    <span className="text-[#12B886] font-bold font-mono block mb-0.5">
-                      Nota de Decisão do Titular:
-                    </span>
-                    &quot;Ancorado na produção global média IAI 2024 (fallback conservador 14,40
-                    kgCO₂e/kg); cenário regional hidrelétrico BR (~10,0, IAI FAQs indicativo)
-                    ativável somente com evidência documental própria por peça/lote.&quot; Substitui
-                    o número 16,60 anterior derivado de leitura secundária de FAQs.
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Cobre / Bobinamentos Elétricos: 4,10 kgCO₂e/kg (Tier 3)
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Verificado ICA 2024
-                    </span>
-                  </div>
-                  <p className="text-[#93A3B5]">
-                    Citação formal: International Copper Association (ICA), &quot;Global Life Cycle
-                    Assessment (LCA) and Life Cycle Inventory (LCI) Study of Refined Copper&quot;
-                    (cradle-to-gate de cobre primário refinado, média global ponderada; Tier 3,
-                    incerteza u_FE ±4,5%). Intensidade de emissão berço-ao-portão = 4,10 kgCO₂e/kg
-                    (4,10 tCO₂e/t Cu).
-                    <span className="block mt-1 text-[#12B886]">
-                      Nota de calibração: Fator auditado de 4,10 kgCO₂e/kg derivado diretamente do
-                      inventário global de ciclo de vida (LCI/LCA) da ICA para cátodos e cobre
-                      primário refinado, alinhado à ISO 14040/44 e ISO 14067 (substitui a referência
-                      provisória anterior).
-                    </span>
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Polímeros Automotivos (PP/EPDM/ABS): 1,90 kgCO₂e/kg (Tier 2)
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Verificado PlasticsEurope Eco-profiles
-                    </span>
-                  </div>
-                  <p className="text-[#93A3B5]">
-                    Citação formal: PlasticsEurope, &quot;Eco-profiles and Environmental Product
-                    Declarations of the European Plastics Industry&quot; (PCR ISO 14025, declared
-                    unit 1 kg de resina &quot;at gate&quot;, ISO 14040/14044). URL:{' '}
-                    <a
-                      href="https://plasticseurope.org/sustainability/circularity/life-cycle-thinking/eco-profiles-set/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#12B886] underline font-mono"
-                    >
-                      plasticseurope.org/.../eco-profiles-set/
-                    </a>
-                    .
-                    <span className="block mt-1 text-[#12B886]">
-                      Nota de geografia e conservadorismo: Literatura revisada apresenta faixa de
-                      1,91 a 5,70 kgCO₂e/kg por polímero. O valor de 1,90 kgCO₂e/kg corresponde
-                      estritamente à ponta inferior mais conservadora da classe (polipropileno - PP
-                      at gate). Adota-se como proxy internacional defensável perante a ausência de
-                      inventário ACV nacional homologado.
-                    </span>
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Outros Materiais (Estimativa Conservadora): 1,50 kgCO₂e/kg (Tier 1)
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Derivação Interna Conservadora
-                    </span>
-                  </div>
-                  <p className="text-[#93A3B5]">
-                    Derivação interna conservadora (procedimento metodológico sob publicação
-                    formal): piso de proteção apurado via média harmônica de materiais secundários
-                    com 25% de margem conservadora para evitar superestimação em materiais
-                    compósitos ou não discriminados na desmontagem.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Fluido Refrigerante R-134a: 1.530 kgCO₂e/kg (Tier 3)
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Oficial IPCC AR6
-                    </span>
-                  </div>
-                  <p className="text-[#93A3B5]">
-                    Citação completa: IPCC AR6 WG1 Capítulo 7, Tabela 7.15 (GWP 100 anos com
-                    feedbacks de carbono = 1.530). Fator de deslocamento DF_refrig = 1,0 quando
-                    comprovada a despoluição e destinação ambiental.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Fluido Refrigerante R-1234yf (HFO-1234yf): 0,50 kgCO₂e/kg (Tier 3)
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#12B886]/20 text-[#12B886] font-mono text-[10px]">
-                      Oficial IPCC AR6 WG1 Tab. 7.SM.7
-                    </span>
-                  </div>
-                  <p className="text-[#93A3B5]">
-                    Citação completa: IPCC AR6 WG1 Capítulo 7 Supplementary Material, Tabela 7.SM.7
-                    (Greenhouse gas lifetimes, radiative efficiencies, Global Warming Potentials:
-                    HFO-1234yf, fórmula CF₃CF=CH₂, CAS 754-12-1, Lifetime 0,033 anos; GWP100 com
-                    feedbacks = 0,501; adotado o valor conservador de 0,50 kgCO₂e/kg). Aplicação em
-                    veículos de passeio modernos pós-~2017. Fator de deslocamento DF_refrig = 1,0 na
-                    despoluição com MTR.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#3B82F6]/40 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-[#F4F7FA] font-mono">
-                      Bateria de Tração Li-ion (NMC/LFP): 0,00 kgCO₂e/kg • Fora de Escopo v2.1
-                    </strong>
-                    <span className="px-2 py-0.5 rounded bg-[#3B82F6]/20 text-[#3B82F6] font-mono text-[10px]">
-                      Custódia / PNRS Art. 33 • Sem Fator
-                    </span>
-                  </div>
-                  <p className="text-[#93A3B5]">
-                    Citação e fundamentação: Fora de escopo v2.1 — sem fator verificável; tratado
-                    como massa residual com segregação obrigatória. Pegada de fabricação varia ~28 a
-                    ~118 kgCO₂e/kWh (Chalmers 2024; ICCT referência histórica 175 kgCO₂e/kWh).
-                    Classificação de resíduo perigoso sob ABNT NBR 10004 e setor prioritário do art.
-                    33 da PNRS (Lei 12.305/2010). Não confere créditos ou frações evitadas no
-                    DM-ORB-001 v1.2.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* APÊNDICE E: GLOSSÁRIO DAS 8 MÉTRICAS */}
-            <section
-              id="apendice-e"
-              className="p-8 rounded-3xl bg-[#111820] border border-[#12B886]/30 space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <HelpCircle className="w-4 h-4" />
-                <span>Apêndice E (Novo) • Glossário Metodológico Formal</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                Apêndice E: Glossário das 8 Métricas, Unidades e Convenção de Sinal
-              </h2>
-              <p className="text-sm text-[#93A3B5]">
-                Definições inequívocas para operadores de CDVs, integradores de ERPs e peritos
-                auditores:
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                {/* Métrica 1 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#12B886]">
-                      1. Evitado Bruto (kgCO₂e)
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">
-                      Q × FE_ref × L_i × DF
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Soma teórica do benefício de deslocamento de materiais virgens de todas as peças
-                    elegíveis, antes da dedução das emissões de projeto do CDV.
-                  </p>
-                </div>
-
-                {/* Métrica 2 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#EF4444]">
-                      2. Emissão de Projeto PE (kgCO₂e)
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">Energia + Diesel</span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Emissões de Escopo 1 e 2 geradas pelo CDV na desmontagem (faturas elétricas e
-                    combustíveis de pátio), arredondadas com CEIL e rateadas proporcionalmente à
-                    massa recuperada.
-                  </p>
-                </div>
-
-                {/* Métrica 3 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#12B886]">
-                      3. Evitado Líquido (kgCO₂e)
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">max(0, Bruto − PE)</span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Resultado líquido positivo de descarbonização do lote, computado com FLOOR em 2
-                    casas decimais. Sinal adotado no motor: valor estritamente positivo (com
-                    exibição visual -kgCO₂e na interface).
-                  </p>
-                </div>
-
-                {/* Métrica 4 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#12B886]">
-                      4. Evitado Confirmado (kgCO₂e)
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">NF-e / MTR</span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Fração do evitado líquido cujas peças já possuem destinação final comprovada por
-                    documento fiscal ou ambiental definitivo de saída do CDV.
-                  </p>
-                </div>
-
-                {/* Métrica 5 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#D9B36C]">
-                      5. Evitado Potencial (kgCO₂e)
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">Em Estoque</span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Fração do evitado líquido correspondente a peças em estoque no CDV que ainda não
-                    tiveram sua venda ou reinserção concluída documentalmente.
-                  </p>
-                </div>
-
-                {/* Métrica 6 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#3B82F6]">
-                      6. Evitado Refrigerante (kgCO₂e)
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">m_R134a × 1.530</span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Benefício da contenção e recuperação do gás R-134a drenado do circuito de
-                    ar-condicionado, nulo caso não haja comprovação física da drenagem.
-                  </p>
-                </div>
-
-                {/* Métrica 7 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#D9B36C]">
-                      7. Incerteza Consolidada (kg / %)
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">Soma em Quadratura</span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Erro absoluto e relativo do lote apurado por propagação quadrática dos erros de
-                    pesagem (u_massa) e dos fatores metodológicos (u_FE).
-                  </p>
-                </div>
-
-                {/* Métrica 8 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#F4F7FA]">
-                      8. Segregação Fóssil / Biogênica
-                    </span>
-                    <span className="text-[10px] font-mono text-[#93A3B5]">
-                      100% Fóssil / 0% Bio
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    Declaração mandatória em 3 colunas: todo evitado na desmontagem veicular é
-                    alocado em carbono fóssil (metais e derivados petroquímicos), sendo a parcela
-                    biogênica formalmente fixada em 0,00 kgCO₂e.
-                  </p>
-                </div>
-              </div>
-            </section>
+            <p className="text-xs text-slate-600 dark:text-[#94A3B8] max-w-2xl leading-relaxed">
+              A régua completa com valores numéricos de fatores de emissão, incertezas e equações de
+              baseline é disponibilizada no resultado de cada lote atestado mediante validação do
+              hash no Verificador ou no acesso à documentação técnica restrita.
+            </p>
           </div>
-        )}
+          <Link
+            to="/verificador"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs font-mono flex items-center gap-2 transition-all shadow-sm shrink-0"
+          >
+            <Search className="w-4 h-4" />
+            <span>Consultar no Verificador</span>
+          </Link>
+        </div>
 
-        {/* ========================================================= */}
-        {/* ABA 2: CATÁLOGO DE FATORES INTERATIVO */}
-        {/* ========================================================= */}
-        {abaAtiva === 'catalogo' && (
-          <div className="space-y-6">
-            {/* NOTA METODOLÓGICA DE CONGELAMENTO & RESERVA PRÉ-LAUDO */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-6 rounded-2xl bg-[#111820] border border-[#12B886]/30 space-y-3">
-                <div className="flex items-center gap-2.5 text-[#12B886]">
-                  <Lock className="w-5 h-5" />
-                  <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-[#F4F7FA]">
-                    Congelamento Criptográfico (Snapshot na Emissão)
-                  </h3>
-                </div>
-                <p className="text-xs text-[#93A3B5] leading-relaxed">
-                  {METADADOS_CATALOGO_FATORES.notaSnapshotCongelamento}
-                </p>
-                <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] flex items-center gap-2 text-[11px] font-mono text-[#12B886]">
-                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                  <span>Garantia de Não-Retroatividade: relatórios emitidos são imutáveis.</span>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-[#111820] border border-[#D9B36C]/30 space-y-3">
-                <div className="flex items-center gap-2.5 text-[#D9B36C]">
-                  <ShieldCheck className="w-5 h-5" />
-                  <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-[#F4F7FA]">
-                    Reserva Metodológica Pré-Laudo (Padrão da Casa)
-                  </h3>
-                </div>
-                <p className="text-xs text-[#93A3B5] leading-relaxed">
-                  {METADADOS_CATALOGO_FATORES.reservaPreLaudo}
-                </p>
-                <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] flex items-center gap-2 text-[11px] font-mono text-[#D9B36C]">
-                  <Info className="w-3.5 h-3.5 shrink-0" />
-                  <span>Conformidade estrita: sem alegações mercadológicas sem laudo formal.</span>
-                </div>
-              </div>
+        {/* GRADE DAS REFERÊNCIAS CANÔNICAS */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-[#F8FAFC]">
+                Referências Canônicas e Padrões Aplicados
+              </h2>
+              <p className="text-xs text-slate-600 dark:text-[#94A3B8]">
+                Bases bibliográficas, regulatórias e normativas que orientam a quantificação dMRV da
+                Orbis Protocol
+              </p>
             </div>
+            <span className="text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
+              {REFERENCIAS_CANONICAS.length} referências
+            </span>
+          </div>
 
-            {/* BARRA DE FILTROS & BUSCA */}
-            <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4">
-              <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-                <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-[#93A3B5] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={busca}
-                    onChange={(e) => setBusca(e.target.value)}
-                    placeholder="Buscar por material, fonte oficial (WorldSteel, IAI...), unidade ou norma..."
-                    className="w-full bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#F4F7FA] placeholder-[#93A3B5] focus:outline-none focus:border-[#12B886] transition-all font-mono"
-                  />
-                  {busca && (
-                    <button
-                      onClick={() => setBusca('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#93A3B5] hover:text-[#F4F7FA]"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {REFERENCIAS_CANONICAS.map((ref) => (
+              <div
+                key={ref.id}
+                className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 dark:bg-[#059669]/15 border border-emerald-200 dark:border-[#059669]/40 text-emerald-800 dark:text-[#12B886] font-mono text-xs font-bold">
+                      {ref.sigla}
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8]">
+                      {ref.tipo} • {ref.anoOuEdicao}
+                    </span>
+                  </div>
+
+                  <h3 className="font-heading font-bold text-base text-slate-900 dark:text-[#F8FAFC]">
+                    {ref.nome}
+                  </h3>
+
+                  <div className="text-[11px] font-mono text-emerald-700 dark:text-[#12B886]">
+                    {ref.organizacao}
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+                    {ref.descricao}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                  <span className="text-[11px] font-mono text-slate-500 dark:text-[#94A3B8] truncate max-w-[240px]">
+                    {ref.foco}
+                  </span>
+                  {ref.linkInterno ? (
+                    <Link
+                      to={ref.linkInterno}
+                      className="text-emerald-700 dark:text-[#12B886] hover:underline font-mono text-[11px] font-bold flex items-center gap-1 shrink-0"
                     >
-                      Limpar
-                    </button>
+                      <span>Acessar Norma</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  ) : ref.linkExterno ? (
+                    <a
+                      href={ref.linkExterno}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-700 dark:text-[#12B886] hover:underline font-mono text-[11px] font-bold flex items-center gap-1 shrink-0"
+                    >
+                      <span>Fonte Oficial</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
+                      Legislação Federal
+                    </span>
                   )}
                 </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <Filter className="w-4 h-4 text-[#93A3B5]" />
-                  <span className="text-xs font-mono text-[#93A3B5]">Incerteza:</span>
-                  <select
-                    value={tierFiltro}
-                    onChange={(e) => setTierFiltro(e.target.value)}
-                    aria-label="Filtrar por nível de incerteza (Tier)"
-                    className="bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] rounded-xl px-3 py-2 text-xs text-[#F4F7FA] focus:outline-none focus:border-[#12B886] font-mono"
-                  >
-                    <option value="todos">Todos os Tiers</option>
-                    <option value="Tier 3">Tier 3 (Alta precisão / ACV específica)</option>
-                    <option value="Tier 2">Tier 2 (Fatores nacionais / PBGHG)</option>
-                    <option value="Tier 1">Tier 1 (Fatores médios / spend-based)</option>
-                  </select>
-                </div>
               </div>
-
-              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[rgba(244,247,250,0.06)]">
-                {categorias.map((cat) => {
-                  const Icon = cat.icon
-                  const isSelected = categoriaFiltro === cat.id
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setCategoriaFiltro(cat.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all ${
-                        isSelected
-                          ? 'bg-[#12B886] text-[#0A0E12] font-bold shadow-emerald-glow'
-                          : 'bg-[#0A0E12] text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B] border border-[rgba(244,247,250,0.08)]'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{cat.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* TABELA DE FATORES */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-heading font-extrabold text-lg text-[#F4F7FA] flex items-center gap-2">
-                  <span>Fatores Vigentes no Catálogo</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-[#16202B] text-[#12B886] font-mono">
-                    {fatoresFiltrados.length} encontrados
-                  </span>
-                </h2>
-                <span className="text-xs text-[#93A3B5] font-mono hidden sm:inline">
-                  Base oficial dMRV • Versão {METADADOS_CATALOGO_FATORES.versao}
-                </span>
-              </div>
-
-              {/* Tabela Desktop */}
-              <div className="hidden md:block overflow-x-auto rounded-2xl border border-[rgba(244,247,250,0.1)] bg-[#111820] shadow-xl">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-[rgba(244,247,250,0.1)] bg-[#0A0E12]/80 text-[#93A3B5] uppercase font-mono text-[10px] tracking-wider">
-                    <tr>
-                      <th className="py-3.5 px-4">Material / Insumo</th>
-                      <th className="py-3.5 px-4 text-right">Fator Aplicado</th>
-                      <th className="py-3.5 px-4">Unidade</th>
-                      <th className="py-3.5 px-4">Fonte Oficial</th>
-                      <th className="py-3.5 px-4">Norma / Ano</th>
-                      <th className="py-3.5 px-4 text-center">Tier & Incerteza</th>
-                      <th className="py-3.5 px-4">Impacto / Tipo</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
-                    {fatoresFiltrados.map((item) => (
-                      <tr key={item.id} className="hover:bg-[#16202B]/60 transition-colors group">
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
-                            {item.nomeMaterial}
-                          </div>
-                          <div className="text-[11px] text-[#93A3B5] line-clamp-1 max-w-sm">
-                            {item.descricao}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-mono font-black text-base text-[#12B886]">
-                          {formatarValorFator(item)}
-                        </td>
-                        <td className="py-3.5 px-4 font-mono text-xs text-[#93A3B5]">
-                          {item.unidade}
-                        </td>
-                        <td className="py-3.5 px-4 font-medium text-[#F4F7FA]">
-                          {item.fonteOficial}
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <div className="text-[11px] text-[#93A3B5]">{item.normaPadrao}</div>
-                          <div className="text-[10px] font-mono text-[#D9B36C]">
-                            Ref: {item.anoReferencia}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="inline-block px-2 py-0.5 rounded-full bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] text-[10px] font-mono text-[#F4F7FA]">
-                            {item.tierIncerteza} (±{item.incertezaPct}%)
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          {item.tipoImpacto === 'emissao_evitada' && (
-                            <span className="px-2 py-0.5 rounded bg-[#12B886]/15 border border-[#12B886]/40 text-[#12B886] font-mono text-[10px] font-bold">
-                              Emissão Evitada
-                            </span>
-                          )}
-                          {item.tipoImpacto === 'credito_insetting' && (
-                            <span className="px-2 py-0.5 rounded bg-[#3B82F6]/15 border border-[#3B82F6]/40 text-[#3B82F6] font-mono text-[10px] font-bold">
-                              Insetting Circular
-                            </span>
-                          )}
-                          {item.tipoImpacto === 'emissao_direta' && (
-                            <span className="px-2 py-0.5 rounded bg-[#D9B36C]/15 border border-[#D9B36C]/40 text-[#D9B36C] font-mono text-[10px] font-bold">
-                              Escopo 1 (Direta)
-                            </span>
-                          )}
-                          {item.tipoImpacto === 'emissao_indireta' && (
-                            <span className="px-2 py-0.5 rounded bg-purple-500/15 border border-purple-500/40 text-purple-300 font-mono text-[10px] font-bold">
-                              {item.id.includes('energia') ? 'Escopo 2' : 'Escopo 3'}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Cards Mobile */}
-              <div className="md:hidden space-y-3">
-                {fatoresFiltrados.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-4 rounded-xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h4 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                          {item.nomeMaterial}
-                        </h4>
-                        <span className="text-[10px] font-mono text-[#93A3B5] block">
-                          {item.categoria.replace('_', ' ').toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono font-black text-lg text-[#12B886] block">
-                          {formatarValorFator(item)}
-                        </span>
-                        <span className="text-[10px] font-mono text-[#93A3B5]">{item.unidade}</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">{item.descricao}</p>
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[rgba(244,247,250,0.06)]">
-                      <div>
-                        <span className="text-[10px] uppercase font-mono text-[#93A3B5] block">
-                          Fonte Oficial:
-                        </span>
-                        <span className="font-semibold text-[#F4F7FA]">{item.fonteOficial}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] uppercase font-mono text-[#93A3B5] block">
-                          Incerteza:
-                        </span>
-                        <span className="font-mono text-[#D9B36C]">
-                          {item.tierIncerteza} (±{item.incertezaPct}%)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* SEÇÃO GWP 100 ANOS IPCC AR6 */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
-                    Métricas GWP do IPCC AR6 (Sixth Assessment Report)
-                  </h3>
-                  <p className="text-xs text-[#93A3B5]">
-                    Potenciais de Aquecimento Global em horizonte de 100 anos com feedbacks
-                    climáticos.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setMostrarAr6Gwp(!mostrarAr6Gwp)}
-                  className="text-xs font-mono text-[#12B886] hover:underline"
-                >
-                  {mostrarAr6Gwp ? 'Ocultar Detalhes' : 'Ver Tabela Completa'}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
-                  <span className="text-[10px] font-mono text-[#93A3B5] block">
-                    CO₂ (Dióxido de Carbono)
-                  </span>
-                  <span className="font-mono text-base font-bold text-[#F4F7FA]">GWP = 1</span>
-                  <span className="text-[10px] text-[#93A3B5] block">Referência de base</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/40">
-                  <span className="text-[10px] font-mono text-[#D9B36C] block">CH₄ Fóssil</span>
-                  <span className="font-mono text-base font-bold text-[#D9B36C]">GWP = 29,8</span>
-                  <span className="text-[10px] text-[#93A3B5] block">Com feedbacks AR6</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40">
-                  <span className="text-[10px] font-mono text-[#12B886] block">CH₄ Biogênico</span>
-                  <span className="font-mono text-base font-bold text-[#12B886]">GWP = 27,2</span>
-                  <span className="text-[10px] text-[#93A3B5] block">Sem carbono fóssil</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-purple-500/40">
-                  <span className="text-[10px] font-mono text-purple-300 block">
-                    N₂O (Óxido Nitroso)
-                  </span>
-                  <span className="font-mono text-base font-bold text-purple-300">GWP = 273</span>
-                  <span className="text-[10px] text-[#93A3B5] block">Tempo vida 109 anos</span>
-                </div>
-              </div>
-
-              {mostrarAr6Gwp && (
-                <div className="mt-4 pt-4 border-t border-[rgba(244,247,250,0.08)] space-y-3">
-                  <div className="overflow-x-auto rounded-xl border border-[rgba(244,247,250,0.08)] bg-[#0A0E12]">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-[rgba(244,247,250,0.08)] text-[#93A3B5] font-mono text-[10px] uppercase">
-                        <tr>
-                          <th className="py-2.5 px-3">Gás de Efeito Estufa</th>
-                          <th className="py-2.5 px-3">Fórmula Química</th>
-                          <th className="py-2.5 px-3 text-right">GWP 100 (AR6)</th>
-                          <th className="py-2.5 px-3">Tempo de Vida na Atmosfera</th>
-                          <th className="py-2.5 px-3">Fonte Normativa</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[rgba(244,247,250,0.04)] text-[#F4F7FA]">
-                        {GWP_IPCC_AR6_OFICIAL.gases.map((g) => (
-                          <tr key={g.formula}>
-                            <td className="py-2.5 px-3 font-medium">{g.gas}</td>
-                            <td className="py-2.5 px-3 font-mono text-[#12B886]">{g.formula}</td>
-                            <td className="py-2.5 px-3 text-right font-mono font-bold text-[#D9B36C]">
-                              {g.gwp}
-                            </td>
-                            <td className="py-2.5 px-3 text-[#93A3B5]">{g.vidaAtmosfericaAnos}</td>
-                            <td className="py-2.5 px-3 text-[11px] text-[#93A3B5]">{g.fonte}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
+            ))}
           </div>
-        )}
+        </div>
 
-        {/* ========================================================= */}
-        {/* ABA 3: APÊNDICES & MEMÓRIA DE CÁLCULO DEMONSTRATIVA */}
-        {/* ========================================================= */}
-        {abaAtiva === 'calculadora' && (
-          <div className="space-y-8">
-            {/* APÊNDICE D: MEMÓRIA DE CÁLCULO DO LOTE DEMONSTRATIVO */}
-            <div className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-[#12B886] uppercase">
-                      Apêndice D • Simulação Formal
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-[#F59E0B]/20 border border-[#F59E0B] text-[#F59E0B] font-mono text-[10px] font-bold">
-                      (DEMO) LOTE DEMONSTRATIVO
-                    </span>
-                  </div>
-                  <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                    Memória de Cálculo de Lote Demonstrativo conforme Motor v2
-                  </h2>
-                </div>
-                <Link
-                  to="/passaporte/lote/demo"
-                  className="px-4 py-2 rounded-xl bg-[#16202B] hover:bg-[#12B886]/20 border border-[#12B886]/40 text-xs font-mono text-[#12B886] flex items-center gap-1.5 transition-colors"
-                >
-                  <span>Ver DPP do Lote Demo</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              <p className="text-sm text-[#93A3B5] leading-relaxed">
-                A memória de cálculo abaixo exemplifica a execução do motor Orbis v2 sobre um
-                veículo doador típico (ex.: VW Gol 1.6 com baixa DETRAN{' '}
-                <code className="text-[#12B886] font-mono">PR-BX-2026-991204 (DEMO)</code>),
-                ilustrando o comportamento prescritivo da dedução de PE, drenagem de R-134a,
-                conferência de destinação e cálculo de incerteza em quadratura.
-              </p>
-
-              {/* Tabela do Lote Demonstrativo */}
-              <div className="overflow-x-auto rounded-xl border border-[rgba(244,247,250,0.1)] bg-[#0A0E12]">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-[rgba(244,247,250,0.1)] bg-[#16202B] text-[#93A3B5] font-mono text-[10px] uppercase">
-                    <tr>
-                      <th className="py-3 px-3">SKU / Peça</th>
-                      <th className="py-3 px-3">Material</th>
-                      <th className="py-3 px-3 text-right">Peso (kg)</th>
-                      <th className="py-3 px-3 text-right">FE_ref</th>
-                      <th className="py-3 px-3 text-right">Bruto (kg)</th>
-                      <th className="py-3 px-3 text-right">PE (kg)</th>
-                      <th className="py-3 px-3 text-right">Líquido (kg)</th>
-                      <th className="py-3 px-3 text-center">Destinação</th>
-                      <th className="py-3 px-3 text-center">Status Claim</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA] font-mono text-[11px]">
-                    <tr className="hover:bg-[#16202B]/40">
-                      <td className="py-2.5 px-3 font-semibold text-[#F4F7FA]">
-                        PART-GOL-CAPO-01 (Capô Motor)
-                      </td>
-                      <td className="py-2.5 px-3 text-[#93A3B5]">Aço (2,18)</td>
-                      <td className="py-2.5 px-3 text-right">10,0</td>
-                      <td className="py-2.5 px-3 text-right">2,18</td>
-                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">6,54</td>
-                      <td className="py-2.5 px-3 text-right text-[#EF4444]">0,00</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">6,54</td>
-                      <td className="py-2.5 px-3 text-center text-[#12B886]">NF-e 1234</td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] text-[10px] font-bold">
-                          CONFIRMADO
-                        </span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-[#16202B]/40">
-                      <td className="py-2.5 px-3 font-semibold text-[#F4F7FA]">
-                        PART-GOL-RODA-01 (Roda Liga Leve)
-                      </td>
-                      <td className="py-2.5 px-3 text-[#93A3B5]">Alumínio (14,40)</td>
-                      <td className="py-2.5 px-3 text-right">8,0</td>
-                      <td className="py-2.5 px-3 text-right">14,40</td>
-                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">34,56</td>
-                      <td className="py-2.5 px-3 text-right text-[#EF4444]">0,00</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">34,56</td>
-                      <td className="py-2.5 px-3 text-center text-[#12B886]">NF-e 1235</td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] text-[10px] font-bold">
-                          CONFIRMADO
-                        </span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-[#16202B]/40">
-                      <td className="py-2.5 px-3 font-semibold text-[#F4F7FA]">
-                        PART-GOL-ESTAT-01 (Estator Alternador)
-                      </td>
-                      <td className="py-2.5 px-3 text-[#93A3B5]">Cobre (4,10)</td>
-                      <td className="py-2.5 px-3 text-right">2,5</td>
-                      <td className="py-2.5 px-3 text-right">4,10</td>
-                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">3,07</td>
-                      <td className="py-2.5 px-3 text-right text-[#EF4444]">0,00</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">3,07</td>
-                      <td className="py-2.5 px-3 text-center text-[#12B886]">MTR 4410</td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] text-[10px] font-bold">
-                          CONFIRMADO
-                        </span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-[#16202B]/40">
-                      <td className="py-2.5 px-3 font-semibold text-[#F4F7FA]">
-                        PART-GOL-PARAC-01 (Parachoque Dianteiro)
-                      </td>
-                      <td className="py-2.5 px-3 text-[#93A3B5]">Polímeros (1,90)</td>
-                      <td className="py-2.5 px-3 text-right">4,0</td>
-                      <td className="py-2.5 px-3 text-right">1,90</td>
-                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">2,28</td>
-                      <td className="py-2.5 px-3 text-right text-[#EF4444]">0,00</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">2,28</td>
-                      <td className="py-2.5 px-3 text-center text-[#D9B36C]">Em Estoque</td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-[#D9B36C]/15 text-[#D9B36C] text-[10px] font-bold">
-                          POTENCIAL
-                        </span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-[#16202B]/40">
-                      <td className="py-2.5 px-3 font-semibold text-[#F4F7FA]">
-                        FLUID-R134A (Carga Climatização)
-                      </td>
-                      <td className="py-2.5 px-3 text-[#93A3B5]">R-134a (GWP 1530)</td>
-                      <td className="py-2.5 px-3 text-right">0,5</td>
-                      <td className="py-2.5 px-3 text-right">1.530</td>
-                      <td className="py-2.5 px-3 text-right text-[#93A3B5]">765,00</td>
-                      <td className="py-2.5 px-3 text-right text-[#EF4444]">0,00</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-[#12B886]">765,00</td>
-                      <td className="py-2.5 px-3 text-center text-[#12B886]">MTR GÁS</td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-[#12B886]/15 text-[#12B886] text-[10px] font-bold">
-                          CONFIRMADO
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Nota de Auditoria Externa F6 — Link Direto para Revisores */}
-              <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-blue-50 dark:bg-[#0A1628] text-blue-600 dark:text-[#2563EB]">
-                    <Scale className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="font-heading font-bold text-slate-900 dark:text-[#F8FAFC] block">
-                      Pacote do Revisor Externo (Auditoria de Reprodução F6)
-                    </span>
-                    <span className="text-slate-500 dark:text-[#94A3B8] text-[11px]">
-                      Dossiê pericial cego para recálculo independente do lote Gol real (disponível
-                      por link direto).
-                    </span>
-                  </div>
-                </div>
-                <Link
-                  to="/auditoria-f6"
-                  className="px-3.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-[#0A1628] dark:hover:bg-[#16202B] border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-mono text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors shrink-0"
-                >
-                  <span>Acessar Pacote F6</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              {/* Consolidado do Lote Demo */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40">
-                  <span className="text-[10px] font-mono text-[#93A3B5] block">
-                    Total Evitado Líquido
-                  </span>
-                  <span className="font-mono text-base font-bold text-[#12B886]">
-                    811,45 kgCO₂e
-                  </span>
-                  <span className="text-[10px] text-[#93A3B5] block">Floor 2 casas</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/40">
-                  <span className="text-[10px] font-mono text-[#12B886] block">
-                    Claim Confirmado
-                  </span>
-                  <span className="font-mono text-base font-bold text-[#12B886]">
-                    809,17 kgCO₂e
-                  </span>
-                  <span className="text-[10px] text-[#93A3B5] block">Com NF-e / MTR</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/40">
-                  <span className="text-[10px] font-mono text-[#D9B36C] block">
-                    Claim Potencial
-                  </span>
-                  <span className="font-mono text-base font-bold text-[#D9B36C]">2,28 kgCO₂e</span>
-                  <span className="text-[10px] text-[#93A3B5] block">Parachoque em estoque</span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)]">
-                  <span className="text-[10px] font-mono text-[#93A3B5] block">
-                    Incerteza do Lote (Quadratura)
-                  </span>
-                  <span className="font-mono text-base font-bold text-[#F4F7FA]">
-                    ±17,36 kg (±2,1%)
-                  </span>
-                  <span className="text-[10px] text-[#93A3B5] block">u_massa = 1,0%</span>
-                </div>
-              </div>
-            </div>
+        {/* DIRETRIZ TÉCNICA DM-ORB-001 EM DESTAQUE */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border-2 border-emerald-500/40 shadow-lg space-y-4">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-[#12B886] text-xs font-mono font-bold uppercase">
+            <BookOpen className="w-4 h-4" />
+            <span>Diretriz Técnica Restrita • Documento Normativo Orbis</span>
           </div>
-        )}
 
-        {/* ========================================================= */}
-        {/* BLOCO DE INTEGRAÇÃO API & LINKS RELACIONADOS */}
-        {/* ========================================================= */}
-        <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-[#111820] to-[#16202B] border border-[#12B886]/30 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2 text-xs font-bold text-[#12B886] uppercase font-mono">
-              <Sparkles className="w-4 h-4 text-[#12B886]" />
-              <span>Integração Automatizada via REST API v2</span>
-            </div>
-            <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
-              Consuma o DM-ORB-001 v1.2 e deduplique lotes pelo seu ERP
-            </h3>{' '}
-            <p className="text-xs text-[#93A3B5] leading-relaxed">
-              Os fatores deste documento e o algoritmo de deduplicação inter-CDVs com trava HTTP 409
-              são executados em tempo real na rota{' '}
-              <code className="text-[#12B886] font-mono">/backend/v1/cdv/lotes</code> e na API v2.
-              Consulte a documentação técnica para payloads JSON completos e webhooks B2B.
+          <div className="space-y-2">
+            <h2 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-[#F8FAFC]">
+              Diretriz Técnica DM-ORB-001 v1.1
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+              A formulação matemática completa, as equações de baseline de cada família material, o
+              regime de propagação de incerteza em quadratura e as travas de integridade pericial
+              estão formalizados na Diretriz Técnica DM-ORB-001 v1.1. O acesso à norma integral
+              exige autenticação e aceite de confidencialidade técnica.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
+            <div className="text-xs text-slate-500 dark:text-[#94A3B8] flex items-center gap-1.5 font-mono">
+              <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886]" />
+              <span>Acesso restrito para usuários cadastrados com perfil técnico ou pericial</span>
+            </div>
             <Link
-              to="/api-docs-cdv"
-              className="px-6 py-3 rounded-xl font-bold text-xs bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all flex items-center justify-center gap-2 shadow-emerald-glow"
+              to="/norma-dm-orb-001"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs font-mono flex items-center justify-center gap-2 transition-all shadow-sm shrink-0"
             >
-              <span>Ver Documentação da API</span>
+              <span>Acessar Diretriz DM-ORB-001</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link
-              to="/verificador"
-              className="px-5 py-3 rounded-xl font-semibold text-xs border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886] hover:text-[#12B886] transition-all flex items-center justify-center gap-2 bg-[#0A0E12]"
-            >
-              <CheckCircle2 className="w-4 h-4 text-[#12B886]" />
-              <span>Verificar Selos & DPP</span>
-            </Link>
+          </div>
+        </div>
+
+        {/* DELIMITAÇÃO INSTITUCIONAL E TERMINOLOGIA CANÔNICA */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-[#12B886] text-xs font-mono font-bold uppercase">
+            <ShieldCheck className="w-4 h-4" />
+            <span>Delimitação Institucional e Governança Pericial</span>
+          </div>
+
+          <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F8FAFC]">
+            Infraestrutura de Prova Documental e Atestado Orbis
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2">
+              <span className="font-mono font-bold text-slate-900 dark:text-[#F8FAFC] block uppercase">
+                Atestado de Conformidade Orbis (com ART/RRT)
+              </span>
+              <p>
+                Instrumento técnico-pericial subscrito por engenheiro ou perito legalmente
+                habilitado junto ao respectivo Conselho Profissional (CREA/CAU/CFT), com emissão de
+                Anotação de Responsabilidade Técnica (ART/RRT). Atesta a idoneidade documental do
+                lote, a pesagem física e a conformidade metodológica com a Diretriz DM-ORB-001.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-2">
+              <span className="font-mono font-bold text-slate-900 dark:text-[#F8FAFC] block uppercase">
+                Verificação Independente e Mercado Regulado
+              </span>
+              <p>
+                A Orbis Protocol atua como infraestrutura de dMRV e custódia criptográfica de dados.
+                Eventual emissão de créditos ou transação em mercados regulados (como o SBCE sob a
+                Lei 15.042/2024) depende de auditoria de terceira parte conduzida por Organismo de
+                Verificação e Validação (VVB) credenciado, sendo o Atestado Orbis o substrato
+                probatório documental.
+              </p>
+            </div>
           </div>
         </div>
       </div>
