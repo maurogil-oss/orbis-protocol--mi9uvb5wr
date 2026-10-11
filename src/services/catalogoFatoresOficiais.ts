@@ -709,3 +709,4 @@ export const GWP_IPCC_AR6_OFICIAL = {
     },
   ],
 } as const
+// DM-ORB-001 v1.2 / Lote 2 técnico: Fator R-1234yf (0,50 kgCO₂e/kg, Tier 3) e delimitação de escopo
