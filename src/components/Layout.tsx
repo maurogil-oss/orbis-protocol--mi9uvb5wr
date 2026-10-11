@@ -228,24 +228,38 @@ export default function Layout() {
     'Res. BCB 4.945/2021: Políticas de Responsabilidade Social, Ambiental e Climática (PRSAC)',
   ]
 
+  const isHomePage = location.pathname === '/'
+
   return (
     <div className="flex flex-col min-h-screen w-full max-w-full min-w-0 overflow-x-hidden bg-background text-foreground selection:bg-emerald-600/20 selection:text-emerald-900 dark:selection:bg-[#059669]/30 dark:selection:text-white">
+      {/* Skip-link WCAG 2.4.1 (P0 de acessibilidade): primeiro elemento focável */}
+      <a
+        href="#conteudo-principal"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:bg-emerald-600 focus:text-white focus:font-bold focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-400 min-h-[44px] min-w-[44px] inline-flex items-center"
+      >
+        Pular para o conteúdo
+      </a>
+
       {/* Cabeçalho Unificado Sticky com z-index alto (z-50) e sem overflow-hidden no contêiner para não cortar menus flutuantes */}
       <div className="sticky top-0 z-50 w-full max-w-full min-w-0">
-        {/* 1. Regulatory Marquee Top Bar — Contraste refinado claro e escuro (overflow-hidden contido na barra) */}
-        <div className="w-full max-w-full min-w-0 bg-slate-100 dark:bg-[#0A1628] border-b border-slate-200/80 dark:border-slate-800 py-2 text-xs overflow-hidden transition-colors duration-300">
-          <div className="animate-marquee items-center gap-6 whitespace-nowrap text-slate-600 dark:text-[#94A3B8] font-medium tracking-wider max-w-full">
-            {[...regulations, ...regulations].map((reg, idx) => (
-              <span key={idx} className="inline-flex items-center gap-4 shrink-0">
-                <span className="text-emerald-700 dark:text-[#059669] font-semibold flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
-                  {reg}
+        {/* 1. Regulatory Marquee Top Bar — Contraste refinado claro e escuro. Sai da Home para atender WCAG 2.2.2 e o requisito 3 */}
+        {!isHomePage && (
+          <div className="w-full max-w-full min-w-0 bg-slate-100 dark:bg-[#0A1628] border-b border-slate-200/80 dark:border-slate-800 py-2 text-xs overflow-hidden transition-colors duration-300">
+            <div className="animate-marquee items-center gap-6 whitespace-nowrap text-slate-700 dark:text-slate-300 font-medium tracking-wider max-w-full">
+              {[...regulations, ...regulations].map((reg, idx) => (
+                <span key={idx} className="inline-flex items-center gap-4 shrink-0">
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    {reg}
+                  </span>
+                  <span className="text-slate-400 dark:text-slate-500 font-bold" aria-hidden="true">
+                    •
+                  </span>
                 </span>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
-              </span>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 2. Sticky Header — Fundo surface corporativo branco/slate no claro e #0A1628 no escuro */}
         <header
@@ -259,10 +273,11 @@ export default function Layout() {
             {/* Brand Logo & Name — shrink-0 garante que o logo nunca seja comprimido ou invadido pela navegação */}
             <Link
               to="/"
-              className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0"
+              className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0 min-h-[44px]"
               title="Orbis Protocol"
+              aria-label="Orbis Protocol"
             >
-              <div className="shrink-0">
+              <div className="shrink-0" aria-hidden="true">
                 <div className="block sm:hidden">
                   <OrbisGlobe size={32} />
                 </div>
@@ -274,20 +289,23 @@ export default function Layout() {
                 <span className="font-heading font-black text-[13px] min-[380px]:text-sm sm:text-lg lg:text-xl tracking-[0.01em] min-[380px]:tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors whitespace-nowrap sm:text-center sm:w-full">
                   ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
                 </span>
-                <span className="text-[9px] min-[380px]:text-[9.5px] sm:text-[11px] tracking-[0.04em] min-[380px]:tracking-[0.08em] sm:tracking-[0.22em] uppercase text-slate-600 dark:text-[#94A3B8] font-semibold -mt-0.5 whitespace-nowrap sm:text-center sm:w-full">
+                <span className="text-[12px] tracking-[0.04em] min-[380px]:tracking-[0.06em] sm:tracking-[0.18em] uppercase text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap sm:text-center sm:w-full">
                   Economia Circular — dMRV
                 </span>
               </div>
             </Link>
 
             {/* Desktop Navigation - lg:flex com gap responsivo (gap-2.5 em lg, gap-5 em xl, gap-6 em 2xl) */}
-            <nav className="hidden lg:flex items-center gap-2.5 xl:gap-5 2xl:gap-6 shrink min-w-0">
+            <nav
+              aria-label="Navegação principal"
+              className="hidden lg:flex items-center gap-2.5 xl:gap-5 2xl:gap-6 shrink min-w-0"
+            >
               <Link
                 to="/"
-                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
                   location.pathname === '/' && !location.hash
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                    : 'text-slate-600 dark:text-[#94A3B8]'
+                    : 'text-slate-700 dark:text-slate-300'
                 }`}
               >
                 Início
@@ -295,10 +313,10 @@ export default function Layout() {
 
               <Link
                 to="/trilhas"
-                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
                   location.pathname.startsWith('/trilhas')
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                    : 'text-slate-600 dark:text-[#94A3B8]'
+                    : 'text-slate-700 dark:text-slate-300'
                 }`}
               >
                 Trilhas
@@ -306,14 +324,14 @@ export default function Layout() {
 
               <Link
                 to="/educacao"
-                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] inline-flex items-center gap-1 xl:gap-1.5 whitespace-nowrap ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] inline-flex items-center gap-1 xl:gap-1.5 whitespace-nowrap min-h-[44px] ${
                   location.pathname.startsWith('/educacao')
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                    : 'text-slate-600 dark:text-[#94A3B8]'
+                    : 'text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <span>Orbis Educação</span>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/15 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[10px] font-mono font-semibold">
+                <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/15 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[12px] font-mono font-semibold">
                   Social
                 </span>
               </Link>
@@ -336,10 +354,10 @@ export default function Layout() {
                   }}
                   aria-expanded={solutionsDropdownOpen}
                   aria-haspopup="true"
-                  className={`inline-flex items-center gap-1 xl:gap-1.5 text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] py-2 whitespace-nowrap focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-600 dark:focus-visible:ring-[#2563EB] rounded ${
+                  className={`inline-flex items-center gap-1 xl:gap-1.5 text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] py-2 whitespace-nowrap min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:focus-visible:ring-[#2563EB] rounded ${
                     isSolutionsActive
                       ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                      : 'text-slate-600 dark:text-[#94A3B8]'
+                      : 'text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <span>Soluções</span>
@@ -367,7 +385,7 @@ export default function Layout() {
                         <Link
                           to="/solucoes"
                           onClick={() => setSolutionsDropdownOpen(false)}
-                          className="text-xs text-slate-500 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-colors"
+                          className="text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-[#059669] transition-colors"
                         >
                           Ver visão geral →
                         </Link>
@@ -380,7 +398,7 @@ export default function Layout() {
                               <span className="text-xs font-bold text-slate-900 dark:text-[#F8FAFC] uppercase tracking-wider">
                                 {group.persona}
                               </span>
-                              <span className="text-[11px] text-slate-500 dark:text-[#94A3B8] hidden sm:inline">
+                              <span className="text-[12px] text-slate-600 dark:text-slate-300 hidden sm:inline">
                                 {group.rotuloCurto}
                               </span>
                             </div>
@@ -406,7 +424,7 @@ export default function Layout() {
                                       className={`mt-0.5 p-2 rounded-lg flex-shrink-0 transition-colors ${
                                         isActive
                                           ? 'bg-emerald-100 text-emerald-700 dark:bg-[#059669]/20 dark:text-[#059669]'
-                                          : 'bg-slate-100 dark:bg-[#0E1A2E] text-slate-500 dark:text-[#94A3B8] group-hover:text-emerald-600 dark:group-hover:text-[#059669] group-hover:bg-emerald-50 dark:group-hover:bg-[#059669]/10'
+                                          : 'bg-slate-100 dark:bg-[#0E1A2E] text-slate-600 dark:text-[#94A3B8] group-hover:text-emerald-600 dark:group-hover:text-[#059669] group-hover:bg-emerald-50 dark:group-hover:bg-[#059669]/10'
                                       }`}
                                     >
                                       <Icon className="w-4 h-4" />
@@ -423,13 +441,13 @@ export default function Layout() {
                                           {item.title}
                                         </span>
                                         {'badge' in item && item.badge && (
-                                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-amber-50 dark:bg-[#111827] text-amber-700 dark:text-[#D9B36C] border border-amber-200 dark:border-[#D9B36C]/30 shrink-0">
-                                            <span className="w-1 h-1 rounded-full bg-amber-500 dark:bg-[#D9B36C]" />
+                                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[12px] font-mono font-semibold bg-amber-50 dark:bg-[#111827] text-amber-800 dark:text-[#D9B36C] border border-amber-200 dark:border-[#D9B36C]/30 shrink-0">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-[#D9B36C]" />
                                             {item.badge}
                                           </span>
                                         )}
                                       </div>
-                                      <span className="text-xs text-slate-500 dark:text-[#94A3B8] leading-snug line-clamp-1">
+                                      <span className="text-xs text-slate-600 dark:text-slate-300 leading-snug line-clamp-1">
                                         {item.desc}
                                       </span>
                                     </div>
@@ -442,7 +460,7 @@ export default function Layout() {
                       </div>
 
                       {/* Atalho adicional para Bureau ACP unificado */}
-                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 px-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-[#94A3B8]">
+                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 px-2.5 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
                         <span>Passaporte sustentável de fornecedores:</span>
                         <Link
                           to="/bureau"
@@ -457,43 +475,44 @@ export default function Layout() {
                 )}
               </div>
 
+              {/* Caminho fixo do comprador: Verificar Atestado sempre visível */}
               <Link
                 to="/verificador"
-                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap ${
+                className={`text-xs xl:text-sm tracking-wide font-medium transition-colors hover:text-emerald-600 dark:hover:text-[#059669] whitespace-nowrap min-h-[44px] inline-flex items-center ${
                   location.pathname === '/verificador'
                     ? 'text-emerald-600 dark:text-[#059669] font-semibold'
-                    : 'text-slate-600 dark:text-[#94A3B8]'
+                    : 'text-slate-700 dark:text-slate-300'
                 }`}
               >
-                Consultar Selo
+                Verificar Atestado
               </Link>
             </nav>
 
-            {/* Header Action Buttons & Theme Toggle — shrink-0 garante que os botões não quebrem ou comprimam */}
+            {/* Header Action Buttons & Theme Toggle — CTA ÚNICO "Iniciar Diagnóstico" com links discretos Entrar e Verificar Atestado */}
             <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
               <ThemeToggle />
 
+              {/* Link discreto para Verificar Atestado (caminho do comprador, sempre visível) */}
               <Link
-                to="/diagnostico"
-                className="inline-flex items-center justify-center px-2.5 xl:px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#2563EB] dark:text-white dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0"
+                to="/verificador"
+                className="hidden xl:inline-flex items-center justify-center px-3 py-2 text-xs xl:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline min-h-[44px]"
               >
-                <span className="hidden xl:inline">Iniciar Diagnóstico</span>
-                <span className="inline xl:hidden">Diagnóstico</span>
+                Verificar Atestado
               </Link>
 
+              {/* CTA ÚNICO principal */}
               <Link
-                to="/demo"
-                className="inline-flex items-center justify-center px-2.5 xl:px-3.5 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-[#94A3B8] hover:border-emerald-600/50 dark:hover:border-[#059669]/50 hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:bg-slate-50 dark:hover:bg-[#0E1A2E] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 transition-all duration-200 bg-white dark:bg-[#0A1628] shrink-0"
+                to="/diagnostico"
+                className="inline-flex items-center justify-center px-4 xl:px-5 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#2563EB] dark:text-white dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
               >
-                <span className="hidden xl:inline">Ver Demonstração</span>
-                <span className="inline xl:hidden">Demonstração</span>
+                Iniciar Diagnóstico
               </Link>
 
               {isAuthenticated ? (
                 <div className="flex items-center gap-1.5 xl:gap-2 pl-2 xl:pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
                   <Link
                     to={isParceiro ? '/parceiro-painel' : '/painel'}
-                    className="inline-flex items-center gap-1.5 px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-[#F8FAFC] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-emerald-700 dark:hover:text-[#059669] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0"
+                    className="inline-flex items-center gap-1.5 px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-[#F8FAFC] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-emerald-700 dark:hover:text-[#059669] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0 min-h-[44px]"
                   >
                     <LayoutDashboard className="w-4 h-4 text-emerald-600 dark:text-[#059669] stroke-[1.5] shrink-0" />
                     <span>{isParceiro ? 'Painel do Parceiro' : 'Painel'}</span>
@@ -501,7 +520,7 @@ export default function Layout() {
                   <button
                     onClick={logout}
                     title="Sair"
-                    className="p-2 rounded-xl text-slate-500 dark:text-[#94A3B8] hover:text-rose-600 dark:hover:text-[#F03E54] border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-[#F03E54]/40 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0"
+                    className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-[#F03E54] border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-[#F03E54]/40 transition-all duration-200 bg-white dark:bg-[#0E1A2E] shrink-0 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
                   >
                     <LogOut className="w-4 h-4 stroke-[1.5]" />
                   </button>
@@ -510,16 +529,19 @@ export default function Layout() {
                 <div className="flex items-center gap-1.5 xl:gap-2 pl-2 xl:pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-[#94A3B8] hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-slate-900 dark:hover:text-[#F8FAFC] hover:-translate-y-0.5 transition-all duration-200 bg-white dark:bg-[#0A1628] shrink-0"
+                    className="inline-flex items-center justify-center px-3 py-2 text-xs xl:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:underline whitespace-nowrap min-h-[44px]"
                   >
                     Entrar
                   </Link>
-                  <Link
-                    to="/registro"
-                    className="inline-flex items-center justify-center px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold whitespace-nowrap bg-emerald-50 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] hover:bg-emerald-600 hover:text-white dark:hover:bg-[#2563EB] dark:hover:text-white hover:-translate-y-0.5 transition-all duration-200 shadow-sm shrink-0"
-                  >
-                    Criar conta
-                  </Link>
+                  {/* Se não for Home, mantém link secundário discreto para registro */}
+                  {!isHomePage && (
+                    <Link
+                      to="/registro"
+                      className="inline-flex items-center justify-center px-2.5 xl:px-3 py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-600/60 dark:hover:border-[#059669]/60 hover:text-slate-900 dark:hover:text-white transition-all bg-white dark:bg-[#0A1628] shrink-0 min-h-[44px]"
+                    >
+                      Criar conta
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
@@ -735,23 +757,23 @@ export default function Layout() {
               <Link
                 to="/diagnostico"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-3 rounded-lg text-sm font-semibold bg-[#2563EB] text-white hover:bg-blue-600 transition-all duration-200 shadow-sm"
+                className="w-full text-center py-3 rounded-lg text-sm font-bold bg-[#2563EB] text-white hover:bg-blue-600 transition-all duration-200 shadow-sm min-h-[44px] flex items-center justify-center"
               >
                 Iniciar Diagnóstico
               </Link>
               <Link
-                to="/demo"
+                to="/verificador"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-[#94A3B8] hover:border-[#059669]/50 hover:text-[#059669] bg-[#0E1A2E]/70 transition-all duration-200"
+                className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-slate-300 hover:text-emerald-400 bg-[#0E1A2E]/70 transition-all duration-200 min-h-[44px] flex items-center justify-center"
               >
-                Ver Demonstração
+                Verificar Atestado
               </Link>
               {isAuthenticated ? (
                 <div className="flex flex-col gap-2 pt-1 border-t border-slate-800">
                   <Link
                     to={isParceiro ? '/parceiro-painel' : '/painel'}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-[#F8FAFC] hover:border-[#059669]"
+                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-[#F8FAFC] hover:border-[#059669] min-h-[44px] flex items-center justify-center"
                   >
                     {isParceiro ? 'Painel do Parceiro' : 'Meu Painel'} ({user?.name || user?.email})
                   </Link>
@@ -760,7 +782,7 @@ export default function Layout() {
                       logout()
                       setMobileMenuOpen(false)
                     }}
-                    className="w-full text-center py-2 rounded-lg text-xs font-medium text-[#F03E54] hover:bg-[#F03E54]/10"
+                    className="w-full text-center py-2 rounded-lg text-xs font-medium text-[#F03E54] hover:bg-[#F03E54]/10 min-h-[44px] flex items-center justify-center"
                   >
                     Desconectar Sessão
                   </button>
@@ -768,16 +790,9 @@ export default function Layout() {
               ) : (
                 <div className="flex flex-col gap-2 pt-1 border-t border-slate-800">
                   <Link
-                    to="/registro"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-[#111827] border border-[#059669]/60 text-[#059669] hover:bg-[#2563EB] hover:text-white transition-colors"
-                  >
-                    Criar conta
-                  </Link>
-                  <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-[#94A3B8] hover:border-[#059669]"
+                    className="w-full text-center py-2.5 rounded-lg text-sm font-medium border border-slate-800 text-slate-300 hover:border-[#059669] min-h-[44px] flex items-center justify-center"
                   >
                     Entrar na Conta
                   </Link>
@@ -789,7 +804,11 @@ export default function Layout() {
       )}
 
       {/* 4. Main Page Content */}
-      <main className="flex-1 flex flex-col w-full min-w-0">
+      <main
+        id="conteudo-principal"
+        tabIndex={-1}
+        className="flex-1 flex flex-col w-full min-w-0 focus:outline-none"
+      >
         <Outlet />
       </main>
 

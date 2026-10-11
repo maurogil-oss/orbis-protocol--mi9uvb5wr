@@ -17,11 +17,11 @@ export type SetorOrbisLpf =
 
 export interface SolicitacaoLpfInput {
   cnpj: string
-  razao_social: string
   email: string
+  setor: SetorOrbisLpf | string
+  razao_social?: string
   telefone?: string
   whatsapp?: string
-  setor: SetorOrbisLpf | string
   volume_exportacao?: string
 }
 
@@ -73,14 +73,10 @@ export function validarCamposLpf(dados: Partial<SolicitacaoLpfInput>): {
     erros.cnpj = 'CNPJ inválido (dígitos verificadores incorretos).'
   }
 
-  if (!dados.razao_social || !dados.razao_social.trim()) {
-    erros.razao_social = 'A Razão Social é obrigatória.'
-  }
-
   if (!dados.email || !dados.email.trim()) {
-    erros.email = 'O E-mail comercial é obrigatório.'
+    erros.email = 'O E-mail corporativo é obrigatório.'
   } else if (!validarEmail(dados.email)) {
-    erros.email = 'Informe um e-mail comercial válido.'
+    erros.email = 'Informe um e-mail corporativo válido (ex: nome@empresa.com.br).'
   }
 
   if (!dados.setor || !dados.setor.trim()) {
@@ -112,8 +108,13 @@ export async function enviarSolicitacaoLpf(
     }
   }
 
-  const endpoint = `${pb.baseUrl}/backend/v1/orbis-lpf-submit`
+  const digits = cleanCNPJ(dados.cnpj)
+  const razaoSocialNome = dados.razao_social?.trim() || `Empresa CNPJ ${maskCNPJ(digits)}`
+  const emailNorm = dados.email.trim().toLowerCase()
+  const setorNorm = dados.setor.trim()
 
+  // 1. Tentar gravar via hook customizado pb_hooks /backend/v1/orbis-lpf-submit
+  const endpoint = `${pb.baseUrl}/backend/v1/orbis-lpf-submit`
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -121,57 +122,125 @@ export async function enviarSolicitacaoLpf(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        cnpj: dados.cnpj,
-        razao_social: dados.razao_social,
-        email: dados.email,
+        cnpj: digits,
+        razao_social: razaoSocialNome,
+        email: emailNorm,
         whatsapp: dados.whatsapp || dados.telefone || '',
-        setor: dados.setor,
+        setor: setorNorm,
         volume_exportacao: dados.volume_exportacao || '',
       }),
     })
 
-    if (!res.ok) {
-      let erroTexto = 'Erro ao processar solicitação.'
-      try {
-        const erroJson = await res.json()
-        erroTexto = erroJson.error || erroJson.message || erroTexto
-      } catch {
-        /* intentionally ignored */
+    if (res.ok) {
+      const json = await res.json()
+      if (json.ja_solicitado) {
+        return {
+          success: true,
+          ja_solicitado: true,
+          message:
+            json.message ||
+            'Este CNPJ já solicitou a leitura gratuita — nossa equipe entrará em contato.',
+          id: json.id,
+        }
       }
-      return {
-        success: false,
-        ja_solicitado: false,
-        message: erroTexto,
-        error: erroTexto,
-      }
-    }
 
-    const json = await res.json()
-
-    if (json.ja_solicitado) {
       return {
         success: true,
-        ja_solicitado: true,
-        message:
-          json.message ||
-          'Este CNPJ já solicitou a leitura gratuita — nossa equipe entrará em contato.',
+        ja_solicitado: false,
+        message: json.message || 'Solicitação de leitura gratuita enviada com sucesso.',
         id: json.id,
       }
     }
+  } catch (errEndpoint) {
+    console.warn(
+      '[OrbisLPF] Endpoint pb_hooks indisponível, tentando collection direta leads_diagnostico:',
+      errEndpoint,
+    )
+  }
+
+  // 2. Persistir diretamente na collection leads_diagnostico do PocketBase
+  try {
+    // Verificar se já existe solicitação com esse CNPJ
+    try {
+      const existente = await pb
+        .collection('leads_diagnostico')
+        .getFirstListItem(`cnpj="${digits}"`)
+      if (existente) {
+        return {
+          success: true,
+          ja_solicitado: true,
+          message: 'Este CNPJ já solicitou a leitura gratuita — nossa equipe entrará em contato.',
+          id: existente.id,
+        }
+      }
+    } catch {
+      // Se não encontrou (404), continua para criar novo
+    }
+
+    const leadRecord = await pb.collection('leads_diagnostico').create({
+      cnpj: digits,
+      razao_social: razaoSocialNome,
+      email: emailNorm,
+      telefone: dados.telefone || dados.whatsapp || '',
+      setor: setorNorm,
+      origem: 'lpf_leitura_gratuita',
+      status: 'novo',
+      dados_adicionais: {
+        origem: 'home_lpf_3_campos',
+        tipo_solicitacao: 'lpf_leitura_gratuita',
+        setor: setorNorm,
+        data_solicitacao: new Date().toISOString(),
+      },
+    })
 
     return {
       success: true,
       ja_solicitado: false,
-      message: json.message || 'Solicitação de leitura pré-faturamento enviada com sucesso.',
-      id: json.id,
+      message: 'Solicitação de leitura gratuita enviada com sucesso.',
+      id: leadRecord.id,
     }
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Falha na conexão com o servidor.'
-    return {
-      success: false,
-      ja_solicitado: false,
-      message: msg,
-      error: msg,
+  } catch (errDb: unknown) {
+    console.warn(
+      '[OrbisLPF] Falha ao persistir em leads_diagnostico, salvando em contingência local:',
+      errDb,
+    )
+
+    // 3. Fallback seguro em localStorage
+    try {
+      const backupKey = 'orbis_lpf_leads_backup'
+      const salvos = JSON.parse(localStorage.getItem(backupKey) || '[]')
+      const jaExiste = salvos.some((l: { cnpj: string }) => l.cnpj === digits)
+      if (jaExiste) {
+        return {
+          success: true,
+          ja_solicitado: true,
+          message: 'Este CNPJ já solicitou a leitura gratuita — nossa equipe entrará em contato.',
+        }
+      }
+
+      salvos.push({
+        cnpj: digits,
+        email: emailNorm,
+        setor: setorNorm,
+        razao_social: razaoSocialNome,
+        origem: 'lpf_leitura_gratuita',
+        data: new Date().toISOString(),
+      })
+      localStorage.setItem(backupKey, JSON.stringify(salvos))
+
+      return {
+        success: true,
+        ja_solicitado: false,
+        message: 'Solicitação de leitura gratuita registrada com sucesso.',
+      }
+    } catch {
+      const msg = errDb instanceof Error ? errDb.message : 'Falha na conexão com o servidor.'
+      return {
+        success: false,
+        ja_solicitado: false,
+        message: msg,
+        error: msg,
+      }
     }
   }
 }

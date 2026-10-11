@@ -61,46 +61,33 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     }
   })
 
-  it('Layout exibe exatamente um botão de acesso à demonstração no header desktop, mantendo "Criar conta", "Entrar" e "Iniciar Diagnóstico"', () => {
+  it('Layout exibe CTA Único "Iniciar Diagnóstico", com "Entrar" e "Verificar Atestado" discretos', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
       </MemoryRouter>,
     )
 
-    // Desktop & Mobile drawer têm botão Criar conta
-    const criarContaLinks = screen.getAllByRole('link', { name: /Criar conta/i })
-    expect(criarContaLinks.length).toBeGreaterThanOrEqual(1)
-    expect(criarContaLinks[0].getAttribute('href')).toBe('/registro')
-
-    // Botão Entrar também está visível
-    const entrarLinks = screen.getAllByRole('link', { name: /Entrar/i })
-    expect(entrarLinks.length).toBeGreaterThanOrEqual(1)
-
-    // Botão Iniciar Diagnóstico está visível no cabeçalho
-    const diagnosticoLinks = screen.getAllByRole('link', { name: /Diagnóstico/i })
+    // Botão Iniciar Diagnóstico é o CTA principal no cabeçalho
+    const diagnosticoLinks = screen.getAllByRole('link', { name: /Iniciar Diagnóstico/i })
     expect(diagnosticoLinks.length).toBeGreaterThanOrEqual(1)
     expect(diagnosticoLinks.some((l) => l.getAttribute('href') === '/diagnostico')).toBe(true)
 
-    // Botão de acesso à demonstração: exatamente UM no header desktop (além do link do footer)
-    // Procuramos os links que apontam para /demo
-    const headerDemoLink = screen.getAllByRole('link', { name: /Demonstração/i })
-    expect(headerDemoLink.length).toBeGreaterThanOrEqual(1)
-    const demoLinks = headerDemoLink.filter((l) => l.getAttribute('href') === '/demo')
-    expect(demoLinks.length).toBeGreaterThanOrEqual(1)
+    // Botão Entrar também está visível de forma discreta
+    const entrarLinks = screen.getAllByRole('link', { name: /Entrar/i })
+    expect(entrarLinks.length).toBeGreaterThanOrEqual(1)
 
-    // Verificar especificamente dentro do header desktop
+    // Verificar Atestado fica sempre visível no cabeçalho (caminho do comprador)
+    const verificarLinks = screen.getAllByRole('link', { name: /Verificar Atestado/i })
+    expect(verificarLinks.length).toBeGreaterThanOrEqual(1)
+    expect(verificarLinks.some((l) => l.getAttribute('href') === '/verificador')).toBe(true)
+
+    // Na home, CTAs concorrentes como "Criar conta" e "Ver Demonstração" foram removidos do topo
     const headerElement = screen.getByRole('banner')
-    const desktopDemoLinks = Array.from(headerElement.querySelectorAll('a[href="/demo"]'))
-    // Exatamente UM link para /demo no cabeçalho desktop
-    expect(desktopDemoLinks.length).toBe(1)
-    expect(desktopDemoLinks[0].textContent).toContain('Demonstração')
-
-    // Não deve haver botão ou badge grudado "Demo" residual no cabeçalho
-    expect(headerElement.textContent).not.toMatch(/Demo$/)
+    expect(headerElement.querySelector('a[href="/demo"]')).toBeNull()
   })
 
-  it('Drawer mobile exibe link para /demo com "Ver Demonstração"', () => {
+  it('Drawer mobile exibe CTA único Iniciar Diagnóstico e link Verificar Atestado', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
@@ -111,13 +98,11 @@ describe('Fluxo de Cadastro Permanente & Visível (Orbis Protocol)', () => {
     const openMenuBtn = screen.getByLabelText(/Abrir menu/i)
     fireEvent.click(openMenuBtn)
 
-    // Encontrar o link Ver Demonstração no drawer mobile
-    const allDemoLinks = screen.getAllByRole('link', { name: /Ver Demonstração/i })
-    const drawerDemoLink = allDemoLinks.find(
-      (l) => l.getAttribute('href') === '/demo' && l.className.includes('w-full'),
-    )
-    expect(drawerDemoLink).toBeDefined()
-    expect(drawerDemoLink?.getAttribute('href')).toBe('/demo')
+    // Encontrar o link Iniciar Diagnóstico e Verificar Atestado no drawer mobile
+    const diagLinks = screen.getAllByRole('link', { name: /Iniciar Diagnóstico/i })
+    expect(diagLinks.length).toBeGreaterThanOrEqual(1)
+    const verifLinks = screen.getAllByRole('link', { name: /Verificar Atestado/i })
+    expect(verifLinks.length).toBeGreaterThanOrEqual(1)
   })
 
   it('Layout oculta "Criar conta" e "Entrar" e exibe "Painel" quando autenticado', () => {

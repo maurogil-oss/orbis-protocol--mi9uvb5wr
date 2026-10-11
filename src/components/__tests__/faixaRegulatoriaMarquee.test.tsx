@@ -36,9 +36,9 @@ vi.mock('@/lib/pocketbase/client', () => ({
 }))
 
 describe('Faixa regulatória rolante (marquee) no Layout global', () => {
-  it('contém exatamente os 6 itens regulatórios exigidos na ordem correta', () => {
+  it('contém os itens regulatórios fora da home (ex: em /trilhas)', () => {
     const { container } = render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/trilhas']}>
         <Layout />
       </MemoryRouter>,
     )
@@ -76,5 +76,16 @@ describe('Faixa regulatória rolante (marquee) no Layout global', () => {
         'Res. BCB 4.945/2021: Políticas de Responsabilidade Social, Ambiental e Climática (PRSAC)',
       ).length,
     ).toBeGreaterThanOrEqual(1)
+  })
+
+  it('remove a faixa marquee da Home para cumprir WCAG 2.2.2 e requisito de lista regulatória fixa', () => {
+    const { container } = render(
+      <MemoryRouter initialEntries={['/']}>
+        <Layout />
+      </MemoryRouter>,
+    )
+
+    const marquee = container.querySelector('.animate-marquee')
+    expect(marquee).toBeNull()
   })
 })

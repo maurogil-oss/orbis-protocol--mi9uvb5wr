@@ -98,16 +98,21 @@ export function FormularioOrbisLpf({
 
     const dados = {
       cnpj,
-      razao_social: razaoSocial,
       email,
-      telefone: contatoTelefone,
       setor,
+      razao_social: razaoSocial || `Empresa CNPJ ${cnpj}`,
+      telefone: contatoTelefone,
       volume_exportacao: volumeExportacao,
     }
 
     const validacao = validarCamposLpf(dados)
     if (!validacao.valido) {
-      setErros(validacao.erros)
+      // Filtrar apenas os 3 campos públicos da LPF
+      const errosLpf: Record<string, string> = {}
+      if (validacao.erros.cnpj) errosLpf.cnpj = validacao.erros.cnpj
+      if (validacao.erros.email) errosLpf.email = validacao.erros.email
+      if (validacao.erros.setor) errosLpf.setor = validacao.erros.setor
+      setErros(errosLpf)
       return
     }
 
@@ -265,29 +270,33 @@ export function FormularioOrbisLpf({
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* CNPJ */}
+          {/* LPF encurtada para 3 campos com validação de CNPJ/DV e persistência */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Campo 1: CNPJ da Empresa */}
             <div>
               <label
                 htmlFor="lpf-cnpj"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F8FAFC] mb-2"
               >
-                CNPJ <span className="text-emerald-600 dark:text-[#059669]">*</span>
+                CNPJ da empresa <span className="text-emerald-600 dark:text-[#059669]">*</span>
               </label>
               <div className="relative">
                 <input
                   id="lpf-cnpj"
                   name="cnpj"
                   type="text"
+                  inputMode="numeric"
                   required
                   placeholder="00.000.000/0000-00"
+                  maxLength={18}
                   value={cnpj}
                   onChange={(e) => handleCnpjChange(e.target.value)}
+                  aria-invalid={Boolean(erros.cnpj)}
                   className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border ${
                     erros.cnpj
                       ? 'border-red-500 focus:border-red-500'
-                      : 'border-slate-200 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB]'
-                  } text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/60 text-sm focus:outline-none transition-colors`}
+                      : 'border-slate-300 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB]'
+                  } text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/60 text-sm focus:outline-none transition-colors min-h-[44px]`}
                 />
                 {consultandoCnpj && (
                   <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#94A3B8]">
@@ -297,60 +306,26 @@ export function FormularioOrbisLpf({
                 )}
               </div>
               {erros.cnpj && (
-                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">{erros.cnpj}</p>
-              )}
-            </div>
-
-            {/* Razão Social */}
-            <div>
-              <label
-                htmlFor="lpf-razao-social"
-                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F8FAFC] mb-2"
-              >
-                Razão Social <span className="text-emerald-600 dark:text-[#059669]">*</span>
-              </label>
-              <input
-                id="lpf-razao-social"
-                name="razao_social"
-                type="text"
-                required
-                placeholder="Nome empresarial conforme Receita Federal"
-                value={razaoSocial}
-                onChange={(e) => {
-                  setRazaoSocial(e.target.value)
-                  setErros((prev) => {
-                    const next = { ...prev }
-                    delete next.razao_social
-                    return next
-                  })
-                }}
-                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border ${
-                  erros.razao_social
-                    ? 'border-red-500 focus:border-red-500'
-                    : 'border-slate-200 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB]'
-                } text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/60 text-sm focus:outline-none transition-colors`}
-              />
-              {erros.razao_social && (
-                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">
-                  {erros.razao_social}
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1.5 font-medium">
+                  {erros.cnpj}
                 </p>
               )}
             </div>
 
-            {/* E-mail comercial */}
+            {/* Campo 2: E-mail corporativo */}
             <div>
               <label
                 htmlFor="lpf-email"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F8FAFC] mb-2"
               >
-                E-mail Comercial <span className="text-emerald-600 dark:text-[#059669]">*</span>
+                E-mail corporativo <span className="text-emerald-600 dark:text-[#059669]">*</span>
               </label>
               <input
                 id="lpf-email"
                 name="email"
                 type="email"
                 required
-                placeholder="exportacao@empresa.com.br"
+                placeholder="diretoria@empresa.com.br"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value)
@@ -360,43 +335,27 @@ export function FormularioOrbisLpf({
                     return next
                   })
                 }}
+                aria-invalid={Boolean(erros.email)}
                 className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border ${
                   erros.email
                     ? 'border-red-500 focus:border-red-500'
-                    : 'border-slate-200 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB]'
-                } text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/60 text-sm focus:outline-none transition-colors`}
+                    : 'border-slate-300 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB]'
+                } text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/60 text-sm focus:outline-none transition-colors min-h-[44px]`}
               />
               {erros.email && (
-                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">{erros.email}</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1.5 font-medium">
+                  {erros.email}
+                </p>
               )}
             </div>
 
-            {/* Contato/telefone */}
-            <div>
-              <label
-                htmlFor="lpf-telefone"
-                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F8FAFC] mb-2"
-              >
-                Contato / Telefone
-              </label>
-              <input
-                id="lpf-telefone"
-                name="telefone"
-                type="text"
-                placeholder="(00) 00000-0000"
-                value={contatoTelefone}
-                onChange={(e) => setContatoTelefone(maskPhone(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB] text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/60 text-sm focus:outline-none transition-colors"
-              />
-            </div>
-
-            {/* Setor (dropdown) */}
+            {/* Campo 3: Setor da empresa */}
             <div>
               <label
                 htmlFor="lpf-setor"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F8FAFC] mb-2"
               >
-                Setor <span className="text-emerald-600 dark:text-[#059669]">*</span>
+                Setor da empresa <span className="text-emerald-600 dark:text-[#059669]">*</span>
               </label>
               <select
                 id="lpf-setor"
@@ -411,11 +370,12 @@ export function FormularioOrbisLpf({
                     return next
                   })
                 }}
+                aria-invalid={Boolean(erros.setor)}
                 className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border ${
                   erros.setor
                     ? 'border-red-500 focus:border-red-500'
-                    : 'border-slate-200 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB]'
-                } text-slate-900 dark:text-[#F8FAFC] text-sm focus:outline-none transition-colors`}
+                    : 'border-slate-300 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB]'
+                } text-slate-900 dark:text-[#F8FAFC] text-sm focus:outline-none transition-colors min-h-[44px]`}
               >
                 <option value="" disabled>
                   Selecione o setor
@@ -431,30 +391,10 @@ export function FormularioOrbisLpf({
                 ))}
               </select>
               {erros.setor && (
-                <p className="text-xs text-red-500 dark:text-red-400 mt-1.5">{erros.setor}</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1.5 font-medium">
+                  {erros.setor}
+                </p>
               )}
-            </div>
-
-            {/* Volume de exportação estimado (opcional) */}
-            <div>
-              <label
-                htmlFor="lpf-volume"
-                className="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F8FAFC] mb-2"
-              >
-                Volume de Exportação Estimado{' '}
-                <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] font-normal normal-case">
-                  (opcional)
-                </span>
-              </label>
-              <input
-                id="lpf-volume"
-                name="volume_exportacao"
-                type="text"
-                placeholder="Ex.: 500 toneladas/mês, 2 lotes/ano"
-                value={volumeExportacao}
-                onChange={(e) => setVolumeExportacao(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-[#2563EB] text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8]/60 text-sm focus:outline-none transition-colors"
-              />
             </div>
           </div>
 
