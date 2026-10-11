@@ -48,7 +48,7 @@ export function NumerosVerificaveisSection({
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-[#059669]" />
               <span>Credibilidade e prova documental</span>
             </div>
-            <h2 className="font-heading font-extrabold text-xs sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl text-slate-900 dark:text-[#F8FAFC] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+            <h2 className="font-heading font-extrabold text-[clamp(0.72rem,2.8vw,2.25rem)] text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-tight whitespace-normal min-[480px]:whitespace-nowrap [text-wrap:balance]">
               CASO REAL DE PRODUÇÃO: LOTE VERTEC
             </h2>
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 mt-2 max-w-2xl leading-relaxed">

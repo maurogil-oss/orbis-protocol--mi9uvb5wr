@@ -80,7 +80,12 @@ describe('Hero Section - Home (Index)', () => {
     expect(secao).not.toBeNull()
 
     // Título da seção
-    expect(screen.getByText('DA NOTA FISCAL AO DOCUMENTO VERIFICÁVEL')).toBeDefined()
+    const titulo = screen.getByText('DA NOTA FISCAL AO DOCUMENTO VERIFICÁVEL')
+    expect(titulo).toBeDefined()
+    // Garante que não há truncamento com ellipsis/overflow-hidden que esconda palavras
+    expect(titulo.className).not.toContain('text-ellipsis')
+    expect(titulo.className).not.toContain('overflow-hidden')
+    expect(titulo.className).toContain('text-[clamp(')
 
     // Destaque "Você só participa da primeira"
     expect(screen.getByText('Você só participa da primeira.')).toBeDefined()

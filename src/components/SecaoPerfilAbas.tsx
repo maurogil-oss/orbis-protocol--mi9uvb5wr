@@ -169,7 +169,7 @@ export function SecaoPerfilAbas({ className = '', id = 'perfis-orbis' }: SecaoPe
             />
             <span>SOLUÇÕES DIRECIONADAS</span>
           </div>
-          <h2 className="font-heading font-black text-xs sm:text-lg md:text-2xl lg:text-3xl xl:text-4xl text-slate-900 dark:text-[#F8FAFC] tracking-tight mb-3 whitespace-nowrap overflow-hidden text-ellipsis">
+          <h2 className="font-heading font-black text-[clamp(0.72rem,2.8vw,2.25rem)] text-slate-900 dark:text-[#F8FAFC] tracking-tight mb-3 leading-tight whitespace-normal min-[480px]:whitespace-nowrap [text-wrap:balance]">
             COMO O ORBIS PROTOCOLO ATENDE O SEU PERFIL
           </h2>
           <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed font-normal">

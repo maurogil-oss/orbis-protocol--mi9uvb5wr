@@ -57,6 +57,13 @@ describe('Nova Home Orbis Protocol - Rodada 1 Completa', () => {
     expect(tabPerito).toBeDefined()
     expect(tabAcp).toBeDefined()
 
+    // Título da seção de perfis sem truncamento com ellipsis
+    const tituloPerfis = screen.getByText('COMO O ORBIS PROTOCOLO ATENDE O SEU PERFIL')
+    expect(tituloPerfis).toBeDefined()
+    expect(tituloPerfis.className).not.toContain('text-ellipsis')
+    expect(tituloPerfis.className).not.toContain('overflow-hidden')
+    expect(tituloPerfis.className).toContain('text-[clamp(')
+
     // Aba inicial ativa é Empresa
     expect(tabEmpresa.getAttribute('aria-selected')).toBe('true')
     expect(tabComprador.getAttribute('aria-selected')).toBe('false')
@@ -107,7 +114,11 @@ describe('Nova Home Orbis Protocol - Rodada 1 Completa', () => {
     )
 
     // Título da seção
-    expect(screen.getByText('REGULAÇÃO QUE MUDA O JOGO PARA A EMPRESA')).toBeDefined()
+    const tituloRegulacao = screen.getByText('REGULAÇÃO QUE MUDA O JOGO PARA A EMPRESA')
+    expect(tituloRegulacao).toBeDefined()
+    expect(tituloRegulacao.className).not.toContain('text-ellipsis')
+    expect(tituloRegulacao.className).not.toContain('overflow-hidden')
+    expect(tituloRegulacao.className).toContain('text-[clamp(')
 
     // 4 itens presentes
     expect(screen.getByText('Lei 15.042/2024')).toBeDefined()
