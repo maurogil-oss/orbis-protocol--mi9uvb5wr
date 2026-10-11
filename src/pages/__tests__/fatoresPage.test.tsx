@@ -63,6 +63,26 @@ describe('Página Pública /fatores - DM-ORB-001 v1.1', () => {
     expect(screen.getByText(/HTTP 409 CONFLITO_DE_CUSTODIA/i)).not.toBeNull()
     expect(screen.getByText(/\/backend\/v2\/verificador\/claim\/:chassi/i)).not.toBeNull()
 
+    // §5.4: Governança de Reivindicação Única & Integridade dMRV (sem duplicação e sem markdown cru)
+    expect(
+      screen.getByText(
+        /§5\.4 Regra de Governança de Reivindicação Única e Vedação à Dupla Contabilidade do CO₂e Evitado/i,
+      ),
+    ).not.toBeNull()
+    expect(
+      screen.getByText(
+        /5\.4\.1 Princípio da Reivindicação Única Pelo Detentor do Lastro de Transformação/i,
+      ),
+    ).not.toBeNull()
+    expect(
+      screen.getByText(/5\.4\.2 Segregação Gerador vs\. Reciclador \/ Processador/i),
+    ).not.toBeNull()
+    expect(screen.getByText(/5\.4\.3 Mecanismo de Bloqueio Automatizado/i)).not.toBeNull()
+    expect(screen.getByText(/5\.4\.4 Limitação Declarada/i)).not.toBeNull()
+    // Garantir que não existam marcadores markdown como texto cru
+    expect(screen.queryByText(/###/)).toBeNull()
+    expect(screen.queryByText(/####/)).toBeNull()
+
     // §6.1: R-134a, GWP 1530 e DF 1.0
     expect(
       screen.getByText(/§6\.1 Fatores Consolidados em CO₂e e Tratamento Mandatório do R-134a/i),

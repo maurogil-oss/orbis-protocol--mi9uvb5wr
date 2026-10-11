@@ -844,97 +844,6 @@ export default function FatoresEmissaoPublicoPage() {
                   <p>
                     É expressamente vedada a apropriação simultânea do indicador de evitado pelo
                     gerador originário do material/resíduo e pelo reciclador, desmanche ou
-                    processador secundário: o gerador (ex.: seguradora, frotista, montadora ou
-                    indústria descaracterizadora) que aliena ou transfere o bem inservível a
-                    terceiro não adquire o direito de reivindicar o evitado; quem aliena transfere
-                    com ele a possibilidade de reivindicação. Uma mesma chave de NF-e (44 dígitos),
-                    manifesto de transporte (MTR/SINIR) ou hash SHA-256 não pode respaldar
-                    declarações de inventário duplo.
-                  </p>
-                </div>
-
-                {/* 5.4.3 */}
-                <div className="p-5 rounded-2xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/30 space-y-2.5">
-                  <h3 className="font-heading font-bold text-base text-amber-900 dark:text-[#D9B36C] flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-[#D9B36C] shrink-0" />
-                    <span>5.4.3 Mecanismo de bloqueio automatizado</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-700 dark:text-[#93A3B5] leading-relaxed">
-                    Identificada colisão documental entre lotes (mesma chave NF-e, MTR ou hash), a
-                    plataforma comuta o status do lote para{' '}
-                    <code className="text-rose-600 dark:text-[#EF4444] font-mono font-bold">
-                      conflito_reivindicacao
-                    </code>
-                    , zera o indicador de evitado (
-                    <strong className="text-rose-600 dark:text-[#EF4444] font-mono">
-                      0,00 kgCO₂e
-                    </strong>
-                    ) e registra justificativa na trilha de auditoria,{' '}
-                    <strong className="text-slate-900 dark:text-[#F4F7FA]">
-                      PRESERVANDO o inventário físico e as emissões brutas
-                    </strong>
-                    . A reivindicação, quando admitida, é sempre sobre o evitado LÍQUIDO (aplicado o
-                    fator de conservação DF = 0,30). A plataforma reafirma a natureza não-creditícia
-                    do indicador: o evitado é métrica de impacto preliminar, não ativo negociável.
-                  </p>
-                </div>
-
-                {/* 5.4.4 */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
-                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
-                    5.4.4 Limitação declarada
-                  </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
-                    A checagem automatizada atua sobre identificadores documentais exatos (chave de
-                    NF-e de 44 dígitos, hash SHA-256). Rateio fracionado de massa entre gerador e
-                    processador na mesma cadeia não é detectável automaticamente e fica como
-                    procedimento de auditoria pericial externa (ART/RRT).
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 5.4: REGRA DE GOVERNANÇA DE REIVINDICAÇÃO ÚNICA */}
-            <section
-              id="sec-54"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <ShieldCheck className="w-4 h-4" />
-                <span>
-                  Seção 5.4 • Governança de Reivindicação Única & Vedação à Dupla Contabilidade
-                </span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                ### §5.4 Regra de Governança de Reivindicação Única e Vedação à Dupla Contabilidade
-                do CO₂e Evitado
-              </h2>
-              <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
-                <div className="space-y-2">
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    #### 5.4.1 Princípio da Reivindicação Única Pelo Detentor do Lastro de
-                    Transformação
-                  </h3>
-                  <p>
-                    Cada quilograma de dióxido de carbono equivalente classificado como &quot;CO₂e
-                    evitado&quot; (burden avoided de reciclagem e reúso funcional) possui unicidade
-                    estrita de atribuição. Sob o protocolo dMRV Orbis, o benefício ambiental
-                    preliminar do material recuperado só pode ser reivindicado por uma única
-                    entidade jurídica em toda a cadeia de valor: a pessoa jurídica que detém a prova
-                    documental comprovada da transformação física ou desmontagem técnica (lote com
-                    NF-e/DANFE de saída ou MTR/SINIR cujos hashes SHA-256 e chaves de acesso de 44
-                    dígitos estejam devidamente validados e custodiados). O detentor da custódia do
-                    lote é o único reivindicador admitido no sistema.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    #### 5.4.2 Segregação Gerador vs. Reciclador / Processador
-                  </h3>
-                  <p>
-                    É expressamente vedada a apropriação simultânea do indicador de evitado pelo
-                    gerador originário do material/resíduo e pelo reciclador, desmanche ou
                     processador secundário:
                   </p>
                   <ol className="list-decimal pl-5 space-y-1.5 text-xs sm:text-sm">
@@ -960,26 +869,37 @@ export default function FatoresEmissaoPublicoPage() {
                   </ol>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/40 space-y-2">
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    #### 5.4.3 Mecanismo de Bloqueio Automatizado
+                {/* 5.4.3 */}
+                <div className="p-5 rounded-2xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/30 space-y-2.5">
+                  <h3 className="font-heading font-bold text-base text-amber-900 dark:text-[#D9B36C] flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-[#D9B36C] shrink-0" />
+                    <span>5.4.3 Mecanismo de Bloqueio Automatizado</span>
                   </h3>
-                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-700 dark:text-[#93A3B5] leading-relaxed">
                     Identificada colisão documental entre lotes custodiados (mesma chave de NF-e,
-                    MTR/SINIR ou hash SHA-256), a plataforma comuta o status do lote para
-                    conflito_reivindicacao, zera o indicador de evitado (0,00 kgCO₂e) e registra
-                    justificativa na trilha de auditoria append-only, PRESERVANDO integralmente o
-                    inventário físico e as emissões brutas. A reivindicação, quando admitida, é
-                    sempre sobre o evitado LÍQUIDO (aplicado o fator de conservação DF = 0,30).
-                    Reafirma-se a natureza não-creditícia do indicador: o CO₂e evitado é métrica de
-                    impacto preliminar, sem validação externa, e não constitui ativo negociável ou
-                    crédito de carbono.
+                    MTR/SINIR ou hash SHA-256), a plataforma comuta o status do lote para{' '}
+                    <code className="text-rose-600 dark:text-[#EF4444] font-mono font-bold">
+                      conflito_reivindicacao
+                    </code>
+                    , zera o indicador de evitado (
+                    <strong className="text-rose-600 dark:text-[#EF4444] font-mono">
+                      0,00 kgCO₂e
+                    </strong>
+                    ) e registra justificativa na trilha de auditoria append-only,{' '}
+                    <strong className="text-slate-900 dark:text-[#F4F7FA]">
+                      PRESERVANDO integralmente o inventário físico e as emissões brutas
+                    </strong>
+                    . A reivindicação, quando admitida, é sempre sobre o evitado LÍQUIDO (aplicado o
+                    fator de conservação DF = 0,30). Reafirma-se a natureza não-creditícia do
+                    indicador: o CO₂e evitado é métrica de impacto preliminar, sem validação
+                    externa, e não constitui ativo negociável ou crédito de carbono.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/40 space-y-2">
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    #### 5.4.4 Limitação Declarada
+                {/* 5.4.4 */}
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
+                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
+                    5.4.4 Limitação Declarada
                   </h3>
                   <p className="text-xs text-[#93A3B5] leading-relaxed">
                     A checagem automatizada atua sobre identificadores documentais exatos (chave de

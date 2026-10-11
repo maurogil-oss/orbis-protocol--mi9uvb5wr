@@ -264,6 +264,128 @@ export interface DocumentoIdentificadores {
   [key: string]: any
 }
 
+/**
+ * §5.4 Verificação de Conflito de Reivindicação & Vedação à Dupla Contabilidade
+ * Regra: uma mesma chave NF-e (44 dígitos), hash SHA-256 ou manifesto MTR/SINIR não pode
+ * ser reivindicado duplamente em lotes distintos.
+ */
+export function verificarDuplicidadeDocumental(
+  candidato: {
+    chave_nfe?: string
+    hash_sha256?: string
+    mtr_sinir?: string
+    documento_fiscal?: {
+      chave_nfe?: string
+      hash_sha256?: string
+      mtr_sinir?: string
+    }
+    destinacao?: EvidenciaDestinacaoInput[]
+  },
+  existentes?: DocumentoIdentificadores[],
+): ConflitoReivindicacaoInfo {
+  if (!existentes || existentes.length === 0) {
+    return { emConflito: false, motivo: 'Nenhum lote prévio em custódia para comparação.' }
+  }
+
+  const chaveCandidata = (candidato.chave_nfe || candidato.documento_fiscal?.chave_nfe || '').trim()
+  const hashCandidato = (
+    candidato.hash_sha256 ||
+    candidato.documento_fiscal?.hash_sha256 ||
+    ''
+  ).trim()
+  const mtrCandidato = (candidato.mtr_sinir || candidato.documento_fiscal?.mtr_sinir || '').trim()
+
+  // Também verificar se alguma destinação tem chave ou hash
+  const chavesDestinacao: string[] = []
+  const hashesDestinacao: string[] = []
+  const mtrsDestinacao: string[] = []
+  if (Array.isArray(candidato.destinacao)) {
+    for (const d of candidato.destinacao) {
+      if (d?.evidencia?.chave) chavesDestinacao.push(d.evidencia.chave.trim())
+      if (d?.evidencia?.hash_sha256) hashesDestinacao.push(d.evidencia.hash_sha256.trim())
+      if (d?.evidencia?.mtr_sinir) mtrsDestinacao.push(d.evidencia.mtr_sinir.trim())
+    }
+  }
+
+  for (const lote of existentes) {
+    const chaveExistente = (lote.chave_nfe || lote.payload_bruto_json?.chaveAcesso || '').trim()
+    const hashExistente = (lote.hash_sha256 || lote.payload_bruto_json?.hashSha256 || '').trim()
+    const mtrExistente = (lote.mtr_sinir || '').trim()
+
+    // 1. Colisão por chave de NF-e (44 dígitos)
+    if (chaveCandidata && chaveExistente && chaveCandidata === chaveExistente) {
+      return {
+        emConflito: true,
+        motivo: `Chave de NF-e idêntica (${chaveCandidata}) já custodiada no lote ${lote.id || 'anterior'}.`,
+        documentoColisor: chaveCandidata,
+        tipoDocumento: 'nfe_chave',
+        loteColisorId: lote.id,
+      }
+    }
+    for (const cd of chavesDestinacao) {
+      if (chaveExistente && cd === chaveExistente) {
+        return {
+          emConflito: true,
+          motivo: `Chave de NF-e de destinação (${cd}) colide com lote prévio ${lote.id || 'anterior'}.`,
+          documentoColisor: cd,
+          tipoDocumento: 'nfe_chave',
+          loteColisorId: lote.id,
+        }
+      }
+    }
+
+    // 2. Colisão por Hash SHA-256 do documento
+    if (
+      hashCandidato &&
+      hashExistente &&
+      hashCandidato.toLowerCase() === hashExistente.toLowerCase()
+    ) {
+      return {
+        emConflito: true,
+        motivo: `Hash SHA-256 idêntico (${hashCandidato.slice(0, 16)}...) já custodiado no lote ${lote.id || 'anterior'}.`,
+        documentoColisor: hashCandidato,
+        tipoDocumento: 'hash_sha256',
+        loteColisorId: lote.id,
+      }
+    }
+    for (const hd of hashesDestinacao) {
+      if (hashExistente && hd.toLowerCase() === hashExistente.toLowerCase()) {
+        return {
+          emConflito: true,
+          motivo: `Hash SHA-256 de destinação colide com lote prévio ${lote.id || 'anterior'}.`,
+          documentoColisor: hd,
+          tipoDocumento: 'hash_sha256',
+          loteColisorId: lote.id,
+        }
+      }
+    }
+
+    // 3. Colisão por Manifesto MTR/SINIR
+    if (mtrCandidato && mtrExistente && mtrCandidato === mtrExistente) {
+      return {
+        emConflito: true,
+        motivo: `Manifesto MTR/SINIR idêntico (${mtrCandidato}) já custodiado no lote ${lote.id || 'anterior'}.`,
+        documentoColisor: mtrCandidato,
+        tipoDocumento: 'mtr_sinir',
+        loteColisorId: lote.id,
+      }
+    }
+    for (const md of mtrsDestinacao) {
+      if (mtrExistente && md === mtrExistente) {
+        return {
+          emConflito: true,
+          motivo: `Manifesto MTR/SINIR de destinação (${md}) colide com lote prévio ${lote.id || 'anterior'}.`,
+          documentoColisor: md,
+          tipoDocumento: 'mtr_sinir',
+          loteColisorId: lote.id,
+        }
+      }
+    }
+  }
+
+  return { emConflito: false, motivo: 'Nenhuma colisão documental detectada.' }
+}
+
 export interface LoteInputV2 {
   cdv: {
     nome: string

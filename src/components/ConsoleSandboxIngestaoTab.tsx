@@ -34,6 +34,8 @@ import {
   executarSandboxPurge,
   type SandboxPurgeContagem,
 } from '@/services/adminConsoleService'
+import { verificarDuplicidadeDocumental } from '@/services/cdvEngineV2'
+import { registrarEventoAudit } from '@/services/auditService'
 import { useAuth } from '@/contexts/AuthContext'
 import { Trash2, ShieldCheck } from 'lucide-react'
 
