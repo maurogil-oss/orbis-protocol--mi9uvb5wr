@@ -14,8 +14,8 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
     vi.restoreAllMocks()
   })
 
-  // 1. Textos da Landing Page (Index)
-  it('exibe a seção de destaque Orbis LPF na Home (Index) com textos exatos, selo e microcopy', () => {
+  // 1. Textos da Landing Page (Index) na nova estrutura compactada em duas colunas
+  it('exibe a seção de destaque Orbis LPF na Home (Index) com textos exatos, selo e formulário à direita sem botão redundante de scroll', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Index />
@@ -36,15 +36,10 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
       screen.getByText(/Sua exportação, precificada em carbono antes de faturar\./i),
     ).toBeDefined()
 
-    // Parágrafos exatos
+    // Parágrafos concisos da versão compactada
     expect(
       screen.getByText(
         /Hoje, a indústria descobre a intensidade de carbono do seu produto meses depois do embarque/i,
-      ),
-    ).toBeDefined()
-    expect(
-      screen.getByText(
-        /O Orbis inverte a ordem\. No momento do pedido de venda, calculamos a intensidade de carbono estimada do lote/i,
       ),
     ).toBeDefined()
     expect(screen.getByText('Você negocia com o número na mão. Não meses depois.')).toBeDefined()
@@ -52,20 +47,21 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
     // Linha de público e estado declarado
     expect(
       screen.getByText(
-        /Para siderúrgicas, fundições, agroindústrias, desmanches e montadoras com exportação ou exposição a critérios de intensidade de carbono\./i,
+        /Siderúrgicas, fundições, agroindústrias, desmanches e exportadores com exposição a critérios de carbono\./i,
       ),
     ).toBeDefined()
     expect(screen.getByText('[Estado: metodologia em estruturação — oferta piloto]')).toBeDefined()
 
-    // CTA primário e microcopy
-    const botaoCta = screen.getByRole('button', { name: /Solicitar primeira leitura gratuita/i })
-    expect(botaoCta).toBeDefined()
-    expect(screen.getByText('1 leitura por CNPJ. Sem compromisso.')).toBeDefined()
-
-    // Formulário do item 3 presente na página
+    // Botão de scroll redundante removido conforme escopo aprovado
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Sua primeira leitura é por nossa conta.' }),
-    ).toBeDefined()
+      screen.queryByRole('button', { name: /Solicitar primeira leitura gratuita/i }),
+    ).toBeNull()
+
+    // Formulário de 3 campos visível à direita sem rolagem
+    expect(screen.getByLabelText(/CNPJ da empresa/i)).toBeDefined()
+    expect(screen.getByLabelText(/E-mail corporativo/i)).toBeDefined()
+    expect(screen.getByLabelText(/Setor da empresa/i)).toBeDefined()
+    expect(screen.getByRole('button', { name: /Enviar solicitação/i })).toBeDefined()
   })
 
   // 2. Card em /solucoes
@@ -105,59 +101,32 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
     ).toBeGreaterThanOrEqual(1)
   })
 
-  // 3. Formulário da Leitura Gratuita e Regra de Limite de 1 por CNPJ
-  it('exibe os campos obrigatórios do formulário e textos "O que você recebe" e "Como funciona"', () => {
+  // 3. Formulário da Leitura Gratuita (3 campos essenciais) e Regra de Limite de 1 por CNPJ
+  it('exibe os campos obrigatórios do formulário (CNPJ, e-mail, setor) com validação e persistência', () => {
     render(
       <MemoryRouter>
-        <FormularioOrbisLpf />
+        <FormularioOrbisLpf tituloVisivel />
       </MemoryRouter>,
     )
 
-    // Textos informativos
+    // Textos informativos quando tituloVisivel = true
     expect(
       screen.getByText(
         /Envie os dados do seu próximo embarque e receba o Relatório de Pré-Leitura Orbis/i,
       ),
     ).toBeDefined()
 
-    expect(
-      screen.getByText('Intensidade de carbono estimada do lote (tCO₂e por unidade);'),
-    ).toBeDefined()
-    expect(
-      screen.getByText('Comparação entre o cenário sem prova e o cenário com dossiê probatório;'),
-    ).toBeDefined()
-    expect(
-      screen.getByText(
-        'Lista objetiva do que falta para a prova completa — e o que o Orbis resolve.',
-      ),
-    ).toBeDefined()
+    // 3 campos principais da LPF
+    expect(screen.getByLabelText(/CNPJ da empresa/i)).toBeDefined()
+    expect(screen.getByLabelText(/E-mail corporativo/i)).toBeDefined()
+    expect(screen.getByLabelText(/Setor da empresa/i)).toBeDefined()
 
-    // Como funciona com menção expressa à "equipe técnica Orbis"
-    expect(
-      screen.getByText(
-        /A leitura inicial é operada pela equipe técnica Orbis \(oferta piloto\)\./i,
-      ),
-    ).toBeDefined()
-
-    // Campos do formulário
-    expect(screen.getByLabelText(/CNPJ/i)).toBeDefined()
-    expect(screen.getByLabelText(/Razão Social/i)).toBeDefined()
-    expect(screen.getByLabelText(/E-mail Comercial/i)).toBeDefined()
-    expect(screen.getByLabelText(/Contato \/ Telefone/i)).toBeDefined()
-    expect(screen.getByLabelText(/Setor/i)).toBeDefined()
-    expect(screen.getByLabelText(/Volume de Exportação/i)).toBeDefined()
-
-    // Botão e microcopy
+    // Botão de envio
     expect(screen.getByRole('button', { name: /Enviar solicitação/i })).toBeDefined()
-    expect(
-      screen.getByText(
-        'Seus dados são usados exclusivamente para a elaboração da leitura. Sem spam, sem compartilhamento.',
-      ),
-    ).toBeDefined()
+    expect(screen.getByText('1 leitura por CNPJ. Sem compromisso.')).toBeDefined()
   })
 
   it('exibe mensagem amigável quando o CNPJ já solicitou a leitura gratuita (limite de 1 por CNPJ)', async () => {
-    // Mock do serviço simulando resposta do backend informando ja_solicitado = true
     vi.spyOn(orbisLpfService, 'enviarSolicitacaoLpf').mockResolvedValueOnce({
       success: true,
       ja_solicitado: true,
@@ -171,15 +140,13 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
       </MemoryRouter>,
     )
 
-    const cnpjInput = screen.getByLabelText(/CNPJ/i)
-    const razaoInput = screen.getByLabelText(/Razão Social/i)
-    const emailInput = screen.getByLabelText(/E-mail Comercial/i)
-    const setorSelect = screen.getByLabelText(/Setor/i)
+    const cnpjInput = screen.getByLabelText(/CNPJ da empresa/i)
+    const emailInput = screen.getByLabelText(/E-mail corporativo/i)
+    const setorSelect = screen.getByLabelText(/Setor da empresa/i)
     const submitBtn = screen.getByRole('button', { name: /Enviar solicitação/i })
 
     // Preenche com CNPJ válido matematicamente
     fireEvent.change(cnpjInput, { target: { value: '14.882.310/0001-91' } })
-    fireEvent.change(razaoInput, { target: { value: 'Metalúrgica Teste S.A.' } })
     fireEvent.change(emailInput, { target: { value: 'contato@metalurgicateste.com' } })
     fireEvent.change(setorSelect, { target: { value: 'aço' } })
 
@@ -210,14 +177,12 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
       </MemoryRouter>,
     )
 
-    const cnpjInput = screen.getByLabelText(/CNPJ/i)
-    const razaoInput = screen.getByLabelText(/Razão Social/i)
-    const emailInput = screen.getByLabelText(/E-mail Comercial/i)
-    const setorSelect = screen.getByLabelText(/Setor/i)
+    const cnpjInput = screen.getByLabelText(/CNPJ da empresa/i)
+    const emailInput = screen.getByLabelText(/E-mail corporativo/i)
+    const setorSelect = screen.getByLabelText(/Setor da empresa/i)
     const submitBtn = screen.getByRole('button', { name: /Enviar solicitação/i })
 
     fireEvent.change(cnpjInput, { target: { value: '14.882.310/0001-91' } })
-    fireEvent.change(razaoInput, { target: { value: 'Indústria Nova S.A.' } })
     fireEvent.change(emailInput, { target: { value: 'export@industrianova.com.br' } })
     fireEvent.change(setorSelect, { target: { value: 'alumínio' } })
 

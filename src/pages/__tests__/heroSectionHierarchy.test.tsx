@@ -35,7 +35,7 @@ describe('Hero Section - Home (Index)', () => {
 
     const ctaProtocolo = screen.getByRole('link', { name: /Conhecer o Protocolo/i })
     expect(ctaProtocolo).toBeDefined()
-    expect(ctaProtocolo.getAttribute('href')).toBe('#eixos-narrativos')
+    expect(ctaProtocolo.getAttribute('href')).toBe('#solucoes-hub-links')
 
     // Emblema animado mantido
     expect(screen.getByText('Auditoria & Rastreabilidade Confiável')).toBeDefined()
