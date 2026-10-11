@@ -85,9 +85,9 @@ describe('Espaço MOVER — Camadas 1, 2 e 3 (Regras e Alinhamento Metodológico
 
   it('Camada 2 (Cockpit Bureau ACP): aba Programa Carbono com card de elegibilidade e reserva pré-laudo', async () => {
     render(
-      <MemoryRouter initialEntries={['/bureau']}>
+      <MemoryRouter initialEntries={['/solucoes/bureau-acp']}>
         <Routes>
-          <Route path="/bureau" element={<BureauACP />} />
+          <Route path="/solucoes/bureau-acp" element={<BureauACP />} />
         </Routes>
       </MemoryRouter>,
     )

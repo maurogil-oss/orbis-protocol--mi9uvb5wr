@@ -297,7 +297,7 @@ export function MoverPublicPage() {
             </Link>
             {/* Ação secundária neutra */}
             <Link
-              to="/bureau"
+              to="/solucoes/bureau-acp"
               className="px-6 py-3.5 rounded-xl border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] font-medium text-xs tracking-wider hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.35)] text-center bg-[#16202B] transition-all"
             >
               Acessar cockpit Bureau

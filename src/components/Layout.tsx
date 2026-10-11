@@ -223,7 +223,6 @@ export default function Layout() {
   // Check if current route matches any solutions item or solutions index
   const isSolutionsActive =
     location.pathname === '/solucoes' ||
-    location.pathname === '/bureau' ||
     location.pathname === '/solucoes/bureau-acp' ||
     location.pathname === '/solucoes/portal-corporativo' ||
     allSolutionItems.some((item) => {
@@ -462,7 +461,7 @@ export default function Layout() {
                       <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 px-2.5 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
                         <span>Passaporte sustentável de fornecedores:</span>
                         <Link
-                          to="/bureau"
+                          to="/solucoes/bureau-acp"
                           onClick={() => setSolutionsDropdownOpen(false)}
                           className="text-emerald-600 dark:text-[#059669] hover:underline font-medium"
                         >

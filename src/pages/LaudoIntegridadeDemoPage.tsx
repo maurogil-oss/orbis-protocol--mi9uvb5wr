@@ -51,7 +51,7 @@ export default function LaudoIntegridadeDemoPage() {
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
-              to="/demo"
+              to="/demo/orientada"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />

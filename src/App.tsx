@@ -1,5 +1,5 @@
 /* Main App Component - Handles routing (using react-router-dom), query client and other providers */
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import RevisorExternoF6Page from '@/pages/RevisorExternoF6Page'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
@@ -69,6 +69,15 @@ import PosicaoCreditoCarbonoPage from './pages/PosicaoCreditoCarbonoPage'
 import PosicaoEscopo3Page from './pages/PosicaoEscopo3Page'
 import NotFound from './pages/NotFound'
 
+/**
+ * Redireciona preservando parâmetros de consulta (query string) e hash.
+ * Substitui aliases legados por rotas canônicas de forma imediata (replace).
+ */
+export const RedirectPreserveQuery = ({ to }: { to: string }) => {
+  const location = useLocation()
+  return <Navigate to={`${to}${location.search}${location.hash}`} replace />
+}
+
 const App = () => (
   <BrowserRouter>
     <ScrollToTop />
@@ -80,7 +89,8 @@ const App = () => (
           <Route element={<Layout />}>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
-            <Route path="/demo" element={<ModoDemonstracaoOrientadaPage />} />
+            {/* Rodada 6 — Aliases legados com redirects que preservam query string */}
+            <Route path="/demo" element={<RedirectPreserveQuery to="/demo/orientada" />} />
             <Route path="/demo/orientada" element={<ModoDemonstracaoOrientadaPage />} />
             <Route path="/demo/fatores-comparativo" element={<FatoresComparativoDemoPage />} />
             <Route path="/demo/laudo-integridade" element={<LaudoIntegridadeDemoPage />} />
@@ -93,7 +103,7 @@ const App = () => (
             <Route path="/solucoes" element={<SolucoesIndex />} />
             <Route path="/protocolo" element={<ProtocoloIndexPage />} />
             <Route path="/solucoes/bureau-acp" element={<BureauACP />} />
-            <Route path="/bureau" element={<BureauACP />} />
+            <Route path="/bureau" element={<RedirectPreserveQuery to="/solucoes/bureau-acp" />} />
             <Route path="/corporativo" element={<ModoCorporativoDemoPage />} />
             <Route path="/corporativo/dcp" element={<DcpCorporativoDemoPage />} />
             <Route path="/dcp/:selo" element={<DcpProdutoPublicoPage />} />
@@ -135,13 +145,13 @@ const App = () => (
             <Route path="/preferencias" element={<PreferenciasEmailPage />} />{' '}
             <Route path="/reativacao/opt-out" element={<PreferenciasEmailPage />} />
             <Route path="/registro" element={<RegistroPage />} />
-            <Route path="/cadastro" element={<Navigate to="/registro" replace />} />
+            <Route path="/cadastro" element={<RedirectPreserveQuery to="/registro" />} />
             <Route path="/teste" element={<TestCatalog />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/termos" element={<TermosUsoPage />} />
             <Route path="/termos-de-uso" element={<Navigate to="/termos" replace />} />
             <Route path="/planos" element={<Planos />} />
-            <Route path="/financeiro" element={<Navigate to="/planos" replace />} />
+            <Route path="/financeiro" element={<RedirectPreserveQuery to="/planos" />} />
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />
             <Route path="/api-docs-nfs" element={<ApiDocsNfsPage />} />
             <Route path="/fatores" element={<FatoresEmissaoPublicoPage />} />
@@ -152,10 +162,13 @@ const App = () => (
             <Route path="/equipe" element={<EquipePage />} />
             {/* Orbis Educação & Cadastro/Painel de Escolas */}
             <Route path="/educacao" element={<EducacaoPublicPage />} />
-            <Route path="/orbis-educacao" element={<Navigate to="/educacao" replace />} />
+            <Route path="/orbis-educacao" element={<RedirectPreserveQuery to="/educacao" />} />
             <Route path="/escolas/cadastro" element={<CadastroEscolasPage />} />
             <Route path="/escolas/painel" element={<PainelEducacionalPage />} />
-            <Route path="/educacao/painel" element={<Navigate to="/escolas/painel" replace />} />
+            <Route
+              path="/educacao/painel"
+              element={<RedirectPreserveQuery to="/escolas/painel" />}
+            />
             {/* Protected Routes (Require Authentication) */}
             <Route
               path="/dossie-mover"

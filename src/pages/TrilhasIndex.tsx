@@ -104,7 +104,7 @@ export default function TrilhasIndex() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                to="/cadastro-escolas"
+                to="/escolas/cadastro"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/20 transition-all text-xs border border-white/20 min-h-[44px]"
               >
                 <School className="w-4 h-4 text-emerald-400" />

@@ -473,7 +473,7 @@ export default function ConsoleAuditor() {
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
             <Link
-              to="/bureau"
+              to="/solucoes/bureau-acp"
               className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#16202B] border border-emerald-300 dark:border-[#12B886]/40 text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-colors shadow-sm"
             >
               Cockpit Bureau ACP

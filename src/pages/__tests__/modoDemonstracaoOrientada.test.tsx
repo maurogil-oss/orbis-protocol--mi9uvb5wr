@@ -49,7 +49,7 @@ describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
 
   it('deve renderizar a Etapa 1 (Boas-vindas) por padrão e acionar telemetria', async () => {
     render(
-      <MemoryRouter initialEntries={['/demo']}>
+      <MemoryRouter initialEntries={['/demo/orientada']}>
         <ModoDemonstracaoOrientadaPage />
       </MemoryRouter>,
     )
@@ -78,7 +78,7 @@ describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
 
   it('deve avançar para a Etapa 2 (Motor de Cálculo) e exibir segregação fóssil x biogênica', async () => {
     render(
-      <MemoryRouter initialEntries={['/demo']}>
+      <MemoryRouter initialEntries={['/demo/orientada']}>
         <ModoDemonstracaoOrientadaPage />
       </MemoryRouter>,
     )
@@ -97,7 +97,7 @@ describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
 
   it('deve permitir pular diretamente para a Etapa 4 (Rastreabilidade CDV) pela trilha lateral', async () => {
     render(
-      <MemoryRouter initialEntries={['/demo']}>
+      <MemoryRouter initialEntries={['/demo/orientada']}>
         <ModoDemonstracaoOrientadaPage />
       </MemoryRouter>,
     )
@@ -116,7 +116,7 @@ describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
 
   it('deve exibir os CTAs de encerramento na Etapa 6', async () => {
     render(
-      <MemoryRouter initialEntries={['/demo']}>
+      <MemoryRouter initialEntries={['/demo/orientada']}>
         <ModoDemonstracaoOrientadaPage />
       </MemoryRouter>,
     )
@@ -145,7 +145,7 @@ describe('ModoDemonstracaoOrientadaPage (/demo)', () => {
       })
 
     render(
-      <MemoryRouter initialEntries={['/demo']}>
+      <MemoryRouter initialEntries={['/demo/orientada']}>
         <ModoDemonstracaoOrientadaPage />
       </MemoryRouter>,
     )

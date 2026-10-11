@@ -67,7 +67,7 @@ export async function registrarInicioDemonstracao(
   const etapaNome = input.etapaNome || 'Boas-vindas'
   const timestampInicio = new Date().toISOString()
   const origemUrl =
-    input.origemUrl || (typeof window !== 'undefined' ? window.location.href : '/demo')
+    input.origemUrl || (typeof window !== 'undefined' ? window.location.href : '/demo/orientada')
 
   // Resumo anônimo do user agent (apenas tipo de dispositivo / plataforma, sem dados de identificação)
   let userAgentResumido = 'Navegador Web'

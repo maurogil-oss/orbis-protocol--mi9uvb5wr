@@ -119,7 +119,7 @@ export default function ModoDemonstracaoOrientadaPage() {
     registrarInicioDemonstracao({
       etapaInicial: 1,
       etapaNome: 'Boas-vindas',
-      origemUrl: typeof window !== 'undefined' ? window.location.href : '/demo',
+      origemUrl: typeof window !== 'undefined' ? window.location.href : '/demo/orientada',
     }).catch(() => {
       /* non-blocking */
     })

@@ -84,7 +84,7 @@ export default function PassaporteFornecedorPublicoPage() {
           </p>
           <div className="pt-2">
             <Link
-              to="/bureau"
+              to="/solucoes/bureau-acp"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] text-xs uppercase tracking-wider"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -102,7 +102,7 @@ export default function PassaporteFornecedorPublicoPage() {
         {/* Topo / Voltar */}
         <div className="flex items-center justify-between">
           <Link
-            to="/bureau"
+            to="/solucoes/bureau-acp"
             className="inline-flex items-center gap-2 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -530,7 +530,7 @@ export default function PassaporteFornecedorPublicoPage() {
           </p>
           <div className="text-[11px] text-[#93A3B5]/80">
             Deseja verificar outros fornecedores ou emitir o passaporte da sua empresa?{' '}
-            <Link to="/bureau" className="text-[#12B886] underline font-semibold">
+            <Link to="/solucoes/bureau-acp" className="text-[#12B886] underline font-semibold">
               Conheça o Cockpit do Bureau ACP
             </Link>
           </div>

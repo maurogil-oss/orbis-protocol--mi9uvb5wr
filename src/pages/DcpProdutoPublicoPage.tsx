@@ -282,7 +282,7 @@ export default function DcpProdutoPublicoPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 pb-4 border-b border-[rgba(244,247,250,0.1)] no-print">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <Link
-              to="/bureau"
+              to="/solucoes/bureau-acp"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
