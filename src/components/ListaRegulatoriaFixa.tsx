@@ -70,10 +70,10 @@ export function ListaRegulatoriaFixa({ className = '' }: ListaRegulatoriaFixaPro
             />
             <span>Marco Regulatório Brasileiro e Global</span>
           </div>
-          <h2 className="font-heading font-black text-[clamp(0.72rem,2.8vw,2.25rem)] text-slate-900 dark:text-[#F8FAFC] tracking-tight mb-3 leading-tight whitespace-normal min-[480px]:whitespace-nowrap [text-wrap:balance]">
+          <h2 className="text-center font-heading font-black text-[clamp(0.72rem,2.8vw,2.25rem)] text-slate-900 dark:text-[#F8FAFC] tracking-tight mb-3 leading-tight whitespace-normal min-[480px]:whitespace-nowrap [text-wrap:balance]">
             REGULAÇÃO QUE MUDA O JOGO PARA A EMPRESA
           </h2>
-          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
+          <p className="text-center text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
             As quatro diretrizes que tornam a auditoria documental de notas fiscais e emissões
             mandatória para a indústria brasileira.
           </p>

@@ -67,4 +67,38 @@ describe('Landing Page - Verificação de ausência de truncamento nos 4 título
       expect(heading.className).toContain('[text-wrap:balance]')
     }
   })
+
+  it('garante que cada título compartilha alinhamento coerente com seu subtítulo/parágrafo introdutório', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Index />
+      </MemoryRouter>,
+    )
+
+    // Seção 1: Da nota fiscal ao documento verificável -> centralizado com subtítulo
+    const h2Secao1 = screen.getByText('DA NOTA FISCAL AO DOCUMENTO VERIFICÁVEL')
+    expect(h2Secao1.className).toContain('text-center')
+    const pSecao1 = screen.getByText(/Transforme documentos fiscais rotineiros em comprovação/i)
+    expect(pSecao1.className).toContain('text-center')
+
+    // Seção 2: Como o Orbis Protocolo atende o seu perfil -> centralizado com subtítulo
+    const h2Secao2 = screen.getByText('COMO O ORBIS PROTOCOLO ATENDE O SEU PERFIL')
+    expect(h2Secao2.className).toContain('text-center')
+    const pSecao2 = screen.getByText(/Selecione o seu papel na cadeia de valor/i)
+    expect(pSecao2.className).toContain('text-center')
+
+    // Seção 3: Regulação que muda o jogo para a empresa -> centralizado com subtítulo
+    const h2Secao3 = screen.getByText('REGULAÇÃO QUE MUDA O JOGO PARA A EMPRESA')
+    expect(h2Secao3.className).toContain('text-center')
+    const pSecao3 = screen.getByText(/As quatro diretrizes que tornam a auditoria documental/i)
+    expect(pSecao3.className).toContain('text-center')
+
+    // Seção 4: Caso real de produção: Lote VERTEC -> alinhado à esquerda com subtítulo
+    const h2Secao4 = screen.getByText('CASO REAL DE PRODUÇÃO: LOTE VERTEC')
+    expect(h2Secao4.className).toContain('text-left')
+    const pSecao4 = screen.getByText(
+      /Primeiro lote real gravado no protocolo dMRV \(lote VERTEC-IW29-2022\)/i,
+    )
+    expect(pSecao4.className).toContain('text-left')
+  })
 })

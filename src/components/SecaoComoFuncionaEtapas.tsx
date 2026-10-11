@@ -55,11 +55,11 @@ export function SecaoComoFuncionaEtapas({
             <span>FLUXO SIMPLES EM 3 ETAPAS</span>
           </div>
 
-          <h2 className="font-heading font-black text-[clamp(0.72rem,2.8vw,2.25rem)] text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-tight whitespace-normal min-[480px]:whitespace-nowrap [text-wrap:balance]">
+          <h2 className="text-center font-heading font-black text-[clamp(0.72rem,2.8vw,2.25rem)] text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-tight whitespace-normal min-[480px]:whitespace-nowrap [text-wrap:balance]">
             DA NOTA FISCAL AO DOCUMENTO VERIFICÁVEL
           </h2>
 
-          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+          <p className="mt-3 text-center text-sm sm:text-base text-slate-600 dark:text-[#94A3B8] leading-relaxed">
             Transforme documentos fiscais rotineiros em comprovação de descarbonização pronta para
             órgãos ambientais, auditorias contábeis e instituições financeiras.{' '}
             <strong className="text-slate-900 dark:text-[#F8FAFC] font-semibold">
