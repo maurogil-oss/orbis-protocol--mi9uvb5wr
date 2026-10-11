@@ -258,6 +258,15 @@
     animation: spin-reverse-slow 55s linear infinite;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .animate-spin-slow,
+    .animate-spin-reverse-slow,
+    .animate-marquee,
+    .animate-ping {
+      animation: none !important;
+    }
+  }
+
   /* Linear-style subtle glow overlays — transições suaves sem degraus ópticos */
   .linear-glow-emerald {
     background: radial-gradient(

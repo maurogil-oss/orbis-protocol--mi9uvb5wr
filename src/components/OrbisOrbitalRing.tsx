@@ -82,8 +82,8 @@ export const OrbisOrbitalRing: React.FC<OrbisOrbitalRingProps> = ({
           </linearGradient>
         </defs>
 
-        {/* Anel Externo com rotação lenta no sentido horário */}
-        <g className="animate-spin-slow origin-center">
+        {/* Anel Externo com rotação lenta no sentido horário (motion-reduce desliga animação) */}
+        <g className="animate-spin-slow motion-reduce:animate-none origin-center">
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -109,8 +109,8 @@ export const OrbisOrbitalRing: React.FC<OrbisOrbitalRingProps> = ({
           />
         </g>
 
-        {/* Anel Intermediário com rotação lenta no sentido anti-horário */}
-        <g className="animate-spin-reverse-slow origin-center">
+        {/* Anel Intermediário com rotação lenta no sentido anti-horário (motion-reduce desliga animação) */}
+        <g className="animate-spin-reverse-slow motion-reduce:animate-none origin-center">
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -146,7 +146,7 @@ export const OrbisOrbitalRing: React.FC<OrbisOrbitalRingProps> = ({
               cy={size / 2}
               r={strokeWidth * 3}
               fillOpacity="0.25"
-              className="fill-emerald-600 dark:fill-[#059669] animate-ping origin-center"
+              className="fill-emerald-600 dark:fill-[#059669] animate-ping motion-reduce:animate-none origin-center"
             />
             <circle
               cx={size / 2}
@@ -180,7 +180,7 @@ export const OrbisSectionDivider: React.FC<{
           <OrbisOrbitalRing size={32} showCore={false} glow={false} strokeWidth={0.8} />
         </div>
         {label && (
-          <span className="text-[10px] font-mono font-semibold tracking-[0.2em] text-slate-700 dark:text-[#94A3B8]/80 uppercase">
+          <span className="text-xs font-mono font-semibold tracking-[0.2em] text-slate-700 dark:text-[#94A3B8] uppercase">
             {label}
           </span>
         )}

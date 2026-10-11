@@ -104,7 +104,7 @@ export function NumerosVerificaveisSection() {
               <div className="text-2xl sm:text-3xl font-extrabold font-heading text-emerald-800 dark:text-emerald-300">
                 1.223 kgCO₂e
               </div>
-              <div className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+              <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
                 evitado preliminar
               </div>
             </div>
