@@ -161,8 +161,8 @@ export default function FatoresEmissaoPublicoPage() {
             </Link>
             <ChevronRight className="w-3.5 h-3.5 opacity-40" />
             <span className="text-[#12B886] font-semibold">
-              Documento Metodológico DM-ORB-001 v1.1
-            </span>
+              Documento Metodológico DM-ORB-001 v1.2
+            </span>{' '}
           </div>
 
           <div className="flex items-center gap-2">
@@ -188,9 +188,8 @@ export default function FatoresEmissaoPublicoPage() {
           <div className="max-w-4xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-mono font-bold uppercase tracking-wider">
               <Scale className="w-3.5 h-3.5 text-[#12B886]" />
-              <span>Documento Normativo Público • DM-ORB-001 v1.1</span>
+              <span>Documento Normativo Público • DM-ORB-001 v1.2</span>
             </div>
-
             <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#F4F7FA] tracking-tight">
               Metodologia de Quantificação de Emissões Evitadas na Desmontagem Veicular
             </h1>
@@ -262,9 +261,8 @@ export default function FatoresEmissaoPublicoPage() {
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>Texto Integral DM-ORB-001 v1.1</span>
+            <span>Texto Integral DM-ORB-001 v1.2</span>
           </button>
-
           <button
             onClick={() => setAbaAtiva('catalogo')}
             className={`px-4 py-3 text-xs sm:text-sm font-heading font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
@@ -291,14 +289,14 @@ export default function FatoresEmissaoPublicoPage() {
         </div>
 
         {/* ========================================================= */}
-        {/* ABA 1: TEXTO INTEGRAL DO DOCUMENTO METODOLÓGICO DM-ORB-001 v1.1 */}
+        {/* ABA 1: TEXTO INTEGRAL DO DOCUMENTO METODOLÓGICO DM-ORB-001 v1.2 */}
         {/* ========================================================= */}
         {abaAtiva === 'documento' && (
           <div className="space-y-10">
             {/* ÍNDICE RÁPIDO DO DOCUMENTO */}
             <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm">
               <span className="text-[11px] font-mono uppercase tracking-wider text-[#12B886] font-bold block mb-3">
-                Sumário do Documento Metodológico DM-ORB-001 v1.1
+                Sumário do Documento Metodológico DM-ORB-001 v1.2
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                 <a
@@ -328,6 +326,15 @@ export default function FatoresEmissaoPublicoPage() {
                 >
                   <span>§5.3</span>
                   <span className="truncate">Dedup Inter-CDVs & HTTP 409</span>
+                </a>
+                <a
+                  href="#sec-54"
+                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
+                >
+                  <span>§5.4</span>
+                  <span className="truncate">
+                    Reivindicação Única & Vedação Dupla Contabilidade
+                  </span>
                 </a>
                 <a
                   href="#sec-61"
@@ -644,11 +651,10 @@ export default function FatoresEmissaoPublicoPage() {
                 §5.1 Classificação de Materiais e Regra Conservadora para Peças Mistas
               </h2>
               <p className="text-sm text-[#93A3B5] leading-relaxed">
-                A taxonomia física do DM-ORB-001 v1.1 espelha exatamente a estrutura do motor de
+                A taxonomia física do DM-ORB-001 v1.2 espelha exatamente a estrutura do motor de
                 cálculo v2 e da API v2 da plataforma, dividida em 5 categorias oficiais de
                 materiais:
               </p>
-
               {/* Tabela de Materiais Oficial 1:1 */}
               <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1628]">
                 <table className="w-full text-left text-xs">
@@ -797,6 +803,194 @@ export default function FatoresEmissaoPublicoPage() {
               </div>
             </section>
 
+            {/* SEÇÃO 5.4: REGRA DE GOVERNANÇA DE REIVINDICAÇÃO ÚNICA E VEDAÇÃO À DUPLA CONTABILIDADE */}
+            <section
+              id="sec-54"
+              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-6"
+            >
+              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
+                <ShieldAlert className="w-4 h-4 text-[#12B886]" />
+                <span>Seção 5.4 • Governança de Reivindicação Única & Integridade dMRV</span>
+              </div>
+              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
+                §5.4 Regra de Governança de Reivindicação Única e Vedação à Dupla Contabilidade do
+                CO₂e Evitado
+              </h2>
+
+              <div className="space-y-5 text-sm text-[#93A3B5] leading-relaxed">
+                {/* 5.4.1 */}
+                <div className="space-y-2">
+                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                    5.4.1 Princípio da Reivindicação Única Pelo Detentor do Lastro de Transformação
+                  </h3>
+                  <p>
+                    Cada quilograma de CO₂e classificado como &quot;evitado&quot; (burden avoided de
+                    reciclagem e reúso funcional) possui unicidade estrita de atribuição. Sob o
+                    protocolo dMRV Orbis, o benefício ambiental preliminar do material recuperado só
+                    pode ser reivindicado por uma única entidade jurídica em toda a cadeia de valor:
+                    a pessoa jurídica que detém a prova documental comprovada da transformação
+                    física ou desmontagem técnica (lote com NF-e/DANFE de saída ou MTR/SINIR cujos
+                    hashes SHA-256 e chaves de acesso de 44 dígitos estejam devidamente validados e
+                    custodiados). O detentor da custódia do lote é o único reivindicador admitido no
+                    sistema.
+                  </p>
+                </div>
+
+                {/* 5.4.2 */}
+                <div className="space-y-2">
+                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                    5.4.2 Segregação Gerador vs. Reciclador / Processador
+                  </h3>
+                  <p>
+                    É expressamente vedada a apropriação simultânea do indicador de evitado pelo
+                    gerador originário do material/resíduo e pelo reciclador, desmanche ou
+                    processador secundário: o gerador (ex.: seguradora, frotista, montadora ou
+                    indústria descaracterizadora) que aliena ou transfere o bem inservível a
+                    terceiro não adquire o direito de reivindicar o evitado; quem aliena transfere
+                    com ele a possibilidade de reivindicação. Uma mesma chave de NF-e (44 dígitos),
+                    manifesto de transporte (MTR/SINIR) ou hash SHA-256 não pode respaldar
+                    declarações de inventário duplo.
+                  </p>
+                </div>
+
+                {/* 5.4.3 */}
+                <div className="p-5 rounded-2xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/30 space-y-2.5">
+                  <h3 className="font-heading font-bold text-base text-amber-900 dark:text-[#D9B36C] flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-[#D9B36C] shrink-0" />
+                    <span>5.4.3 Mecanismo de bloqueio automatizado</span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-700 dark:text-[#93A3B5] leading-relaxed">
+                    Identificada colisão documental entre lotes (mesma chave NF-e, MTR ou hash), a
+                    plataforma comuta o status do lote para{' '}
+                    <code className="text-rose-600 dark:text-[#EF4444] font-mono font-bold">
+                      conflito_reivindicacao
+                    </code>
+                    , zera o indicador de evitado (
+                    <strong className="text-rose-600 dark:text-[#EF4444] font-mono">
+                      0,00 kgCO₂e
+                    </strong>
+                    ) e registra justificativa na trilha de auditoria,{' '}
+                    <strong className="text-slate-900 dark:text-[#F4F7FA]">
+                      PRESERVANDO o inventário físico e as emissões brutas
+                    </strong>
+                    . A reivindicação, quando admitida, é sempre sobre o evitado LÍQUIDO (aplicado o
+                    fator de conservação DF = 0,30). A plataforma reafirma a natureza não-creditícia
+                    do indicador: o evitado é métrica de impacto preliminar, não ativo negociável.
+                  </p>
+                </div>
+
+                {/* 5.4.4 */}
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
+                  <h3 className="font-heading font-bold text-sm text-[#F4F7FA]">
+                    5.4.4 Limitação declarada
+                  </h3>
+                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                    A checagem automatizada atua sobre identificadores documentais exatos (chave de
+                    NF-e de 44 dígitos, hash SHA-256). Rateio fracionado de massa entre gerador e
+                    processador na mesma cadeia não é detectável automaticamente e fica como
+                    procedimento de auditoria pericial externa (ART/RRT).
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* SEÇÃO 5.4: REGRA DE GOVERNANÇA DE REIVINDICAÇÃO ÚNICA */}
+            <section
+              id="sec-54"
+              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
+            >
+              <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
+                <ShieldCheck className="w-4 h-4" />
+                <span>
+                  Seção 5.4 • Governança de Reivindicação Única & Vedação à Dupla Contabilidade
+                </span>
+              </div>
+              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
+                ### §5.4 Regra de Governança de Reivindicação Única e Vedação à Dupla Contabilidade
+                do CO₂e Evitado
+              </h2>
+              <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
+                <div className="space-y-2">
+                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                    #### 5.4.1 Princípio da Reivindicação Única Pelo Detentor do Lastro de
+                    Transformação
+                  </h3>
+                  <p>
+                    Cada quilograma de dióxido de carbono equivalente classificado como &quot;CO₂e
+                    evitado&quot; (burden avoided de reciclagem e reúso funcional) possui unicidade
+                    estrita de atribuição. Sob o protocolo dMRV Orbis, o benefício ambiental
+                    preliminar do material recuperado só pode ser reivindicado por uma única
+                    entidade jurídica em toda a cadeia de valor: a pessoa jurídica que detém a prova
+                    documental comprovada da transformação física ou desmontagem técnica (lote com
+                    NF-e/DANFE de saída ou MTR/SINIR cujos hashes SHA-256 e chaves de acesso de 44
+                    dígitos estejam devidamente validados e custodiados). O detentor da custódia do
+                    lote é o único reivindicador admitido no sistema.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                    #### 5.4.2 Segregação Gerador vs. Reciclador / Processador
+                  </h3>
+                  <p>
+                    É expressamente vedada a apropriação simultânea do indicador de evitado pelo
+                    gerador originário do material/resíduo e pelo reciclador, desmanche ou
+                    processador secundário:
+                  </p>
+                  <ol className="list-decimal pl-5 space-y-1.5 text-xs sm:text-sm">
+                    <li>
+                      <strong className="text-[#F4F7FA]">Vedação ao Gerador Originário:</strong> o
+                      gerador (ex.: seguradora, frotista, montadora ou indústria descaracterizadora)
+                      que aliena ou transfere o bem inservível a terceiro não adquire o direito de
+                      reivindicar o evitado; quem aliena transfere com ele a possibilidade de
+                      reivindicação.
+                    </li>
+                    <li>
+                      <strong className="text-[#F4F7FA]">Vedação ao Processador Secundário:</strong>{' '}
+                      o reciclador ou desmanche só pode reivindicar o evitado amparado na própria
+                      prova documental de transformação (NF-e de saída ou MTR/SINIR validado), nunca
+                      na prova do gerador.
+                    </li>
+                    <li>
+                      <strong className="text-[#F4F7FA]">Identificador Único:</strong> uma mesma
+                      chave de NF-e (44 dígitos), manifesto de transporte (MTR/SINIR) ou hash
+                      SHA-256 não pode respaldar declarações de inventário duplo em quaisquer
+                      entidades.
+                    </li>
+                  </ol>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#059669]/40 space-y-2">
+                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                    #### 5.4.3 Mecanismo de Bloqueio Automatizado
+                  </h3>
+                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                    Identificada colisão documental entre lotes custodiados (mesma chave de NF-e,
+                    MTR/SINIR ou hash SHA-256), a plataforma comuta o status do lote para
+                    conflito_reivindicacao, zera o indicador de evitado (0,00 kgCO₂e) e registra
+                    justificativa na trilha de auditoria append-only, PRESERVANDO integralmente o
+                    inventário físico e as emissões brutas. A reivindicação, quando admitida, é
+                    sempre sobre o evitado LÍQUIDO (aplicado o fator de conservação DF = 0,30).
+                    Reafirma-se a natureza não-creditícia do indicador: o CO₂e evitado é métrica de
+                    impacto preliminar, sem validação externa, e não constitui ativo negociável ou
+                    crédito de carbono.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-amber-50 dark:bg-[#0A1628] border border-amber-200 dark:border-[#D9B36C]/40 space-y-2">
+                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                    #### 5.4.4 Limitação Declarada
+                  </h3>
+                  <p className="text-xs text-[#93A3B5] leading-relaxed">
+                    A checagem automatizada atua sobre identificadores documentais exatos (chave de
+                    NF-e de 44 dígitos, hash SHA-256, MTR/SINIR). Rateio fracionado de massa entre
+                    gerador e processador na mesma cadeia não é detectável automaticamente e
+                    constitui procedimento de auditoria pericial externa (ART/RRT).
+                  </p>
+                </div>
+              </div>
+            </section>
+
             {/* SEÇÃO 6.1: FATORES E REFRIGERANTES R-134a & R-1234yf */}
             <section
               id="sec-61"
@@ -831,7 +1025,7 @@ export default function FatoresEmissaoPublicoPage() {
                       </span>
                     </div>
                     <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Fluido tradicional de ar-condicionado veicular. O DM-ORB-001 v1.1 adota o
+                      Fluido tradicional de ar-condicionado veicular. O DM-ORB-001 v1.2 adota o
                       valor oficial do{' '}
                       <strong className="text-[#F4F7FA]">
                         IPCC AR6 WG1 Capítulo 7, Tabela 7.15 (GWP100 = 1.530 com feedbacks de
@@ -884,7 +1078,7 @@ export default function FatoresEmissaoPublicoPage() {
                   </em>
                   <span className="block mt-2 text-[11px] text-[#93A3B5]">
                     Nota regulatória: A inserção do R-1234yf e do R-134a segue estritamente como
-                    fator de catálogo do motor dMRV sob o regime do DM-ORB-001 v1.1, tendo por
+                    fator de catálogo do motor dMRV sob o regime do DM-ORB-001 v1.2, tendo por
                     fundamento técnico as Resoluções CONAMA nº 267/2000 e nº 340/2003 (recolhimento,
                     acondicionamento e destinação de fluidos frigoríficos automotivos). É
                     terminantemente vedada a promessa de créditos de carbono adicionais sobre esses
@@ -907,8 +1101,8 @@ export default function FatoresEmissaoPublicoPage() {
                 <span>Seção 6.3 & Apêndice C • Procedimento e Fórmula de Baseline</span>
               </div>
               <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §6.3 Procedimento de Baseline do Motor v2 (DM-ORB-001 v1.1)
-              </h2>
+                §6.3 Procedimento de Baseline do Motor v2 (DM-ORB-001 v1.2)
+              </h2>{' '}
               <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
                 <p>
                   O cálculo executado pelo motor{' '}
@@ -1161,8 +1355,8 @@ export default function FatoresEmissaoPublicoPage() {
                       Instrumento técnico-pericial assinado por perito ou engenheiro legalmente
                       habilitado junto ao respectivo Conselho de Classe (CREA/CAU/CFT), atestando a
                       exatidão da contabilidade física de massas, o cumprimento das regras do
-                      DM-ORB-001 v1.1 e a idoneidade das notas fiscais e manifestos MTR apresentados
-                      pelo CDV.
+                      DM-ORB-001 v1.2 e a idoneidade das notas fiscais e manifestos MTR apresentados
+                      pelo CDV.{' '}
                     </p>
                   </div>
 
@@ -1245,11 +1439,10 @@ export default function FatoresEmissaoPublicoPage() {
               </h2>
               <p className="text-sm text-[#93A3B5]">
                 Em estrita observância à verdade pericial e transparência técnica da Reforma do
-                Modelo Orbis (DM-ORB-001 v1.1), a tabela abaixo discrimina a fundamentação
+                Modelo Orbis (DM-ORB-001 v1.2), a tabela abaixo discrimina a fundamentação
                 bibliográfica integral com documento, indicador, tabela, ano e página/URL pública
                 verificada para cada fator:
               </p>
-
               <div className="space-y-3 pt-2">
                 <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/40 space-y-1 text-xs">
                   <div className="flex items-center justify-between">
@@ -1491,7 +1684,7 @@ export default function FatoresEmissaoPublicoPage() {
                     ~118 kgCO₂e/kWh (Chalmers 2024; ICCT referência histórica 175 kgCO₂e/kWh).
                     Classificação de resíduo perigoso sob ABNT NBR 10004 e setor prioritário do art.
                     33 da PNRS (Lei 12.305/2010). Não confere créditos ou frações evitadas no
-                    DM-ORB-001 v1.1.
+                    DM-ORB-001 v1.2.
                   </p>
                 </div>
               </div>
@@ -2172,8 +2365,8 @@ export default function FatoresEmissaoPublicoPage() {
               <span>Integração Automatizada via REST API v2</span>
             </div>
             <h3 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
-              Consuma o DM-ORB-001 v1.1 e deduplique lotes pelo seu ERP
-            </h3>
+              Consuma o DM-ORB-001 v1.2 e deduplique lotes pelo seu ERP
+            </h3>{' '}
             <p className="text-xs text-[#93A3B5] leading-relaxed">
               Os fatores deste documento e o algoritmo de deduplicação inter-CDVs com trava HTTP 409
               são executados em tempo real na rota{' '}

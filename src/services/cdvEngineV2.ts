@@ -27,7 +27,7 @@
  *   - Destinação obrigatória para confirmação de claim (§0.3): sem evidência, claim = potencial (não soma no evitado confirmado)
  */
 
-export const VERSAO_METODOLOGIA_CDV_V2 = 'DM-ORB-001-v1.1'
+export const VERSAO_METODOLOGIA_CDV_V2 = 'DM-ORB-001-v1.2'
 
 import { MAPA_FATORES_CANONICOS, GWP_IPCC_AR6_OFICIAL } from './catalogoFatoresOficiais'
 
@@ -197,6 +197,8 @@ export interface EvidenciaDestinacaoInput {
     numero?: string
     chave?: string
     destinador?: string
+    mtr_sinir?: string
+    hash_sha256?: string
   }
 }
 
@@ -245,6 +247,23 @@ export interface VeiculoDoadorInputV2 {
   destinacao_carcaca?: string
 }
 
+export interface ConflitoReivindicacaoInfo {
+  emConflito: boolean
+  motivo: string
+  documentoColisor?: string
+  tipoDocumento?: 'nfe_chave' | 'hash_sha256' | 'mtr_sinir' | 'outro'
+  loteColisorId?: string
+}
+
+export interface DocumentoIdentificadores {
+  id?: string
+  chave_nfe?: string
+  hash_sha256?: string
+  mtr_sinir?: string
+  chassi?: string
+  [key: string]: any
+}
+
 export interface LoteInputV2 {
   cdv: {
     nome: string
@@ -259,6 +278,13 @@ export interface LoteInputV2 {
   df_config?: number // default 0.30
   li_config?: number // default 1.0
   origem?: 'erp' | 'ecommerce' | 'manual_api' | 'planilha'
+  // Identificadores documentais do lote para verificação §5.4
+  documento_fiscal?: {
+    chave_nfe?: string
+    hash_sha256?: string
+    mtr_sinir?: string
+  }
+  lotes_existentes_custodia?: DocumentoIdentificadores[]
 }
 
 export interface PecaCalculoResultadoV2 {
@@ -319,6 +345,15 @@ export interface LoteCalculoResultadoV2 {
     tier: string
   }>
   pecas_detalhes: PecaCalculoResultadoV2[]
+  status_processamento?: 'processado' | 'conflito_reivindicacao'
+  conflito_reivindicacao?: ConflitoReivindicacaoInfo
+  audit_entry?: {
+    acao: string
+    entidade: string
+    justificativa: string
+    timestamp: string
+    detalhes: any
+  }
 }
 
 /**
