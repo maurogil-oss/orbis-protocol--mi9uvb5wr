@@ -217,8 +217,8 @@ export default function Index() {
                 {/* Aviso Piloto: ÚNICA aparição na home conforme diretriz */}
                 <div className="pt-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-slate-100 dark:bg-[#111827] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-[#D9B36C]" />
-                    <span>[Estado: metodologia em estruturação — oferta piloto]</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-[#059669]" />
+                    <span>Programa piloto · 1 leitura por CNPJ</span>
                   </span>
                 </div>
               </div>

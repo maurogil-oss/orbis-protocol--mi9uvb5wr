@@ -27,6 +27,7 @@ import {
   Car,
   Compass,
   GraduationCap,
+  Mail,
 } from 'lucide-react'
 
 export default function Layout() {
@@ -180,7 +181,7 @@ export default function Layout() {
       rotuloCurto: 'Consultas abertas a qualquer comprador ou auditor',
       itens: [
         {
-          title: 'Consultar Selo',
+          title: 'Consultar atestado',
           desc: 'Validação pública de autenticidade criptográfica de laudos e passaportes emitidos.',
           path: '/verificador',
           icon: ShieldCheck,
@@ -650,7 +651,7 @@ export default function Layout() {
                       : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#111827]'
                   }`}
                 >
-                  <span>Consultar Selo</span>
+                  <span>Consultar atestado</span>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </Link>
 
@@ -816,17 +817,73 @@ export default function Layout() {
       <AssistenteOrbisWidget />
 
       {/* 5. Institutional Footer — Design corporativo claro/escuro */}
-      <footer className="bg-slate-50 dark:bg-[#0A1628] border-t border-slate-200 dark:border-slate-800 pt-20 sm:pt-24 pb-12 sm:pb-16 text-slate-600 dark:text-[#94A3B8] relative overflow-hidden">
+      <footer className="bg-slate-50 dark:bg-[#0A1628] border-t border-slate-200 dark:border-slate-800 pt-16 sm:pt-20 pb-12 sm:pb-16 text-slate-700 dark:text-[#94A3B8] relative overflow-hidden">
         {/* Glow sutil de fundo no rodapé */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[250px] linear-glow-emerald pointer-events-none opacity-20" />
 
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10">
+          {/* Barra de Regulamentações no Topo do Rodapé */}
+          <div className="mb-12 pb-8 border-b border-slate-200/80 dark:border-slate-800">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-[#059669] flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+                Enquadramento e Diretrizes Regulatórias
+              </span>
+              <span className="text-[12px] font-mono text-slate-500 dark:text-[#94A3B8] hidden sm:inline">
+                Normas e Marcos Oficiais
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="p-3 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xs">
+                <span className="block text-xs font-bold text-slate-900 dark:text-[#F8FAFC]">
+                  Lei 15.042/2024
+                </span>
+                <span className="text-[12px] text-slate-600 dark:text-[#94A3B8] leading-tight mt-0.5 block">
+                  Mercado Regulado de Carbono (SBCE)
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xs">
+                <span className="block text-xs font-bold text-slate-900 dark:text-[#F8FAFC]">
+                  SBCE — Lei 14.902/2024
+                </span>
+                <span className="text-[12px] text-slate-600 dark:text-[#94A3B8] leading-tight mt-0.5 block">
+                  Mobilidade Verde & Créditos
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xs">
+                <span className="block text-xs font-bold text-slate-900 dark:text-[#F8FAFC]">
+                  Programa MOVER/CDVerde
+                </span>
+                <span className="text-[12px] text-slate-600 dark:text-[#94A3B8] leading-tight mt-0.5 block">
+                  Circularidade & Desmonte VFV
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xs">
+                <span className="block text-xs font-bold text-slate-900 dark:text-[#F8FAFC]">
+                  IFRS S1/S2
+                </span>
+                <span className="text-[12px] text-slate-600 dark:text-[#94A3B8] leading-tight mt-0.5 block">
+                  Relato Climático & Escopos 1/2/3
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xs sm:col-span-2 lg:col-span-1">
+                <span className="block text-xs font-bold text-slate-900 dark:text-[#F8FAFC]">
+                  Crédito Bacen 4.945
+                </span>
+                <span className="text-[12px] text-slate-600 dark:text-[#94A3B8] leading-tight mt-0.5 block">
+                  Políticas PRSAC no Crédito Bancário
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid de 4 Colunas Rotuladas: Marca, Soluções, Verificação, Orbis */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-14 sm:pb-16 border-b border-slate-200/80 dark:border-slate-800">
-            {/* Col 1 & 2: Brand Info (5 colunas no grid de 12 para excelente respiro) */}
-            <div className="lg:col-span-5 flex flex-col justify-between gap-6 pr-0 lg:pr-8">
+            {/* Coluna 1: Marca & Identidade Institucional (lg:col-span-4) */}
+            <div className="lg:col-span-4 flex flex-col justify-between gap-6 pr-0 lg:pr-6">
               <div className="space-y-4">
-                <Link to="/" className="inline-flex items-center gap-3.5 group">
-                  <div className="relative flex items-center justify-center">
+                <Link to="/" className="inline-flex items-center gap-3.5 group min-h-[44px]">
+                  <div className="relative flex items-center justify-center shrink-0">
                     <OrbisGlobe size={40} />
                   </div>
                   <div className="flex flex-col items-center text-center">
@@ -837,44 +894,51 @@ export default function Layout() {
                       Economia Circular — dMRV
                     </span>
                   </div>
-                </Link>{' '}
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8]/90 leading-relaxed max-w-sm">
-                  Infraestrutura tecnológica de dados e auditoria probatória (dMRV) para cálculo da
-                  pegada de carbono, laudos periciais, conformidade tributária e emissão de selos e
-                  passaportes digitais verificáveis — prontos para envio aos órgãos de controle e a
-                  instituições financeiras.
+                </Link>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-[#94A3B8] leading-relaxed max-w-sm font-medium">
+                  Infraestrutura de comprovação e rastreabilidade para a economia circular
                 </p>
               </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
-                <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-[11px] text-amber-700 dark:text-[#D9B36C] shadow-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600 dark:text-[#D9B36C] shrink-0" />
-                  <span className="font-mono tracking-tight text-slate-700 dark:text-[#94A3B8]">
+              <div className="space-y-2.5 pt-1">
+                <div className="inline-flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-xs text-amber-700 dark:text-[#D9B36C] shadow-xs">
+                  <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-[#D9B36C] shrink-0" />
+                  <span className="font-mono tracking-tight text-slate-800 dark:text-[#94A3B8]">
                     MGM CONSULTORIA EMPRESARIAL LTDA • CNPJ 19.598.964/0001-01
                   </span>
                 </div>
-                <Link
-                  to="/equipe"
-                  className="text-[11px] text-emerald-600 dark:text-[#059669] hover:underline font-semibold transition-colors inline-flex items-center gap-1"
-                >
-                  <span>Estrutura & Operação →</span>
-                </Link>
+
+                <div className="flex flex-wrap items-center gap-3 text-xs">
+                  <a
+                    href="mailto:contato@orbis-protocol.com"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#059669]/15 text-emerald-800 dark:text-[#059669] hover:bg-emerald-100 dark:hover:bg-[#059669]/25 font-semibold transition-colors min-h-[44px]"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>contato@orbis-protocol.com</span>
+                  </a>
+                  <Link
+                    to="/equipe"
+                    className="inline-flex items-center text-slate-600 dark:text-[#94A3B8] hover:text-emerald-700 dark:hover:text-[#059669] font-medium transition-colors min-h-[44px]"
+                  >
+                    Equipe & Operação →
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* Col 2: HUB DE SOLUÇÕES (3 colunas) */}
-            <div className="lg:col-span-3 flex flex-col gap-4">
-              <span className="font-heading text-[11px] text-slate-900 dark:text-[#F8FAFC] font-bold tracking-[0.18em] uppercase opacity-90">
-                HUB DE SOLUÇÕES
+            {/* Coluna 2: Soluções (lg:col-span-3) */}
+            <div className="lg:col-span-3 flex flex-col gap-3">
+              <span className="font-heading text-xs text-slate-900 dark:text-[#F8FAFC] font-bold tracking-[0.16em] uppercase opacity-95">
+                Soluções
               </span>
-              <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
+              <ul className="flex flex-col gap-1 text-xs sm:text-sm">
                 <li>
                   <Link
                     to="/solucoes#orbis-lpf"
-                    className="group inline-flex items-center gap-2 text-slate-900 dark:text-[#F8FAFC] font-medium hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200"
+                    className="group inline-flex items-center gap-2 text-slate-800 dark:text-[#F8FAFC] font-medium hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
                     <span>Orbis LPF — Leitura Pré-Faturamento</span>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 dark:bg-[#059669]/15 text-emerald-800 dark:text-[#059669] border border-emerald-300 dark:border-[#059669]/35 shrink-0">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 dark:bg-[#059669]/15 text-emerald-800 dark:text-[#059669] border border-emerald-300 dark:border-[#059669]/35 shrink-0">
                       <span className="w-1 h-1 rounded-full bg-emerald-600 dark:bg-[#059669]" />
                       Novo
                     </span>
@@ -882,261 +946,153 @@ export default function Layout() {
                 </li>
                 <li>
                   <Link
-                    to="/trilhas/peritos-tecnicos"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    to="/diagnostico"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Peritos Técnicos & Auditores
+                    Pegada de carbono
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/materiais-criticos"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    to="/solucoes"
+                    className="inline-flex items-center gap-2 text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    <span>Materiais Críticos Recuperados</span>
-                    <span className="text-[9px] bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 px-1 py-0.5 rounded font-mono font-semibold">
-                      DCP
-                    </span>
-                  </Link>
-                </li>{' '}
-                <li>
-                  <Link
-                    to="/checkout"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Checkout PIX & NFS-e</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/bureau"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-amber-700 dark:hover:text-[#D9B36C] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    Cockpit Bureau ACP (Passaporte)
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/corporativo"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Modo Demonstração Corporativo</span>
-                    <span className="text-[9px] bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 px-1 py-0.5 rounded font-mono font-semibold">
-                      Demo
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/solucoes/portal-corporativo"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    Portal Corporativo (IFRS/SPED)
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/mover"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Espaço MOVER (GS 448)</span>
-                    <span className="text-[9px] bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 px-1 py-0.5 rounded font-mono font-semibold">
-                      Novo
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/solucoes/case-cdverde"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    Case CDVerde (Desmontagem VFV)
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/api-docs-cdv"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
-                  >
-                    <span>API v2 — Desmontagem Veicular</span>
-                    <span className="text-[9px] bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 px-1 py-0.5 rounded font-mono font-semibold">
-                      v2
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/fatores"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Catálogo de Fatores CO₂e</span>
-                    <span className="text-[9px] bg-amber-50 dark:bg-[#D9B36C]/10 text-amber-800 dark:text-[#D9B36C] border border-amber-200 dark:border-[#D9B36C]/30 px-1 py-0.5 rounded font-mono font-medium">
-                      Bloco 4
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/solucoes/cadeias-produtivas"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    Catálogo 15 Cadeias Produtivas
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Col 3: TRILHAS SETORIAIS (2 colunas) */}
-            <div className="lg:col-span-2 flex flex-col gap-4">
-              <span className="font-heading text-[11px] text-slate-900 dark:text-[#F8FAFC] font-bold tracking-[0.18em] uppercase opacity-90">
-                TRILHAS SETORIAIS
-              </span>
-              <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
-                <li>
-                  <Link
-                    to="/radar-regulatorio"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    Radar Regulatório
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/credenciamento"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Credenciamento de Perito</span>
-                    <span className="text-[9px] bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 px-1 py-0.5 rounded font-mono">
-                      ART
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/trilhas/sbce-financas-verdes"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    Mercado SBCE & Finanças Verdes
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/trilhas/peritos-tecnicos"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    Peritos Técnicos & Auditores
-                  </Link>
-                </li>
-                <li className="pt-1">
-                  <Link
-                    to="/trilhas"
-                    className="text-emerald-600 dark:text-[#059669] hover:underline text-xs inline-flex items-center gap-1 font-medium hover:translate-x-0.5 transition-all duration-200"
-                  >
-                    <span>Todas as Trilhas →</span>
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Col 4: FERRAMENTAS & CONTATO (2 colunas) */}
-            <div className="lg:col-span-2 flex flex-col gap-4">
-              <span className="font-heading text-[11px] text-slate-900 dark:text-[#F8FAFC] font-bold tracking-[0.18em] uppercase opacity-90">
-                FERRAMENTAS
-              </span>
-              <ul className="flex flex-col gap-2.5 text-xs sm:text-sm">
-                <li>
-                  <Link
-                    to="/demo"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Ver Demonstração</span>
-                    <span className="px-1 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[9px] font-mono">
-                      Tour
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/radar-regulatorio"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Radar Regulatório 2026</span>
-                    <span className="px-1 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[9px] font-mono">
-                      Novo
+                    <span>Passaporte Digital de Produto</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-slate-800">
+                      em estruturação
                     </span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/diagnostico"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Diagnóstico por CNPJ
+                    Reforma tributária
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/verificador"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    to="/solucoes"
+                    className="inline-flex items-center gap-2 text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Consultar Selo
+                    <span>Logística reversa</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-slate-800">
+                      em estruturação
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/mover"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Programa MOVER
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Coluna 3: Verificação (lg:col-span-2) */}
+            <div className="lg:col-span-2 flex flex-col gap-3">
+              <span className="font-heading text-xs text-slate-900 dark:text-[#F8FAFC] font-bold tracking-[0.16em] uppercase opacity-95">
+                Verificação
+              </span>
+              <ul className="flex flex-col gap-1 text-xs sm:text-sm">
+                <li>
+                  <Link
+                    to="/verificador"
+                    className="inline-flex items-center font-semibold text-emerald-700 dark:text-[#059669] hover:underline transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Consultar atestado
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/fatores"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Fatores CO₂e & Metodologia
+                    Metodologia
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/capital"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-block"
+                    to="/trilhas/peritos-tecnicos"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Green Capital Engine
+                    Rede de peritos
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/educacao"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
+                    to="/radar-regulatorio"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    <span>Orbis Educação (MEI & Escolas)</span>
-                    <span className="px-1 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[9px] font-mono">
-                      Social
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/equipe"
-                    className="text-slate-600 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#059669] font-medium transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5"
-                  >
-                    <span>Equipe & Governança</span>
-                    <span className="text-[9px] bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-slate-800 px-1 py-0.5 rounded font-mono">
-                      MGM
-                    </span>
+                    Radar Regulatório
                   </Link>
                 </li>
                 {isAdminOrPerito && (
                   <li>
                     <Link
                       to="/console-do-auditor"
-                      className="text-amber-700 dark:text-[#D9B36C] hover:text-amber-800 dark:hover:text-[#D9B36C]/80 transition-all hover:translate-x-0.5 duration-200 inline-flex items-center gap-1.5 font-medium"
+                      className="inline-flex items-center gap-1.5 text-amber-700 dark:text-[#D9B36C] hover:underline font-medium min-h-[44px]"
                     >
+                      <Lock className="w-3 h-3" />
                       <span>Console do Auditor</span>
-                      <Lock className="w-3 h-3 text-amber-600 dark:text-[#D9B36C]" />
                     </Link>
                   </li>
                 )}
+              </ul>
+            </div>
+
+            {/* Coluna 4: Orbis (lg:col-span-3) */}
+            <div className="lg:col-span-3 flex flex-col gap-3">
+              <span className="font-heading text-xs text-slate-900 dark:text-[#F8FAFC] font-bold tracking-[0.16em] uppercase opacity-95">
+                Orbis
+              </span>
+              <ul className="flex flex-col gap-1 text-xs sm:text-sm">
                 <li>
                   <Link
-                    to="/teste"
-                    className="text-[11px] text-slate-400 dark:text-[#94A3B8]/50 hover:text-slate-600 dark:hover:text-[#94A3B8] transition-colors"
+                    to="/educacao"
+                    className="inline-flex items-center gap-1.5 text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Catálogo de Teste
+                    <span>Orbis Educação</span>
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#059669]/10 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-[#059669]/25 text-[10px] font-mono">
+                      Social
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/trilhas"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Trilhas
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/solucoes/bureau-acp"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Parceria ACP
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="mailto:contato@orbis-protocol.com"
+                    className="inline-flex items-center gap-1.5 text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Contato</span>
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    to="/equipe"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Estrutura & Governança
                   </Link>
                 </li>
               </ul>

@@ -50,7 +50,7 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
         /Siderúrgicas, fundições, agroindústrias, desmanches e exportadores com exposição a critérios de carbono\./i,
       ),
     ).toBeDefined()
-    expect(screen.getByText('[Estado: metodologia em estruturação — oferta piloto]')).toBeDefined()
+    expect(screen.getByText('Programa piloto · 1 leitura por CNPJ')).toBeDefined()
 
     // Botão de scroll redundante removido conforme escopo aprovado
     expect(
@@ -194,7 +194,7 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
   })
 
   // 4. Presença do Orbis LPF na Navegação (Header Dropdown e Rodapé)
-  it('exibe Orbis LPF no menu Soluções do Layout e no rodapé em HUB DE SOLUÇÕES com badge e âncora corretos', () => {
+  it('exibe Orbis LPF no menu Soluções do Layout e no rodapé na coluna Soluções com badge e âncora corretos', () => {
     render(
       <AuthProvider>
         <MemoryRouter initialEntries={['/']}>
@@ -203,12 +203,12 @@ describe('Oferta Orbis LPF — Leitura Pré-Faturamento', () => {
       </AuthProvider>,
     )
 
-    // Verifica presença no grupo 'Para empresas' do dropdown/drawer
+    // Verifica presença no grupo 'Para empresas' do dropdown/drawer e na coluna 'Soluções' do rodapé
     const linksLpf = screen
       .getAllByRole('link')
       .filter((link) => link.getAttribute('href') === '/solucoes#orbis-lpf')
 
-    // Deve estar presente no menu (desktop + mobile drawer) e no rodapé (coluna HUB DE SOLUÇÕES)
+    // Deve estar presente no menu (desktop + mobile drawer) e no rodapé (coluna Soluções)
     expect(linksLpf.length).toBeGreaterThanOrEqual(2)
 
     // Título e descrição no menu do dropdown

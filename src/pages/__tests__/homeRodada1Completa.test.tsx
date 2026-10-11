@@ -183,16 +183,15 @@ describe('Nova Home Orbis Protocol - Rodada 1 Completa', () => {
     expect(textContent).not.toContain('cdv_pecas')
   })
 
-  it('garante que o aviso de "metodologia em estruturação — oferta piloto" aparece EXATAMENTE UMA vez na home', () => {
+  it('garante que o aviso de "metodologia em estruturação — oferta piloto" foi substituído pelo badge canônico com 1 única aparição na home', () => {
     const { container } = render(
       <MemoryRouter initialEntries={['/']}>
         <Index />
       </MemoryRouter>,
     )
 
-    const matches = (
-      container.textContent?.match(/metodologia em estruturação — oferta piloto/g) || []
-    ).length
+    const matches = (container.textContent?.match(/Programa piloto · 1 leitura por CNPJ/g) || [])
+      .length
     expect(matches).toBe(1)
   })
 })

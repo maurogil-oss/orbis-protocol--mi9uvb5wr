@@ -643,7 +643,7 @@ export default function RadarRegulatorio() {
               to="/verificador"
               className="w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-semibold border border-[rgba(244,247,250,0.2)] text-[#F4F7FA] hover:border-[#12B886]"
             >
-              Consultar Selos Homologados
+              Consultar atestados
             </Link>
           </div>
         </div>
