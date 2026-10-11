@@ -725,6 +725,51 @@ export function ConsoleSandboxIngestaoTab() {
           const descricaoLote = `${opcaoSetorial?.titulo || 'Lote Sintético Setorial'} (Demonstração)`
           const isAutomotiva = normalizarSegmento(doc.segmento) === 'automotiva'
 
+          // §5.4 Verificação prévia de duplicidade documental (Chave NF-e / Hash SHA-256)
+          let statusLoteFinal: 'processado' | 'conflito_reivindicacao' = 'processado'
+          let co2eLoteFinal = totalCo2eDoc
+          let conflitoInfoLote: any = null
+
+          try {
+            const lotesExistentes = await pb.collection('cdv_lotes').getFullList({
+              fields: 'id,chave_nfe,hash_sha256,mtr_sinir,payload_bruto_json',
+              requestKey: null,
+            })
+            const checagemConflito = verificarDuplicidadeDocumental(
+              {
+                chave_nfe: doc.chaveAcesso,
+                hash_sha256: doc.hashSha256,
+              },
+              lotesExistentes as any,
+            )
+
+            if (checagemConflito.emConflito) {
+              statusLoteFinal = 'conflito_reivindicacao'
+              co2eLoteFinal = 0.0 // §5.4.3: Zera evitado, preserva massa e emissões brutas
+              conflitoInfoLote = checagemConflito
+
+              // Gravação append-only na trilha de auditoria
+              try {
+                await registrarEventoAudit({
+                  acao: 'conflito_reivindicacao_detectado',
+                  entidade: 'cdv_lotes',
+                  detalhes: {
+                    regra: '§5.4 DM-ORB-001 v1.2',
+                    motivo: checagemConflito.motivo,
+                    documentoColisor: checagemConflito.documentoColisor,
+                    tipoDocumento: checagemConflito.tipoDocumento,
+                    chaveAcesso: doc.chaveAcesso,
+                    massaPreservadaKg: totalPesoDoc,
+                  },
+                })
+              } catch (auditErr) {
+                console.warn('[§5.4 audit_log] Aviso ao registrar conflito:', auditErr)
+              }
+            }
+          } catch (verifErr) {
+            console.warn('[§5.4 dedup] Aviso na checagem de duplicidade:', verifErr)
+          }
+
           let regLote: any
           try {
             regLote = await pb.collection('cdv_lotes').create({
@@ -741,10 +786,12 @@ export function ConsoleSandboxIngestaoTab() {
                 ? (doc.dadosAdicionais as any)?.seguradora || ''
                 : '',
               origem_envio: 'erp',
-              status: 'processado',
+              status: statusLoteFinal,
               total_pecas: doc.itens.length,
               total_peso_kg: totalPesoDoc,
-              total_co2e_evitado_kg: totalCo2eDoc,
+              total_co2e_evitado_kg: co2eLoteFinal,
+              chave_nfe: doc.chaveAcesso,
+              hash_sha256: doc.hashSha256,
               is_demo: true,
               origem: 'sintetico',
               payload_bruto_json: {
@@ -756,8 +803,9 @@ export function ConsoleSandboxIngestaoTab() {
                 marca: MARCA_SANDBOX_OBRIGATORIA,
                 totalItens: doc.itens.length,
                 totalPesoKg: totalPesoDoc,
-                totalCo2eKg: totalCo2eDoc,
+                totalCo2eKg: co2eLoteFinal,
                 inventarioGhgId: inventarioGhgId || null,
+                conflitoReivindicacao: conflitoInfoLote,
               },
             })
             regLoteId = regLote.id

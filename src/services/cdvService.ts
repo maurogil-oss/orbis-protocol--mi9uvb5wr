@@ -90,7 +90,7 @@ export interface CdvLoteRecord extends RecordModel {
   veiculo_baixa_detran?: string
   veiculo_seguradora?: string
   origem_envio: 'erp' | 'ecommerce' | 'manual_api' | 'planilha'
-  status: 'processado' | 'parcial' | 'rejeitado' | 'anulado'
+  status: 'processado' | 'parcial' | 'rejeitado' | 'anulado' | 'conflito_reivindicacao'
   motivo_anulacao?: string
   anulado_em?: string
   anulado_por?: string
@@ -103,6 +103,16 @@ export interface CdvLoteRecord extends RecordModel {
   ctf_ibama?: string
   selo_detran_lote?: string
   adicionalidade_json?: AvaliacaoAdicionalidadeData
+  chave_nfe?: string
+  hash_sha256?: string
+  mtr_sinir?: string
+  conflito_reivindicacao_json?: {
+    emConflito: boolean
+    motivo: string
+    documentoColisor?: string
+    tipoDocumento?: string
+    loteColisorId?: string
+  }
 }
 
 export interface AvaliacaoAdicionalidadeData {

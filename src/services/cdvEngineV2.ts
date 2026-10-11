@@ -644,9 +644,9 @@ export function calcularLoteOrbisV2(input: LoteInputV2): LoteCalculoResultadoV2 
   }
 
   // Total líquido consolidado do lote
-  const evitadoLiquidoFinal = floor2(somaEvitadoLiquido + evitadoRefrigeranteKg)
-  const evitadoConfirmadoFinal = floor2(somaEvitadoConfirmado + evitadoRefrigeranteKg)
-  const evitadoPotencialFinal = floor2(somaEvitadoPotencial)
+  let evitadoLiquidoFinal = floor2(somaEvitadoLiquido + evitadoRefrigeranteKg)
+  let evitadoConfirmadoFinal = floor2(somaEvitadoConfirmado + evitadoRefrigeranteKg)
+  let evitadoPotencialFinal = floor2(somaEvitadoPotencial)
 
   // 5. Incerteza do lote (Soma em quadratura):
   // Incerteza_lote = √(Σ (Evitado_peça × u_FE)² + (Evitado_lote × u_massa)²)
@@ -656,6 +656,47 @@ export function calcularLoteOrbisV2(input: LoteInputV2): LoteCalculoResultadoV2 
   const incertezaLoteKg = round2(Math.sqrt(somaQuadradosIncerteza + termoMassa))
   const incertezaPct =
     evitadoLiquidoFinal > 0 ? round2((incertezaLoteKg / evitadoLiquidoFinal) * 100) : 0
+
+  // 6. §5.4 Verificação de Conflito de Reivindicação / Duplicidade Documental
+  const conflitoInfo = verificarDuplicidadeDocumental(
+    {
+      ...input,
+      destinacao: input.destinacao,
+      documento_fiscal: input.documento_fiscal,
+    },
+    input.lotes_existentes_custodia,
+  )
+
+  let statusProcessamento: 'processado' | 'conflito_reivindicacao' = 'processado'
+  let auditEntry: LoteCalculoResultadoV2['audit_entry'] = undefined
+
+  if (conflitoInfo.emConflito) {
+    statusProcessamento = 'conflito_reivindicacao'
+    // §5.4.3: zera o indicador de evitado (0,00 kgCO₂e), preservando inventário físico e emissões brutas
+    evitadoLiquidoFinal = 0
+    evitadoConfirmadoFinal = 0
+    evitadoPotencialFinal = 0
+
+    // Atualiza status de claim nas peças
+    for (const p of pecasCalculadas) {
+      p.evitado_liquido_kg = 0
+    }
+
+    auditEntry = {
+      acao: 'conflito_reivindicacao_detectado',
+      entidade: 'cdv_lotes',
+      justificativa: `[§5.4 DM-ORB-001 v1.2] Bloqueio automatizado de dupla contabilidade. Colisão documental detectada: ${conflitoInfo.motivo}. Evitado zerado para 0,00 kgCO₂e mantendo emissões brutas e massa física intactas.`,
+      timestamp: new Date().toISOString(),
+      detalhes: {
+        motivo: conflitoInfo.motivo,
+        documentoColisor: conflitoInfo.documentoColisor,
+        tipoDocumento: conflitoInfo.tipoDocumento,
+        loteColisorId: conflitoInfo.loteColisorId,
+        emissao_bruta_preservada_kg: floor2(somaEvitadoBruto),
+        massa_preservada_kg: massaRecuperadaTotalKg,
+      },
+    }
+  }
 
   return {
     versao_metodologia: VERSAO_METODOLOGIA_CDV_V2,
@@ -673,15 +714,15 @@ export function calcularLoteOrbisV2(input: LoteInputV2): LoteCalculoResultadoV2 
     evitado_liquido_kg: evitadoLiquidoFinal,
     evitado_confirmado_kg: evitadoConfirmadoFinal,
     evitado_potencial_kg: evitadoPotencialFinal,
-    evitado_refrigerante_kg: evitadoRefrigeranteKg,
+    evitado_refrigerante_kg: conflitoInfo.emConflito ? 0 : evitadoRefrigeranteKg,
     refrigerante_declaracao: refrigeranteDeclaracao,
-    incerteza_kg: incertezaLoteKg,
-    incerteza_pct: incertezaPct,
+    incerteza_kg: conflitoInfo.emConflito ? 0 : incertezaLoteKg,
+    incerteza_pct: conflitoInfo.emConflito ? 0 : incertezaPct,
     tiers: {
-      T1_kg: floor2(t1TotalKg),
-      T2_kg: floor2(t2TotalKg),
-      T3_kg: floor2(t3TotalKg),
-      T4_kg: floor2(t4TotalKg),
+      T1_kg: conflitoInfo.emConflito ? 0 : floor2(t1TotalKg),
+      T2_kg: conflitoInfo.emConflito ? 0 : floor2(t2TotalKg),
+      T3_kg: conflitoInfo.emConflito ? 0 : floor2(t3TotalKg),
+      T4_kg: conflitoInfo.emConflito ? 0 : floor2(t4TotalKg),
     },
     segregacao: {
       fossil_kg: evitadoLiquidoFinal, // Emissões evitadas no CDV são de origem fóssil (metais, plásticos, eletricidade primária)
@@ -692,5 +733,8 @@ export function calcularLoteOrbisV2(input: LoteInputV2): LoteCalculoResultadoV2 
     li_aplicado: li,
     fatores_snapshot: fatoresSnapshot,
     pecas_detalhes: pecasCalculadas,
+    status_processamento: statusProcessamento,
+    conflito_reivindicacao: conflitoInfo,
+    audit_entry: auditEntry,
   }
 }
