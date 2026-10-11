@@ -282,4 +282,96 @@ describe('PassaporteLotePublicoPage - Anexo I u_FE e Incerteza Consolidada', () 
     // Verifica presença da incerteza consolidada calculada
     expect(desktopView?.textContent).toContain('Incerteza consolidada por quadratura:')
   })
+
+  it('exibe FE Aplicado com unidade kgCO₂e/kg, fonte metodológica canônica e badge Pendente de verificação de fonte', async () => {
+    const mockLotePendente: cdvService.CdvLoteRecord = {
+      id: 'lote-pendente-123',
+      collectionId: 'col-lotes',
+      collectionName: 'cdv_lotes',
+      cdv_nome: 'Eco Desmonte Paraná',
+      cdv_cnpj: '99.888.777/0001-66',
+      cdv_codigo: 'CDV-99',
+      veiculo_marca_modelo: 'Veículo Teste Auditoria Fontes',
+      origem_envio: 'erp',
+      status: 'processado',
+      total_pecas: 2,
+      total_peso_kg: 35.0,
+      total_co2e_evitado_kg: 40.0,
+      veiculo_baixa_detran: 'DETRAN-PR-DESM-2026-FONTES',
+      hash_sha256: 'sha256-hash-fontes-lote',
+      created: '2026-03-01T12:00:00.000Z',
+      updated: '2026-03-01T12:00:00.000Z',
+    }
+
+    const mockPecasPendente: cdvService.CdvPecaRecord[] = [
+      {
+        id: 'p-pol-1',
+        collectionId: 'col-pecas',
+        collectionName: 'cdv_pecas',
+        lote: 'lote-pendente-123',
+        sku_interno: 'SKU-POL-1',
+        descricao_peca: 'Pára-choque Dianteiro Plástico',
+        categoria_material: 'polimeros',
+        material_declarado: 'Polímeros Automotivos',
+        peso_kg: 15.0,
+        fator_co2e_kg: 3.1,
+        co2e_evitado_kg: 13.95,
+        hash_sha256: 'hash-p-pol-1',
+        status: 'ativo',
+        selo_dpp: 'ORB-FONTES-01',
+        created: '2026-03-01T10:00:00.000Z',
+        updated: '2026-03-01T10:00:00.000Z',
+      },
+      {
+        id: 'p-aco-1',
+        collectionId: 'col-pecas',
+        collectionName: 'cdv_pecas',
+        lote: 'lote-pendente-123',
+        sku_interno: 'SKU-ACO-1',
+        descricao_peca: 'Capô de Aço',
+        categoria_material: 'aco',
+        material_declarado: 'Aço Laminado',
+        peso_kg: 20.0,
+        fator_co2e_kg: 2.18,
+        co2e_evitado_kg: 13.08,
+        hash_sha256: 'hash-p-aco-1',
+        status: 'ativo',
+        selo_dpp: 'ORB-FONTES-02',
+        created: '2026-03-01T10:00:00.000Z',
+        updated: '2026-03-01T10:00:00.000Z',
+      },
+    ]
+
+    vi.mocked(cdvService.consultarLoteConsolidado).mockResolvedValue({
+      lote: mockLotePendente,
+      pecas: mockPecasPendente,
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/passaporte-lote/DETRAN-PR-DESM-2026-FONTES']}>
+        <Routes>
+          <Route path="/passaporte-lote/:lote" element={<PassaporteLotePublicoPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Veículo Teste Auditoria Fontes').length).toBeGreaterThan(0)
+    })
+
+    const desktopView = container.querySelector('.desktop-document-view')
+    expect(desktopView).not.toBeNull()
+
+    // Valida coluna FE Aplicado e unidade
+    expect(desktopView?.textContent).toContain('FE Aplicado')
+    expect(desktopView?.textContent).toContain('Fonte Metodológica')
+    expect(desktopView?.textContent).toContain('kgCO₂e/kg')
+
+    // Valida fontes canônicas
+    expect(desktopView?.textContent).toContain('worldsteel (2024)')
+    expect(desktopView?.textContent).toContain('PlasticsEurope (2022)')
+
+    // Valida badge "Pendente de verificação de fonte" renderizado para polímeros
+    expect(desktopView?.textContent).toContain('Pendente de verificação de fonte')
+  })
 })

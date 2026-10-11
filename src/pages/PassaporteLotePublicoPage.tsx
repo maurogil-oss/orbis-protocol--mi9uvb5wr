@@ -1894,7 +1894,8 @@ export default function PassaporteLotePublicoPage() {
                                   <th className="py-2.5 px-3">Descrição da Peça</th>
                                   <th className="py-2.5 px-3">Material</th>
                                   <th className="py-2.5 px-3 text-right">Peso (Q)</th>
-                                  <th className="py-2.5 px-3 text-right">FE (kg/kg)</th>
+                                  <th className="py-2.5 px-3 text-right">FE Aplicado</th>
+                                  <th className="py-2.5 px-3">Fonte Metodológica</th>
                                   <th className="py-2.5 px-3 text-right">DF</th>
                                   <th className="py-2.5 px-3 text-right">L_i</th>
                                   <th className="py-2.5 px-3 text-right">PE (kg)</th>
@@ -1916,6 +1917,12 @@ export default function PassaporteLotePublicoPage() {
                                   const pesoKg = Number(peca.peso_kg) || 0
                                   const feRef =
                                     Number(peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg) || 1.5
+                                  const unidadeFe = 'kgCO₂e/kg'
+                                  const fonteFe =
+                                    fatorMaterialV2.fonte || fatorInfo.fonte || 'DM-ORB-001'
+                                  const isPendenteVerificacao = Boolean(
+                                    fatorMaterialV2.pendente_verificacao,
+                                  )
                                   const df = 0.3
                                   const li = 1.0
                                   const peAlloc = 0.0
@@ -1957,7 +1964,20 @@ export default function PassaporteLotePublicoPage() {
                                         {pesoKg.toFixed(2)} kg
                                       </td>
                                       <td className="py-2.5 px-3 text-right font-mono text-[#93A3B5] print:text-slate-600">
-                                        {feRef.toFixed(2)}
+                                        <div>{feRef.toFixed(2)}</div>
+                                        <div className="text-[9px] text-[#93A3B5] print:text-slate-500">
+                                          {unidadeFe}
+                                        </div>
+                                      </td>
+                                      <td className="py-2.5 px-3">
+                                        <div className="text-[11px] text-[#F4F7FA] print:text-slate-800">
+                                          {fonteFe}
+                                        </div>
+                                        {isPendenteVerificacao && (
+                                          <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-amber-500/20 text-amber-400 dark:text-[#D9B36C] border border-amber-500/40">
+                                            Pendente de verificação de fonte
+                                          </span>
+                                        )}
                                       </td>
                                       <td className="py-2.5 px-3 text-right font-mono text-[#93A3B5] print:text-slate-600">
                                         {df.toFixed(2)}
@@ -2061,7 +2081,8 @@ export default function PassaporteLotePublicoPage() {
                                     <th className="py-2.5 px-3">Subsistema</th>
                                     <th className="py-2.5 px-3">Material Declarado</th>
                                     <th className="py-2.5 px-3 text-right">Peso (kg)</th>
-                                    <th className="py-2.5 px-3 text-right">Fator (kgCO₂e/kg)</th>
+                                    <th className="py-2.5 px-3 text-right">FE Aplicado</th>
+                                    <th className="py-2.5 px-3">Fonte Metodológica</th>
                                     <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
                                     <th className="py-2.5 px-3 text-center print:hidden">
                                       DPP Individual
@@ -2073,6 +2094,16 @@ export default function PassaporteLotePublicoPage() {
                                     const fatorInfo =
                                       FATORES_CDV_MATERIAIS[peca.categoria_material] ||
                                       FATORES_CDV_MATERIAIS.outros
+                                    const fatorMaterialV2 =
+                                      FATORES_MATERIAIS_V2[
+                                        peca.categoria_material as keyof typeof FATORES_MATERIAIS_V2
+                                      ] || FATORES_MATERIAIS_V2.outros
+                                    const unidadeFe = 'kgCO₂e/kg'
+                                    const fonteFe =
+                                      fatorMaterialV2.fonte || fatorInfo.fonte || 'DM-ORB-001'
+                                    const isPendenteVerificacao = Boolean(
+                                      fatorMaterialV2.pendente_verificacao,
+                                    )
                                     return (
                                       <tr
                                         key={peca.id}
@@ -2108,9 +2139,24 @@ export default function PassaporteLotePublicoPage() {
                                           {Number(peca.peso_kg).toFixed(2)} kg
                                         </td>
                                         <td className="py-2.5 px-3 text-right font-mono text-[#93A3B5] print:text-slate-600">
-                                          {Number(
-                                            peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg,
-                                          ).toFixed(2)}
+                                          <div>
+                                            {Number(
+                                              peca.fator_co2e_kg || fatorInfo.fatorKgCO2ePorKg,
+                                            ).toFixed(2)}
+                                          </div>
+                                          <div className="text-[9px] text-[#93A3B5] print:text-slate-500">
+                                            {unidadeFe}
+                                          </div>
+                                        </td>
+                                        <td className="py-2.5 px-3">
+                                          <div className="text-[11px] text-[#F4F7FA] print:text-slate-800">
+                                            {fonteFe}
+                                          </div>
+                                          {isPendenteVerificacao && (
+                                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-amber-500/20 text-amber-400 dark:text-[#D9B36C] border border-amber-500/40">
+                                              Pendente de verificação de fonte
+                                            </span>
+                                          )}
                                         </td>
                                         <td className="py-2.5 px-3 text-right font-mono font-bold text-[#12B886] print:text-emerald-700">
                                           -{Number(peca.co2e_evitado_kg).toFixed(2)} kg

@@ -559,6 +559,59 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
     })
   })
 
+  // 5.1 Catálogo Pericial de Fatores de Emissão (dMRV DM-ORB-001) e CSV
+  describe('5.1 Catálogo Pericial de Fatores de Emissão (dMRV DM-ORB-001)', () => {
+    it('renderiza o bloco do catálogo pericial completo com hash de controle para Gestor Master', async () => {
+      const mockUsuarios = [
+        {
+          id: 'usr-1',
+          name: 'Gestor Master Teste',
+          email: 'master@orbis-protocol.com',
+          role: 'master',
+          status_aprovacao: 'aprovado',
+          created: '2025-01-01T00:00:00Z',
+        },
+      ]
+
+      const { ConsoleGovernancaMasterTab } = await import('@/components/ConsoleGovernancaMasterTab')
+
+      render(
+        <MemoryRouter>
+          <ConsoleGovernancaMasterTab usuarios={mockUsuarios} onAtualizar={() => {}} />
+        </MemoryRouter>,
+      )
+
+      expect(screen.getByTestId('bloco-catalogo-pericial-fatores')).toBeDefined()
+      expect(
+        screen.getByText(/Catálogo Pericial de Fatores de Emissão \(dMRV DM-ORB-001\)/i),
+      ).toBeDefined()
+      expect(screen.getByText(/Hash de Controle Integral do Catálogo/i)).toBeDefined()
+      expect(screen.getByRole('button', { name: /Exportar CSV Pericial/i })).toBeDefined()
+
+      // Verifica presença de materiais canônicos na tabela
+      expect(screen.getByText(/Aço \(sucata \/ secundário\)/i)).toBeDefined()
+      expect(screen.getByText(/Alumínio \(sucata \/ secundário\)/i)).toBeDefined()
+      expect(screen.getByText(/Cobre \(sucata \/ secundário\)/i)).toBeDefined()
+      expect(screen.getByText(/Polímeros Automotivos/i)).toBeDefined()
+      expect(screen.getByText(/Lã de Rocha/i)).toBeDefined()
+      expect(screen.getByText(/Fluido Refrigerante R-1234yf/i)).toBeDefined()
+    })
+
+    it('gera e exporta CSV com cabeçalho pericial e hash de controle das linhas', async () => {
+      const { gerarCsvCatalogoPericial } = await import('@/services/catalogoFatoresDmrvService')
+      const res = gerarCsvCatalogoPericial()
+
+      expect(res.totalItens).toBeGreaterThanOrEqual(10)
+      expect(res.hashControle).toMatch(/^SHA256-DMRV-[A-F0-9]{8}$/)
+      expect(res.csv).toContain('CATALOGO PERICIAL DE FATORES DE EMISSAO (dMRV DM-ORB-001)')
+      expect(res.csv).toContain('GESTOR MASTER')
+      expect(res.csv).toContain(res.hashControle)
+      expect(res.csv).toContain('worldsteel (2024)')
+      expect(res.csv).toContain('IAI 2024 (Global)')
+      expect(res.csv).toContain('PlasticsEurope (2022)')
+    })
+  })
+
   // 6. Auditoria de aprovação/recusa/alteração de papel
   describe('6. Auditoria e Rastreabilidade Formal de Governança', () => {
     it('aprovarRecusarContaGestaoMaster chama endpoint dedicado com parâmetros de auditoria', async () => {

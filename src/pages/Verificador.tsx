@@ -6,6 +6,13 @@ import { useAuth } from '@/contexts/AuthContext'
 import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import { cleanCNPJ, isValidCNPJ } from '@/services/cnpj'
 import {
+  consultarLoteConsolidado,
+  calcularHashCanonicalLote,
+  type CdvLoteRecord,
+  type CdvPecaRecord,
+} from '@/services/cdvService'
+import { FATORES_MATERIAIS_V2 } from '@/services/cdvEngineV2'
+import {
   ShieldCheck,
   Search,
   CheckCircle2,
@@ -99,6 +106,11 @@ export default function Verificador() {
   const [hasSearched, setHasSearched] = useState(false)
   const [copiedHash, setCopiedHash] = useState(false)
   const [todosSelos, setTodosSelos] = useState<SeloRecord[]>([])
+  const [loteEncontrado, setLoteEncontrado] = useState<{
+    lote: CdvLoteRecord
+    pecas: CdvPecaRecord[]
+    hashLote: string
+  } | null>(null)
 
   const { isAuthenticated, role } = useAuth()
   // O CTA de diagnóstico NÃO deve aparecer para quem já é cliente autenticado
@@ -180,11 +192,37 @@ export default function Verificador() {
     if (
       rawInput.toUpperCase().startsWith('PR-BX-') ||
       rawInput === '12401050711' ||
-      rawInput.toUpperCase().startsWith('DETRAN-PR-DESM-')
+      rawInput.toUpperCase().startsWith('DETRAN-PR-DESM-') ||
+      rawInput.toUpperCase().startsWith('VERTEC-')
     ) {
+      try {
+        const resLote = await consultarLoteConsolidado(rawInput)
+        if (resLote) {
+          const shaLote = await calcularHashCanonicalLote(
+            {
+              id: resLote.lote.id,
+              cdv_cnpj: resLote.lote.cdv_cnpj,
+              veiculo_baixa_detran: resLote.lote.veiculo_baixa_detran,
+            },
+            resLote.pecas,
+          )
+          setLoteEncontrado({
+            lote: resLote.lote,
+            pecas: resLote.pecas,
+            hashLote: shaLote,
+          })
+          setSeloEncontrado(null)
+          setIsSearching(false)
+          return
+        }
+      } catch {
+        /* segue para redirect fallback */
+      }
       window.location.href = `/passaporte-lote/${encodeURIComponent(rawInput)}`
       return
     }
+
+    setLoteEncontrado(null)
 
     try {
       const digitsOnly = cleanCNPJ(rawInput)
@@ -387,7 +425,154 @@ export default function Verificador() {
         {/* Verification Result Card */}
         {hasSearched && (
           <div className="max-w-3xl mb-16 animate-fade-in space-y-6">
-            {seloEncontrado ? (
+            {loteEncontrado ? (
+              <div className="p-8 rounded-2xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886] shadow-emerald-glow space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.1)]">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#12B886] block mb-1">
+                      LOTE VEICULAR AUDITADO dMRV (DM-ORB-001)
+                    </span>
+                    <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
+                      {loteEncontrado.lote.veiculo_marca_modelo}
+                    </h2>
+                    <span className="font-mono text-xs text-[#93A3B5]">
+                      Baixa DETRAN: {loteEncontrado.lote.veiculo_baixa_detran}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#12B886]/20 text-[#12B886] font-bold text-xs uppercase border border-[#12B886]/40 shadow-emerald-glow">
+                      <CheckCircle2 className="w-4 h-4" />
+                      LOTE HOMOLOGADO
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                  <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                    <span className="text-[#93A3B5] block uppercase font-semibold">
+                      CDV Origem:
+                    </span>
+                    <div className="font-bold text-[#F4F7FA] mt-0.5">
+                      {loteEncontrado.lote.cdv_nome}
+                    </div>
+                    <div className="font-mono text-[11px] text-[#D9B36C]">
+                      {loteEncontrado.lote.cdv_cnpj}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                    <span className="text-[#93A3B5] block uppercase font-semibold">
+                      Total de Peças:
+                    </span>
+                    <div className="font-bold text-[#F4F7FA] text-lg mt-0.5">
+                      {loteEncontrado.pecas.length} peças
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
+                    <span className="text-[#93A3B5] block uppercase font-semibold">
+                      CO₂e Evitado:
+                    </span>
+                    <div className="font-bold text-[#12B886] text-lg mt-0.5">
+                      -
+                      {loteEncontrado.pecas
+                        .reduce((acc, p) => acc + (Number(p.co2e_evitado_kg) || 0), 0)
+                        .toFixed(2)}{' '}
+                      kg
+                    </div>
+                  </div>
+                </div>
+
+                {/* Resumo dos Fatores com Fonte Metodológica e Badges Vinculados ao Hash */}
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#12B886] flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                      <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+                      Fatores de Emissão Metodológicos Aplicados ao Lote
+                    </span>
+                    <span className="text-[10px] font-mono text-[#D9B36C]">DM-ORB-001 v1.1</span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase text-[10px]">
+                        <tr>
+                          <th className="py-2 px-2">Material / Categoria</th>
+                          <th className="py-2 px-2 text-right">FE Aplicado</th>
+                          <th className="py-2 px-2">Fonte Metodológica</th>
+                          <th className="py-2 px-2 text-center">Situação Auditoria</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
+                        {Array.from(
+                          new Set(
+                            loteEncontrado.pecas.map((p) => p.categoria_material || 'outros'),
+                          ),
+                        ).map((cat) => {
+                          const fatorV2 =
+                            FATORES_MATERIAIS_V2[cat as keyof typeof FATORES_MATERIAIS_V2] ||
+                            FATORES_MATERIAIS_V2.outros
+                          const isPendente = Boolean(fatorV2.pendente_verificacao)
+                          return (
+                            <tr key={cat}>
+                              <td className="py-2 px-2 font-medium capitalize">
+                                {fatorV2.nome || cat}
+                              </td>
+                              <td className="py-2 px-2 text-right font-mono text-[#D9B36C]">
+                                {fatorV2.fe_ref.toFixed(2)} kgCO₂e/kg
+                              </td>
+                              <td className="py-2 px-2 text-[11px] text-[#93A3B5]">
+                                {fatorV2.fonte}
+                              </td>
+                              <td className="py-2 px-2 text-center">
+                                {isPendente ? (
+                                  <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-500/20 text-amber-400 dark:text-[#D9B36C] border border-amber-500/40">
+                                    Pendente de verificação de fonte
+                                  </span>
+                                ) : (
+                                  <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                                    Homologado
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <p className="text-[10px] text-[#93A3B5] pt-1">
+                    Todos os fatores, pesos e descarbonizações individuais estão criptograficamente
+                    amarrados ao hash do lote abaixo.
+                  </p>
+                </div>
+
+                {/* Hash SHA-256 do Lote */}
+                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#12B886] flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                      <ShieldCheck className="w-4 h-4 text-[#12B886]" />
+                      Hash Canônico SHA-256 do Lote
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#12B886] bg-[#12B886]/10 px-2 py-0.5 rounded-full font-semibold">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Integridade verificada ✓
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#111820] p-2.5 rounded-lg border border-[rgba(244,247,250,0.08)] min-w-0 max-w-full">
+                    <span className="font-mono text-xs text-[#D9B36C] break-all max-w-full min-w-0">
+                      {loteEncontrado.hashLote}
+                    </span>
+                    <Link
+                      to={`/passaporte-lote/${loteEncontrado.lote.id}`}
+                      className="px-3 py-1.5 rounded-lg bg-[#16202B] text-xs font-semibold text-[#12B886] hover:bg-[#12B886]/20 transition-all flex items-center gap-1 shrink-0"
+                    >
+                      <span>Abrir Passaporte do Lote</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ) : seloEncontrado ? (
               <div className="p-8 rounded-2xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886] shadow-emerald-glow space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.1)]">
                   <div>

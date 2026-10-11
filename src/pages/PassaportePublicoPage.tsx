@@ -26,6 +26,7 @@ import {
   FATORES_CDV_MATERIAIS,
   type CdvPecaRecord,
 } from '@/services/cdvService'
+import { FATORES_MATERIAIS_V2 } from '@/services/cdvEngineV2'
 import {
   consultarDestinacaoFinalLote,
   type DestinacaoFinalLoteResponse,
@@ -133,6 +134,15 @@ export default function PassaportePublicoPage() {
   const fatorInfo = peca
     ? FATORES_CDV_MATERIAIS[peca.categoria_material] || FATORES_CDV_MATERIAIS.outros
     : null
+
+  const fatorMaterialV2 = peca
+    ? FATORES_MATERIAIS_V2[peca.categoria_material as keyof typeof FATORES_MATERIAIS_V2] ||
+      FATORES_MATERIAIS_V2.outros
+    : null
+
+  const isPendenteVerificacao = Boolean(fatorMaterialV2?.pendente_verificacao)
+  const fonteCanonica = fatorMaterialV2?.fonte || fatorInfo?.fonte || 'DM-ORB-001'
+  const unidadeCanonica = 'kgCO₂e/kg'
 
   return (
     <div className="min-h-screen py-10 md:py-16 bg-[#0A0E12] text-[#F4F7FA]">
@@ -328,9 +338,17 @@ export default function PassaportePublicoPage() {
                           </div>
                           <p className="text-[11px] text-[#93A3B5] mt-1">
                             Cálculo pericial: {peca.peso_kg} kg de{' '}
-                            {peca.material_declarado || 'material'} × {peca.fator_co2e_kg} kg
-                            CO₂e/kg ({fatorInfo?.fonte}, {fatorInfo?.ano})
+                            {peca.material_declarado || 'material'} × {peca.fator_co2e_kg}{' '}
+                            {unidadeCanonica} ({fonteCanonica})
                           </p>
+                          {isPendenteVerificacao && (
+                            <div className="mt-2">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/20 text-amber-400 dark:text-[#D9B36C] border border-amber-500/40">
+                                <AlertTriangle className="w-3 h-3" />
+                                <span>Pendente de verificação de fonte</span>
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         <div className="sm:text-right border-t sm:border-t-0 sm:border-l border-[rgba(244,247,250,0.1)] pt-3 sm:pt-0 sm:pl-6 shrink-0">
