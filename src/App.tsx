@@ -67,6 +67,7 @@ import PropostaRemineraPage from './pages/PropostaRemineraPage'
 import EquipePage from './pages/EquipePage'
 import PosicaoCreditoCarbonoPage from './pages/PosicaoCreditoCarbonoPage'
 import PosicaoEscopo3Page from './pages/PosicaoEscopo3Page'
+import NormaDmOrb001Page from './pages/NormaDmOrb001Page'
 import NotFound from './pages/NotFound'
 
 /**
@@ -170,6 +171,14 @@ const App = () => (
               element={<RedirectPreserveQuery to="/escolas/painel" />}
             />
             {/* Protected Routes (Require Authentication) */}
+            <Route
+              path="/norma-dm-orb-001"
+              element={
+                <ProtectedRoute>
+                  <NormaDmOrb001Page />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/dossie-mover"
               element={

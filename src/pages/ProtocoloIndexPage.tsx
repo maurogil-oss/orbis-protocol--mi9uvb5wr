@@ -30,13 +30,24 @@ export interface DestinoProtocolo {
 
 export const DESTINOS_PROTOCOLO: DestinoProtocolo[] = [
   {
-    titulo: 'Metodologia & Fatores Oficiais (DM-ORB-001)',
-    subtitulo: 'Especificação técnica v1.2 do motor dMRV e catálogo curado de fatores.',
+    titulo: 'Catálogo de Fatores Oficiais (Público - Camada 1)',
+    subtitulo:
+      'Valores, unidades, incertezas e fontes públicas verificadas (IAI, worldsteel, ICA, IPCC).',
     descricao:
-      'Texto integral da norma DM-ORB-001, equações de baseline, regime de incerteza em quadratura (Tiers 1 a 4), GWP do IPCC AR6 e catálogo oficial exportável em CSV.',
+      'Acesso aberto aos fatores de emissão em kgCO₂e/kg, níveis de incerteza (Tiers), flags de auditoria e exportação de CSV público resumido sem necessidade de login.',
     caminho: '/fatores',
-    badge: 'DM-ORB-001 v1.2',
+    badge: 'Público • Camada 1',
     icone: Scale,
+  },
+  {
+    titulo: 'Norma Metodológica DM-ORB-001 v1.1 (Camada 2)',
+    subtitulo:
+      'Texto integral protegido: equações de baseline, formulação matemática e CSV completo.',
+    descricao:
+      'Acesso restrito a usuários cadastrados. Contém as equações prescritivas do motor v2, regime de incerteza por soma em quadratura, termos de custódia e download registrado.',
+    caminho: '/norma-dm-orb-001',
+    badge: 'Login Exigido • Camada 2',
+    icone: Lock,
   },
   {
     titulo: 'Consultar Atestado (Verificador Público)',
@@ -190,6 +201,14 @@ export default function ProtocoloIndexPage() {
                     className="text-amber-400 hover:text-amber-300 hover:underline inline-flex items-center gap-1"
                   >
                     <span>Posição sobre créditos</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <span className="hidden sm:inline text-slate-600">•</span>
+                  <Link
+                    to="/norma-dm-orb-001"
+                    className="text-blue-400 hover:text-blue-300 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Norma completa (login)</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <span className="hidden sm:inline text-slate-600">•</span>

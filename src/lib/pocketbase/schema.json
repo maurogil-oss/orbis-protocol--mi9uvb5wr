@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-11T14:26:55.732Z",
+  "generatedAt": "2026-10-11T21:06:05.176Z",
   "collections": [
     {
       "name": "users",
@@ -5709,6 +5709,88 @@
         "CREATE INDEX idx_educacao_part_tipo ON educacao_participantes (tipo_publico)",
         "CREATE INDEX idx_educacao_part_escola ON educacao_participantes (escola_id)",
         "CREATE INDEX idx_educacao_part_atestado ON educacao_participantes (codigo_atestado)"
+      ]
+    },
+    {
+      "name": "cdv_downloads_norma",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "user_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "user_email",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "user_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tipo_download",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["norma_integral", "csv_completo"]
+        },
+        {
+          "name": "termo_aceito",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "versao_norma",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ip_hash",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "user_agent",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_downloads_norma_email ON cdv_downloads_norma (user_email)",
+        "CREATE INDEX idx_downloads_norma_tipo ON cdv_downloads_norma (tipo_download)",
+        "CREATE INDEX idx_downloads_norma_created ON cdv_downloads_norma (created DESC)"
       ]
     }
   ]

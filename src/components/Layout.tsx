@@ -1136,7 +1136,15 @@ export default function Layout() {
                     to="/fatores"
                     className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Metodologia
+                    Fatores de Emissão (Público)
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/norma-dm-orb-001"
+                    className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
+                  >
+                    Norma DM-ORB-001 (Login)
                   </Link>
                 </li>
                 <li>

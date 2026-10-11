@@ -90,25 +90,23 @@ describe('Página Pública /fatores - DM-ORB-001 v1.1', () => {
     expect(screen.getAllByText(/1\.530/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/Refrigerante não capturado no gate de despoluição/i)).not.toBeNull()
 
-    // §6.3: Fórmula de baseline com DF 0.30 e Li 1.0
-    expect(screen.getByText(/§6\.3 Procedimento de Baseline do Motor v2/i)).not.toBeNull()
-    expect(screen.getByText(/Evitado_peça = \(Q × FE_ref × L_i × DF\) − PE_peça/i)).not.toBeNull()
-    expect(screen.getByText(/DF = 0,30/i)).not.toBeNull()
-    expect(screen.getByText(/L_i = 1,0/i)).not.toBeNull()
-
-    // §7: Regime de Incerteza T1 a T4 e regras floor/ceil
+    // §6.3 e §7: Na página pública de Fatores (Camada 1), as fórmulas detalhadas do motor v2 e
+    // incerteza em quadratura foram migradas para a Camada 2 (/norma-dm-orb-001) com CTA
     expect(
       screen.getByText(
-        /§7\. Regime de Incerteza T1–T4, Soma em Quadratura e Regras de Arredondamento/i,
+        /§6\.3 e §7\. Equações de Baseline, Regime de Incerteza e Regras Prescritivas/i,
       ),
     ).not.toBeNull()
+    expect(screen.queryByText(/Evitado_peça = \(Q × FE_ref × L_i × DF\) − PE_peça/i)).toBeNull()
     expect(
-      screen.getByText(
+      screen.queryByText(
         /Incerteza_lote = √ \[ Σ \(Evitado_peça × u_FE\)² \+ \(Evitado_lote × u_massa\)² \]/i,
       ),
-    ).not.toBeNull()
-    expect(screen.getByText(/FLOOR em 2 Casas para Emissões Evitadas/i)).not.toBeNull()
-    expect(screen.getByText(/CEIL em 2 Casas para Emissões de Projeto \(PE\)/i)).not.toBeNull()
+    ).toBeNull()
+    expect(screen.getByText(/Documento Completo da Norma DM-ORB-001 v1\.1/i)).not.toBeNull()
+    expect(screen.getByRole('link', { name: /Acessar Norma Completa/i }).getAttribute('href')).toBe(
+      '/norma-dm-orb-001',
+    )
 
     // §8: Vocabulário Registro Verificável de Custódia
     expect(screen.getByText(/§8\. Registro Verificável de Custódia — dMRV Orbis/i)).not.toBeNull()

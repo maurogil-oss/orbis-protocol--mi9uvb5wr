@@ -92,37 +92,26 @@ export default function FatoresEmissaoPublicoPage() {
     return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 })
   }
 
-  const exportarCatalogoCsv = () => {
+  // Camada 1: CSV Público Resumido (fator, unidade, fonte, incerteza — sem contextos de aplicação e fallbacks do motor)
+  const exportarCatalogoCsvResumido = () => {
     const headers = [
-      'ID',
-      'Categoria',
       'Material / Insumo',
       'Fator CO2e',
       'Unidade',
-      'Tipo de Impacto',
-      'Fonte Metodológica',
-      'Norma de Referência',
-      'Ano Base',
-      'Tier Incerteza',
-      'Incerteza Padrao (%)',
-      'Versão Catálogo',
-      'Regra Snapshot',
+      'Fonte Oficial',
+      'Nível de Incerteza',
+      'Incerteza Padrão (%)',
+      'Status da Fonte',
     ]
 
     const linhas = CATALOGO_FATORES_CO2E.map((f) => [
-      `"${f.id}"`,
-      `"${f.categoria}"`,
       `"${f.nomeMaterial.replace(/"/g, '""')}"`,
       `"${f.valorFator}"`,
       `"${f.unidade}"`,
-      `"${f.tipoImpacto}"`,
       `"${f.fonteOficial.replace(/"/g, '""')}"`,
-      `"${f.normaPadrao.replace(/"/g, '""')}"`,
-      `"${f.anoReferencia}"`,
       `"${f.tierIncerteza}"`,
       `"±${f.incertezaPct}%"`,
-      `"${METADADOS_CATALOGO_FATORES.versao}"`,
-      `"Congelado no documento na emissão"`,
+      `"${f.pendenteVerificacao ? 'Pendente de verificação de fonte' : 'Curado dMRV'}"`,
     ])
 
     const csvContent =
@@ -134,7 +123,7 @@ export default function FatoresEmissaoPublicoPage() {
     link.setAttribute('href', encodedUri)
     link.setAttribute(
       'download',
-      `orbis_catalogo_fatores_co2e_${METADADOS_CATALOGO_FATORES.versao}.csv`,
+      `orbis_catalogo_fatores_resumido_${METADADOS_CATALOGO_FATORES.versao}.csv`,
     )
     document.body.appendChild(link)
     link.click()
@@ -167,12 +156,12 @@ export default function FatoresEmissaoPublicoPage() {
               {VERSAO_METODOLOGIA_CDV_V2} • VIGÊNCIA ATIVA
             </span>
             <button
-              onClick={exportarCatalogoCsv}
+              onClick={exportarCatalogoCsvResumido}
               className="px-3 py-1 rounded-lg bg-[#16202B] hover:bg-[#12B886]/20 border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA] hover:text-[#12B886] transition-all flex items-center gap-1.5 font-mono"
-              title="Baixar fatores em CSV para auditoria"
+              title="Baixar fatores públicos resumidos em CSV"
             >
               <Download className="w-3.5 h-3.5 text-[#12B886]" />
-              <span>Exportar CSV</span>
+              <span>Exportar CSV Público</span>
             </button>
           </div>
         </div>
@@ -340,18 +329,11 @@ export default function FatoresEmissaoPublicoPage() {
                   <span className="truncate">Refrigerantes R-134a, R-1234yf & GWP AR6</span>
                 </a>
                 <a
-                  href="#sec-63"
+                  href="#sec-63-7"
                   className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
                 >
-                  <span>§6.3</span>
-                  <span className="truncate">Fórmula de Baseline do Motor</span>
-                </a>
-                <a
-                  href="#sec-7"
-                  className="p-2 rounded-lg bg-[#0A0E12] hover:bg-[#16202B] text-[#93A3B5] hover:text-[#12B886] transition-colors flex items-center gap-1.5 font-mono"
-                >
-                  <span>§7</span>
-                  <span className="truncate">Regime de Incerteza T1–T4</span>
+                  <span>§6.3–7</span>
+                  <span className="truncate">Metodologia Protegida (Camada 2)</span>
                 </a>
                 <a
                   href="#sec-8"
@@ -1007,197 +989,47 @@ export default function FatoresEmissaoPublicoPage() {
               </div>
             </section>
 
-            {/* SEÇÃO 6.3: PROCEDIMENTO DE BASELINE E FÓRMULA DO MOTOR */}
+            {/* SEÇÃO 6.3 & 7: METODOLOGIA INTEGRAL BLINDADA (CAMADA 2) */}
             <section
-              id="sec-63"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
+              id="sec-63-7"
+              className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border-2 border-emerald-500/40 shadow-lg space-y-4"
             >
               <div className="flex items-center gap-2 text-[#12B886] text-xs font-mono font-bold uppercase">
-                <Scale className="w-4 h-4" />
-                <span>Seção 6.3 & Apêndice C • Procedimento e Fórmula de Baseline</span>
+                <Lock className="w-4 h-4 text-[#12B886]" />
+                <span>Seções 6.3 & 7 • Metodologia Completa & Regime Matemático</span>
               </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §6.3 Procedimento de Baseline do Motor v2 (DM-ORB-001 v1.2)
-              </h2>{' '}
-              <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
-                <p>
-                  O cálculo executado pelo motor{' '}
-                  <code className="text-[#12B886] font-mono">cdvEngineV2.ts</code> para cada
-                  componente desmontado segue rigorosamente a equação prescritiva:
-                </p>
-
-                {/* Fórmula Central em Destaque */}
-                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#0A1628] border-2 border-emerald-500 dark:border-[#059669] text-center space-y-3">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#93A3B5]">
-                    Equação Fundamental de Emissão Evitada por Peça
-                  </span>
-                  <div className="font-mono text-xl sm:text-2xl font-black text-[#12B886] py-2">
-                    Evitado_peça = (Q × FE_ref × L_i × DF) − PE_peça
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px] font-mono text-[#93A3B5] pt-2 border-t border-[rgba(244,247,250,0.06)]">
-                    <div className="p-2 rounded bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800">
-                      <strong className="text-[#12B886] block">Q</strong> Massa medida (kg)
-                    </div>
-                    <div className="p-2 rounded bg-[#111820]">
-                      <strong className="text-[#12B886] block">FE_ref</strong> Fator primário
-                      (kgCO₂e/kg)
-                    </div>
-                    <div className="p-2 rounded bg-[#111820]">
-                      <strong className="text-[#12B886] block">L_i = 1,0</strong> Reúso funcional
-                    </div>
-                    <div className="p-2 rounded bg-[#111820]">
-                      <strong className="text-[#12B886] block">DF = 0,30</strong> Deslocamento
-                      (VMR0007)
-                    </div>
-                    <div className="p-2 rounded bg-[#111820] col-span-2 sm:col-span-1">
-                      <strong className="text-[#EF4444] block">PE_peça</strong> Emissão projeto
-                      alocada
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
-                    <h3 className="text-xs font-mono font-bold text-[#F4F7FA] uppercase">
-                      Parâmetro DF = 0,30 (Fator de Deslocamento Conservador)
-                    </h3>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      Em aderência às diretrizes da metodologia conservadora VMR0007 e análises
-                      setoriais de substituição de mercado, adota-se o piso fixo de{' '}
-                      <strong className="text-[#12B886] font-mono">DF = 0,30</strong>. Isto
-                      significa que, mesmo na reposição completa de uma peça virgem, reconhece-se
-                      apenas 30% do potencial teórico de descarbonização, absorvendo eventuais
-                      perdas elásticas de mercado e efeito rebote (rebound effect).
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.06)] space-y-2">
-                    <h3 className="text-xs font-mono font-bold text-[#F4F7FA] uppercase">
-                      Parâmetro L_i = 1,0 (Fator de Vida Útil Restante)
-                    </h3>
-                    <p className="text-xs text-[#93A3B5] leading-relaxed">
-                      O parâmetro de vida útil restante é calibrado em{' '}
-                      <strong className="text-[#12B886] font-mono">L_i = 1,0</strong> para reúso
-                      funcional imediato atestado pelo responsável técnico (CREA/CFT). A metodologia
-                      proíbe elevação deste multiplicador acima de 1,0 sem estudo setorial revisado
-                      por pares e chancela de VVB.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* SEÇÃO 7: REGIME DE INCERTEZA T1–T4 */}
-            <section
-              id="sec-7"
-              className="p-8 rounded-3xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-4"
-            >
-              <div className="flex items-center gap-2 text-[#D9B36C] text-xs font-mono font-bold uppercase">
-                <AlertTriangle className="w-4 h-4" />
-                <span>Seção 7 • Propagação de Incerteza e QA-QC</span>
-              </div>
-              <h2 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">
-                §7. Regime de Incerteza T1–T4, Soma em Quadratura e Regras de Arredondamento
+              <h2 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-[#F4F7FA]">
+                §6.3 e §7. Equações de Baseline, Regime de Incerteza e Regras Prescritivas
               </h2>
-              <div className="space-y-4 text-sm text-[#93A3B5] leading-relaxed">
-                <p>
-                  O motor Orbis v2 abandona simplificações ad hoc e implementa a propagação formal
-                  de incerteza por{' '}
-                  <strong className="text-[#F4F7FA]">soma em quadratura (quadrature sum)</strong>{' '}
-                  conforme o Guia ISO/IEC 98-3 (GUM - Guide to the Expression of Uncertainty in
-                  Measurement):
-                </p>
+              <p className="text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
+                Em conformidade com a arquitetura de 3 camadas da governança Orbis, os valores de
+                fatores, unidades, fontes primárias e níveis de incerteza permanecem públicos (aba
+                Catálogo acima). A formulação matemática integral (equações de baseline do motor v2,
+                dedução de PE, regime de incerteza em quadratura e tiers detalhados) integra a norma
+                oficial protegida.
+              </p>
 
-                {/* Fórmula da Incerteza em Quadratura */}
-                <div className="p-5 rounded-2xl bg-[#0A0E12] border border-[#D9B36C]/40 space-y-2 text-center">
-                  <span className="text-[11px] font-mono uppercase text-[#D9B36C] font-bold">
-                    Equação de Incerteza Consolidada do Lote
-                  </span>
-                  <div className="font-mono text-base sm:text-lg font-bold text-[#F4F7FA] py-1 overflow-x-auto">
-                    Incerteza_lote = √ [ Σ (Evitado_peça × u_FE)² + (Evitado_lote × u_massa)² ]
+              {/* Bloco Discreto CTA para Camada 2 */}
+              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-[#0A1628] border border-emerald-200 dark:border-[#059669]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="w-4 h-4 text-emerald-700 dark:text-[#12B886]" />
+                    <span className="font-heading font-bold text-sm text-slate-900 dark:text-[#F4F7FA]">
+                      Documento Completo da Norma DM-ORB-001 v1.1
+                    </span>
                   </div>
-                  <p className="text-xs text-[#93A3B5]">
-                    Onde <strong className="text-[#12B886]">u_massa = ±1,0% (0,01)</strong> para
-                    pesagem com balança calibrada ou{' '}
-                    <strong className="text-[#D9B36C]">u_massa = ±10,0% (0,10)</strong> quando a
-                    tara for estimada por proxy.
+                  <p className="text-xs text-slate-600 dark:text-[#93A3B5]">
+                    Acesse a íntegra metodológica com cadastro gratuito e aceite do termo de
+                    confidencialidade.
                   </p>
                 </div>
-
-                {/* Tiers T1 a T4 */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
-                  <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#12B886]/30">
-                    <span className="font-mono text-xs font-bold text-[#12B886] block">
-                      TIER 1 (T1)
-                    </span>
-                    <span className="text-xs font-semibold text-[#F4F7FA] block mt-1">
-                      Medição Direta de Alta Precisão
-                    </span>
-                    <span className="text-[11px] text-[#93A3B5] block mt-1">
-                      Balança aferida + laudo espectrográfico
-                    </span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#3B82F6]/30">
-                    <span className="font-mono text-xs font-bold text-[#3B82F6] block">
-                      TIER 2 (T2)
-                    </span>
-                    <span className="text-xs font-semibold text-[#F4F7FA] block mt-1">
-                      Fatores Setoriais Oficiais
-                    </span>
-                    <span className="text-[11px] text-[#93A3B5] block mt-1">
-                      PlasticsEurope, PBGHG nacional
-                    </span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[#D9B36C]/30">
-                    <span className="font-mono text-xs font-bold text-[#D9B36C] block">
-                      TIER 3 (T3)
-                    </span>
-                    <span className="text-xs font-semibold text-[#F4F7FA] block mt-1">
-                      Associações Internacionais
-                    </span>
-                    <span className="text-[11px] text-[#93A3B5] block mt-1">
-                      WorldSteel, IAI, ICA (primários)
-                    </span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)]">
-                    <span className="font-mono text-xs font-bold text-[#93A3B5] block">
-                      TIER 4 (T4)
-                    </span>
-                    <span className="text-xs font-semibold text-[#F4F7FA] block mt-1">
-                      Estimativa de Piso
-                    </span>
-                    <span className="text-[11px] text-[#93A3B5] block mt-1">
-                      Pesagem estimada ou composição proxy
-                    </span>
-                  </div>
-                </div>
-
-                {/* Regras de Arredondamento Conservadoras */}
-                <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-2">
-                  <h3 className="text-xs font-mono font-bold text-[#F4F7FA] uppercase">
-                    Regras de Arredondamento Assimétricas do Motor
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#93A3B5]">
-                    <div className="p-2.5 rounded-lg bg-[#111820]">
-                      <strong className="text-[#12B886] font-mono block">
-                        FLOOR em 2 Casas para Emissões Evitadas:
-                      </strong>
-                      Evitado líquido ={' '}
-                      <code className="text-[#12B886] font-mono">Math.floor(x * 100) / 100</code>.
-                      Nunca trunca para cima; garante que nenhuma fração de quilograma seja
-                      superestimada.
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-[#111820]">
-                      <strong className="text-[#EF4444] font-mono block">
-                        CEIL em 2 Casas para Emissões de Projeto (PE):
-                      </strong>
-                      Emissões de projeto ={' '}
-                      <code className="text-[#EF4444] font-mono">Math.ceil(x * 100) / 100</code>.
-                      Assegura a dedução máxima de custos operacionais do CDV (energia elétrica e
-                      combustíveis).
-                    </div>
-                  </div>
-                </div>
+                <Link
+                  to="/norma-dm-orb-001"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs font-mono flex items-center justify-center gap-2 transition-all shadow-sm shrink-0"
+                >
+                  <span>Acessar Norma Completa</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </section>
 
