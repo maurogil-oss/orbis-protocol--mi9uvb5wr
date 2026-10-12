@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
@@ -73,11 +73,11 @@ export function calcularEnquadramentoSBCE(
 ): string {
   switch (faixa) {
     case 'abaixo_10k':
-      return 'Abaixo do limiar de reporte no SBCE (< 10.000 tCO₂e/ano)'
+      return 'Abaixo do limiar de reporte no SBCE (< 10.000 tCO2e/ano)'
     case 'entre_10k_25k':
-      return 'Sujeito a reporte no SBCE (10.000 a 25.000 tCO₂e/ano)'
+      return 'Sujeito a reporte no SBCE (10.000 a 25.000 tCO2e/ano)'
     case 'acima_25k':
-      return 'Sujeito a reporte e obrigação de compensação no SBCE (> 25.000 tCO₂e/ano)'
+      return 'Sujeito a reporte e obrigação de compensação no SBCE (> 25.000 tCO2e/ano)'
     case 'nao_sei_calcular':
     default:
       return 'Avaliação preliminar pendente de inventário técnico'
@@ -88,6 +88,15 @@ export default function Diagnostico() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { login } = useAuth()
+
+  const cnpjInputRef = useRef<HTMLInputElement | null>(null)
+  const razaoSocialInputRef = useRef<HTMLInputElement | null>(null)
+  const emailInputRef = useRef<HTMLInputElement | null>(null)
+  const whatsappInputRef = useRef<HTMLInputElement | null>(null)
+  const responsavelInputRef = useRef<HTMLInputElement | null>(null)
+  const senhaInputRef = useRef<HTMLInputElement | null>(null)
+  const confirmaSenhaInputRef = useRef<HTMLInputElement | null>(null)
+  const aceiteLgpdRef = useRef<HTMLInputElement | null>(null)
 
   // Tab: 'novo' | 'retomar'
   const [tab, setTab] = useState<'novo' | 'retomar'>('novo')
@@ -359,6 +368,10 @@ export default function Diagnostico() {
       errors.whatsapp = 'Informe um telefone WhatsApp com DDD'
     }
     setFieldErrors(errors)
+    if (errors.cnpj) cnpjInputRef.current?.focus()
+    else if (errors.razao_social) razaoSocialInputRef.current?.focus()
+    else if (errors.email) emailInputRef.current?.focus()
+    else if (errors.whatsapp) whatsappInputRef.current?.focus()
     return Object.keys(errors).length === 0
   }
 
@@ -375,6 +388,9 @@ export default function Diagnostico() {
       errors.confirmaSenha = 'As senhas não coincidem'
     }
     setFieldErrors(errors)
+    if (errors.responsavel) responsavelInputRef.current?.focus()
+    else if (errors.senha) senhaInputRef.current?.focus()
+    else if (errors.confirmaSenha) confirmaSenhaInputRef.current?.focus()
     return Object.keys(errors).length === 0
   }
 
@@ -393,6 +409,7 @@ export default function Diagnostico() {
     const errors: Record<string, string> = {}
     if (!formData.aceite_lgpd) {
       errors.aceite_lgpd = 'Você deve concordar com os termos da LGPD para prosseguir'
+      aceiteLgpdRef.current?.focus()
     }
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
@@ -418,6 +435,7 @@ export default function Diagnostico() {
     if (e) e.preventDefault()
     if (!formData.aceite_lgpd) {
       setFieldErrors({ aceite_lgpd: 'Você deve concordar com os termos da LGPD para prosseguir' })
+      aceiteLgpdRef.current?.focus()
       return
     }
 
@@ -806,10 +824,10 @@ export default function Diagnostico() {
             )}
           </div>
         ) : (
-          /* NOVO DIAGNOSTICO WIZARD + MODELOS LATERAIS */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* WIZARD FORM (COL 1..7) */}
-            <div className="lg:col-span-7 bg-[#111820] border border-[rgba(244,247,250,0.12)] rounded-2xl p-6 sm:p-8 shadow-2xl relative">
+          /* NOVO DIAGNOSTICO WIZARD */
+          <div className="max-w-4xl mx-auto">
+            {/* WIZARD FORM */}
+            <div className="bg-[#111820] border border-[rgba(244,247,250,0.12)] rounded-2xl p-6 sm:p-8 shadow-2xl relative">
               {/* Progress Bar */}
               {step < 7 && (
                 <div className="mb-8">
@@ -855,7 +873,10 @@ export default function Diagnostico() {
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]">
+                      <label
+                        htmlFor="diagnostico-cnpj-input"
+                        className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]"
+                      >
                         CNPJ da Empresa *
                       </label>
                       <span className="text-[11px] text-[#93A3B5]/80">
@@ -865,6 +886,8 @@ export default function Diagnostico() {
                     <div className="flex gap-2">
                       <div className="relative flex-1">
                         <input
+                          ref={cnpjInputRef}
+                          id="diagnostico-cnpj-input"
                           type="text"
                           value={formData.cnpj}
                           onChange={(e) => {
@@ -892,6 +915,7 @@ export default function Diagnostico() {
                               handleConsultarCNPJ()
                             }
                           }}
+                          aria-invalid={Boolean(fieldErrors.cnpj)}
                           placeholder="00.000.000/0000-00"
                           className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] font-mono"
                         />
@@ -921,7 +945,13 @@ export default function Diagnostico() {
                       regulatória e tributária a partir dos dados públicos oficiais.
                     </p>
                     {fieldErrors.cnpj && (
-                      <span className="text-xs text-[#F03E54] mt-1 block">{fieldErrors.cnpj}</span>
+                      <span
+                        role="alert"
+                        aria-live="assertive"
+                        className="text-xs text-[#F03E54] mt-1 block"
+                      >
+                        {fieldErrors.cnpj}
+                      </span>
                     )}
 
                     {/* Sugestão UX: Se a raiz corresponder a um modelo pedagógico */}
@@ -1136,13 +1166,19 @@ export default function Diagnostico() {
                   )}
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                    <label
+                      htmlFor="diagnostico-razao-social-input"
+                      className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                    >
                       Razão Social ou Nome Empresarial *
                     </label>
                     <input
+                      ref={razaoSocialInputRef}
+                      id="diagnostico-razao-social-input"
                       type="text"
                       value={formData.razao_social}
                       onChange={(e) => setFormData({ ...formData, razao_social: e.target.value })}
+                      aria-invalid={Boolean(fieldErrors.razao_social)}
                       placeholder="Ex.: Indústria e Comércio Brasil S.A."
                       className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                     />
@@ -1151,20 +1187,30 @@ export default function Diagnostico() {
                       pericial preliminar.
                     </p>
                     {fieldErrors.razao_social && (
-                      <span className="text-xs text-[#F03E54] mt-1 block">
+                      <span
+                        role="alert"
+                        aria-live="assertive"
+                        className="text-xs text-[#F03E54] mt-1 block"
+                      >
                         {fieldErrors.razao_social}
                       </span>
                     )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                      <label
+                        htmlFor="diagnostico-email-input"
+                        className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                      >
                         E-mail Corporativo *
                       </label>
                       <input
+                        ref={emailInputRef}
+                        id="diagnostico-email-input"
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        aria-invalid={Boolean(fieldErrors.email)}
                         placeholder="contato@empresa.com.br"
                         className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                       />
@@ -1173,22 +1219,32 @@ export default function Diagnostico() {
                         comparativo.
                       </p>
                       {fieldErrors.email && (
-                        <span className="text-xs text-[#F03E54] mt-1 block">
+                        <span
+                          role="alert"
+                          aria-live="assertive"
+                          className="text-xs text-[#F03E54] mt-1 block"
+                        >
                           {fieldErrors.email}
                         </span>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                      <label
+                        htmlFor="diagnostico-whatsapp-input"
+                        className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                      >
                         WhatsApp / Celular com DDD *
                       </label>
                       <input
+                        ref={whatsappInputRef}
+                        id="diagnostico-whatsapp-input"
                         type="text"
                         value={formData.whatsapp}
                         onChange={(e) =>
                           setFormData({ ...formData, whatsapp: maskPhone(e.target.value) })
                         }
+                        aria-invalid={Boolean(fieldErrors.whatsapp)}
                         placeholder="(00) 00000-0000"
                         className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                       />
@@ -1197,7 +1253,11 @@ export default function Diagnostico() {
                         pericial.
                       </p>
                       {fieldErrors.whatsapp && (
-                        <span className="text-xs text-[#F03E54] mt-1 block">
+                        <span
+                          role="alert"
+                          aria-live="assertive"
+                          className="text-xs text-[#F03E54] mt-1 block"
+                        >
                           {fieldErrors.whatsapp}
                         </span>
                       )}
@@ -1230,13 +1290,19 @@ export default function Diagnostico() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                    <label
+                      htmlFor="diagnostico-responsavel-input"
+                      className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                    >
                       Nome do Responsável / Solicitante *
                     </label>
                     <input
+                      ref={responsavelInputRef}
+                      id="diagnostico-responsavel-input"
                       type="text"
                       value={formData.responsavel}
                       onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
+                      aria-invalid={Boolean(fieldErrors.responsavel)}
                       placeholder="Nome completo do diretor ou responsável técnico"
                       className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                     />
@@ -1245,7 +1311,11 @@ export default function Diagnostico() {
                       protocolo.
                     </p>
                     {fieldErrors.responsavel && (
-                      <span className="text-xs text-[#F03E54] mt-1 block">
+                      <span
+                        role="alert"
+                        aria-live="assertive"
+                        className="text-xs text-[#F03E54] mt-1 block"
+                      >
                         {fieldErrors.responsavel}
                       </span>
                     )}
@@ -1492,10 +1562,14 @@ export default function Diagnostico() {
 
                   {/* Consumo aproximado de energia */}
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                    <label
+                      htmlFor="diagnostico-consumo-energia-input"
+                      className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                    >
                       Porte / Consumo Aproximado de Energia
                     </label>
                     <input
+                      id="diagnostico-consumo-energia-input"
                       type="text"
                       value={formData.consumo_energia}
                       onChange={(e) =>
@@ -1649,10 +1723,14 @@ export default function Diagnostico() {
 
                   {/* Faixa de Emissões Anuais */}
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                    <label
+                      htmlFor="diagnostico-faixa-emissoes-select"
+                      className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                    >
                       Estimativa Aproximada de Emissões Anuais (Escopo 1 e 2)
                     </label>
                     <select
+                      id="diagnostico-faixa-emissoes-select"
                       value={formData.faixa_emissoes}
                       onChange={(e) =>
                         setFormData({
@@ -1666,9 +1744,9 @@ export default function Diagnostico() {
                       }
                       className="w-full px-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886]"
                     >
-                      <option value="abaixo_10k">&lt; 10.000 tCO₂e / ano</option>
-                      <option value="entre_10k_25k">10.000 a 25.000 tCO₂e / ano</option>
-                      <option value="acima_25k">&gt; 25.000 tCO₂e / ano</option>
+                      <option value="abaixo_10k">&lt; 10.000 tCO2e / ano</option>
+                      <option value="entre_10k_25k">10.000 a 25.000 tCO2e / ano</option>
+                      <option value="acima_25k">&gt; 25.000 tCO2e / ano</option>
                       <option value="nao_sei_calcular">
                         Não sei calcular (avaliação pendente)
                       </option>
@@ -1797,11 +1875,13 @@ export default function Diagnostico() {
                   <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)]">
                     <label className="flex items-start gap-3 cursor-pointer">
                       <input
+                        ref={aceiteLgpdRef}
                         type="checkbox"
                         checked={formData.aceite_lgpd}
                         onChange={(e) =>
                           setFormData({ ...formData, aceite_lgpd: e.target.checked })
                         }
+                        aria-invalid={Boolean(fieldErrors.aceite_lgpd)}
                         className="mt-1 w-4 h-4 rounded text-[#12B886] focus:ring-[#12B886] bg-[#111820]"
                       />
                       <span className="text-xs text-[#93A3B5] leading-relaxed">
@@ -1825,7 +1905,11 @@ export default function Diagnostico() {
                       </span>
                     </label>
                     {fieldErrors.aceite_lgpd && (
-                      <span className="text-xs text-[#F03E54] mt-2 block">
+                      <span
+                        role="alert"
+                        aria-live="assertive"
+                        className="text-xs text-[#F03E54] mt-2 block"
+                      >
                         {fieldErrors.aceite_lgpd}
                       </span>
                     )}
@@ -1996,7 +2080,7 @@ export default function Diagnostico() {
                       return (
                         <div className="pt-2 border-b border-[rgba(244,247,250,0.08)] pb-2">
                           <div className="flex justify-between items-center text-xs mb-1">
-                            <span className="text-[#93A3B5]">Protocolo Setorial Homologado:</span>
+                            <span className="text-[#93A3B5]">Protocolo Setorial Validado:</span>
                             <span className="font-bold text-[#12B886] text-right">{prot.nome}</span>
                           </div>
                           <p className="text-[11px] text-[#93A3B5] mb-2">{prot.tagline}</p>
@@ -2100,81 +2184,6 @@ export default function Diagnostico() {
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* SIDEBAR: 5 MODELOS DE TESTE PRÉ-CADASTRADOS (COL 8..12) */}
-            <div className="lg:col-span-5 space-y-4">
-              <div className="p-6 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="w-5 h-5 text-[#D9B36C]" />
-                  <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
-                    EMPRESAS-MODELO DE DEMONSTRAÇÃO
-                  </h3>
-                </div>
-                <p className="text-xs text-[#93A3B5] mb-5">
-                  4 modelos pedagógicos com CNPJs válidos pré-configurados (2 Lucro Presumido e 2
-                  Lucro Real) para demonstração a prospects. Pulam consulta externa, recebem selo
-                  DEMONSTRAÇÃO e não geram cobrança:
-                </p>
-                <div className="space-y-3">
-                  {MODELOS_TESTE.map((m, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] hover:border-[#12B886]/60 transition-all flex flex-col justify-between group"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="font-semibold text-[#F4F7FA] group-hover:text-[#12B886] transition-colors">
-                            {m.razao_social}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-[11px] text-[#93A3B5] mb-2">
-                          <span className="font-mono text-[#D9B36C]">{m.cnpj}</span>
-                          <span>•</span>
-                          <span className="px-1.5 py-0.5 rounded bg-[#16202B] text-[#93A3B5] text-[10px]">
-                            {m.regime_tributario}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-[#93A3B5] mb-3">
-                          <span className="text-[#12B886]">SBCE: </span>
-                          <span>
-                            {m.faixa_emissoes === 'abaixo_10k' && '< 10k tCO₂e'}
-                            {m.faixa_emissoes === 'entre_10k_25k' && '10k–25k tCO₂e (Reporte)'}
-                            {m.faixa_emissoes === 'acima_25k' && '> 25k tCO₂e (Compensação)'}
-                            {!m.faixa_emissoes && 'Avaliação pendente'}
-                          </span>
-                          {m.exporta_ue_cbam === 'sim' && (
-                            <span className="ml-2 px-1.5 py-0.2 rounded bg-[#D9B36C]/20 text-[#D9B36C] text-[9px] font-bold">
-                              CBAM UE
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => applyModel(m)}
-                        className="w-full text-xs font-semibold py-2 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.12)] text-[#12B886] hover:bg-[#12B886] hover:text-[#0A0E12] transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <span>Usar este modelo</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Informative Box */}
-              <div className="p-5 rounded-2xl bg-[#0D1217] border border-[rgba(244,247,250,0.08)] text-xs text-[#93A3B5] space-y-2">
-                <span className="font-semibold text-[#F4F7FA] block">
-                  Segurança e Integridade do Diagnóstico:
-                </span>
-                <p>
-                  Todos os dados submetidos são protegidos por controle estrito de acesso e
-                  vinculados ao seu CNPJ. Os laudos periciais têm caráter preparatório para o
-                  Sistema SBCE (Lei 15.042/2024) e para o Programa MOVER automotivo.
-                </p>
-              </div>
             </div>
           </div>
         )}

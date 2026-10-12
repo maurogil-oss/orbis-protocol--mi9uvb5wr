@@ -102,10 +102,14 @@ export function FormularioSegmentoAlimentacao({ dados, onChange }: Props) {
       {/* Porte: Funcionários e Faturamento */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+          <label
+            htmlFor="porte-funcionarios-select"
+            className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+          >
             Porte por Equipe / Funcionários
           </label>
           <select
+            id="porte-funcionarios-select"
             value={dados.porte_funcionarios}
             onChange={(e) =>
               onChange({
@@ -124,10 +128,14 @@ export function FormularioSegmentoAlimentacao({ dados, onChange }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+          <label
+            htmlFor="porte-faturamento-select"
+            className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+          >
             Faturamento Médio Mensal
           </label>
           <select
+            id="porte-faturamento-select"
             value={dados.porte_faturamento_mensal}
             onChange={(e) =>
               onChange({

@@ -53,7 +53,7 @@ export default function TrilhasIndex() {
           </p>
         </div>
 
-        {/* SEÇÃO DESTAQUE: ORBIS EDUCAÇÃO (Porta 2 do ecossistema Orbis) */}
+        {/* SEÇÃO DESTAQUE: ORBIS EDUCAÇÃO (Trilha de Capacitação e Formação Técnica) */}
         <div className="mb-14 p-6 sm:p-10 rounded-3xl bg-slate-900 text-white dark:bg-[#0E1A2E] dark:text-[#F8FAFC] border border-slate-800 dark:border-slate-700 shadow-xl">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-3 max-w-3xl">
@@ -63,7 +63,7 @@ export default function TrilhasIndex() {
                   FORMAÇÃO CIDADÃ & ESCOLAR
                 </span>
                 <span className="text-[11px] font-mono font-semibold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40">
-                  Porta 2 da Vitrine
+                  Trilha de Capacitação e Formação Técnica
                 </span>
               </div>
 
@@ -204,7 +204,7 @@ export default function TrilhasIndex() {
                 CONHECIMENTO TÉCNICO APLICADO
               </span>
               <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">
-                Os 15 Protocolos Setoriais Homologados dMRV
+                Os 15 Protocolos Setoriais Validados dMRV
               </h3>
             </div>
             <Link

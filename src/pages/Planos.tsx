@@ -92,15 +92,15 @@ export default function Planos() {
       indicacao: 'Exclusivo Segmento Automotivo & CDVs DETRAN',
       valorNumerico: precoMover,
       valorFormatado: formatPreco(precoMover),
-      periodo: 'por laudo homologado',
+      periodo: 'por laudo validado',
       chamariz:
-        'Pegada contínua ilimitada + Laudo pericial com chancela de perito homologado (ART/RRT).',
+        'Pegada contínua ilimitada + Laudo pericial com chancela de perito habilitado (ART/RRT).',
       descricao:
         catalogo['laudo_pericial']?.descricao ||
-        'Laudo Pericial com ART — chancela de perito homologado, DPP automotivo e pegada contínua ilimitada.',
+        'Laudo Pericial com ART — chancela de perito habilitado, DPP automotivo e pegada contínua ilimitada.',
       destaques: [
         'Tudo do plano Essencial incluído com ingestão ilimitada',
-        'Chancela de perito homologado com Anotação de Responsabilidade Técnica (ART)',
+        'Chancela de perito habilitado com Anotação de Responsabilidade Técnica (ART)',
         'Laudo pericial emitido sob a norma NBC TO 3000 do CFC',
         'Dossiê preparatório para créditos do Programa MOVER (Lei 14.902/2024)',
         'Passaporte Digital de Produto (DPP) para peças e lotes reaproveitados',
@@ -146,12 +146,12 @@ export default function Planos() {
             SOLUÇÕES & PLANOS CORPORATIVOS
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-wide mb-4">
-            PLANOS DE ADESÃO & CERTIFICAÇÃO
+            PLANOS DE ADESÃO & ATESTADOS
           </h1>
           <p className="text-base sm:text-lg text-[#93A3B5] leading-relaxed">
-            Conheça as modalidades de certificação pericial dMRV da plataforma Orbis Protocol.
-            Inicie pelo diagnóstico gratuito do seu CNPJ para receber uma proposta técnica sob
-            medida.
+            Conheça as modalidades de emissão de Atestados de Conformidade dMRV da plataforma Orbis
+            Protocol. Inicie pelo diagnóstico gratuito do seu CNPJ para receber uma proposta técnica
+            sob medida.
           </p>
         </div>
 

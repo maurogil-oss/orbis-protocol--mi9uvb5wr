@@ -145,7 +145,7 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     destaques: [
       'Emissão de laudos periciais auditados vs não-auditados',
       'Anotação de Responsabilidade Técnica (ART/RRT) acoplada',
-      'Remuneração por perícia e certificação no protocolo',
+      'Remuneração por perícia e competência validada no protocolo',
       'Acesso exclusivo ao Console do Auditor',
     ],
     objetivos: [

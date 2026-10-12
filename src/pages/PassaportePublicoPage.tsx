@@ -369,7 +369,7 @@ export default function PassaportePublicoPage() {
                         <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                           <div className="flex items-center gap-2 text-[#D9B36C] font-bold uppercase mb-2">
                             <Car className="w-4 h-4" />
-                            <span>Veículo Doador Homologado</span>
+                            <span>Veículo Doador Validado</span>
                           </div>
                           <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
                             {peca.veiculo_marca_modelo || 'Veículo em Lote CDV'}
@@ -537,7 +537,7 @@ export default function PassaportePublicoPage() {
                       O hash canônico vincula de forma imutável o selo ({peca.selo_dpp}), o SKU (
                       {peca.sku_interno}), o peso aferido ({peca.peso_kg} kg), o CO₂e evitado (-
                       {peca.co2e_evitado_kg} kg), a certidão de baixa DETRAN e o CNPJ do CDV
-                      homologado.
+                      validado.
                     </p>
                   </div>
                 </div>

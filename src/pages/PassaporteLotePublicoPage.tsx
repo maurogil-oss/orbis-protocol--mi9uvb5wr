@@ -421,7 +421,7 @@ export default function PassaporteLotePublicoPage() {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#12B886] animate-pulse" />
               <span className="text-[10px] sm:text-[11px] font-mono text-[#12B886] uppercase font-bold tracking-wider">
-                CERTIFICAÇÃO CONSOLIDADA • CDV HOMOLOGADO
+                ATESTADO DE CONFORMIDADE ORBIS • LOTE VALIDADO
               </span>
             </div>
 
@@ -651,7 +651,7 @@ export default function PassaporteLotePublicoPage() {
                     <Building2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
-                        Centro de Desmontagem Homologado
+                        Centro de Desmontagem Validado
                       </span>
                       <p className="font-semibold text-[#F4F7FA] truncate">{lote.cdv_nome}</p>
                       <p className="text-[11px] font-mono text-[#D9B36C] font-semibold mt-0.5">

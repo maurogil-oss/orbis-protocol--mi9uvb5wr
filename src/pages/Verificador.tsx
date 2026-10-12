@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { useRealtime } from '@/hooks/use-realtime'
@@ -98,6 +98,8 @@ export default function Verificador() {
   const [codigoInput, setCodigoInput] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const resultadoRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const [seloEncontrado, setSeloEncontrado] = useState<SeloRecord | null>(null)
   const [calculatedStatus, setCalculatedStatus] = useState<'VÁLIDO' | 'EXPIRADO' | 'REVOGADO'>(
     'VÁLIDO',
@@ -177,7 +179,11 @@ export default function Verificador() {
     setSearchError('')
     const rawInput = (customCode !== undefined ? customCode : codigoInput).trim()
 
-    if (!rawInput) return
+    if (!rawInput) {
+      setSearchError('Por favor, informe o código do lote/selo ou CNPJ.')
+      inputRef.current?.focus()
+      return
+    }
 
     setIsSearching(true)
     setHasSearched(true)
@@ -213,6 +219,9 @@ export default function Verificador() {
           })
           setSeloEncontrado(null)
           setIsSearching(false)
+          setTimeout(() => {
+            resultadoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }, 100)
           return
         }
       } catch {
@@ -236,6 +245,7 @@ export default function Verificador() {
           )
           setSeloEncontrado(null)
           setIsSearching(false)
+          inputRef.current?.focus()
           return
         }
         // Consulta por CNPJ (exato ou formatado)
@@ -260,8 +270,14 @@ export default function Verificador() {
       } else {
         setSeloEncontrado(null)
       }
+      setTimeout(() => {
+        resultadoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
     } catch (_) {
       setSeloEncontrado(null)
+      setTimeout(() => {
+        resultadoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
     } finally {
       setIsSearching(false)
     }
@@ -341,20 +357,26 @@ export default function Verificador() {
         {/* Verification Form Card */}
         <div className="p-8 sm:p-10 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] mb-12 shadow-2xl max-w-3xl">
           <form onSubmit={handleSearch} className="space-y-4">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]">
-              Código do Selo (busca exata) ou CNPJ com Dígitos Verificadores:
+            <label
+              htmlFor="codigo-lote-input"
+              className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]"
+            >
+              Código do Lote / Selo ou CNPJ com Dígitos Verificadores:
             </label>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
                 <input
+                  ref={inputRef}
+                  id="codigo-lote-input"
                   type="text"
                   value={codigoInput}
                   onChange={(e) => {
                     setCodigoInput(e.target.value)
                     setSearchError('')
                   }}
-                  placeholder="Ex.: ORB-2024-0001 ou 76.123.456/0001-00"
+                  aria-invalid={Boolean(searchError)}
+                  placeholder="Ex.: VERTEC-IW29-2022 ou 76.123.456/0001-00"
                   className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/50 focus:outline-none focus:ring-2 focus:ring-[#12B886] font-mono text-sm"
                   required
                 />
@@ -364,12 +386,16 @@ export default function Verificador() {
                 disabled={isSearching}
                 className="px-8 py-3.5 rounded-xl font-bold bg-[#12B886] text-[#0A0E12] hover:bg-[#0CA678] transition-all shadow-emerald-glow flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isSearching ? 'Verificando...' : 'Verificar Selo'}
+                {isSearching ? 'Verificando...' : 'Verificar Registro'}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
             {searchError && (
-              <div className="p-3 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2">
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="p-3 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs text-[#F03E54] flex items-center gap-2"
+              >
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>{searchError}</span>
               </div>
@@ -380,7 +406,7 @@ export default function Verificador() {
           <div className="mt-6 pt-5 border-t border-[rgba(244,247,250,0.08)]">
             <span className="text-xs text-[#93A3B5] mr-2">Exemplos cadastrados para teste:</span>
             <div className="flex flex-wrap gap-2 mt-2">
-              {['ORB-2024-0001', 'ORB-2024-0002', 'ORB-2024-0003'].map((code) => (
+              {['VERTEC-IW29-2022', 'ORB-2024-0002', 'ORB-2024-0003'].map((code) => (
                 <button
                   key={code}
                   type="button"
@@ -424,7 +450,11 @@ export default function Verificador() {
 
         {/* Verification Result Card */}
         {hasSearched && (
-          <div className="max-w-3xl mb-16 animate-fade-in space-y-6">
+          <div
+            ref={resultadoRef}
+            aria-live="polite"
+            className="max-w-3xl mb-16 animate-fade-in space-y-6"
+          >
             {loteEncontrado ? (
               <div className="p-8 rounded-2xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886] shadow-emerald-glow space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.1)]">
@@ -442,7 +472,7 @@ export default function Verificador() {
                   <div>
                     <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#12B886]/20 text-[#12B886] font-bold text-xs uppercase border border-[#12B886]/40 shadow-emerald-glow">
                       <CheckCircle2 className="w-4 h-4" />
-                      LOTE HOMOLOGADO
+                      LOTE VALIDADO
                     </span>
                   </div>
                 </div>
@@ -469,7 +499,7 @@ export default function Verificador() {
                   </div>
                   <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                     <span className="text-[#93A3B5] block uppercase font-semibold">
-                      CO₂e Evitado:
+                      CO<sub>2</sub>e Evitado:
                     </span>
                     <div className="font-bold text-[#12B886] text-lg mt-0.5">
                       -
@@ -517,7 +547,7 @@ export default function Verificador() {
                                 {fatorV2.nome || cat}
                               </td>
                               <td className="py-2 px-2 text-right font-mono text-[#D9B36C]">
-                                {fatorV2.fe_ref.toFixed(2)} kgCO₂e/kg
+                                {fatorV2.fe_ref.toFixed(2)} kgCO<sub>2</sub>e/kg
                               </td>
                               <td className="py-2 px-2 text-[11px] text-[#93A3B5]">
                                 {fatorV2.fonte}
@@ -529,7 +559,7 @@ export default function Verificador() {
                                   </span>
                                 ) : (
                                   <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                                    Homologado
+                                    Validado
                                   </span>
                                 )}
                               </td>
@@ -713,8 +743,8 @@ export default function Verificador() {
                   Esse selo não foi encontrado em nossos registros.
                 </h3>
                 <p className="text-xs text-[#93A3B5] max-w-md mx-auto">
-                  Verifique se o código foi digitado exatamente como emitido (ex.: ORB-2024-0001) ou
-                  se o CNPJ consultado possui certificação homologada.
+                  Verifique se o código foi digitado exatamente como emitido (ex.: VERTEC-IW29-2022)
+                  ou se o CNPJ consultado possui atestado validado.
                 </p>
               </div>
             )}

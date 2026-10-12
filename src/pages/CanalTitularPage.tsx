@@ -251,9 +251,28 @@ export default function CanalTitularPage() {
 
             {/* Seleção do Tipo de Pedido */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-2">
+              <label
+                htmlFor="tipo-requisicao-select"
+                className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-2"
+              >
                 1. Selecione o Tipo de Requerimento (Art. 18) *
               </label>
+              {/* Select acessível nativo vinculado ao label */}
+              <select
+                id="tipo-requisicao-select"
+                value={formData.tipo_pedido}
+                onChange={(e) =>
+                  setFormData({ ...formData, tipo_pedido: e.target.value as TipoPedidoLGPD })
+                }
+                className="w-full mb-3 px-3.5 py-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-xs text-[#F4F7FA] focus:outline-none focus:ring-2 focus:ring-[#12B886]"
+              >
+                {TIPOS.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label} — {t.desc}
+                  </option>
+                ))}
+              </select>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {TIPOS.map((t) => (
                   <button
@@ -282,13 +301,19 @@ export default function CanalTitularPage() {
 
             {/* Dados do Solicitante */}
             <div className="pt-2 border-t border-[rgba(244,247,250,0.08)]">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-3">
+              <span className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-3">
                 2. Identificação do Titular / Requerente *
-              </label>
+              </span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-[11px] text-[#93A3B5] mb-1">Nome Completo *</label>
+                  <label
+                    htmlFor="titular-nome-input"
+                    className="block text-[11px] text-[#93A3B5] mb-1"
+                  >
+                    Nome Completo *
+                  </label>
                   <input
+                    id="titular-nome-input"
                     type="text"
                     required
                     value={formData.nome_titular}
@@ -298,10 +323,14 @@ export default function CanalTitularPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-[#93A3B5] mb-1">
+                  <label
+                    htmlFor="titular-email-input"
+                    className="block text-[11px] text-[#93A3B5] mb-1"
+                  >
                     E-mail Corporativo/Pessoal *
                   </label>
                   <input
+                    id="titular-email-input"
                     type="email"
                     required
                     value={formData.email_titular}
@@ -311,10 +340,14 @@ export default function CanalTitularPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-[#93A3B5] mb-1">
+                  <label
+                    htmlFor="titular-cpf-cnpj-input"
+                    className="block text-[11px] text-[#93A3B5] mb-1"
+                  >
                     CPF ou CNPJ Vinculado *
                   </label>
                   <input
+                    id="titular-cpf-cnpj-input"
                     type="text"
                     required
                     value={formData.cpf_cnpj_titular}
@@ -328,10 +361,14 @@ export default function CanalTitularPage() {
 
             {/* Descrição do Pedido */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1">
+              <label
+                htmlFor="titular-descricao-textarea"
+                className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1"
+              >
                 3. Descrição e Especificação do Pedido *
               </label>
               <textarea
+                id="titular-descricao-textarea"
                 rows={4}
                 required
                 value={formData.descricao}

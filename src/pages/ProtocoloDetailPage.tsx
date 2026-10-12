@@ -36,7 +36,7 @@ export default function ProtocoloDetailPage() {
             Protocolo Setorial Não Localizado
           </h1>
           <p className="text-xs text-[#93A3B5] mb-6">
-            O protocolo "{slug}" não consta entre as 15 cadeias produtivas homologadas na plataforma
+            O protocolo "{slug}" não consta entre as 15 cadeias produtivas validadas na plataforma
             Orbis Protocol.
           </p>
           <Link
@@ -44,7 +44,7 @@ export default function ProtocoloDetailPage() {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-[#12B886] text-[#0A0E12]"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Ver os 15 Protocolos Homologados</span>
+            <span>Ver os 15 Protocolos Validados</span>
           </Link>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function ProtocoloDetailPage() {
           <div className="relative z-10 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0A0E12]/80 border border-[#12B886]/50 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-5">
               <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-              PROTOCOLO SETORIAL HOMOLOGADO dMRV
+              PROTOCOLO SETORIAL VALIDADO dMRV
             </div>
 
             <h1 className="font-heading font-black text-2xl sm:text-4xl md:text-5xl text-[#F4F7FA] tracking-tight mb-4 leading-tight">
@@ -398,7 +398,7 @@ export default function ProtocoloDetailPage() {
                 EXPLORAR O CATÁLOGO
               </span>
               <h4 className="font-heading font-extrabold text-xl text-[#F4F7FA]">
-                Outros Protocolos Homologados
+                Outros Protocolos Validados
               </h4>
             </div>
             <Link

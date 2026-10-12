@@ -29,7 +29,7 @@ export default function CadeiasProdutivasPage() {
         <div className="max-w-3xl mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111820] border border-[#12B886]/40 text-[#12B886] text-xs font-semibold tracking-wider uppercase mb-4">
             <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-            CATÁLOGO SETORIAL HOMOLOGADO
+            CATÁLOGO SETORIAL VALIDADO
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA] tracking-wide mb-3">
             REGRAS & PARÂMETROS PARA 15 CADEIAS PRODUTIVAS
@@ -63,7 +63,7 @@ export default function CadeiasProdutivasPage() {
             >
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#D9B36C] block mb-2">
-                  SETOR HOMOLOGADO
+                  RASTREABILIDADE VALIDADA
                 </span>
                 <h2 className="font-heading font-bold text-lg text-[#F4F7FA] group-hover:text-[#12B886] transition-colors mb-2">
                   {cadeia.nome}
@@ -108,7 +108,7 @@ export default function CadeiasProdutivasPage() {
               <div className="flex items-start justify-between pb-4 border-b border-[rgba(244,247,250,0.1)]">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#D9B36C] block mb-1">
-                    SETOR HOMOLOGADO
+                    LASTRO CONFIRMADO
                   </span>
                   <h3 className="font-heading font-bold text-xl text-[#F4F7FA]">
                     {selectedCadeia.nome}

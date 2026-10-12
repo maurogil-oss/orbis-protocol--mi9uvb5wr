@@ -235,7 +235,7 @@ export default function Layout() {
   // 6 itens essenciais da faixa regulatória
   const regulations = [
     '01/08/2026: Fase-teste IBS 0,1% / CBS 0,9% na NF-e (Art. 348 LC 214/2025)',
-    'Lei 15.042/2024: Mercado Regulado de Carbono (SBCE - limiares 10k e 25k tCO₂e)',
+    'Lei 15.042/2024: Mercado Regulado de Carbono (SBCE - limiares 10k e 25k tCO2e)',
     'Programa MOVER Lei 14.902/2024: Desmontagem veicular e circularidade estruturadas conforme Lei 14.902/2024',
     'Reforma Tributária LC 227/2026 & Decreto 12.955/2026: Novo IVA Dual',
     'IFRS S1/S2: relato de sustentabilidade e riscos climáticos',
@@ -1136,7 +1136,7 @@ export default function Layout() {
                     to="/fatores"
                     className="inline-flex items-center text-slate-700 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-[#F8FAFC] transition-all hover:translate-x-0.5 duration-200 min-h-[44px]"
                   >
-                    Fatores de Emissão (Público)
+                    Métricas e Referências
                   </Link>
                 </li>
                 <li>
