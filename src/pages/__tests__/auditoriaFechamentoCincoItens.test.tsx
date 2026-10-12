@@ -68,9 +68,11 @@ describe('Auditoria Fechamento - 5 Itens de Qualidade e Conformidade', () => {
 
     render(
       <MemoryRouter initialEntries={['/rota-inexistente-xyz']}>
-        <Layout>
-          <NotFound />
-        </Layout>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
       </MemoryRouter>,
     )
 
@@ -197,7 +199,7 @@ describe('Auditoria Fechamento - 5 Itens de Qualidade e Conformidade', () => {
 
     // Carrega cada módulo e garante que exporta o componente
     for (const loadPage of paginasApp) {
-      const mod = await loadPage()
+      const mod: any = await loadPage()
       const Component = mod.default || Object.values(mod)[0]
       expect(typeof Component).toBe('function')
     }
