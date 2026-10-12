@@ -34,6 +34,11 @@ import {
   type CdvPecaRecord,
   type DppConsultaRecord,
 } from '@/services/cdvService'
+import {
+  resolverExibicaoPerito,
+  buscarConsentimentoAtivoPerito,
+  type ConsentimentoPeritoRecord,
+} from '@/services/consentimentoPeritoService'
 import { FATORES_MATERIAIS_V2, round2 } from '@/services/cdvEngineV2'
 import {
   consultarDestinacaoFinalLote,
@@ -92,6 +97,9 @@ export default function PassaporteLotePublicoPage() {
   const [abaLoteAtiva, setAbaLoteAtiva] = useState<'laudo' | 'balanco' | 'destinacao'>('laudo')
   const [dadosDestinacao, setDadosDestinacao] = useState<DestinacaoFinalLoteResponse | null>(null)
   const [moverHabilitado, setMoverHabilitado] = useState(false)
+  const [consentimentoPerito, setConsentimentoPerito] = useState<ConsentimentoPeritoRecord | null>(
+    null,
+  )
 
   // Histórico de Verificações do Lote
   const [historicoConsultas, setHistoricoConsultas] = useState<DppConsultaRecord[]>([])
@@ -176,6 +184,19 @@ export default function PassaporteLotePublicoPage() {
             }
           } catch {
             if (isMounted) setMoverHabilitado(false)
+          }
+
+          // Consultar se há consentimento formal LGPD registrado para revelação de dados do perito
+          try {
+            const rawPerito = resultado.pecas[0]?.responsavel_crea || 'CREA-PR 182.940/D'
+            const consent = await buscarConsentimentoAtivoPerito({
+              registroProfissional: rawPerito.match(/(\d{3,6})/)?.[1],
+            })
+            if (isMounted) {
+              setConsentimentoPerito(consent)
+            }
+          } catch {
+            if (isMounted) setConsentimentoPerito(null)
           }
         } else {
           setLote(null)
@@ -289,6 +310,12 @@ export default function PassaporteLotePublicoPage() {
   const gruposMover = useMemo(() => agruparPecas(pecasMover), [pecasMover])
 
   // Métricas Consolidadas Reais
+  // Resolução LGPD para dados do perito responsável técnico (híbrido com registro)
+  const infoPerito = useMemo(() => {
+    const rawPerito = pecas[0]?.responsavel_crea || 'CREA-PR 182.940/D'
+    return resolverExibicaoPerito(rawPerito, consentimentoPerito)
+  }, [pecas, consentimentoPerito])
+
   const metricas = useMemo(() => {
     const totalPecas = pecas.length || lote?.total_pecas || 0
     const totalPeso = pecas.length
@@ -891,11 +918,23 @@ export default function PassaporteLotePublicoPage() {
                         {lote.veiculo_seguradora || 'Porto Seguro Cia de Seguros'}
                       </span>
                     </div>
-                    <div className="flex justify-between pt-1">
-                      <span className="text-[#93A3B5]">Responsável Técnico:</span>
-                      <span className="text-[#F4F7FA] text-right">
-                        {pecas[0]?.responsavel_crea || 'CREA-PR 182.940/D'}
-                      </span>
+                    <div className="flex flex-col pt-1 border-t border-[rgba(244,247,250,0.06)]">
+                      <div className="flex justify-between items-baseline gap-2">
+                        <span className="text-[#93A3B5]">Responsável Técnico:</span>
+                        <span className="text-[#F4F7FA] text-right font-medium text-xs">
+                          {infoPerito.textoFormatado}
+                        </span>
+                      </div>
+                      {infoPerito.consentimentoValido && (
+                        <span className="text-[10px] text-[#12B886] text-right mt-0.5">
+                          Dados divulgados com consentimento do responsável técnico
+                        </span>
+                      )}
+                      {infoPerito.mascarado && (
+                        <span className="text-[9px] text-[#93A3B5]/70 text-right mt-0.5 italic">
+                          (Mascaramento LGPD por padrão — revelação sob consentimento formal)
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1358,14 +1397,25 @@ export default function PassaporteLotePublicoPage() {
                             {metricas.totalPecas} peças apuradas
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-[#93A3B5] print:text-slate-600">
-                            Responsável Técnico:
-                          </span>
-                          <span className="text-[#F4F7FA] print:text-slate-900 font-medium">
-                            {pecas[0]?.responsavel_crea ||
-                              'CREA-PR 182.940/D - Eng. Marcelo Brandão'}
-                          </span>
+                        <div className="flex flex-col pt-1 border-t border-[rgba(244,247,250,0.06)] print:border-slate-200">
+                          <div className="flex justify-between items-baseline gap-2">
+                            <span className="text-[#93A3B5] print:text-slate-600">
+                              Responsável Técnico:
+                            </span>
+                            <span className="text-[#F4F7FA] print:text-slate-900 font-medium text-right">
+                              {infoPerito.textoFormatado}
+                            </span>
+                          </div>
+                          {infoPerito.consentimentoValido && (
+                            <span className="text-[10px] text-[#12B886] print:text-emerald-700 text-right mt-0.5">
+                              Dados divulgados com consentimento do responsável técnico
+                            </span>
+                          )}
+                          {infoPerito.mascarado && (
+                            <span className="text-[9px] text-[#93A3B5] print:text-slate-500 text-right mt-0.5 italic">
+                              (Mascaramento LGPD por padrão — revelação sob consentimento formal)
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -26,6 +26,11 @@ import {
   FATORES_CDV_MATERIAIS,
   type CdvPecaRecord,
 } from '@/services/cdvService'
+import {
+  resolverExibicaoPerito,
+  buscarConsentimentoAtivoPerito,
+  type ConsentimentoPeritoRecord,
+} from '@/services/consentimentoPeritoService'
 import { FATORES_MATERIAIS_V2 } from '@/services/cdvEngineV2'
 import {
   consultarDestinacaoFinalLote,
@@ -60,6 +65,9 @@ export default function PassaportePublicoPage() {
   const [showModalEtiqueta, setShowModalEtiqueta] = useState(false)
   const [abaAtiva, setAbaAtiva] = useState<'passaporte' | 'destinacao'>('passaporte')
   const [dadosDestinacao, setDadosDestinacao] = useState<DestinacaoFinalLoteResponse | null>(null)
+  const [consentimentoPerito, setConsentimentoPerito] = useState<ConsentimentoPeritoRecord | null>(
+    null,
+  )
   const hasRegisteredRef = useRef(false)
 
   const seloParam = (selo || '').trim().toUpperCase()
@@ -111,6 +119,19 @@ export default function PassaportePublicoPage() {
           const dest = await consultarDestinacaoFinalLote(chaveLoteOuBaixa)
           if (isMounted) {
             setDadosDestinacao(dest)
+          }
+
+          // Consultar consentimento formal LGPD do perito da peça
+          try {
+            const raw = record.responsavel_crea || 'CREA-PR 182.940/D'
+            const consent = await buscarConsentimentoAtivoPerito({
+              registroProfissional: raw.match(/(\d{3,6})/)?.[1],
+            })
+            if (isMounted) {
+              setConsentimentoPerito(consent)
+            }
+          } catch {
+            if (isMounted) setConsentimentoPerito(null)
           }
         }
       } catch {
@@ -430,12 +451,28 @@ export default function PassaportePublicoPage() {
                             <Scale className="w-4 h-4 text-[#D9B36C]" />
                             <span>Responsável Técnico CREA</span>
                           </div>
-                          <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                            {peca.responsavel_crea || 'CREA-PR 182.940/D'}
-                          </div>
-                          <div className="text-[11px] text-[#93A3B5]">
-                            ART / Laudo Pericial Vinculado
-                          </div>
+                          {(() => {
+                            const info = resolverExibicaoPerito(
+                              peca.responsavel_crea || 'CREA-PR 182.940/D',
+                              consentimentoPerito,
+                            )
+                            return (
+                              <div>
+                                <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
+                                  {info.textoFormatado}
+                                </div>
+                                <div className="text-[11px] text-[#93A3B5]">
+                                  {info.consentimentoValido ? (
+                                    <span className="text-[#12B886]">
+                                      Dados divulgados com consentimento do responsável técnico
+                                    </span>
+                                  ) : (
+                                    <span>ART / Laudo Pericial Vinculado (Mascarado LGPD)</span>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })()}
                         </div>
                       </div>
                     </div>

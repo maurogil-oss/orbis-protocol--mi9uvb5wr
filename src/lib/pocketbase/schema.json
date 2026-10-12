@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-12T11:50:12.865Z",
+  "generatedAt": "2026-10-12T12:23:58.779Z",
   "collections": [
     {
       "name": "users",
@@ -5792,6 +5792,121 @@
         "CREATE INDEX idx_downloads_norma_tipo ON cdv_downloads_norma (tipo_download)",
         "CREATE INDEX idx_downloads_norma_created ON cdv_downloads_norma (created DESC)"
       ]
+    },
+    {
+      "name": "consentimentos_perito",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && usuario = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "perito_credenciamento",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "perito_credenciamentos"
+        },
+        {
+          "name": "nome_completo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "conselho_tipo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "registro_profissional",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "registro_uf",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "numero_art_rrt",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "documento_identificacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "termo_versao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "termo_aceito_em",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["ativo", "revogado"]
+        },
+        {
+          "name": "revogado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ip_registro",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "observacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
     }
   ]
 }
