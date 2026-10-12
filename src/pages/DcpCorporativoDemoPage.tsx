@@ -49,6 +49,7 @@ import {
   type DppConsultaRecord,
 } from '@/services/cdvService'
 import { obterFechamentoCompetencia } from '@/services/fechamentoCompetenciaService'
+import { useSeo } from '@/hooks/useSeo'
 
 // Perfis de materialidade por CNAE da demonstração corporativa
 interface CnaeMaterialidadeItem {
@@ -62,6 +63,12 @@ interface CnaeMaterialidadeItem {
 }
 
 export default function DcpCorporativoDemoPage() {
+  useSeo({
+    title: 'Dossier Corporativo de Pegada de Carbono (DCP Demo) — Orbis Protocol',
+    description:
+      'Demonstração interativa do Passaporte Corporativo de Carbono (DCP) por competência, notas fiscais e conciliação de emissões.',
+  })
+
   const [searchParams] = useSearchParams()
   const canalParam = searchParams.get('via') // 'qr' | 'embed' | 'web'
   const canalDetectado: 'qr' | 'web' | 'embed' =

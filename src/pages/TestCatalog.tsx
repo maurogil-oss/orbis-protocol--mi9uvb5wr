@@ -14,7 +14,15 @@ import {
   ArrowRight,
 } from 'lucide-react'
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function TestCatalog() {
+  useSeo({
+    title: 'Catálogo de Componentes e Design System — Orbis Protocol',
+    description:
+      'Validação visual do sistema de design, cores, tipografia e catálogo de componentes do Orbis Protocol.',
+  })
+
   return (
     <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">

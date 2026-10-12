@@ -31,7 +31,15 @@ interface SlideContent {
   subtitle?: string
 }
 
+import { useSeo } from '@/hooks/useSeo'
+
 export const PropostaRemineraPage: React.FC = () => {
+  useSeo({
+    title: 'Proposta Comercial Metal Carbon Hub / Reminera — Orbis Protocol',
+    description:
+      'Deck estratégico e proposta comercial da parceria tecnológica entre Orbis Protocol e Metal Carbon Hub / Reminera.',
+  })
+
   const [currentSlide, setCurrentSlide] = useState(1)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const totalSlides = 10

@@ -11,7 +11,15 @@ import {
   Fingerprint,
 } from 'lucide-react'
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function TermosUsoPage() {
+  useSeo({
+    title: 'Termos de Uso e Proteção de Propriedade Intelectual — Orbis Protocol',
+    description:
+      'Termos de uso da plataforma, governança de dados, conformidade probatória dMRV e proteção de propriedade intelectual.',
+  })
+
   return (
     <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
       <div className="max-w-[920px] mx-auto px-4 sm:px-6">

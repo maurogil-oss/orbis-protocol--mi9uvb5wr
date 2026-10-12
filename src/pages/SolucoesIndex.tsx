@@ -99,7 +99,15 @@ export const RAMOS_ARVORE_DECISAO: RamoDecisao[] = [
   },
 ]
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function SolucoesIndex() {
+  useSeo({
+    title: 'Hub de Soluções e Árvore de Decisão — Orbis Protocol',
+    description:
+      'Infraestrutura probatória e dMRV: escolha a solução exata para sua empresa entre descarbonização, rastreabilidade fiscal e circularidade.',
+  })
+
   const [ramoAtivoId, setRamoAtivoId] = useState<string>('residuos-reciclagem')
   const [modalLpfAberto, setModalLpfAberto] = useState(false)
 

@@ -35,8 +35,17 @@ import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
 import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function PassaportePublicoPage() {
   const { selo } = useParams<{ selo: string }>()
+  useSeo({
+    title: selo
+      ? `Passaporte Digital da Peça ${selo} — Orbis Protocol`
+      : 'Passaporte Digital de Produto (DPP Peça) — Orbis Protocol',
+    description:
+      'Passaporte digital da peça circular desmontada: pegada de carbono evitada, rastreabilidade DETRAN e integridade criptográfica SHA-256.',
+  })
   const [searchParams] = useSearchParams()
   const canalParam = searchParams.get('via') // 'qr' | 'embed' | 'web'
   const canalDetectado: 'qr' | 'web' | 'embed' =

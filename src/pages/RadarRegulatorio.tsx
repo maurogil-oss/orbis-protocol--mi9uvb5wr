@@ -44,7 +44,15 @@ interface NfeUploadItemLocal {
   dados_adicionais_json?: any
 }
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function RadarRegulatorio() {
+  useSeo({
+    title: 'Radar Regulatório 2026 — Orbis Protocol',
+    description:
+      'Cronograma normativo completo: Reforma Tributária (LC 214/2025, IBS/CBS), mercado de carbono SBCE (Lei 15.042/2024) e compliance internacional.',
+  })
+
   const { isAuthenticated, user } = useAuth()
 
   // Filtros de visualização

@@ -20,8 +20,14 @@ import {
 } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { useSeo } from '@/hooks/useSeo'
 
 export function ApiDocsNfsPage() {
+  useSeo({
+    title: 'Documentação da API de Ingestão de Notas Fiscais — Orbis Protocol',
+    description:
+      'Especificação técnica da API REST para envio automatizado de XMLs de NF-e e NFC-e via ERP para cálculo de pegada de carbono e créditos tributários.',
+  })
   const [copiado, setCopiado] = useState<string | null>(null)
 
   const handleCopiar = (texto: string, rotulo: string) => {

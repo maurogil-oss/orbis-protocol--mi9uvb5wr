@@ -28,6 +28,7 @@ import {
 import { FATORES_CDV_MATERIAIS } from '@/services/cdvService'
 import pb from '@/lib/pocketbase/client'
 import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
+import { useSeo } from '@/hooks/useSeo'
 
 interface CodeBlockProps {
   title?: string
@@ -89,6 +90,12 @@ function CodeBlock({ title, language = 'json', code }: CodeBlockProps) {
 }
 
 export default function ApiDocsCdvPage() {
+  useSeo({
+    title: 'Documentação da API de Ingestão CDV v2 — Orbis Protocol',
+    description:
+      'Especificação técnica oficial da API REST de Ingestão de desmontagem veicular, cálculo dMRV e passaporte digital de peças.',
+  })
+
   const [activeTab, setActiveTab] = useState<'payload' | 'curl'>('payload')
   const [copiedBaseUrl, setCopiedBaseUrl] = useState(false)
 

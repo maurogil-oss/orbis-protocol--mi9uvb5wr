@@ -162,7 +162,15 @@ const REFERENCIAS_CANONICAS: ReferenciaCanonica[] = [
   },
 ]
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function FatoresEmissaoPublicoPage() {
+  useSeo({
+    title: 'Métricas e Referências Canônicas — Orbis Protocol',
+    description:
+      'Governança metodológica e referências canônicas de fatores de emissão aplicados na quantificação dMRV e prova documental.',
+  })
+
   return (
     <div className="min-h-screen py-8 md:py-14 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 space-y-10">

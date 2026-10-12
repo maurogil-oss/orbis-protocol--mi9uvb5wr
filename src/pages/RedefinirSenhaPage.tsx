@@ -48,7 +48,15 @@ export function sanitizeToken(raw: string | null | undefined): string {
   return val
 }
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function RedefinirSenhaPage() {
+  useSeo({
+    title: 'Redefinir Senha de Acesso — Orbis Protocol',
+    description:
+      'Cadastre uma nova senha forte para acessar sua conta corporativa no Orbis Protocol com segurança.',
+  })
+
   const [searchParams] = useSearchParams()
   const routeParams = useParams<{ token?: string }>()
   const navigate = useNavigate()

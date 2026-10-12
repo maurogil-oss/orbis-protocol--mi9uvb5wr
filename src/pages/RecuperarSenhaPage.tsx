@@ -4,7 +4,15 @@ import { useAuth } from '@/contexts/AuthContext'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
 import { Mail, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react'
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function RecuperarSenhaPage() {
+  useSeo({
+    title: 'Recuperar Senha de Acesso — Orbis Protocol',
+    description:
+      'Solicite a redefinição segura de sua senha corporativa na plataforma Orbis Protocol.',
+  })
+
   const [email, setEmail] = useState('')
   const [submetido, setSubmetido] = useState(false)
   const [isLoading, setIsLoading] = useState(false)

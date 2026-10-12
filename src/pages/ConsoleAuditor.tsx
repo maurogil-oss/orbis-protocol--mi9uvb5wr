@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import pb from '@/lib/pocketbase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRealtime } from '@/hooks/use-realtime'
+import { useSeo } from '@/hooks/useSeo'
 import {
   ShieldCheck,
   FileCheck2,
@@ -56,6 +57,12 @@ interface LeadDiagnostico extends RecordModel {
 }
 
 export default function ConsoleAuditor() {
+  useSeo({
+    title: 'Console do Auditor e Perito — Orbis Protocol',
+    description:
+      'Triagem de diagnósticos, qualificação tributária de clientes, emissão de laudos periciais e gestão de conformidade LGPD.',
+  })
+
   const { user } = useAuth()
   const [leads, setLeads] = useState<LeadDiagnostico[]>([])
   const [selosCount, setSelosCount] = useState(0)

@@ -97,7 +97,15 @@ const ETAPAS: EtapaGuia[] = [
   },
 ]
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function ModoDemonstracaoOrientadaPage() {
+  useSeo({
+    title: 'Demonstração Interativa da Plataforma — Orbis Protocol',
+    description:
+      'Tour comercial autoguiado pelas 6 etapas de cálculo dMRV, passaporte digital de peças, conciliação de emissões e emissão de laudos.',
+  })
+
   const [etapaAtiva, setEtapaAtiva] = useState<number>(1)
 
   // Estado dos dados do Lote Renault Clio Demo (PR-BX-2026-1240105)

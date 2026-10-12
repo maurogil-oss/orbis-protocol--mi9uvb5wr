@@ -109,10 +109,16 @@ import { ConsoleReativacaoTab } from '@/components/ConsoleReativacaoTab'
 import { AdminGroupNav } from '@/components/AdminGroupNav'
 import { AdminSidebarNav } from '@/components/AdminSidebarNav'
 import { AdminTab, AdminGroupId, resolveInitialTab, getGroupByTab } from '@/data/adminNavConfig'
+import { useSeo } from '@/hooks/useSeo'
 
 export type { AdminTab }
 
 export default function AdminConsolePage() {
+  useSeo({
+    title: 'Console de Administração e Gestão — Orbis Protocol',
+    description:
+      'Painel de governança corporativa, gestão de clientes, peritos, cobranças e trilha pericial do Orbis Protocol.',
+  })
   const [searchParams] = useSearchParams()
   const { user, isFinanceiroLeitor, isAdmin, isMaster, requestPasswordReset } = useAuth()
   // Matriz de papéis (Requisito 5):

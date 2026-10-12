@@ -29,7 +29,15 @@ import {
   verificarAcessoRadar,
 } from '@/services/radarSemanalService'
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function RadarSemanalPublicPage() {
+  useSeo({
+    title: 'Radar Semanal Regulatório & Fiscal — Orbis Protocol',
+    description:
+      'Inteligência regulatória semanal: normas fiscais, Reforma Tributária, SBCE e obrigações acessórias em formato executivo acionável.',
+  })
+
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()

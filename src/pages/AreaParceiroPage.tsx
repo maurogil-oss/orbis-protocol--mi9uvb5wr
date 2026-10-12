@@ -27,8 +27,14 @@ import {
   ComissaoRecord,
 } from '@/services/parceirosService'
 import pb from '@/lib/pocketbase/client'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function AreaParceiroPage() {
+  useSeo({
+    title: 'Área do Parceiro e Afiliado — Orbis Protocol',
+    description:
+      'Painel financeiro de parceiros credenciados, extrato de comissões por liquidação e links exclusivos rastreáveis.',
+  })
   const { user, isAuthenticated } = useAuth()
   const [parceiro, setParceiro] = useState<ParceiroRecord | null>(null)
   const [comissoes, setComissoes] = useState<ComissaoRecord[]>([])

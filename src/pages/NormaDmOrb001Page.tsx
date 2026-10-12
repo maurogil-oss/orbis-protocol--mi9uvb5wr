@@ -41,7 +41,15 @@ import {
   Printer,
 } from 'lucide-react'
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function NormaDmOrb001Page() {
+  useSeo({
+    title: 'Norma Metodológica DM-ORB-001 v1.1 — Orbis Protocol',
+    description:
+      'Diretriz técnica integral de quantificação dMRV, equações de baseline, incerteza analítica por quadratura e custódia pericial.',
+  })
+
   const { user, isAuthenticated, isLoading } = useAuth()
   const location = useLocation()
 

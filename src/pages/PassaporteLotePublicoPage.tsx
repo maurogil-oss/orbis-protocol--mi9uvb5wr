@@ -67,8 +67,17 @@ const SUBSISTEMAS_ORDEM = [
   'Carroceria',
 ]
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function PassaporteLotePublicoPage() {
   const { lote: loteParam } = useParams<{ lote: string }>()
+  useSeo({
+    title: loteParam
+      ? `Passaporte Consolidado do Lote ${loteParam} — Orbis Protocol`
+      : 'Passaporte Digital Consolidado do Lote — Orbis Protocol',
+    description:
+      'Consulta pública e pericial do lote veicular dMRV, peças desmontadas rastreadas, emissões evitadas e conformidade CONTRAN 611/MOVER.',
+  })
   const [searchParams] = useSearchParams()
   const canalParam = searchParams.get('via') // 'qr' | 'embed' | 'web'
   const canalDetectado: 'qr' | 'web' | 'embed' =

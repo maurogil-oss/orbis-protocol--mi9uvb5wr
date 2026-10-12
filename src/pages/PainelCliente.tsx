@@ -124,7 +124,15 @@ interface SeloRecord extends RecordModel {
   data_validade: string
 }
 
+import { useSeo } from '@/hooks/useSeo'
+
 export default function PainelCliente() {
+  useSeo({
+    title: 'Painel do Cliente e Hub Fiscal — Orbis Protocol',
+    description:
+      'Gestão de notas fiscais, conciliação de emissões de carbono, apuração de créditos tributários e emissão de atestados.',
+  })
+
   const { user, isMaster, isAdmin, role, isParceiro } = useAuth()
   const [modalAlterarSenhaAberto, setModalAlterarSenhaAberto] = useState(false)
 

@@ -99,7 +99,15 @@ const DADOS_ENTRADA_GOL: PecaEntradaLote[] = [
   },
 ]
 
+import { useSeo } from '@/hooks/useSeo'
+
 export function RevisorExternoF6Page() {
+  useSeo({
+    title: 'Dossiê do Revisor Pericial F6 — Orbis Protocol',
+    description:
+      'Pacote formal de auditoria independente e reprodução cega conforme DM-ORB-001 v1.1 para peritos e certificadoras.',
+  })
+
   const [copiado, setCopiado] = useState(false)
   const [secaoConferenciaAberta, setSecaoConferenciaAberta] = useState(false)
   const [declaracaoCiente, setDeclaracaoCiente] = useState(false)
