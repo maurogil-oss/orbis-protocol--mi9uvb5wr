@@ -772,15 +772,13 @@ export default function RegistroPage() {
               <>
                 <span>
                   Criar Conta de{' '}
-                  {role === 'gestao'
-                    ? 'Gestão (Pendente de Validação)'
-                    : role === 'perito'
-                      ? 'Perito'
-                      : role === 'parceiro'
-                        ? 'Parceiro'
-                        : role === 'cliente_acp'
-                          ? 'Cliente ACP'
-                          : 'Cliente'}
+                  {role === 'perito'
+                    ? 'Perito'
+                    : role === 'parceiro'
+                      ? 'Parceiro'
+                      : role === 'cliente_acp'
+                        ? 'Cliente ACP'
+                        : 'Cliente'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </>

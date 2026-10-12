@@ -15,9 +15,11 @@ import {
   aprovarRecusarContaGestaoMaster,
   alterarPapelUsuarioMaster,
   redefinirSenhaUsuarioMaster,
+  convidarMembroGestaoMaster,
 } from '@/services/adminConsoleService'
 import { useAuth } from '@/contexts/AuthContext'
-import { Check, Copy, Download, Database } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+import { Check, Copy, Download, Database, UserPlus } from 'lucide-react'
 import {
   getCatalogoPericialCompleto,
   downloadCsvCatalogoPericial,
@@ -123,6 +125,23 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
     copiado: false,
   })
 
+  // Estado para o Bloco / Formulário "Convidar Gestão"
+  const { toast } = useToast()
+  const [conviteNome, setConviteNome] = useState('')
+  const [conviteEmail, setConviteEmail] = useState('')
+  const [convitePapel, setConvitePapel] = useState<
+    'admin' | 'controller' | 'financeiro' | 'financeiro_leitor'
+  >('admin')
+  const [conviteJustificativa, setConviteJustificativa] = useState('')
+  const [convidando, setConvidando] = useState(false)
+  const [conviteSucessoResultado, setConviteSucessoResultado] = useState<{
+    email: string
+    nome: string
+    papel: string
+    senhaTemporaria: string
+    copiado: boolean
+  } | null>(null)
+
   // Fatores de emissão canônicos e controle de exportação CSV
   const catalogoFatores = getCatalogoPericialCompleto()
   const { hashControle } = gerarCsvCatalogoPericial()
@@ -213,11 +232,20 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
 
   const abrirModalMudarPapel = (targetUser: any) => {
     if (targetUser.role === 'master') {
-      alert('O usuário com papel Master não pode ter seu papel alterado por esta interface.')
+      toast({
+        title: 'Operação Não Permitida',
+        description:
+          'O usuário com papel Master não pode ter seu papel alterado por esta interface.',
+        variant: 'destructive',
+      })
       return
     }
     if (targetUser.id === user?.id) {
-      alert('Proteção anti-travamento: o Gestor Master não pode alterar o próprio papel.')
+      toast({
+        title: 'Operação Não Permitida',
+        description: 'Proteção anti-travamento: o Gestor Master não pode alterar o próprio papel.',
+        variant: 'destructive',
+      })
       return
     }
     setModalAlterarPapel({
@@ -273,7 +301,11 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
 
     // Proteção de segurança: NUNCA permitir promover a master
     if (modalAlterarPapel.novoPapel === 'master') {
-      alert("Ação proibida: O papel 'master' NUNCA pode ser concedido por interface.")
+      toast({
+        title: 'Ação Proibida',
+        description: "O papel 'master' NUNCA pode ser concedido por interface.",
+        variant: 'destructive',
+      })
       return
     }
 
@@ -299,6 +331,84 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
     } finally {
       setProcessandoId(null)
     }
+  }
+
+  const handleSubmeterConviteGestao = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const cleanNome = conviteNome.trim()
+    const cleanEmail = conviteEmail.trim().toLowerCase()
+
+    if (!cleanNome) {
+      toast({
+        title: 'Nome Obrigatório',
+        description: 'Por favor, informe o nome completo do membro de Gestão.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      toast({
+        title: 'E-mail Inválido',
+        description: 'Por favor, informe um e-mail corporativo válido para o convite.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setConvidando(true)
+    try {
+      const res = await convidarMembroGestaoMaster({
+        nome: cleanNome,
+        email: cleanEmail,
+        papelGestao: convitePapel,
+        statusAprovacao: 'aprovado',
+        justificativa:
+          conviteJustificativa.trim() || 'Convite direto criado pelo Gestor Master no Console',
+      })
+
+      toast({
+        title: 'Membro Convidado com Sucesso',
+        description: res.mensagem || `Usuário ${cleanEmail} criado com papel ${convitePapel}.`,
+      })
+
+      setConviteSucessoResultado({
+        email: res.credencial_inicial?.email || cleanEmail,
+        nome: cleanNome,
+        papel: convitePapel,
+        senhaTemporaria: res.credencial_inicial?.senha_temporaria || '',
+        copiado: false,
+      })
+
+      // Limpa os campos do formulário
+      setConviteNome('')
+      setConviteEmail('')
+      setConvitePapel('admin')
+      setConviteJustificativa('')
+      onAtualizar()
+    } catch (err: any) {
+      toast({
+        title: 'Falha ao Convidar Membro de Gestão',
+        description: err?.message || 'Ocorreu um erro ao convidar membro de gestão.',
+        variant: 'destructive',
+      })
+    } finally {
+      setConvidando(false)
+    }
+  }
+
+  const handleCopiarSenhaConvite = () => {
+    if (!conviteSucessoResultado?.senhaTemporaria) return
+    navigator.clipboard.writeText(conviteSucessoResultado.senhaTemporaria)
+    setConviteSucessoResultado((prev) => (prev ? { ...prev, copiado: true } : null))
+    toast({
+      title: 'Senha Copiada',
+      description: 'Senha temporária copiada para a área de transferência.',
+    })
+    setTimeout(() => {
+      setConviteSucessoResultado((prev) => (prev ? { ...prev, copiado: false } : null))
+    }, 3000)
   }
 
   if (!isMaster) {
@@ -362,6 +472,211 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
           </button>
         </div>
       )}
+
+      {/* BLOCO NOVO: CONVIDAR GESTÃO (EXCLUSIVO GESTOR MASTER) */}
+      <div
+        data-testid="bloco-convidar-gestao"
+        className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border-2 border-emerald-500/40 dark:border-[#12B886]/40 space-y-5 shadow-xl"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-[#12B886]/10 text-emerald-700 dark:text-[#12B886]">
+              <UserPlus className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-heading font-extrabold text-base text-slate-900 dark:text-[#F8FAFC]">
+                Convidar Gestão
+              </h3>
+              <p className="text-[11px] text-slate-600 dark:text-[#94A3B8]">
+                Criação direta de colaborador interno no perfil de Gestão com senha temporária
+                gerada.
+              </p>
+            </div>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-[#12B886]/20 border border-emerald-300 dark:border-[#12B886]/50 text-emerald-800 dark:text-[#12B886] text-[10px] font-mono font-bold uppercase tracking-wider w-fit">
+            Apenas Gestor Master
+          </span>
+        </div>
+
+        {/* Formulário Convidar Gestão */}
+        <form onSubmit={handleSubmeterConviteGestao} className="space-y-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label
+                htmlFor="convite-nome-input"
+                className="block text-slate-600 dark:text-[#94A3B8] font-semibold mb-1"
+              >
+                Nome Completo do Colaborador *
+              </label>
+              <input
+                id="convite-nome-input"
+                type="text"
+                required
+                placeholder="Ex: Carlos Eduardo de Castro"
+                value={conviteNome}
+                onChange={(e) => setConviteNome(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="convite-email-input"
+                className="block text-slate-600 dark:text-[#94A3B8] font-semibold mb-1"
+              >
+                E-mail Corporativo *
+              </label>
+              <input
+                id="convite-email-input"
+                type="email"
+                required
+                placeholder="colaborador@orbis-protocol.com"
+                value={conviteEmail}
+                onChange={(e) => setConviteEmail(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="convite-papel-select"
+                className="block text-slate-600 dark:text-[#94A3B8] font-semibold mb-1"
+              >
+                Papel Interno de Gestão *
+              </label>
+              <select
+                id="convite-papel-select"
+                value={convitePapel}
+                onChange={(e) =>
+                  setConvitePapel(
+                    e.target.value as 'admin' | 'controller' | 'financeiro' | 'financeiro_leitor',
+                  )
+                }
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+              >
+                <option value="admin">admin — Operação geral do Console (sem governança)</option>
+                <option value="controller">controller — Leitura ampla e auditoria</option>
+                <option value="financeiro">
+                  financeiro — Faturamento, conciliação e liquidação
+                </option>
+                <option value="financeiro_leitor">
+                  financeiro_leitor — Somente consulta financeira
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="convite-justificativa-input"
+              className="block text-slate-600 dark:text-[#94A3B8] font-semibold mb-1"
+            >
+              Justificativa / Motivo do Convite (Trilha de Auditoria)
+            </label>
+            <input
+              id="convite-justificativa-input"
+              type="text"
+              placeholder="Ex: Novo colaborador contratado para a controladoria financeira"
+              value={conviteJustificativa}
+              onChange={(e) => setConviteJustificativa(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <span className="text-[11px] text-slate-500 dark:text-[#94A3B8]">
+              * A conta nasce homologada com senha temporária forte para entrega segura.
+            </span>
+            <button
+              type="submit"
+              disabled={convidando}
+              className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 dark:bg-[#12B886] dark:hover:bg-[#0CA678] text-white dark:text-[#0A0E12] transition-all flex items-center gap-2 shadow-emerald-glow disabled:opacity-50"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>{convidando ? 'Criando Conta...' : 'Convidar e Gerar Acesso'}</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Card de Senha Temporária Gerada após Sucesso */}
+        {conviteSucessoResultado && (
+          <div
+            data-testid="resultado-convite-gestao"
+            className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border-2 border-emerald-400 dark:border-[#12B886] space-y-3 animate-fade-in"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-100 dark:bg-[#12B886]/20 text-emerald-800 dark:text-[#12B886]">
+                  <Check className="w-3 h-3" /> Conta de Gestão Criada com Sucesso
+                </span>
+                <p className="text-xs text-slate-700 dark:text-[#F8FAFC] font-medium">
+                  Colaborador <strong>{conviteSucessoResultado.nome}</strong> (
+                  {conviteSucessoResultado.email}) cadastrado no papel{' '}
+                  <strong className="text-blue-600 dark:text-[#60A5FA]">
+                    {conviteSucessoResultado.papel}
+                  </strong>
+                  .
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConviteSucessoResultado(null)}
+                className="text-xs text-slate-400 hover:text-slate-700 dark:hover:text-[#F8FAFC]"
+                title="Fechar resumo"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Senha Temporária e Instrução de Primeiro Acesso */}
+            <div className="p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-[10px] uppercase font-mono font-semibold text-slate-500 dark:text-[#94A3B8] block">
+                  Senha Temporária Inicial Gerada:
+                </span>
+                <span className="font-mono text-sm sm:text-base font-bold text-amber-700 dark:text-[#D9B36C] select-all break-all">
+                  {conviteSucessoResultado.senhaTemporaria}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopiarSenhaConvite}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 transition-all ${
+                  conviteSucessoResultado.copiado
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-emerald-50 dark:bg-[#12B886]/20 text-emerald-700 dark:text-[#12B886] border border-emerald-300 dark:border-[#12B886]/40 hover:bg-emerald-100'
+                }`}
+              >
+                {conviteSucessoResultado.copiado ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copiar Senha</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Instrução explícita de troca no primeiro acesso */}
+            <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-[#D9B36C]/10 border border-amber-300/80 dark:border-[#D9B36C]/30 text-[11px] text-amber-900 dark:text-[#D9B36C] space-y-1">
+              <div className="font-bold flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                <span>Instrução Obrigatória de Primeiro Acesso:</span>
+              </div>
+              <p className="leading-relaxed">
+                Envie esta credencial temporária ao colaborador de forma segura. O colaborador deve
+                acessar a plataforma e{' '}
+                <strong>obrigatoriamente realizar a troca de senha no primeiro acesso</strong>{' '}
+                através do menu de usuário ou pela tela de redefinição de credenciais corporativas.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* BLOCO 1: FILA DE CONTAS GESTÃO PENDENTES DE APROVAÇÃO */}
       <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 space-y-4">

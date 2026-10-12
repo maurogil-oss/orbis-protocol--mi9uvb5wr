@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
-  formatarPeritoComMascaramentoPadro,
+  formatarPeritoComMascaramentoPadrao,
   resolverExibicaoPerito,
   buscarConsentimentoAtivoPerito,
   registrarConsentimentoPerito,
@@ -30,7 +30,7 @@ describe('Serviço de Consentimento LGPD do Perito (Mascarado vs Revelado vs Rev
     vi.clearAllMocks()
   })
 
-  describe('(i) formatarPeritoComMascaramentoPadro e resolverExibicaoPerito sem consentimento', () => {
+  describe('(i) formatarPeritoComMascaramentoPadrao e resolverExibicaoPerito sem consentimento', () => {
     it('deve mascarar os dados por padrão com nota de minimização (Art. 6º, III LGPD)', () => {
       const exibicao = resolverExibicaoPerito(
         'CREA-SP 182.940/D - Eng. Roberto Silva (ART 2026/0014829)',
@@ -38,19 +38,20 @@ describe('Serviço de Consentimento LGPD do Perito (Mascarado vs Revelado vs Rev
       )
 
       expect(exibicao.mascarado).toBe(true)
-      expect(exibicao.consentimentoAtivo).toBe(false)
+      expect(exibicao.consentimentoValido).toBe(false)
       // O nome completo jamais deve aparecer no texto quando mascarado
       expect(exibicao.textoFormatado).not.toContain('Roberto Silva')
-      expect(exibicao.nomeCompleto).toBeUndefined()
+      expect(exibicao.dadosCompletos).toBeUndefined()
       // Deve conter o padrão minimizado institucional
       expect(exibicao.textoFormatado).toContain('Eng. Responsável')
-      expect(exibicao.textoFormatado).toContain('CREA-**')
+      expect(exibicao.textoFormatado).toContain('CREA-SP')
+      expect(exibicao.textoFormatado).toContain('***.940/D')
       expect(exibicao.notaLgpd).toContain('Art. 6º, III')
-      expect(exibicao.notaLgpd).toContain('minimização')
+      expect(exibicao.notaLgpd).toContain('Minimização')
     })
 
-    it('formatarPeritoComMascaramentoPadro deve aceitar string customizada e mascarar números e nomes', () => {
-      const mascarado = formatarPeritoComMascaramentoPadro(
+    it('formatarPeritoComMascaramentoPadrao deve aceitar string customizada e mascarar números e nomes', () => {
+      const mascarado = formatarPeritoComMascaramentoPadrao(
         'CREA-MG 45.678/D - Eng. Ana Costa - ART 998877',
       )
       expect(mascarado).not.toContain('Ana Costa')
@@ -60,8 +61,8 @@ describe('Serviço de Consentimento LGPD do Perito (Mascarado vs Revelado vs Rev
     })
 
     it('quando perito original for indefinido, deve retornar padrão anônimo seguro', () => {
-      const padrao = formatarPeritoComMascaramentoPadro(undefined)
-      expect(padrao).toBe('Eng. Responsável • CREA-** ***.*/D • ART ***-UF')
+      const padrao = formatarPeritoComMascaramentoPadrao(undefined)
+      expect(padrao).toBe('Eng. Responsável • ART ***-SP')
     })
   })
 
@@ -85,14 +86,14 @@ describe('Serviço de Consentimento LGPD do Perito (Mascarado vs Revelado vs Rev
       const exibicao = resolverExibicaoPerito(undefined, mockConsentimentoAtivo)
 
       expect(exibicao.mascarado).toBe(false)
-      expect(exibicao.consentimentoAtivo).toBe(true)
-      expect(exibicao.nomeCompleto).toBe('Dr. Roberto Carlos da Silva')
-      expect(exibicao.registroProfissional).toBe('CREA-SP 182.940/D')
-      expect(exibicao.numeroArtRrt).toBe('ART 2026/0014829')
-      expect(exibicao.textoFormatado).toBe(
-        'Dr. Roberto Carlos da Silva • CREA-SP 182.940/D • ART 2026/0014829',
-      )
-      expect(exibicao.notaLgpd).toContain('consentimento do responsável técnico')
+      expect(exibicao.consentimentoValido).toBe(true)
+      expect(exibicao.dadosCompletos?.nome).toBe('Dr. Roberto Carlos da Silva')
+      expect(exibicao.dadosCompletos?.registro).toBe('182.940/D')
+      expect(exibicao.dadosCompletos?.art).toBe('ART 2026/0014829')
+      expect(exibicao.textoFormatado).toContain('Dr. Roberto Carlos da Silva')
+      expect(exibicao.textoFormatado).toContain('CREA-SP 182.940/D')
+      expect(exibicao.textoFormatado).toContain('ART ART 2026/0014829')
+      expect(exibicao.notaLgpd).toContain('consentimento formal do responsável técnico')
       expect(exibicao.notaLgpd).toContain('Art. 7º, I da LGPD')
     })
 
@@ -106,8 +107,8 @@ describe('Serviço de Consentimento LGPD do Perito (Mascarado vs Revelado vs Rev
 
       const resultado = await buscarConsentimentoAtivoPerito({ usuarioId: 'user_perito_123' })
       expect(mockGetList).toHaveBeenCalledWith(1, 1, {
-        filter: "usuario = 'user_perito_123' && status = 'ativo'",
-        sort: '-updated',
+        filter: "status = 'ativo' && usuario = 'user_perito_123'",
+        sort: '-created',
       })
       expect(resultado).not.toBeNull()
       expect(resultado?.nome_completo).toBe('Dr. Roberto Carlos da Silva')
@@ -129,7 +130,7 @@ describe('Serviço de Consentimento LGPD do Perito (Mascarado vs Revelado vs Rev
       // Com resultado nulo, o resolverExibicaoPerito volta a mascarar imediatamente
       const exibicao = resolverExibicaoPerito('CREA-SP 182.940/D - Eng. Roberto Silva', resultado)
       expect(exibicao.mascarado).toBe(true)
-      expect(exibicao.consentimentoAtivo).toBe(false)
+      expect(exibicao.consentimentoValido).toBe(false)
       expect(exibicao.textoFormatado).not.toContain('Roberto Silva')
       expect(exibicao.notaLgpd).toContain('Art. 6º, III')
     })

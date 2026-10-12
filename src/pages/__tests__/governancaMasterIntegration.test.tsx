@@ -360,14 +360,14 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
     })
   })
 
-  // 3. Conta com perfil Gestão criada em /registro nasce com status_aprovacao: 'pendente' e é bloqueada no ProtectedRoute
+  // 3. Ciclo de Vida da Conta Gestão e Bloqueio no ProtectedRoute
   describe('3. Ciclo de Vida da Conta Gestão e Bloqueio no ProtectedRoute', () => {
-    it('ao criar conta com perfil Gestão em /registro, grava role="admin" e status_aprovacao="pendente"', async () => {
+    it('cadastro público em /registro não oferece Gestão e query param ?papel=gestao cria conta como cliente (sem privilégio admin)', async () => {
       const mockCreate = vi.fn().mockResolvedValue({
-        id: 'novo-gestor-1',
-        email: 'gestor@empresa.com.br',
-        role: 'admin',
-        status_aprovacao: 'pendente',
+        id: 'novo-cliente-1',
+        email: 'visitante@empresa.com.br',
+        role: 'cliente',
+        status_aprovacao: 'aprovado',
       })
 
       vi.mocked(pb.collection).mockReturnValue({
@@ -380,29 +380,33 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
         </MemoryRouter>,
       )
 
+      // Verifica que o perfil "Gestão" não é oferecido nas opções públicas
+      expect(screen.queryByText(/Perfil Gestão/i)).toBeNull()
+      expect(screen.queryByText(/Gestão \(Pendente de Validação\)/i)).toBeNull()
+
       const nomeInput = screen.getByPlaceholderText(/Maria Silva ou Indústria Alfa Ltda/i)
       const emailInput = screen.getByPlaceholderText(/seu\.email@empresa\.com\.br/i)
-      const senhas = screen.getAllByPlaceholderText(/••••••••/i)
+      const senhas = screen.getAllByPlaceholderText(/••••••••|Ex: SenhaForte@2026/i)
       const checkboxTermo = screen.getByRole('checkbox')
 
-      fireEvent.change(nomeInput, { target: { value: 'Marcos Gerente' } })
-      fireEvent.change(emailInput, { target: { value: 'marcos@gestao.com' } })
-      fireEvent.change(senhas[0], { target: { value: 'SenhaForteGestao2026' } })
-      fireEvent.change(senhas[1], { target: { value: 'SenhaForteGestao2026' } })
+      fireEvent.change(nomeInput, { target: { value: 'Visitante Teste' } })
+      fireEvent.change(emailInput, { target: { value: 'visitante@empresa.com.br' } })
+      fireEvent.change(senhas[0], { target: { value: 'SenhaForte@2026' } })
+      fireEvent.change(senhas[1], { target: { value: 'SenhaForte@2026' } })
       fireEvent.click(checkboxTermo)
 
       const submitBtn = screen.getByRole('button', {
-        name: /Criar Conta de Gestão \(Pendente de Validação\)/i,
+        name: /Criar Conta de Cliente/i,
       })
       fireEvent.click(submitBtn)
 
       await waitFor(() => {
         expect(mockCreate).toHaveBeenCalledWith(
           expect.objectContaining({
-            email: 'marcos@gestao.com',
-            name: 'Marcos Gerente',
-            role: 'admin',
-            status_aprovacao: 'pendente',
+            email: 'visitante@empresa.com.br',
+            name: 'Visitante Teste',
+            role: 'cliente',
+            status_aprovacao: 'aprovado',
           }),
         )
       })
@@ -556,6 +560,133 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
       })
 
       expect(screen.queryByRole('button', { name: /Governança Master/i })).toBeNull()
+    })
+
+    it('bloco "Convidar Gestão" só aparece para o Gestor Master (isMaster=true)', async () => {
+      const mockUsuarios = [
+        {
+          id: 'usr-1',
+          name: 'Master Teste',
+          email: 'master@orbis-protocol.com',
+          role: 'master',
+          status_aprovacao: 'aprovado',
+          created: '2025-01-01T00:00:00Z',
+        },
+      ]
+
+      mockAuthState.role = 'master'
+      mockAuthState.isMaster = true
+      mockAuthState.isAdmin = true
+
+      const { ConsoleGovernancaMasterTab } = await import('@/components/ConsoleGovernancaMasterTab')
+
+      const { unmount } = render(
+        <MemoryRouter>
+          <ConsoleGovernancaMasterTab usuarios={mockUsuarios} onAtualizar={() => {}} />
+        </MemoryRouter>,
+      )
+
+      // Gestor Master vê o bloco "Convidar Gestão"
+      expect(screen.getByTestId('bloco-convidar-gestao')).toBeDefined()
+      expect(screen.getByRole('heading', { name: /Convidar Gestão/i })).toBeDefined()
+      expect(screen.getByLabelText(/Nome Completo do Colaborador/i)).toBeDefined()
+      expect(screen.getByLabelText(/E-mail Corporativo/i)).toBeDefined()
+      expect(screen.getByLabelText(/Papel Interno de Gestão/i)).toBeDefined()
+      expect(screen.getByRole('button', { name: /Convidar e Gerar Acesso/i })).toBeDefined()
+
+      unmount()
+
+      // Agora simulando usuário sem privilégio master (ex: admin comum)
+      mockAuthState.role = 'admin'
+      mockAuthState.isMaster = false
+      mockAuthState.isAdmin = true
+
+      render(
+        <MemoryRouter>
+          <ConsoleGovernancaMasterTab usuarios={mockUsuarios} onAtualizar={() => {}} />
+        </MemoryRouter>,
+      )
+
+      // Não-master não visualiza o bloco "Convidar Gestão", exibindo apenas aviso de restrição
+      expect(screen.queryByTestId('bloco-convidar-gestao')).toBeNull()
+      expect(screen.getByText(/Acesso Restrito ao Gestor Master/i)).toBeDefined()
+    })
+
+    it('formulário "Convidar Gestão" chama convidarMembroGestaoMaster e exibe senha temporária com instrução de troca no primeiro acesso', async () => {
+      const mockUsuarios = [
+        {
+          id: 'usr-1',
+          name: 'Master Teste',
+          email: 'master@orbis-protocol.com',
+          role: 'master',
+          status_aprovacao: 'aprovado',
+          created: '2025-01-01T00:00:00Z',
+        },
+      ]
+
+      mockAuthState.role = 'master'
+      mockAuthState.isMaster = true
+      mockAuthState.isAdmin = true
+
+      vi.mocked(pb.send).mockResolvedValueOnce({
+        sucesso: true,
+        mensagem: 'Colaborador criado com sucesso.',
+        usuario: {
+          id: 'usr-convidado-1',
+          nome: 'Mariana Auditora',
+          email: 'mariana.auditora@orbis-protocol.com',
+          role: 'controller',
+          status_aprovacao: 'aprovado',
+        },
+        credencial_inicial: {
+          email: 'mariana.auditora@orbis-protocol.com',
+          senha_temporaria: 'TempPass@Audit2026',
+        },
+      })
+
+      const { ConsoleGovernancaMasterTab } = await import('@/components/ConsoleGovernancaMasterTab')
+
+      render(
+        <MemoryRouter>
+          <ConsoleGovernancaMasterTab usuarios={mockUsuarios} onAtualizar={() => {}} />
+        </MemoryRouter>,
+      )
+
+      const nomeInput = screen.getByLabelText(/Nome Completo do Colaborador/i)
+      const emailInput = screen.getByLabelText(/E-mail Corporativo/i)
+      const papelSelect = screen.getByLabelText(/Papel Interno de Gestão/i)
+      const submitBtn = screen.getByRole('button', { name: /Convidar e Gerar Acesso/i })
+
+      fireEvent.change(nomeInput, { target: { value: 'Mariana Auditora' } })
+      fireEvent.change(emailInput, { target: { value: 'mariana.auditora@orbis-protocol.com' } })
+      fireEvent.change(papelSelect, { target: { value: 'controller' } })
+
+      fireEvent.click(submitBtn)
+
+      await waitFor(() => {
+        expect(pb.send).toHaveBeenCalledWith(
+          '/backend/v1/master/convidar-gestao',
+          expect.objectContaining({
+            method: 'POST',
+            body: expect.objectContaining({
+              nome: 'Mariana Auditora',
+              email: 'mariana.auditora@orbis-protocol.com',
+              papel_gestao: 'controller',
+              status_aprovacao: 'aprovado',
+            }),
+          }),
+        )
+      })
+
+      // Card de exibição da senha gerada e instrução de troca
+      await waitFor(() => {
+        expect(screen.getByTestId('resultado-convite-gestao')).toBeDefined()
+        expect(screen.getByText('TempPass@Audit2026')).toBeDefined()
+        expect(screen.getByText(/Instrução Obrigatória de Primeiro Acesso/i)).toBeDefined()
+        expect(
+          screen.getByText(/obrigatoriamente realizar a troca de senha no primeiro acesso/i),
+        ).toBeDefined()
+      })
     })
   })
 
