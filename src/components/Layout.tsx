@@ -569,15 +569,25 @@ export default function Layout() {
                     </Link>
                   )}
 
-                  {/* Papel PERITO -> "Revisão Pericial" (/revisor-f6) */}
+                  {/* Papel PERITO -> "Revisão Pericial" (/revisor-f6) e atalho LGPD */}
                   {isPerito && (
-                    <Link
-                      to="/revisor-f6"
-                      className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
-                    >
-                      <FileCheck2 className="w-4 h-4 stroke-[1.8] shrink-0" />
-                      <span>Revisão Pericial</span>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        to="/revisor-f6"
+                        className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
+                      >
+                        <FileCheck2 className="w-4 h-4 stroke-[1.8] shrink-0" />
+                        <span>Revisão Pericial</span>
+                      </Link>
+                      <Link
+                        to="/meu-consentimento-lgpd"
+                        title="Gestão de Consentimento LGPD do Perito"
+                        className="inline-flex items-center gap-1 px-2.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-[#059669] border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0E1A2E] hover:border-emerald-300 dark:hover:border-emerald-800 transition-all min-h-[44px]"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+                        <span className="hidden xl:inline">Consentimento LGPD</span>
+                      </Link>
+                    </div>
                   )}
 
                   {/* Papel PARCEIRO -> "Meu Portal" (/parceiro) */}
@@ -880,16 +890,25 @@ export default function Layout() {
                   )}
 
                   {isPerito && (
-                    <Link
-                      to="/revisor-f6"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 min-h-[44px] flex items-center justify-center gap-2"
-                    >
-                      <FileCheck2 className="w-4 h-4" />
-                      <span>Revisão Pericial</span>
-                    </Link>
+                    <>
+                      <Link
+                        to="/revisor-f6"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 min-h-[44px] flex items-center justify-center gap-2"
+                      >
+                        <FileCheck2 className="w-4 h-4" />
+                        <span>Revisão Pericial</span>
+                      </Link>
+                      <Link
+                        to="/meu-consentimento-lgpd"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full text-center py-2 rounded-lg text-xs font-medium border border-slate-800 text-slate-300 hover:text-emerald-400 min-h-[40px] flex items-center justify-center gap-1.5"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Meu Consentimento LGPD</span>
+                      </Link>
+                    </>
                   )}
-
                   {isParceiro && (
                     <Link
                       to="/parceiro"

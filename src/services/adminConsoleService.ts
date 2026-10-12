@@ -199,6 +199,41 @@ export async function redefinirSenhaUsuarioMaster(params: { userId: string }): P
   })
 }
 
+export async function convidarMembroGestaoMaster(params: {
+  nome: string
+  email: string
+  papelGestao: 'admin' | 'controller' | 'financeiro' | 'financeiro_leitor' | string
+  statusAprovacao?: 'aprovado' | 'pendente'
+  justificativa?: string
+  senhaInicial?: string
+}): Promise<{
+  sucesso: boolean
+  mensagem: string
+  usuario: {
+    id: string
+    nome: string
+    email: string
+    role: string
+    status_aprovacao: string
+  }
+  credencial_inicial: {
+    email: string
+    senha_temporaria: string
+  }
+}> {
+  return pb.send('/backend/v1/master/convidar-gestao', {
+    method: 'POST',
+    body: {
+      nome: params.nome,
+      email: params.email,
+      papel_gestao: params.papelGestao,
+      status_aprovacao: params.statusAprovacao || 'aprovado',
+      justificativa: params.justificativa,
+      senha_inicial: params.senhaInicial,
+    },
+  })
+}
+
 export async function listarCobrancasAdmin(filtroStatus?: string) {
   const filter = filtroStatus && filtroStatus !== 'todos' ? `status = '${filtroStatus}'` : ''
   return pb.collection('cobrancas').getFullList({

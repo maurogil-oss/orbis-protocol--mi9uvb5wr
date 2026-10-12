@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OrbisLogo, OrbisOfficialGlobe } from '@/components/OrbisLogo'
+import { BlocoConsentimentoPeritoLgpd } from '@/components/BlocoConsentimentoPeritoLgpd'
 
 /**
  * PACOTE DO REVISOR EXTERNO — AUDITORIA DE REPRODUÇÃO F6
@@ -335,30 +336,36 @@ export function RevisorExternoF6Page() {
         {/* ============================================================== */}
         <div className="space-y-6">
           <Tabs defaultValue="dados-entrada" className="w-full space-y-6">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full bg-slate-200/70 dark:bg-[#0E1A2E] p-1 rounded-2xl border border-slate-200 dark:border-slate-800 print:hidden">
+            <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full bg-slate-200/70 dark:bg-[#0E1A2E] p-1 rounded-2xl border border-slate-200 dark:border-slate-800 print:hidden">
               <TabsTrigger
                 value="dados-entrada"
                 className="text-xs font-semibold py-2.5 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#111827] data-[state=active]:text-emerald-600 dark:data-[state=active]:text-[#059669]"
               >
-                1. Dados de Entrada (Lote Gol)
+                1. Dados de Entrada
               </TabsTrigger>
               <TabsTrigger
                 value="metodologia-regras"
                 className="text-xs font-semibold py-2.5 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#111827] data-[state=active]:text-emerald-600 dark:data-[state=active]:text-[#059669]"
               >
-                2. Metodologia & Fórmulas (§6.3)
+                2. Metodologia (§6.3)
               </TabsTrigger>
               <TabsTrigger
                 value="fatores-fontes"
                 className="text-xs font-semibold py-2.5 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#111827] data-[state=active]:text-emerald-600 dark:data-[state=active]:text-[#059669]"
               >
-                3. Catálogo de Fatores Oficiais
+                3. Catálogo de Fatores
               </TabsTrigger>
               <TabsTrigger
                 value="folha-respostas"
                 className="text-xs font-semibold py-2.5 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#111827] data-[state=active]:text-emerald-600 dark:data-[state=active]:text-[#059669]"
               >
-                4. Folha de Resposta do Revisor
+                4. Folha de Resposta
+              </TabsTrigger>
+              <TabsTrigger
+                value="consentimento-lgpd"
+                className="text-xs font-semibold py-2.5 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#111827] data-[state=active]:text-emerald-600 dark:data-[state=active]:text-[#059669]"
+              >
+                5. Meu Consentimento LGPD
               </TabsTrigger>
             </TabsList>
 
@@ -1007,6 +1014,11 @@ export function RevisorExternoF6Page() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* SUB-ABA 5: GESTÃO DO CONSENTIMENTO LGPD DO PERITO */}
+            <TabsContent value="consentimento-lgpd" className="space-y-6">
+              <BlocoConsentimentoPeritoLgpd />
             </TabsContent>
           </Tabs>
         </div>

@@ -35,6 +35,7 @@ import ConfirmarEmailPage from './pages/ConfirmarEmailPage'
 import PreferenciasEmailPage from './pages/PreferenciasEmailPage'
 import PainelCliente from './pages/PainelCliente'
 import ConsoleAuditor from './pages/ConsoleAuditor'
+import MeuConsentimentoPeritoLgpdPage from './pages/MeuConsentimentoPeritoLgpdPage'
 import AdminConsolePage from './pages/AdminConsolePage'
 import AreaParceiroPage from './pages/AreaParceiroPage'
 import TestCatalog from './pages/TestCatalog'
@@ -236,6 +237,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireRole="adminOrPerito">
                   <ConsoleAuditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meu-consentimento-lgpd"
+              element={
+                <ProtectedRoute requireRole="perito">
+                  <MeuConsentimentoPeritoLgpdPage />
                 </ProtectedRoute>
               }
             />

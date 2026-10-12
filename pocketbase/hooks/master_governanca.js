@@ -397,3 +397,154 @@ routerAdd(
   },
   $apis.requireAuth(),
 )
+
+/**
+ * Endpoint restrito ao Gestor Master para convidar / criar novo usuário com perfil Gestão
+ * - Exclusivo para role === 'master'
+ * - Cria a conta na coleção users com role 'admin' e papel_gestao desejado
+ * - Registra evento formal em audit_log
+ * - Retorna dados criados e senha inicial
+ */
+routerAdd(
+  'POST',
+  '/backend/v1/master/convidar-gestao',
+  (e) => {
+    try {
+      const auth = e.auth
+      if (!auth) {
+        return e.json(401, { error: 'Autenticação necessária.' })
+      }
+
+      const operadorRole = auth.getString('role')
+      if (operadorRole !== 'master') {
+        return e.json(403, {
+          error:
+            'Acesso negado: Apenas o gestor master pode convidar e criar membros com perfil de Gestão.',
+        })
+      }
+
+      const body = e.requestInfo().body || {}
+      const nome = String(body.nome || '').trim()
+      const email = String(body.email || '')
+        .trim()
+        .toLowerCase()
+      const papelGestao = String(body.papel_gestao || 'admin')
+        .trim()
+        .toLowerCase()
+      const statusInicial = String(body.status_aprovacao || 'aprovado')
+        .trim()
+        .toLowerCase()
+      const justificativa = String(body.justificativa || '').trim()
+
+      if (!nome) {
+        return e.badRequestError('O nome do colaborador interno é obrigatório.')
+      }
+      if (!email || !email.includes('@')) {
+        return e.badRequestError('E-mail corporativo válido é obrigatório.')
+      }
+
+      const papeisValidos = ['admin', 'controller', 'financeiro', 'financeiro_leitor']
+      if (papeisValidos.indexOf(papelGestao) === -1) {
+        return e.badRequestError(
+          `Papel de gestão '${papelGestao}' inválido. Valores aceitos: ${papeisValidos.join(', ')}`,
+        )
+      }
+
+      // Verificar se o e-mail já existe
+      try {
+        const existente = $app.findFirstRecordByData('_pb_users_auth_', 'email', email)
+        if (existente) {
+          return e.badRequestError(`Já existe um usuário cadastrado com o e-mail ${email}.`)
+        }
+      } catch (_) {
+        // Usuário não existe, fluxo normal
+      }
+
+      // Gerador de senha inicial temporária forte
+      const maiusculas = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+      const minusculas = 'abcdefghjkmnpqrstuvwxyz'
+      const numeros = '23456789'
+      const especiais = '!@#$%&*'
+      const todos = maiusculas + minusculas + numeros + especiais
+
+      function charAleatorio(str) {
+        return str.charAt(Math.floor(Math.random() * str.length))
+      }
+
+      let passChars = [
+        charAleatorio(maiusculas),
+        charAleatorio(maiusculas),
+        charAleatorio(minusculas),
+        charAleatorio(minusculas),
+        charAleatorio(numeros),
+        charAleatorio(numeros),
+        charAleatorio(especiais),
+      ]
+      while (passChars.length < 12) {
+        passChars.push(charAleatorio(todos))
+      }
+      for (let i = passChars.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        const temp = passChars[i]
+        passChars[i] = passChars[j]
+        passChars[j] = temp
+      }
+      const senhaInicial = String(body.senha_inicial || '').trim() || passChars.join('')
+
+      const usersCol = $app.findCollectionByNameOrId('_pb_users_auth_')
+      const novoUser = new Record(usersCol)
+      novoUser.setEmail(email)
+      novoUser.setPassword(senhaInicial)
+      novoUser.set('name', nome)
+      novoUser.set('role', papelGestao === 'admin' ? 'admin' : papelGestao)
+      novoUser.set('status_aprovacao', statusInicial === 'pendente' ? 'pendente' : 'aprovado')
+
+      $app.save(novoUser)
+
+      // Registrar trilha em audit_log
+      const auditCol = $app.findCollectionByNameOrId('audit_log')
+      const log = new Record(auditCol)
+      log.set('acao', 'master_convidou_conta_gestao')
+      log.set('entidade', 'users')
+      log.set('entidade_id', novoUser.id)
+      log.set('ator_id', auth.id)
+      log.set('ator_email', auth.getString('email'))
+      log.set('papel', 'master')
+      log.set('detalhes', {
+        master_nome: auth.getString('name') || auth.getString('email'),
+        master_email: auth.getString('email'),
+        novo_user_id: novoUser.id,
+        novo_email: email,
+        novo_nome: nome,
+        papel_atribuido: papelGestao,
+        status_aprovacao: statusInicial === 'pendente' ? 'pendente' : 'aprovado',
+        justificativa: justificativa || 'Convite direto pelo Gestor Master no Console',
+        timestamp: new Date().toISOString(),
+      })
+      log.set(
+        'ip',
+        e.requestInfo().headers['x-forwarded-for'] || e.requestInfo().headers['x-real-ip'] || '',
+      )
+      $app.save(log)
+
+      return e.json(200, {
+        sucesso: true,
+        mensagem: `Colaborador interno ${nome} (${email}) criado com sucesso no perfil de Gestão (${papelGestao}).`,
+        usuario: {
+          id: novoUser.id,
+          nome: nome,
+          email: email,
+          role: novoUser.getString('role'),
+          status_aprovacao: novoUser.getString('status_aprovacao'),
+        },
+        credencial_inicial: {
+          email: email,
+          senha_temporaria: senhaInicial,
+        },
+      })
+    } catch (err) {
+      return e.json(500, { error: err.message || 'Falha ao convidar membro de gestão.' })
+    }
+  },
+  $apis.requireAuth(),
+)
