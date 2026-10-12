@@ -25,8 +25,14 @@ import {
   AVISO_LEGAL_LASTRO,
   type LastroCircularidadeRecord,
 } from '@/services/lastroCcrlrService'
+import { useSeo } from '@/hooks/useSeo'
 
 export function ConferenciaLastroPublicaPage() {
+  useSeo({
+    title: 'Conferência Pública de Lastro — Orbis Protocol',
+    description:
+      'Conferência pública e imutável de Lastro de Circularidade e logística reversa estruturada sob o Decreto Federal 11.413/2023.',
+  })
   const { codigoOuId } = useParams<{ codigoOuId: string }>()
   const [lastro, setLastro] = useState<LastroCircularidadeRecord | null>(null)
   const [carregando, setCarregando] = useState(true)

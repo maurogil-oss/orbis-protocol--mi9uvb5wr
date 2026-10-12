@@ -29,6 +29,7 @@ import {
   verificarAcessoRadar,
   AVISO_LEGAL_RADAR,
 } from '@/services/radarSemanalService'
+import { useSeo } from '@/hooks/useSeo'
 
 const SEGMENTOS_DISPONIVEIS: ('todos' | RadarSegmento)[] = [
   'todos',
@@ -41,6 +42,12 @@ const SEGMENTOS_DISPONIVEIS: ('todos' | RadarSegmento)[] = [
 ]
 
 export default function CentralRadarPage() {
+  useSeo({
+    title: 'Central do Assinante — Radar Regulatório — Orbis Protocol',
+    description:
+      'Acervo completo do Radar Regulatório Semanal do Orbis Protocol: normas estruturadas em 5 pilares, histórico e digest executivo.',
+  })
+
   const { user } = useAuth()
   const acessoInfo = verificarAcessoRadar(user)
 

@@ -13,8 +13,14 @@ import {
 } from 'lucide-react'
 import { consultarOptOutPublico, confirmarOptOutPublico } from '@/services/reativacaoService'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function PreferenciasEmailPage() {
+  useSeo({
+    title: 'Preferências de E-mail — Orbis Protocol',
+    description:
+      'Gerenciamento de comunicações institucionais, atualizações regulatórias e opt-out na infraestrutura dMRV do Orbis Protocol.',
+  })
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
 

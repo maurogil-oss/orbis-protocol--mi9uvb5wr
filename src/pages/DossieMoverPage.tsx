@@ -31,8 +31,14 @@ import {
 } from '@/services/moverService'
 import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
 import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService'
+import { useSeo } from '@/hooks/useSeo'
 
 export function DossieMoverPage() {
+  useSeo({
+    title: 'Dossiê do Projeto MOVER (GS 448) — Orbis Protocol',
+    description:
+      'Dossiê probatório do projeto MOVER e metodologia GS 448. Status de VPAs, linha de base regional, salvaguarda de dupla contagem e ledger criptográfico.',
+  })
   const { user } = useAuth()
   const [vpas, setVpas] = useState<MoverVpaRecord[]>([])
   const [evidencias, setEvidencias] = useState<MoverEvidenciaRecord[]>([])

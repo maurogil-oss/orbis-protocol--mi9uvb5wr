@@ -21,9 +21,15 @@ import {
   consultarPassaportePorTokenPublico,
   PassaportePublicoResponse,
 } from '@/services/bureauPassaporteService'
+import { useSeo } from '@/hooks/useSeo'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 
 export default function PassaporteFornecedorPublicoPage() {
+  useSeo({
+    title: 'Passaporte do Fornecedor — Consulta Pública — Orbis Protocol',
+    description:
+      'Consulta pública autenticada de passaporte de sustentabilidade e intensidade carbônica do fornecedor com revelação seletiva dMRV.',
+  })
   const { token } = useParams<{ token: string }>()
   const [passaporte, setPassaporte] = useState<PassaportePublicoResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)

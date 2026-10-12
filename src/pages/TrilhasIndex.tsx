@@ -15,8 +15,14 @@ import {
   School,
   Layers,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function TrilhasIndex() {
+  useSeo({
+    title: 'Trilhas de Formação & Habilitação — Orbis Protocol',
+    description:
+      'Ambientes estruturados para cada perfil regulatório, categoria profissional e rede de ensino no Orbis Protocol.',
+  })
   const trilhasList = Object.values(TRILHAS_DATA)
 
   const getTrilhaIcon = (slug: string) => {

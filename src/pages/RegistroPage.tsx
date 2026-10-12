@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import pb from '@/lib/pocketbase/client'
@@ -19,12 +19,25 @@ import {
 
 import { useSearchParams } from 'react-router-dom'
 import { validarSenhaForte } from '@/lib/passwordPolicy'
+import { useSeo } from '@/hooks/useSeo'
 
 export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp' | 'parceiro' | 'gestao'
 
 export default function RegistroPage() {
+  useSeo({
+    title: 'Cadastro de Conta — Orbis Protocol',
+    description:
+      'Crie sua conta na infraestrutura dMRV do Orbis Protocol para empresas, peritos ou parceiros corporativos.',
+  })
   const [searchParams] = useSearchParams()
   const location = useLocation()
+
+  // Refs para foco programático no primeiro campo inválido
+  const nomeInputRef = useRef<HTMLInputElement>(null)
+  const emailInputRef = useRef<HTMLInputElement>(null)
+  const passwordInputRef = useRef<HTMLInputElement>(null)
+  const passwordConfirmInputRef = useRef<HTMLInputElement>(null)
+  const termoAceiteInputRef = useRef<HTMLInputElement>(null)
 
   // Determinar role inicial via query param (?papel=... ou ?role=...) ou state de navegação
   const getInitialRole = (): PerfilRole => {
@@ -67,27 +80,32 @@ export default function RegistroPage() {
 
     if (!cleanNome) {
       setError('Por favor, informe seu nome completo ou razão social.')
+      nomeInputRef.current?.focus()
       return
     }
 
-    if (!cleanEmail) {
+    if (!cleanEmail || !cleanEmail.includes('@')) {
       setError('Por favor, informe um e-mail válido.')
+      emailInputRef.current?.focus()
       return
     }
 
     const valSenha = validarSenhaForte(password)
     if (!valSenha.valida) {
       setError(valSenha.mensagem)
+      passwordInputRef.current?.focus()
       return
     }
 
     if (password !== passwordConfirm) {
       setError('A confirmação de senha não confere com a senha informada.')
+      passwordConfirmInputRef.current?.focus()
       return
     }
 
     if (!termoAceite) {
       setError('É necessário concordar com os Termos de Uso e Política de Privacidade.')
+      termoAceiteInputRef.current?.focus()
       return
     }
 
@@ -187,6 +205,7 @@ export default function RegistroPage() {
           msg.toLowerCase().includes('already'))
       ) {
         setError('Este e-mail já está cadastrado. Tente entrar com sua senha ou use outro e-mail.')
+        emailInputRef.current?.focus()
       } else {
         setError(msg)
       }
@@ -194,6 +213,33 @@ export default function RegistroPage() {
       setIsLoading(false)
     }
   }
+
+  // Análise de campos inválidos para aplicar aria-invalid
+  const isNomeInvalido = Boolean(
+    error && (error.toLowerCase().includes('nome') || error.toLowerCase().includes('razão social')),
+  )
+  const isEmailInvalido = Boolean(
+    error && (error.toLowerCase().includes('e-mail') || error.toLowerCase().includes('email')),
+  )
+  const isPasswordInvalido = Boolean(
+    error &&
+    (error.toLowerCase().includes('senha forte') ||
+      error.toLowerCase().includes('caracteres') ||
+      error.toLowerCase().includes('maiúscula') ||
+      error.toLowerCase().includes('minúscula') ||
+      error.toLowerCase().includes('número') ||
+      error.toLowerCase().includes('símbolo')),
+  )
+  const isPasswordConfirmInvalido = Boolean(
+    error &&
+    (error.toLowerCase().includes('confirmação') || error.toLowerCase().includes('não confere')),
+  )
+  const isTermoInvalido = Boolean(
+    error &&
+    (error.toLowerCase().includes('concordar') ||
+      error.toLowerCase().includes('termos') ||
+      error.toLowerCase().includes('política')),
+  )
 
   return (
     <div className="min-h-screen py-12 md:py-20 flex items-center justify-center bg-[#0A0E12] px-4 sm:px-6 lg:px-8">
@@ -222,10 +268,12 @@ export default function RegistroPage() {
           </p>
         </div>
 
-        {/* Banner de Erro */}
+        {/* Banner de Erro com role="alert" e aria-live="assertive" */}
         {error && (
           <div
             role="alert"
+            aria-live="assertive"
+            tabIndex={-1}
             className="p-3.5 mb-6 rounded-lg bg-[#F03E54]/10 border border-[#F03E54]/30 text-xs sm:text-sm text-[#F03E54] flex items-center gap-2.5"
           >
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -468,7 +516,10 @@ export default function RegistroPage() {
 
           {/* Nome / Responsável */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+            <label
+              htmlFor="registro-nome-input"
+              className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+            >
               {role === 'perito'
                 ? 'Nome Completo do Perito *'
                 : role === 'parceiro'
@@ -478,9 +529,16 @@ export default function RegistroPage() {
             <div className="relative">
               <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
               <input
+                ref={nomeInputRef}
+                id="registro-nome-input"
                 type="text"
+                autoComplete="name"
                 value={nome}
-                onChange={(e) => setNome(e.target.value)}
+                onChange={(e) => {
+                  setNome(e.target.value)
+                  setError('')
+                }}
+                aria-invalid={isNomeInvalido}
                 placeholder={
                   role === 'perito'
                     ? 'Dr. Eng. Carlos Mendonça'
@@ -496,15 +554,25 @@ export default function RegistroPage() {
 
           {/* E-mail Corporativo */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+            <label
+              htmlFor="registro-email-input"
+              className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+            >
               E-mail Corporativo *
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
               <input
+                ref={emailInputRef}
+                id="registro-email-input"
                 type="email"
+                autoComplete="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setError('')
+                }}
+                aria-invalid={isEmailInvalido}
                 placeholder="seu.email@empresa.com.br"
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
                 required
@@ -516,15 +584,25 @@ export default function RegistroPage() {
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                <label
+                  htmlFor="registro-password-input"
+                  className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                >
                   Senha Forte *
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
                   <input
+                    ref={passwordInputRef}
+                    id="registro-password-input"
                     type="password"
+                    autoComplete="new-password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setError('')
+                    }}
+                    aria-invalid={isPasswordInvalido}
                     placeholder="Ex: SenhaForte@2026"
                     minLength={10}
                     className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
@@ -534,15 +612,25 @@ export default function RegistroPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+                <label
+                  htmlFor="registro-password-confirm-input"
+                  className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5"
+                >
                   Confirmar Senha *
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
                   <input
+                    ref={passwordConfirmInputRef}
+                    id="registro-password-confirm-input"
                     type="password"
+                    autoComplete="new-password"
                     value={passwordConfirm}
-                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    onChange={(e) => {
+                      setPasswordConfirm(e.target.value)
+                      setError('')
+                    }}
+                    aria-invalid={isPasswordConfirmInvalido}
                     placeholder="••••••••"
                     minLength={8}
                     className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] placeholder-[#93A3B5]/40 focus:outline-none focus:ring-2 focus:ring-[#12B886] text-sm"
@@ -693,11 +781,20 @@ export default function RegistroPage() {
           </div>
 
           {/* Aceite dos Termos */}
-          <label className="flex items-start gap-3 p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] cursor-pointer">
+          <label
+            htmlFor="registro-termo-aceite-input"
+            className="flex items-start gap-3 p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] cursor-pointer"
+          >
             <input
+              ref={termoAceiteInputRef}
+              id="registro-termo-aceite-input"
               type="checkbox"
               checked={termoAceite}
-              onChange={(e) => setTermoAceite(e.target.checked)}
+              onChange={(e) => {
+                setTermoAceite(e.target.checked)
+                setError('')
+              }}
+              aria-invalid={isTermoInvalido}
               className="mt-0.5 w-4 h-4 rounded text-[#12B886] focus:ring-0 border-[rgba(244,247,250,0.2)] bg-[#111820]"
             />
             <span className="text-xs text-[#93A3B5] leading-relaxed">

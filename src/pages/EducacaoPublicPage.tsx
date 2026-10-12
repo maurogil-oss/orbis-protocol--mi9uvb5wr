@@ -28,8 +28,14 @@ import {
   RegistroAtestadoParticipacao,
 } from '@/services/orbisEducacaoService'
 import { AtestadoParticipacaoOrbisCard } from '@/components/AtestadoParticipacaoOrbisCard'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function EducacaoPublicPage() {
+  useSeo({
+    title: 'Orbis Educação — Formação Climática & Inclusão MEI',
+    description:
+      'Programa de formação em educação climática, reforma tributária e circularidade para MEIs e comunidades escolares. Emissão de Atestado de Participação Orbis.',
+  })
   const navigate = useNavigate()
 
   // Aba ativa: 'programa' | 'trilha_mei' | 'escolas' | 'patrocinio'

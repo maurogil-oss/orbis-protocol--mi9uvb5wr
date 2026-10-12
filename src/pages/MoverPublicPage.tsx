@@ -27,8 +27,14 @@ import {
   DECLARACAO_PIONEIRISMO_DEFENSAVEL,
   OS_QUATRO_PAPEIS_PROGRAMA,
 } from '@/services/moverService'
+import { useSeo } from '@/hooks/useSeo'
 
 export function MoverPublicPage() {
+  useSeo({
+    title: 'Programa MOVER & Cadeia Automotiva — Orbis Protocol',
+    description:
+      'Infraestrutura dMRV de passaporte do fornecedor, conteúdo local e descarbonização para a cadeia automotiva sob a Lei 14.902/2024 (Programa MOVER).',
+  })
   const [copiado, setCopiado] = useState(false)
   const canonicalHashPublico = '4b2e56cf988df0a1ca5d844c8c7f938fae5c3e03889104faee13fef7946927d3'
 

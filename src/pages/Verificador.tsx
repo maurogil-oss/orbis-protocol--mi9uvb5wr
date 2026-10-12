@@ -23,6 +23,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 import type { RecordModel } from 'pocketbase'
 
@@ -95,6 +96,12 @@ export function getCalculatedStatus(selo: {
 }
 
 export default function Verificador() {
+  useSeo({
+    title: 'Verificador Público de Atestados — Orbis Protocol',
+    description:
+      'Consulte a autenticidade e validade pericial de qualquer documento, laudo ou atestado emitido sob a governança dMRV do Orbis Protocol.',
+  })
+
   const [codigoInput, setCodigoInput] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState('')

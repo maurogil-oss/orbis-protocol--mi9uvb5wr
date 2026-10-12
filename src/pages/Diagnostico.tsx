@@ -44,6 +44,7 @@ import {
   Flame,
   Scale,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 // Masks helper
 function maskCNPJ(value: string) {
@@ -85,6 +86,12 @@ export function calcularEnquadramentoSBCE(
 }
 
 export default function Diagnostico() {
+  useSeo({
+    title: 'Diagnóstico & Qualificação Tributária por CNPJ — Orbis Protocol',
+    description:
+      'Diagnóstico gratuito e qualificação tributária por CNPJ. Avaliação preparatória de elegibilidade ao SBCE, MOVER e Reforma Tributária (IBS/CBS).',
+  })
+
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { login } = useAuth()

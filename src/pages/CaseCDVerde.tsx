@@ -14,8 +14,14 @@ import {
   FileCheck,
 } from 'lucide-react'
 import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function CaseCDVerde() {
+  useSeo({
+    title: 'Case CDVerde — Economia Circular Veicular — Orbis Protocol',
+    description:
+      'Case de sucesso CDVerde: infraestrutura de passaporte público de lote verificável por chassi no Brasil com rastreabilidade DETRAN e MOVER.',
+  })
   const pilaresCase = [
     {
       titulo: 'Desmontagem de Veículos em Fim de Vida (VFV)',

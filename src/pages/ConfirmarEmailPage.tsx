@@ -3,8 +3,14 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle2, AlertCircle, Loader2, ArrowRight, Sparkles, Mail } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { OrbisGlobe } from '@/components/OrbisGlobe'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function ConfirmarEmailPage() {
+  useSeo({
+    title: 'Confirmação de E-mail — Orbis Protocol',
+    description:
+      'Validação de e-mail corporativo e ativação de trial na infraestrutura dMRV do Orbis Protocol.',
+  })
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
   const navigate = useNavigate()

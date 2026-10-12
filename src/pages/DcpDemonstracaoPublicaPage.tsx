@@ -28,6 +28,7 @@ import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import { AVISO_LEGAL_LASTRO } from '@/services/lastroCcrlrService'
 import { calcularHashCanonicoMateriais } from '@/services/materiaisCriticosCanonicoService'
+import { useSeo } from '@/hooks/useSeo'
 
 export interface DadosDemonstracaoDcp {
   codigoLote: string
@@ -58,6 +59,12 @@ export const DADOS_PADRAO_DEMO_DCP: DadosDemonstracaoDcp = {
 }
 
 export function DcpDemonstracaoPublicaPage() {
+  useSeo({
+    title: 'Passaporte Digital de Produto (DCP) — Demonstração — Orbis Protocol',
+    description:
+      'Espelho público do Passaporte Digital de Produto (DCP) de mineração urbana com prova criptográfica SHA-256 e balanço mássico segregado.',
+  })
+
   const { codigoLote: paramCodigo } = useParams<{ codigoLote?: string }>()
   const [searchParams] = useSearchParams()
   const [copiado, setCopiado] = useState(false)

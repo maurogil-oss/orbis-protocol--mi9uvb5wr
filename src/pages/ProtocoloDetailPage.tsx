@@ -19,6 +19,7 @@ import {
   ExternalLink,
   ChevronRight,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function ProtocoloDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -26,6 +27,15 @@ export default function ProtocoloDetailPage() {
   const { isAuthenticated } = useAuth()
 
   const protocolo = slug ? getProtocoloBySlug(slug) : undefined
+
+  useSeo({
+    title: protocolo
+      ? `Protocolo ${protocolo.nome} — Orbis Protocol`
+      : 'Protocolo Setorial — Orbis Protocol',
+    description: protocolo
+      ? `${protocolo.tagline}. ${protocolo.descricao}`
+      : 'Especificação metodológica pericial dMRV por cadeia produtiva.',
+  })
 
   if (!protocolo) {
     return (

@@ -34,8 +34,14 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { AlertTriangle } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function CheckoutPage() {
+  useSeo({
+    title: 'Checkout Seguro PIX — Orbis Protocol',
+    description:
+      'Checkout seguro com liquidação via PIX e emissão imediata de NFS-e probatória para serviços do Orbis Protocol.',
+  })
   const { cobrancaId } = useParams<{ cobrancaId?: string }>()
   const navigate = useNavigate()
   const location = useLocation()

@@ -18,6 +18,7 @@ import {
   Search,
   Layers,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export interface DestinoProtocolo {
   titulo: string
@@ -106,6 +107,12 @@ export const DESTINOS_PROTOCOLO: DestinoProtocolo[] = [
 ]
 
 export default function ProtocoloIndexPage() {
+  useSeo({
+    title: 'O Protocolo Orbis — Fundações Metodológicas & Regulatórias',
+    description:
+      'Fundação técnica, referências científicas, equações de baseline e especificações de integração do motor analítico dMRV do Orbis Protocol.',
+  })
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       {/* 1. HERO INSTITUCIONAL DO HUB PROTOCOLO */}

@@ -1,8 +1,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ShieldCheck, ArrowLeft, ArrowRight, Lock, FileText, CheckCircle2 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function Privacidade() {
+  useSeo({
+    title: 'Política de Privacidade e LGPD — Orbis Protocol',
+    description:
+      'Política de privacidade, proteção de dados pessoais (LGPD Lei 13.709/2018), retenção documental pericial e canal do encarregado (DPO).',
+  })
   return (
     <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
       <div className="max-w-[900px] mx-auto px-4 sm:px-6">

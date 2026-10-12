@@ -16,11 +16,19 @@ import {
   FileText,
   UserCheck,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function TrilhaDetail() {
   const { slug } = useParams<{ slug: string }>()
   const trilha = slug ? TRILHAS_DATA[slug] : null
   const { isAuthenticated } = useAuth()
+
+  useSeo({
+    title: trilha ? `${trilha.titulo} — Orbis Protocol` : 'Trilha de Habilitação — Orbis Protocol',
+    description: trilha
+      ? `${trilha.subtitulo}. ${trilha.descricao}`
+      : 'Ambiente de capacitação e habilitação regulatória do Orbis Protocol.',
+  })
 
   // Accordion state
   const [openIndex, setOpenIndex] = useState<number | null>(0)

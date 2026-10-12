@@ -22,8 +22,14 @@ import {
   MetricasEscolaPainel,
   ConsolidadoRedeMetricas,
 } from '@/services/escolasService'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function PainelEducacionalPage() {
+  useSeo({
+    title: 'Painel Educacional & Impacto ESG — Orbis Protocol',
+    description:
+      'Painel do Programa Educacional com métricas consolidadas de engajamento para secretarias de educação, escolas particulares e patrocinadores B2B2C.',
+  })
   const { user } = useAuth()
   const [metricasEscolas, setMetricasEscolas] = useState<MetricasEscolaPainel[]>([])
   const [consolidado, setConsolidado] = useState<ConsolidadoRedeMetricas>({

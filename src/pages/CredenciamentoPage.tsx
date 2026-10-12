@@ -8,6 +8,7 @@ import {
 } from '@/services/peritoService'
 import { LISTA_PROTOCOLOS_SETORIAIS } from '@/data/protocolosSetoriais'
 import { TabelaPublicaHonorariosSection } from '@/components/TabelaPublicaHonorariosSection'
+import { useSeo } from '@/hooks/useSeo'
 import {
   ShieldCheck,
   CheckCircle2,
@@ -21,6 +22,12 @@ import {
 } from 'lucide-react'
 
 export default function CredenciamentoPeritoPage() {
+  useSeo({
+    title: 'Credenciamento de Perito Técnico Oficial — Orbis Protocol',
+    description:
+      'Habilitação de peritos técnicos (CREA/CRC/CRQ/CFT/CAU) para homologação de laudos periciais dMRV e emissão de ART/RRT no Orbis Protocol.',
+  })
+
   const { user, isAuthenticated } = useAuth()
 
   const [formData, setFormData] = useState<SolicitarCredenciamentoInput>({

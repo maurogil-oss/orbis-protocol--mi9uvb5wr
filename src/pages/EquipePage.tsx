@@ -16,8 +16,14 @@ import {
   ArrowRight,
   Info,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function EquipePage() {
+  useSeo({
+    title: 'Estrutura Operacional & Governança — Orbis Protocol',
+    description:
+      'Quem opera o Orbis Protocol: operadora tecnológica MGM Consultoria Empresarial, rede técnica credenciada e princípios de integridade dMRV.',
+  })
   return (
     <div className="min-h-screen py-10 md:py-16 bg-slate-50 dark:bg-[#0A1628] text-slate-900 dark:text-[#F8FAFC] transition-colors">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 space-y-12">

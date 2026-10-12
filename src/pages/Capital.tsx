@@ -11,6 +11,7 @@ import {
 } from '@/services/greenCapitalEngine'
 import { exportarRelatorioDossiePdf } from '@/services/relatorioLaudoPdf'
 import { formatCurrencyBRL } from '@/services/nfeParser'
+import { useSeo } from '@/hooks/useSeo'
 import {
   Coins,
   TrendingDown,
@@ -57,6 +58,12 @@ interface EmissoesInventarioRecord extends RecordModel {
 }
 
 export default function Capital() {
+  useSeo({
+    title: 'Green Capital Engine — Finanças Sustentáveis — Orbis Protocol',
+    description:
+      'Simulador de crédito verde e spread bonificado. Compare linhas bancárias de descarbonização com laudo pericial Orbis Protocol.',
+  })
+
   const { user } = useAuth()
 
   // Entradas da simulação

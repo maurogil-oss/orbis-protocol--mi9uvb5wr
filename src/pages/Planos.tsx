@@ -16,8 +16,14 @@ import {
   ServicoCatalogoRecord,
 } from '@/services/catalogoServicosService'
 import { AlertTriangle } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function Planos() {
+  useSeo({
+    title: 'Planos de Adesão & Atestados — Orbis Protocol',
+    description:
+      'Planos de adesão, laudos periciais e emissão de Atestados de Conformidade dMRV do Orbis Protocol para empresas, cadeia automotiva e grandes exportadores.',
+  })
   const { isAuthenticated, user } = useAuth()
   const [cobrancas, setCobrancas] = useState<CobrancaRecord[]>([])
   const [carregandoCobrancas, setCarregandoCobrancas] = useState(false)

@@ -48,9 +48,15 @@ import {
   dispararTriagemPericial,
   ResultadoTriagemPericial,
 } from '@/services/revisorPericialService'
+import { useSeo } from '@/hooks/useSeo'
 import { RevisorPericialWidget } from '@/components/RevisorPericialWidget'
 
 export default function ModoCorporativoDemoPage() {
+  useSeo({
+    title: 'Tour Guiado Corporativo — Demonstração — Orbis Protocol',
+    description:
+      'Demonstração interativa corporativa do Orbis Protocol: apuração de 12 documentos fiscais reais em 10 modelos SEFAZ com auditoria de inteligência artificial.',
+  })
   const [demoData, setDemoData] = useState<CorporativoDemoData>({
     dossie: DOSSIE_DEFAULT_FALLBACK,
     notas: NOTAS_DEFAULT_FALLBACK,

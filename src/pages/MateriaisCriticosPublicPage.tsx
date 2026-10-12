@@ -29,8 +29,14 @@ import { Label } from '@/components/ui/label'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { AVISO_LEGAL_LASTRO } from '@/services/lastroCcrlrService'
 import { calcularHashCanonicoMateriais } from '@/services/materiaisCriticosCanonicoService'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function MateriaisCriticosPublicPage() {
+  useSeo({
+    title: 'Materiais Críticos Recuperados — Mineração Urbana — Orbis Protocol',
+    description:
+      'Infraestrutura probatória independente para comprovação pericial de origem urbana, custódia documental anti-receptação e Passaporte Digital de Produto (DCP).',
+  })
   // Simulador rápido de DCP por lote para demonstração pública
   const [loteCodigo, setLoteCodigo] = useState('ORB-CRIT-2026-X9B2')
   const [massaTotal, setMassaTotal] = useState('1450')

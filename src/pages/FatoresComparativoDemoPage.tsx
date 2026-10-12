@@ -20,6 +20,7 @@ import {
   FATOR_SIN_MCTI_TCO2E_POR_MWH,
   GWP_IPCC_AR6_OFICIAL,
 } from '@/services/catalogoFatoresOficiais'
+import { useSeo } from '@/hooks/useSeo'
 
 interface LinhaComparativa {
   material: string
@@ -38,6 +39,12 @@ interface LinhaComparativa {
 }
 
 export default function FatoresComparativoDemoPage() {
+  useSeo({
+    title: 'Fatores Orbis vs. Mercado Real — Anexo Técnico — Orbis Protocol',
+    description:
+      'Matriz comparativa de rigor metodológico: fatores de emissão evitada conservadores do Orbis Protocol comparados a referências de mercado e IPCC AR6.',
+  })
+
   const [filtroAba, setFiltroAba] = useState<'todos' | 'metais' | 'fluidos_energia'>('todos')
   const [perguntaAberta, setPerguntaAberta] = useState<boolean>(true)
 

@@ -9,8 +9,14 @@ import { FormularioOrbisLpf } from '@/components/FormularioOrbisLpf'
 import { SecaoPerfilAbas } from '@/components/SecaoPerfilAbas'
 import { ListaRegulatoriaFixa } from '@/components/ListaRegulatoriaFixa'
 import { ArrowRight, CheckCircle2, ChevronRight, Layers } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function Index() {
+  useSeo({
+    title: 'Orbis Protocol — Prova Documental da Economia Circular | dMRV',
+    description:
+      'Cada nota fiscal da sua cadeia vira prova de descarbonização. Prova documental para descarbonização verificável, auditoria dMRV e conformidade regulatória.',
+  })
   return (
     <div className="flex flex-col w-full overflow-x-hidden bg-background text-foreground">
       {/* 1. HERO SECTION: Em duas colunas (Texto à esquerda + Card Ilustrativo à direita) */}

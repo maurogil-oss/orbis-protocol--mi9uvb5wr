@@ -269,7 +269,10 @@ const App = () => (
           <Route path="/revisor-f6" element={<RevisorExternoF6Page />} />
           {/* Proposta Comercial Reminera — Rota dedicada independente de Layout/Menu/Rodapé */}
           <Route path="/proposta-reminera" element={<PropostaRemineraPage />} />
-          <Route path="*" element={<NotFound />} />{' '}
+          {/* Rota 404 envolvida pelo Layout global */}
+          <Route element={<Layout />}>
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>{' '}
       </TooltipProvider>
     </AuthProvider>

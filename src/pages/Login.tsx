@@ -12,8 +12,14 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function Login() {
+  useSeo({
+    title: 'Login de Acesso — Orbis Protocol',
+    description:
+      'Autenticação segura na infraestrutura dMRV do Orbis Protocol. Acesso a laudos, atestados e painéis de conformidade.',
+  })
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -105,8 +111,10 @@ export default function Login() {
             <div className="absolute inset-0 rounded-full bg-[#12B886]/25 blur-lg scale-125" />
             <OrbisGlobe size={56} className="relative z-10" />
           </div>
-          <h1 className="font-heading font-extrabold text-2xl text-[#F4F7FA]">ORBIS PROTOCOL</h1>
-          <p className="text-xs text-[#93A3B5] mt-1">
+          <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-[#F4F7FA]">
+            ORBIS PROTOCOL
+          </h1>
+          <p className="text-xs text-slate-600 dark:text-[#93A3B5] mt-1">
             Autenticação Segura • Acesso a Laudos e Selos dMRV
           </p>
         </div>
@@ -116,30 +124,34 @@ export default function Login() {
             role="alert"
             className={`p-4 mb-6 rounded-xl text-xs space-y-2.5 ${
               isEmailNotFound
-                ? 'bg-[#F59F00]/10 border border-[#F59F00]/40 text-[#F59F00]'
-                : 'bg-[#F03E54]/10 border border-[#F03E54]/30 text-[#F03E54]'
+                ? 'bg-amber-500/10 border border-amber-500/40 text-amber-700 dark:text-[#F59F00]'
+                : 'bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-[#F03E54]'
             }`}
           >
             <div className="flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <div className="leading-relaxed space-y-1">
                 {isEmailNotFound && (
-                  <p className="font-bold text-[#F4F7FA]">E-mail não encontrado no sistema</p>
+                  <p className="font-bold text-slate-900 dark:text-[#F4F7FA]">
+                    E-mail não encontrado no sistema
+                  </p>
                 )}
                 <p>{error}</p>
               </div>
             </div>
             <div
               className={`pt-2 border-t flex items-center justify-between flex-wrap gap-2 text-[11px] ${
-                isEmailNotFound ? 'border-[#F59F00]/20' : 'border-[#F03E54]/20'
+                isEmailNotFound ? 'border-amber-500/20' : 'border-rose-500/20'
               }`}
             >
               {isEmailNotFound ? (
                 <>
-                  <span className="text-[#93A3B5]">Ainda não possui cadastro na plataforma?</span>
+                  <span className="text-slate-600 dark:text-[#93A3B5]">
+                    Ainda não possui cadastro na plataforma?
+                  </span>
                   <Link
                     to="/registro"
-                    className="font-bold text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
+                    className="font-bold text-emerald-700 dark:text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
                   >
                     <span>Criar uma conta</span>
                     <ArrowRight className="w-3 h-3" />
@@ -147,12 +159,12 @@ export default function Login() {
                 </>
               ) : (
                 <>
-                  <span className="text-[#93A3B5]">
+                  <span className="text-slate-600 dark:text-[#93A3B5]">
                     Esqueceu ou precisa redefinir sua credencial?
                   </span>
                   <Link
                     to="/recuperar-senha"
-                    className="font-bold text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
+                    className="font-bold text-emerald-700 dark:text-[#12B886] hover:underline inline-flex items-center gap-1 transition-colors"
                   >
                     <span>Esqueci minha senha</span>
                     <ArrowRight className="w-3 h-3" />
@@ -165,13 +177,18 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5] mb-1.5">
+            <label
+              htmlFor="login-email-input"
+              className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-[#93A3B5] mb-1.5"
+            >
               E-mail Corporativo
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
+              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#93A3B5]" />
               <input
+                id="login-email-input"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu.email@empresa.com.br"
@@ -183,20 +200,25 @@ export default function Login() {
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#93A3B5]">
+              <label
+                htmlFor="login-password-input"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-[#93A3B5]"
+              >
                 Senha de Acesso
               </label>
               <Link
                 to="/recuperar-senha"
-                className="text-xs text-[#12B886] hover:underline transition-colors"
+                className="text-xs text-emerald-700 dark:text-[#12B886] hover:underline transition-colors"
               >
                 Esqueci minha senha?
               </Link>
             </div>
             <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5]" />
+              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#93A3B5]" />
               <input
+                id="login-password-input"
                 type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -206,7 +228,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#93A3B5] hover:text-emerald-700 dark:hover:text-[#12B886] transition-colors"
                 aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

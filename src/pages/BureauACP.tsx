@@ -36,8 +36,14 @@ import {
   CdvCarbonoProgramaItem,
   RESERVA_METODOLOGICA_PRE_LAUDO,
 } from '@/services/moverService'
+import { useSeo } from '@/hooks/useSeo'
 
 export function BureauACP() {
+  useSeo({
+    title: 'Bureau ACP — Passaporte do Fornecedor — Orbis Protocol',
+    description:
+      'Cockpit do Bureau ACP / Associação Comercial do Paraná. Passaporte do fornecedor com revelação seletiva e conformidade dMRV.',
+  })
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()

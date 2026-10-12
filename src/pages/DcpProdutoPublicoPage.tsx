@@ -31,6 +31,7 @@ import {
   obterHistoricoConsultasDpp,
   type DppConsultaRecord,
 } from '@/services/cdvService'
+import { useSeo } from '@/hooks/useSeo'
 
 interface SeloRecord {
   id: string
@@ -45,6 +46,12 @@ interface SeloRecord {
 }
 
 export default function DcpProdutoPublicoPage() {
+  useSeo({
+    title: 'DCP do Produto — Passaporte Digital — Orbis Protocol',
+    description:
+      'Declaração de Conformidade e Pegada de Produto (DCP) com cálculo cradle-to-gate, segregação de carbono e prova criptográfica SHA-256.',
+  })
+
   const { selo: seloParam } = useParams<{ selo: string }>()
   const [searchParams] = useSearchParams()
   const canalParam = searchParams.get('via') // 'qr' | 'embed' | 'web'

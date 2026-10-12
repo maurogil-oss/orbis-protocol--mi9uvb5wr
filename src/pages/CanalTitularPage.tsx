@@ -18,8 +18,14 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { criarSolicitacaoLGPD, TipoPedidoLGPD, SolicitacaoLGPD } from '@/services/lgpdService'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function CanalTitularPage() {
+  useSeo({
+    title: 'Canal do Titular LGPD — Orbis Protocol',
+    description:
+      'Exercício de direitos do titular de dados pessoais perante o Orbis Protocol e a MGM Consultoria Empresarial (Art. 18 LGPD).',
+  })
   const [formData, setFormData] = useState({
     nome_titular: '',
     email_titular: '',

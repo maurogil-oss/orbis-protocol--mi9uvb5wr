@@ -13,8 +13,14 @@ import {
   BarChart4,
   Lock,
 } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function PortalCorporativo() {
+  useSeo({
+    title: 'Portal Corporativo Enterprise — Orbis Protocol',
+    description:
+      'Infraestrutura de dados de auditoria climática em larga escala para indústrias e holdings. IFRS S1/S2, SPED e 10 modelos fiscais.',
+  })
   const recursos = [
     {
       titulo: 'Ingestão Multi-Modelo Fiscal & Proxy InfoSimples Ativos',

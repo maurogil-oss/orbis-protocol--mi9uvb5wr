@@ -21,8 +21,14 @@ import {
   PerfilModalidadeEscola,
   RedeEscolar,
 } from '@/services/escolasService'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function CadastroEscolasPage() {
+  useSeo({
+    title: 'Credenciamento de Escolas — Orbis Educação',
+    description:
+      'Cadastre unidades escolares públicas ou particulares no programa Orbis Educação para formação ambiental e medição de pegada de carbono.',
+  })
   const navigate = useNavigate()
 
   // Modo: 'individual' | 'lote'

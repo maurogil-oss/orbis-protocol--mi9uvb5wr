@@ -4,8 +4,14 @@ import { CADEIAS_PRODUTIVAS, CadeiaProdutiva } from '@/data/cadeias'
 import { BreadcrumbOrbis } from '@/components/BreadcrumbOrbis'
 import { BlocoOutrasSolucoes } from '@/components/BlocoOutrasSolucoes'
 import { ShieldCheck, CheckCircle2, ArrowRight, ArrowLeft, X, Search, Sparkles } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 
 export default function CadeiasProdutivasPage() {
+  useSeo({
+    title: 'Cadeias Produtivas & Catálogo Setorial — Orbis Protocol',
+    description:
+      'Regras, parâmetros e fatores de emissão para 15 cadeias produtivas no ecossistema dMRV do Orbis Protocol.',
+  })
   const [busca, setBusca] = useState('')
   const [selectedCadeia, setSelectedCadeia] = useState<CadeiaProdutiva | null>(null)
 
