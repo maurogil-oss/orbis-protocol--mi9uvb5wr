@@ -161,7 +161,7 @@ export default function TestCatalog() {
               },
               { path: '/planos', label: 'Planos & Preços (/planos)' },
               { path: '/checkout', label: 'Checkout PIX (/checkout)' },
-              { path: '/verificador', label: 'Verificador de Selos (/verificador)' },
+              { path: '/verificador', label: 'Verificador (/verificador)' },
               { path: '/painel', label: 'Painel do Cliente [Auth] (/painel)' },
               {
                 path: '/console-do-auditor',

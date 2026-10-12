@@ -202,7 +202,7 @@ export default function FatoresComparativoDemoPage() {
               to="/fatores"
               className="inline-flex items-center gap-1 text-xs font-semibold text-[#12B886] hover:underline"
             >
-              <span>Ver Catálogo Público DM-ORB-001</span>
+              <span>Ver Métricas e Referências</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -319,7 +319,7 @@ export default function FatoresComparativoDemoPage() {
                   <p className="text-xs text-[#93A3B5]">
                     Cada fator carrega sua incerteza analítica relativa u_FE rigorosamente propagada
                     pelo método GUM (ISO/IEC Guide 98-3). Não há dupla contagem: cada kg processado
-                    possui chave NF-e/MTR e hash SHA-256 no livro-razão imutável.
+                    possui chave NF-e/MTR e hash SHA-256 no Registro de Integridade Orbis.
                   </p>
                 </div>
               </div>

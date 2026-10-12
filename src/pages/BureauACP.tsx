@@ -25,6 +25,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
 import {
   listarPassaportesBureau,
   salvarPassaporteBureau,
@@ -39,6 +40,7 @@ import {
 export function BureauACP() {
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   const [passaportes, setPassaportes] = useState<PassaporteFornecedorRecord[]>([])
   const [cdvsCarbono, setCdvsCarbono] = useState<CdvCarbonoProgramaItem[]>([])
@@ -200,7 +202,11 @@ export function BureauACP() {
   const handleSalvar = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!passaporteEdicao || !passaporteEdicao.empresa_nome || !passaporteEdicao.empresa_cnpj) {
-      alert('Preencha os campos obrigatórios da empresa.')
+      toast({
+        title: 'Campos obrigatórios ausentes',
+        description: 'Preencha o nome e o CNPJ da empresa para prosseguir.',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -221,11 +227,19 @@ export function BureauACP() {
       }
 
       await salvarPassaporteBureau(passaporteEdicao.id || null, dadosParaSalvar)
+      toast({
+        title: 'Passaporte salvo com sucesso',
+        description: `Passaporte de ${passaporteEdicao.empresa_nome} registrado com hash SHA-256 verificado.`,
+      })
       setIsModalOpen(false)
       setPassaporteEdicao(null)
       await carregarPassaportes()
     } catch (err: any) {
-      alert(err.message || 'Erro ao salvar Passaporte do Fornecedor.')
+      toast({
+        title: 'Erro ao salvar passaporte',
+        description: err.message || 'Falha ao salvar Passaporte do Fornecedor.',
+        variant: 'destructive',
+      })
     } finally {
       setIsSalvando(false)
     }

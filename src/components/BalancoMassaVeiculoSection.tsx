@@ -192,7 +192,7 @@ export function BalancoMassaVeiculoSection({
             </div>
             <p className="text-[10px] text-emerald-700 dark:text-[#059669] mt-1 font-semibold flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" />
-              Reúso + Reciclagem homologados
+              Reúso + Reciclagem confirmados
             </p>
           </div>
 

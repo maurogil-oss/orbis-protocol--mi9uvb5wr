@@ -86,4 +86,17 @@ describe('FatoresComparativoDemoPage (/demo/fatores-comparativo)', () => {
     expect(screen.getByText(/Nível 1 • Default Conservador Citável/i)).toBeDefined()
     expect(screen.getByText(/Nível 2 • Substituição por EPD \/ LCI com ART/i)).toBeDefined()
   })
+
+  it('deve exibir o botão Ver Métricas e Referências apontando para /fatores e citar Registro de Integridade Orbis', () => {
+    render(
+      <MemoryRouter initialEntries={['/demo/fatores-comparativo']}>
+        <FatoresComparativoDemoPage />
+      </MemoryRouter>,
+    )
+
+    const linkMetricas = screen.getByRole('link', { name: /Ver Métricas e Referências/i })
+    expect(linkMetricas).toBeDefined()
+    expect(linkMetricas.getAttribute('href')).toBe('/fatores')
+    expect(screen.getByText(/Registro de Integridade Orbis/i)).toBeDefined()
+  })
 })

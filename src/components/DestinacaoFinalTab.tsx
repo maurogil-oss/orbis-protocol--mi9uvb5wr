@@ -58,7 +58,7 @@ export function DestinacaoFinalTab({
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] text-xs font-bold uppercase tracking-wider">
                 <Recycle className="w-3.5 h-3.5" />
-                DESTINAÇÃO FINAL HOMOLOGADA • MATRIZ EM 3 CAMADAS
+                DESTINAÇÃO FINAL CONFIRMADA • MATRIZ EM 3 CAMADAS
               </span>
               {dados.is_demo && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-[#F59E0B]/20 border border-amber-300 dark:border-[#F59E0B] text-amber-700 dark:text-[#F59E0B] text-[10px] font-extrabold uppercase tracking-wider">
@@ -672,7 +672,7 @@ export function DestinacaoFinalTab({
                   <th className="py-2.5 px-3">Massa Aferida</th>
                   <th className="py-2.5 px-3">MTR / SINIR</th>
                   <th className="py-2.5 px-3">NF do Reciclador</th>
-                  <th className="py-2.5 px-3">Reciclador Homologado</th>
+                  <th className="py-2.5 px-3">Reciclador Confirmado</th>
                   <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
                   <th className="py-2.5 px-3 text-right">Hash SHA-256</th>
                 </tr>{' '}

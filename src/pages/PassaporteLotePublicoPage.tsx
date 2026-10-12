@@ -1312,7 +1312,7 @@ export default function PassaporteLotePublicoPage() {
                         </div>
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                           <span className="text-[#93A3B5] print:text-slate-600">
-                            CNPJ Homologado:
+                            CNPJ Validado:
                           </span>
                           <span className="font-mono text-[#D9B36C] print:text-amber-800 font-bold inline-flex items-center gap-1.5">
                             {lote.cdv_cnpj}

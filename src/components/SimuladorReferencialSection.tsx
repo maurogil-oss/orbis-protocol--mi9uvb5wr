@@ -109,8 +109,8 @@ export function SimuladorReferencialSection({ simulacao }: SimuladorReferencialS
               {simulacao.totalTco2eElegivel.toLocaleString('pt-BR', { minimumFractionDigits: 3 })}{' '}
               tCO₂e elegíveis
             </strong>{' '}
-            (apenas itens com fator homologado no catálogo DM-ORB-001). Exibição obrigatória em
-            faixa mín–máx.
+            (apenas itens com fator validado no catálogo DM-ORB-001). Exibição obrigatória em faixa
+            mín–máx.
           </p>
         </div>
 
@@ -254,7 +254,7 @@ export function SimuladorReferencialSection({ simulacao }: SimuladorReferencialS
             </div>
             <div>
               <strong className="text-foreground">Critério de Elegibilidade:</strong> Somente
-              materiais com fator oficial homologado no catálogo DM-ORB-001 v1.1.
+              materiais com fator oficial validado no catálogo DM-ORB-001 v1.1.
             </div>
           </div>
         </div>
@@ -352,7 +352,7 @@ export function SimuladorReferencialSection({ simulacao }: SimuladorReferencialS
                 Frações & Materiais Excluídos da Simulação (Regra de Blindagem nº 4)
               </CardTitle>
               <CardDescription className="text-xs text-amber-800/80 dark:text-amber-300/80">
-                Apenas materiais com fator oficial homologado entram no cálculo. Frações em
+                Apenas materiais com fator oficial validado entram no cálculo. Frações em
                 estruturação de catálogo (ouro, paládio, prata, terras raras e itens sem fator)
                 ficam estritamente <strong>fora do cálculo</strong> e estão explicadas abaixo. Nunca
                 somem silenciosamente.
@@ -386,7 +386,7 @@ export function SimuladorReferencialSection({ simulacao }: SimuladorReferencialS
                       className="py-4 text-center font-sans text-xs text-muted-foreground"
                     >
                       Nenhuma fração excluída — todos os materiais do lote possuem fator oficial
-                      homologado no catálogo DM-ORB-001.
+                      validado no catálogo DM-ORB-001.
                     </td>
                   </tr>
                 ) : (

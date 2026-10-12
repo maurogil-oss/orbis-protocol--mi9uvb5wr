@@ -429,7 +429,7 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
                           </span>
                         </div>
                         <div>
-                          <span className="text-[#94A3B8] block mb-1">CNPJ Homologado:</span>
+                          <span className="text-[#94A3B8] block mb-1">CNPJ Validado:</span>
                           <span className="font-mono text-[#D9B36C]">19.598.964/0001-01</span>
                         </div>
                         <div>
@@ -493,7 +493,7 @@ export const PlatformProofScreenshots: React.FC<PlatformProofScreenshotsProps> =
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#059669]/10 text-[#059669] text-xs font-bold border border-[#059669]/40">
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          49 Peças Homologadas
+                          49 Peças Validadas
                         </span>
                       </div>
                     </div>

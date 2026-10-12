@@ -795,10 +795,8 @@ export default function ModoDemonstracaoOrientadaPage() {
                   <div className="p-4 rounded-xl bg-[#16202B] border border-[rgba(244,247,250,0.08)] flex items-center justify-between gap-4">
                     <div className="text-xs text-[#93A3B5]">
                       O catálogo oficial do Orbis integra{' '}
-                      <strong className="text-[#F4F7FA]">
-                        15 Protocolos Setoriais homologados
-                      </strong>
-                      , cobrindo transporte, química, cimento, agropecuária, papel & celulose e
+                      <strong className="text-[#F4F7FA]">15 Protocolos Setoriais validados</strong>,
+                      cobrindo transporte, química, cimento, agropecuária, papel & celulose e
                       desmontagem veicular.
                     </div>
                     <Link
@@ -988,7 +986,7 @@ export default function ModoDemonstracaoOrientadaPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[rgba(244,247,250,0.08)]">
                         <div>
                           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#12B886]/15 text-[#12B886] text-[10px] font-bold uppercase tracking-wider mb-1">
-                            <span>Lote de Demonstração Homologado</span>
+                            <span>Lote de Demonstração Validado</span>
                             <span>•</span>
                             <span>CNPJ 76.123.456/0001-00</span>
                           </div>
@@ -1064,7 +1062,7 @@ export default function ModoDemonstracaoOrientadaPage() {
                             Status Probatório
                           </div>
                           <div className="text-xs font-bold text-[#D9B36C] mt-1">
-                            DETRAN Homologado
+                            DETRAN Confirmado
                           </div>
                           <div className="text-[10px] text-[#93A3B5]">CTF-IBAMA 6812490</div>
                         </div>

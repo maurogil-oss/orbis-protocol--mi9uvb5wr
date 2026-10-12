@@ -93,7 +93,14 @@ const App = () => (
             {/* Rodada 6 — Aliases legados com redirects que preservam query string */}
             <Route path="/demo" element={<RedirectPreserveQuery to="/demo/orientada" />} />
             <Route path="/demo/orientada" element={<ModoDemonstracaoOrientadaPage />} />
-            <Route path="/demo/fatores-comparativo" element={<FatoresComparativoDemoPage />} />
+            <Route
+              path="/demo/fatores-comparativo"
+              element={
+                <ProtectedRoute>
+                  <FatoresComparativoDemoPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/demo/laudo-integridade" element={<LaudoIntegridadeDemoPage />} />
             <Route path="/radar-regulatorio" element={<RadarRegulatorio />} />{' '}
             <Route path="/radar-semanal" element={<RadarSemanalPublicPage />} />
@@ -105,8 +112,22 @@ const App = () => (
             <Route path="/protocolo" element={<ProtocoloIndexPage />} />
             <Route path="/solucoes/bureau-acp" element={<BureauACP />} />
             <Route path="/bureau" element={<RedirectPreserveQuery to="/solucoes/bureau-acp" />} />
-            <Route path="/corporativo" element={<ModoCorporativoDemoPage />} />
-            <Route path="/corporativo/dcp" element={<DcpCorporativoDemoPage />} />
+            <Route
+              path="/corporativo"
+              element={
+                <ProtectedRoute>
+                  <ModoCorporativoDemoPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/corporativo/dcp"
+              element={
+                <ProtectedRoute>
+                  <DcpCorporativoDemoPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/dcp/:selo" element={<DcpProdutoPublicoPage />} />
             <Route path="/dcp" element={<DcpProdutoPublicoPage />} />
             <Route path="/solucoes/portal-corporativo" element={<PortalCorporativo />} />
@@ -147,7 +168,14 @@ const App = () => (
             <Route path="/reativacao/opt-out" element={<PreferenciasEmailPage />} />
             <Route path="/registro" element={<RegistroPage />} />
             <Route path="/cadastro" element={<RedirectPreserveQuery to="/registro" />} />
-            <Route path="/teste" element={<TestCatalog />} />
+            <Route
+              path="/teste"
+              element={
+                <ProtectedRoute>
+                  <TestCatalog />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/termos" element={<TermosUsoPage />} />
             <Route path="/termos-de-uso" element={<Navigate to="/termos" replace />} />

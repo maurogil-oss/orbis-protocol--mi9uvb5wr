@@ -114,7 +114,7 @@ export function SimuladorReferencialPrintModal({
               </h1>
               <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
                 Ferramenta interna de parametrização e prospecção com cliente. Cálculo transparente
-                sobre <strong>tCO₂e evitado com fator oficial homologado</strong> no catálogo
+                sobre <strong>tCO₂e evitado com fator oficial validado</strong> no catálogo
                 DM-ORB-001.
               </p>
             </div>
@@ -156,8 +156,7 @@ export function SimuladorReferencialPrintModal({
                   <span className="text-xs font-normal">tCO₂e</span>
                 </div>
                 <p className="text-[10px] text-emerald-800">
-                  {simulacao.totalCo2eElegivelKg.toLocaleString('pt-BR')} kgCO₂e com fator
-                  homologado
+                  {simulacao.totalCo2eElegivelKg.toLocaleString('pt-BR')} kgCO₂e com fator validado
                 </p>
               </div>
 
@@ -266,7 +265,7 @@ export function SimuladorReferencialPrintModal({
             </div>
 
             <p className="text-[11px] text-slate-600">
-              Apenas materiais com fator oficial homologado entram na simulação. Frações em
+              Apenas materiais com fator oficial validado entram na simulação. Frações em
               estruturação (ouro, paládio, prata, terras raras e materiais com fator zero) ficam
               estritamente <strong>fora do cálculo</strong> e estão listadas abaixo com
               justificativa metodológica — nenhuma fração é omitida silenciosamente.
@@ -287,7 +286,7 @@ export function SimuladorReferencialPrintModal({
                   <tr>
                     <td colSpan={5} className="py-4 text-center font-sans text-xs text-slate-500">
                       Nenhum material excluído — todos os itens do lote possuem fator oficial
-                      homologado.
+                      validado.
                     </td>
                   </tr>
                 ) : (
