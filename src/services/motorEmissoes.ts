@@ -17,6 +17,72 @@
 import { classificarItemCompradoNCM } from './classificacaoFisicaNCM'
 import { DocumentoFiscalProcessado } from './modelosFiscaisParser'
 import { FATORES_EMISSAO_CURADOS, GWP_AR6, FatorEmissaoCurado } from './fatoresEmissaoOficiais'
+import { FatorCanonicaItem } from './catalogoFatoresOficiais'
+
+export type TipoDocumentoEmissao = 'atestado' | 'relatorio_preliminar' | 'laudo_dmrv' | string
+
+export interface ValidacaoFatoresResultado {
+  valido: boolean
+  avisos: string[]
+  erros: string[]
+}
+
+export const MSG_ERRO_FATOR_REGIONAL_BR_BLOQUEADO =
+  'O fator regional BR (~10,00 indicativo) é restrito a relatórios preliminares e vedado para emissão de Atestado de Conformidade Orbis conforme DM-ORB-001 §7.'
+
+export const AVISO_FATOR_REGIONAL_BR_PRELIMINAR =
+  'ATENÇÃO: Este cálculo utiliza o fator regional indicativo BR (~10,00 kgCO₂e/kg). Documento com caráter estritamente preliminar, NÃO elegível à emissão de Atestado de Conformidade Orbis.'
+
+/**
+ * Validação rigorosa de elegibilidade de fatores conforme DM-ORB-001 §7.
+ * Se tipoDocumento = 'atestado' e algum fator tem bloqueadoAtestado=true, lança erro formal.
+ * Se tipoDocumento = 'relatorio_preliminar' e houver fator indicativo, gera aviso de não-elegibilidade.
+ */
+export function validarFatoresElegiveisAtestado(
+  fatores: Array<Partial<FatorCanonicaItem> | any>,
+  tipoDocumento: TipoDocumentoEmissao = 'atestado',
+): ValidacaoFatoresResultado {
+  const avisos: string[] = []
+  const erros: string[] = []
+
+  const tipoNorm = String(tipoDocumento).toLowerCase().trim()
+  const isAtestado = tipoNorm === 'atestado' || tipoNorm.includes('atestado')
+
+  for (const fator of fatores || []) {
+    if (!fator) continue
+
+    const isBloqueado = Boolean(
+      fator.bloqueadoAtestado ||
+      (fator.indicativo && isAtestado) ||
+      fator.id === 'mat-aluminio-regional-br' ||
+      fator.codigoMaterial === 'aluminio_regional_br',
+    )
+
+    if (isAtestado && isBloqueado) {
+      erros.push(MSG_ERRO_FATOR_REGIONAL_BR_BLOQUEADO)
+      throw new Error(MSG_ERRO_FATOR_REGIONAL_BR_BLOQUEADO)
+    }
+
+    const isIndicativo = Boolean(
+      fator.indicativo ||
+      fator.id === 'mat-aluminio-regional-br' ||
+      fator.codigoMaterial === 'aluminio_regional_br' ||
+      fator.bloqueadoAtestado,
+    )
+
+    if (isIndicativo && (tipoNorm === 'relatorio_preliminar' || !isAtestado)) {
+      if (!avisos.includes(AVISO_FATOR_REGIONAL_BR_PRELIMINAR)) {
+        avisos.push(AVISO_FATOR_REGIONAL_BR_PRELIMINAR)
+      }
+    }
+  }
+
+  return {
+    valido: erros.length === 0,
+    avisos,
+    erros,
+  }
+}
 
 export interface ItemEmissaoApurada {
   id: string
@@ -80,6 +146,9 @@ export interface InventarioEmissoesResultado {
   itensDetalhados: ItemEmissaoApurada[]
   declarouEnergiaRenovavelMercado: boolean
   versaoMetodologia: string
+  // Conformidade e elegibilidade documental (§7 DM-ORB-001)
+  tipoDocumento?: TipoDocumentoEmissao
+  avisosDocumento?: string[]
 }
 
 export interface OpcoesCalculoInventario {
@@ -96,6 +165,8 @@ export interface OpcoesCalculoInventario {
     quantidadeFisica?: number
     valorBrl: number
   }>
+  tipoDocumento?: TipoDocumentoEmissao // 'atestado' | 'relatorio_preliminar' | 'laudo_dmrv'
+  fatoresAplicados?: Array<Partial<FatorCanonicaItem> | any>
 }
 
 /**
@@ -107,6 +178,10 @@ export function calcularInventarioEmissoes(
 ): InventarioEmissoesResultado {
   const itensApurados: ItemEmissaoApurada[] = []
   const possuiIREC = Boolean(opcoes?.possuiIREC)
+
+  // Validação formal de elegibilidade de fatores no fluxo do motor (§7 DM-ORB-001)
+  const tipoDoc = opcoes?.tipoDocumento || 'laudo_dmrv'
+  const validacaoFatores = validarFatoresElegiveisAtestado(opcoes?.fatoresAplicados || [], tipoDoc)
 
   let escopo1Fossil = 0
   let escopo1Biogenico = 0
@@ -510,5 +585,7 @@ export function calcularInventarioEmissoes(
     itensDetalhados: itensApurados,
     declarouEnergiaRenovavelMercado: possuiIREC,
     versaoMetodologia: 'Orbis dMRV v3.2 • MCTI/SIN 2024 • IPCC AR6 • SBCE Lei 15.042/2024',
+    tipoDocumento: tipoDoc,
+    avisosDocumento: validacaoFatores.avisos,
   }
 }

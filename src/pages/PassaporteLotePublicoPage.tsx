@@ -1729,6 +1729,119 @@ export default function PassaporteLotePublicoPage() {
                         </p>
                       </div>
                     </div>
+
+                    {/* Tabela de Proveniência Versionada dos Fatores de Emissão (Snapshot Imutável) */}
+                    <div className="mt-4 pt-4 border-t border-[rgba(244,247,250,0.08)]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[11px] font-heading font-bold uppercase tracking-wider text-[#D9B36C]">
+                          Proveniência Versionada dos Fatores de Emissão (Snapshot Imutável)
+                        </span>
+                        <span className="text-[9px] font-mono text-[#93A3B5]">
+                          DM-ORB-001 §7 • Blindagem Opção B
+                        </span>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs min-w-[760px]">
+                          <thead className="border-b border-[rgba(244,247,250,0.1)] text-[#93A3B5] uppercase text-[10px]">
+                            <tr>
+                              <th className="py-2 px-2">Material / Categoria</th>
+                              <th className="py-2 px-2 text-right">FE Aplicado</th>
+                              <th className="py-2 px-2">Autor / Fonte Primária</th>
+                              <th className="py-2 px-2 text-center">Versão</th>
+                              <th className="py-2 px-2">Vigência</th>
+                              <th className="py-2 px-2">Fronteira</th>
+                              <th className="py-2 px-2 text-right">Incerteza Declarada</th>
+                              <th className="py-2 px-2 text-center">Situação Auditoria</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[rgba(244,247,250,0.06)] text-[#F4F7FA]">
+                            {(() => {
+                              const snapList: any[] =
+                                (lote as any)?.fatores_snapshot ||
+                                (lote as any)?.payload_bruto_json?.fatores_snapshot ||
+                                []
+
+                              const categorias = Array.from(
+                                new Set(pecas.map((p) => p.categoria_material || 'outros')),
+                              )
+
+                              return categorias.map((cat) => {
+                                const snapItem = snapList.find(
+                                  (s) =>
+                                    s.material === cat ||
+                                    s.codigoMaterial === cat ||
+                                    s.sku?.toLowerCase().includes(cat.toLowerCase()),
+                                )
+
+                                const fatorV2 =
+                                  FATORES_MATERIAIS_V2[cat as keyof typeof FATORES_MATERIAIS_V2] ||
+                                  FATORES_MATERIAIS_V2.outros
+
+                                const feValor =
+                                  typeof snapItem?.fator === 'number'
+                                    ? snapItem.fator
+                                    : fatorV2.fe_ref
+                                const autorFonte =
+                                  snapItem?.autor_fonte ||
+                                  snapItem?.fonte ||
+                                  fatorV2.autor_fonte ||
+                                  fatorV2.fonte
+                                const versaoDoc = snapItem?.versao || fatorV2.versao || 'v2025.2'
+                                const vigenciaDoc = snapItem?.vigencia || fatorV2.vigencia
+                                const fronteiraDoc =
+                                  snapItem?.fronteira ||
+                                  fatorV2.fronteira ||
+                                  'Berço ao Portão (Cradle-to-Gate)'
+                                const incertezaDoc =
+                                  snapItem?.incerteza_declarada ||
+                                  fatorV2.incerteza_declarada ||
+                                  `±${(fatorV2.u_fe * 100).toFixed(1)}%`
+                                const isPendente = Boolean(
+                                  snapItem?.pendente_verificacao ?? fatorV2.pendente_verificacao,
+                                )
+
+                                return (
+                                  <tr key={cat}>
+                                    <td className="py-2 px-2 font-medium capitalize">
+                                      {fatorV2.nome || cat}
+                                    </td>
+                                    <td className="py-2 px-2 text-right font-mono text-[#D9B36C] whitespace-nowrap">
+                                      {feValor.toFixed(2)} kgCO<sub>2</sub>e/kg
+                                    </td>
+                                    <td className="py-2 px-2 text-[11px] text-[#93A3B5]">
+                                      {autorFonte}
+                                    </td>
+                                    <td className="py-2 px-2 text-center font-mono text-[11px] text-[#D9B36C]">
+                                      {versaoDoc}
+                                    </td>
+                                    <td className="py-2 px-2 text-[11px] font-mono text-[#93A3B5] whitespace-nowrap">
+                                      {vigenciaDoc}
+                                    </td>
+                                    <td className="py-2 px-2 text-[11px] text-[#93A3B5]">
+                                      {fronteiraDoc}
+                                    </td>
+                                    <td className="py-2 px-2 text-right font-mono text-[11px] text-[#12B886] whitespace-nowrap">
+                                      {incertezaDoc}
+                                    </td>
+                                    <td className="py-2 px-2 text-center whitespace-nowrap">
+                                      {isPendente ? (
+                                        <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-500/20 text-amber-400 dark:text-[#D9B36C] border border-amber-500/40">
+                                          Pendente de verificação de fonte
+                                        </span>
+                                      ) : (
+                                        <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                                          Validado
+                                        </span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                )
+                              })
+                            })()}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Bloco 4: Prova Criptográfica SHA-256 Real do Lote + QR Code de Consulta Pública */}

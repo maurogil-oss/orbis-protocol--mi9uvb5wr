@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { processarDocumentoFiscal } from '../modelosFiscaisParser'
-import { calcularInventarioEmissoes } from '../motorEmissoes'
+import {
+  calcularInventarioEmissoes,
+  validarFatoresElegiveisAtestado,
+  MSG_ERRO_FATOR_REGIONAL_BR_BLOQUEADO,
+  AVISO_FATOR_REGIONAL_BR_PRELIMINAR,
+} from '../motorEmissoes'
+import { CATALOGO_FATORES_CO2E, MAPA_FATORES_CANONICOS } from '../catalogoFatoresOficiais'
 
 describe('Motor Pericial de Emissões & Modelos Fiscais', () => {
   it('deve processar XML de NF-e com combustível e calcular Escopo 1 fóssil e biogênico', () => {
@@ -130,5 +136,101 @@ describe('Motor Pericial de Emissões & Modelos Fiscais', () => {
 
     const inv = calcularInventarioEmissoes([doc])
     expect(inv.insettingTotalTCO2e).toBeGreaterThan(0.2) // ~0.245 tCO2e evitados
+  })
+
+  // Testes de elegibilidade documental conforme DM-ORB-001 §7 e imutabilidade de snapshot
+  describe('Validação de Elegibilidade de Fatores e Imutabilidade (DM-ORB-001 §7)', () => {
+    it('(1) atestado com fator indicativo → bloqueado com a mensagem exata', () => {
+      const fatorIndicativoBR = CATALOGO_FATORES_CO2E.find(
+        (f) => f.codigoMaterial === 'aluminio_regional_br',
+      )
+      expect(fatorIndicativoBR).toBeDefined()
+      expect(fatorIndicativoBR?.indicativo).toBe(true)
+      expect(fatorIndicativoBR?.bloqueadoAtestado).toBe(true)
+
+      expect(() => {
+        validarFatoresElegiveisAtestado([fatorIndicativoBR], 'atestado')
+      }).toThrowError(MSG_ERRO_FATOR_REGIONAL_BR_BLOQUEADO)
+
+      // Também bloqueia no fluxo do motor quando tipoDocumento = 'atestado'
+      expect(() => {
+        calcularInventarioEmissoes([], {
+          tipoDocumento: 'atestado',
+          fatoresAplicados: [fatorIndicativoBR],
+        })
+      }).toThrowError(MSG_ERRO_FATOR_REGIONAL_BR_BLOQUEADO)
+    })
+
+    it('(2) relatório preliminar com fator indicativo → permitido com aviso no resultado', () => {
+      const fatorIndicativoBR = CATALOGO_FATORES_CO2E.find(
+        (f) => f.codigoMaterial === 'aluminio_regional_br',
+      )
+
+      const validacao = validarFatoresElegiveisAtestado([fatorIndicativoBR], 'relatorio_preliminar')
+      expect(validacao.valido).toBe(true)
+      expect(validacao.avisos).toContain(AVISO_FATOR_REGIONAL_BR_PRELIMINAR)
+
+      const resultado = calcularInventarioEmissoes([], {
+        tipoDocumento: 'relatorio_preliminar',
+        fatoresAplicados: [fatorIndicativoBR],
+      })
+      expect(resultado.tipoDocumento).toBe('relatorio_preliminar')
+      expect(resultado.avisosDocumento).toContain(AVISO_FATOR_REGIONAL_BR_PRELIMINAR)
+    })
+
+    it('(3) atestado com fatores canônicos → permitido', () => {
+      const fatoresCanonicos = [
+        MAPA_FATORES_CANONICOS.aco,
+        MAPA_FATORES_CANONICOS.aluminio,
+        MAPA_FATORES_CANONICOS.cobre,
+        MAPA_FATORES_CANONICOS.polimeros,
+        MAPA_FATORES_CANONICOS.outros,
+      ]
+
+      const validacao = validarFatoresElegiveisAtestado(fatoresCanonicos, 'atestado')
+      expect(validacao.valido).toBe(true)
+      expect(validacao.erros.length).toBe(0)
+      expect(validacao.avisos.length).toBe(0)
+
+      const resultado = calcularInventarioEmissoes([], {
+        tipoDocumento: 'atestado',
+        fatoresAplicados: fatoresCanonicos,
+      })
+      expect(resultado.tipoDocumento).toBe('atestado')
+      expect(resultado.avisosDocumento?.length).toBe(0)
+    })
+
+    it('(4) snapshot do lote imune a atualização do catálogo (lote antigo exibe versão usada na emissão)', () => {
+      // Simulação de lote antigo com snapshot persistido em versão legada
+      const snapshotAntigo = [
+        {
+          sku: 'SKU-LEGACY-001',
+          material: 'aco',
+          fator: 2.85, // Fator histórico legado
+          fonte: 'worldsteel 2021 (versão anterior legada)',
+          vigencia: '2021-01-01/2023-12-31',
+          tier: 'T3',
+          autor_fonte: 'worldsteel Association Legacy',
+          versao: 'v2023.1',
+          data_publicacao: '2023-01-10',
+          fronteira: 'Berço ao Portão Legado',
+          incerteza_declarada: '±5,0%',
+          indicativo: false,
+          bloqueado_atestado: false,
+        },
+      ]
+
+      // Catálogo vivo atual possui fator 2.18 v2025.2
+      const fatorAtualCatalogo = MAPA_FATORES_CANONICOS.aco
+      expect(fatorAtualCatalogo?.valorFator).toBe(2.18)
+      expect(fatorAtualCatalogo?.versao).toBe('v2025.2')
+
+      // O snapshot do lote permanece rigorosamente idêntico ao gravado na época
+      const itemSnapshot = snapshotAntigo[0]
+      expect(itemSnapshot.fator).toBe(2.85)
+      expect(itemSnapshot.versao).toBe('v2023.1')
+      expect(itemSnapshot.autor_fonte).toBe('worldsteel Association Legacy')
+      expect(itemSnapshot.fator).not.toBe(fatorAtualCatalogo?.valorFator)
+    })
   })
 })

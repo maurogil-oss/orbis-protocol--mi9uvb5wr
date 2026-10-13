@@ -48,6 +48,14 @@ export interface FatorCanonicaItem {
   vigencia: string
   pendenteVerificacao: boolean
   permiteEpdSubstituicao: boolean
+  // Campos complementares de proveniência versionada e elegibilidade
+  autorFontePrimaria?: string
+  versao?: string
+  dataPublicacao?: string
+  fronteira?: string
+  incertezaDeclarada?: string
+  indicativo?: boolean
+  bloqueadoAtestado?: boolean
   // Campos complementares de retrocompatibilidade
   tipoImpacto?: 'emissao_evitada' | 'emissao_direta' | 'emissao_indireta' | 'credito_insetting'
   normaPadrao?: string
@@ -85,7 +93,7 @@ export const METADADOS_CATALOGO_FATORES: MetadadosCatalogoFatores = {
     'Snapshot Imutável: O fator de emissão ou descarbonização aplicado a cada peça, lote, nota fiscal ou laudo é estritamente congelado no corpo do documento no momento exato de sua emissão e incorporado ao hash SHA-256 canônico. Atualizações, calibrações ou novas versões deste catálogo têm vigência estritamente prospectiva e jamais retroagem para recalcular registros já assinados.',
   reservaPreLaudo:
     'Reserva Metodológica Pré-Laudo: Os fatores curados neste catálogo refletem o estado da arte de inventários de ciclo de vida (ACV) e balanços de massa oficiais. Para emissão de créditos transacionáveis de carbono em bolsas voluntárias ou cumprimento de metas compulsórias do SBCE (Lei 15.042/2024), os relatórios mantêm o status pré-laudo até homologação por Organismo de Verificação e Validação (VVB) credenciado.',
-  totalFatores: 17,
+  totalFatores: 18,
 }
 
 export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
@@ -103,6 +111,13 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     tier: 'T3',
     fonteOficial:
       'worldsteel Association, Sustainability Indicators Report 2025, indicador 1a GHG emissions intensity 2024 = 2,18 tCO₂e/t aço bruto, escopos 1+2+3 cat. 1',
+    autorFontePrimaria: 'worldsteel Association',
+    versao: 'v2025.2',
+    dataPublicacao: '2025-01-15',
+    fronteira: 'Berço ao Portão (Cradle-to-Gate / Escopos 1+2+3 Cat. 1)',
+    incertezaDeclarada: '±3,5%',
+    indicativo: false,
+    bloqueadoAtestado: false,
     anoReferencia: 2024,
     versaoRegistro: 'v2025.2',
     dataAtualizacao: '2025-01-15',
@@ -129,6 +144,13 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     tier: 'T3',
     fonteOficial:
       'International Aluminium Institute (IAI), 2024 Data Release, alumínio primário global cradle-to-gate, escopos 1+2+3',
+    autorFontePrimaria: 'International Aluminium Institute (IAI 2024)',
+    versao: 'v2025.2',
+    dataPublicacao: '2025-01-15',
+    fronteira: 'Berço ao Portão (Cradle-to-Gate / Escopos 1+2+3)',
+    incertezaDeclarada: '±4,0%',
+    indicativo: false,
+    bloqueadoAtestado: false,
     anoReferencia: 2024,
     versaoRegistro: 'v2025.2',
     dataAtualizacao: '2025-01-15',
@@ -143,6 +165,39 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
       'Fallback global citável e conservador aplicado como padrão do motor v2: 14,40 kgCO₂e/kg. Decomposição verificada IAI 2024 berço-ao-portão: eletricidade-indireta 8,5 + PFC-direto 0,9 + processo CO₂-direto 1,5 + materiais auxiliares-indireto 1,3 + energia térmica 1,6 + transporte 0,5 = 14,4 tCO₂e/t Al. URL: https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity-primary-aluminium/. CENÁRIO ALTERNATIVO REGIONAL BR (HIDRELÉTRICA): ~10,00 kgCO₂e/kg (IAI Aluminium Carbon Footprint FAQs, gráfico indicativo por fonte de eletricidade hidrelétrica ~10 tCO₂e/t; URL: https://international-aluminium.org/landing/aluminium-carbon-footprint-faqs/). O cenário regional é INDICATIVO, não-default do motor, ativável exclusivamente com evidência documental própria por lote/peça (EPD de fundição ou LCI regional), respeitando a hierarquia de fatores (§7 DM-ORB-001). Nota de decisão do titular: "Ancorado na produção global média IAI 2024 (fallback conservador); cenário regional hidrelétrico BR (~10,0, IAI FAQs indicativo) ativável somente com evidência documental própria por peça/lote."',
   },
   {
+    id: 'mat-aluminio-regional-br',
+    categoria: 'cdv_materiais',
+    codigoMaterial: 'aluminio_regional_br',
+    nomeMaterial: 'Alumínio Primário Cenário Regional BR (Matriz Hidrelétrica)',
+    descricao:
+      'Cenário alternativo regional brasileiro para alumínio primário baseado em matriz elétrica predominantemente hidrelétrica (~10 tCO₂e/t). Fator estritamente indicativo, vedado para emissão de Atestados de Conformidade Orbis.',
+    valorFator: 10.0,
+    unidade: 'kgCO₂e/kg',
+    incertezaRelativaUfe: 0.08, // 8.0%
+    tier: 'T2',
+    fonteOficial:
+      'IAI Aluminium Carbon Footprint FAQs (matriz hidrelétrica regional BR ~10,00 kgCO₂e/kg)',
+    autorFontePrimaria: 'International Aluminium Institute (IAI Carbon Footprint FAQs)',
+    versao: 'v2025.2-indicativo',
+    dataPublicacao: '2025-01-15',
+    fronteira: 'Berço ao Portão Regional BR (Cradle-to-Gate / Hidroelétrico)',
+    incertezaDeclarada: '±8,0%',
+    indicativo: true,
+    bloqueadoAtestado: true,
+    anoReferencia: 2024,
+    versaoRegistro: 'v2025.2',
+    dataAtualizacao: '2025-01-15',
+    vigencia: '2025-01-01/2026-12-31',
+    pendenteVerificacao: true,
+    permiteEpdSubstituicao: true,
+    tipoImpacto: 'emissao_evitada',
+    normaPadrao: 'IAI FAQs Regional • DM-ORB-001 §7 (Hierarquia de Fatores)',
+    tierIncerteza: 'Tier 2',
+    incertezaPct: 8.0,
+    detalheTecnico:
+      'Cenário regional BR indicativo ancorado nas FAQs do IAI para fundições abastecidas por matriz hidrelétrica nacional (~10,00 kgCO₂e/kg). Conforme DM-ORB-001 §7, este fator é estritamente indicativo, de uso restrito a relatórios preliminares exploratórios, sendo terminantemente BLOQUEADO para a emissão de Atestado de Conformidade Orbis.',
+  },
+  {
     id: 'mat-cobre',
     categoria: 'cdv_materiais',
     codigoMaterial: 'cobre',
@@ -155,6 +210,13 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     tier: 'T3',
     fonteOficial:
       'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
+    autorFontePrimaria: 'International Copper Association (ICA)',
+    versao: 'v2025.2',
+    dataPublicacao: '2025-01-15',
+    fronteira: 'Berço ao Portão Cobre Primário Refinado (Cradle-to-Gate)',
+    incertezaDeclarada: '±4,5%',
+    indicativo: false,
+    bloqueadoAtestado: false,
     anoReferencia: 2024,
     versaoRegistro: 'v2025.2',
     dataAtualizacao: '2025-01-15',
@@ -180,6 +242,13 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     incertezaRelativaUfe: 0.05, // 5.0%
     tier: 'T2',
     fonteOficial: 'PlasticsEurope Eco-profiles (PCR ISO 14025, declared unit 1 kg resina at gate)',
+    autorFontePrimaria: 'PlasticsEurope',
+    versao: 'v2025.2',
+    dataPublicacao: '2025-01-15',
+    fronteira: 'Berço ao Portão Resina Petroquímica (Cradle-to-Gate / at gate)',
+    incertezaDeclarada: '±5,0%',
+    indicativo: false,
+    bloqueadoAtestado: false,
     anoReferencia: 2023,
     versaoRegistro: 'v2025.2',
     dataAtualizacao: '2025-01-15',
@@ -205,6 +274,13 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     incertezaRelativaUfe: 0.08,
     tier: 'T2',
     fonteOficial: 'Catálogo Oficial Orbis / RCD CONAMA 307 / ACV Agregado Reciclado',
+    autorFontePrimaria: 'Orbis dMRV / CONAMA 307',
+    versao: 'v2025.2',
+    dataPublicacao: '2025-01-15',
+    fronteira: 'Berço ao Portão Britagem Secundária (Cradle-to-Gate)',
+    incertezaDeclarada: '±8,0%',
+    indicativo: false,
+    bloqueadoAtestado: false,
     anoReferencia: 2024,
     versaoRegistro: 'v2025.2',
     dataAtualizacao: '2025-01-15',
@@ -230,6 +306,13 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     incertezaRelativaUfe: 0.1, // 10.0%
     tier: 'T1',
     fonteOficial: 'Proxy Tier 1 Orbis dMRV (±10%) • [Pendente de verificação de fonte]',
+    autorFontePrimaria: 'Proxy Tier 1 Orbis dMRV',
+    versao: 'v2025.2',
+    dataPublicacao: '2026-10-08',
+    fronteira: 'Berço ao Portão Proxy Tier 1 (Cradle-to-Gate)',
+    incertezaDeclarada: '±10,0%',
+    indicativo: false,
+    bloqueadoAtestado: false,
     anoReferencia: 2024,
     versaoRegistro: 'v2025.2',
     dataAtualizacao: '2026-10-08',
@@ -256,6 +339,13 @@ export const CATALOGO_FATORES_CO2E: FatorCanonicaItem[] = [
     tier: 'T1',
     fonteOficial:
       'Orbis dMRV Baseline Conservadora (derivação interna conservadora — procedimento sob publicação)',
+    autorFontePrimaria: 'Orbis dMRV Baseline Conservadora',
+    versao: 'v2025.2',
+    dataPublicacao: '2025-01-15',
+    fronteira: 'Piso Protetivo Conservador (Cradle-to-Gate Ponderado)',
+    incertezaDeclarada: '±10,0%',
+    indicativo: false,
+    bloqueadoAtestado: false,
     anoReferencia: 2024,
     versaoRegistro: 'v2025.2',
     dataAtualizacao: '2025-01-15',

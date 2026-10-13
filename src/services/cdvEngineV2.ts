@@ -86,6 +86,13 @@ export interface FatorMaterialV2 {
   vigencia: string
   tier: 'T1' | 'T2' | 'T3' | 'T4'
   pendente_verificacao?: boolean
+  autor_fonte?: string
+  versao?: string
+  data_publicacao?: string
+  fronteira?: string
+  incerteza_declarada?: string
+  indicativo?: boolean
+  bloqueado_atestado?: boolean
 }
 
 const fAco = MAPA_FATORES_CANONICOS.aco
@@ -104,9 +111,16 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     fonte:
       fAco?.fonteOficial ||
       'worldsteel Association, Sustainability Indicators Report 2025, indicador 1a GHG emissions intensity 2024 = 2,18 tCO₂e/t aço bruto, escopos 1+2+3 cat. 1',
-    vigencia: fAco?.vigencia || '2025-01-01/2025-12-31',
+    vigencia: fAco?.vigencia || '2025-01-01/2026-12-31',
     tier: fAco?.tier || 'T3',
     pendente_verificacao: fAco?.pendenteVerificacao ?? false,
+    autor_fonte: fAco?.autorFontePrimaria || 'worldsteel Association',
+    versao: fAco?.versao || 'v2025.2',
+    data_publicacao: fAco?.dataPublicacao || '2025-01-15',
+    fronteira: fAco?.fronteira || 'Berço ao Portão (Cradle-to-Gate / Escopos 1+2+3 Cat. 1)',
+    incerteza_declarada: fAco?.incertezaDeclarada || '±3,5%',
+    indicativo: false,
+    bloqueado_atestado: false,
   },
   aluminio: {
     material: 'aluminio',
@@ -116,9 +130,16 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     fonte:
       fAlu?.fonteOficial ||
       'International Aluminium Institute (IAI), 2024 Data Release, alumínio primário global cradle-to-gate, escopos 1+2+3',
-    vigencia: fAlu?.vigencia || '2025-01-01/2025-12-31',
+    vigencia: fAlu?.vigencia || '2025-01-01/2026-12-31',
     tier: fAlu?.tier || 'T3',
     pendente_verificacao: fAlu?.pendenteVerificacao ?? false,
+    autor_fonte: fAlu?.autorFontePrimaria || 'International Aluminium Institute (IAI 2024)',
+    versao: fAlu?.versao || 'v2025.2',
+    data_publicacao: fAlu?.dataPublicacao || '2025-01-15',
+    fronteira: fAlu?.fronteira || 'Berço ao Portão (Cradle-to-Gate / Escopos 1+2+3)',
+    incerteza_declarada: fAlu?.incertezaDeclarada || '±4,0%',
+    indicativo: false,
+    bloqueado_atestado: false,
   },
   cobre: {
     material: 'cobre',
@@ -128,9 +149,16 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     fonte:
       fCob?.fonteOficial ||
       'International Copper Association (ICA), Estudo Global LCI/LCA cradle-to-gate de cobre primário refinado (média global)',
-    vigencia: fCob?.vigencia || '2025-01-01/2025-12-31',
+    vigencia: fCob?.vigencia || '2025-01-01/2026-12-31',
     tier: fCob?.tier || 'T3',
     pendente_verificacao: fCob?.pendenteVerificacao ?? false,
+    autor_fonte: fCob?.autorFontePrimaria || 'International Copper Association (ICA)',
+    versao: fCob?.versao || 'v2025.2',
+    data_publicacao: fCob?.dataPublicacao || '2025-01-15',
+    fronteira: fCob?.fronteira || 'Berço ao Portão Cobre Primário Refinado (Cradle-to-Gate)',
+    incerteza_declarada: fCob?.incertezaDeclarada || '±4,5%',
+    indicativo: false,
+    bloqueado_atestado: false,
   },
   polimeros: {
     material: 'polimeros',
@@ -139,10 +167,17 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     u_fe: fPol?.incertezaRelativaUfe ?? 0.05, // ±5.0%
     fonte:
       fPol?.fonteOficial ||
-      'PlasticsEurope Eco-profiles 2023 (PCR ISO 14025, declared unit 1 kg resina at gate, menor valor da faixa 1,91-5,70 correspondente a PP)',
-    vigencia: fPol?.vigencia || '2025-01-01/2025-12-31',
+      'PlasticsEurope Eco-profiles (PCR ISO 14025, declared unit 1 kg resina at gate)',
+    vigencia: fPol?.vigencia || '2025-01-01/2026-12-31',
     tier: fPol?.tier || 'T2',
     pendente_verificacao: fPol?.pendenteVerificacao ?? true,
+    autor_fonte: fPol?.autorFontePrimaria || 'PlasticsEurope',
+    versao: fPol?.versao || 'v2025.2',
+    data_publicacao: fPol?.dataPublicacao || '2025-01-15',
+    fronteira: fPol?.fronteira || 'Berço ao Portão Resina Petroquímica (Cradle-to-Gate / at gate)',
+    incerteza_declarada: fPol?.incertezaDeclarada || '±5,0%',
+    indicativo: false,
+    bloqueado_atestado: false,
   },
   la_de_rocha: {
     material: 'la_de_rocha',
@@ -154,6 +189,13 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     vigencia: fLdr?.vigencia || '2025-01-01/2026-12-31',
     tier: 'T1',
     pendente_verificacao: true,
+    autor_fonte: fLdr?.autorFontePrimaria || 'Proxy Tier 1 Orbis dMRV',
+    versao: fLdr?.versao || 'v2025.2',
+    data_publicacao: fLdr?.dataPublicacao || '2026-10-08',
+    fronteira: fLdr?.fronteira || 'Berço ao Portão Proxy Tier 1 (Cradle-to-Gate)',
+    incerteza_declarada: fLdr?.incertezaDeclarada || '±10,0%',
+    indicativo: false,
+    bloqueado_atestado: false,
   },
   outros: {
     material: 'outros',
@@ -163,9 +205,16 @@ export const FATORES_MATERIAIS_V2: Record<string, FatorMaterialV2> = {
     fonte:
       fOut?.fonteOficial ||
       'Orbis dMRV Baseline Conservadora (derivação interna conservadora — procedimento sob publicação formal)',
-    vigencia: fOut?.vigencia || '2025-01-01/2025-12-31',
+    vigencia: fOut?.vigencia || '2025-01-01/2026-12-31',
     tier: fOut?.tier || 'T1',
     pendente_verificacao: fOut?.pendenteVerificacao ?? false,
+    autor_fonte: fOut?.autorFontePrimaria || 'Orbis dMRV Baseline Conservadora',
+    versao: fOut?.versao || 'v2025.2',
+    data_publicacao: fOut?.dataPublicacao || '2025-01-15',
+    fronteira: fOut?.fronteira || 'Piso Protetivo Conservador (Cradle-to-Gate Ponderado)',
+    incerteza_declarada: fOut?.incertezaDeclarada || '±10,0%',
+    indicativo: false,
+    bloqueado_atestado: false,
   },
 }
 
@@ -465,6 +514,14 @@ export interface LoteCalculoResultadoV2 {
     fonte: string
     vigencia: string
     tier: string
+    material?: string
+    autor_fonte?: string
+    versao?: string
+    data_publicacao?: string
+    fronteira?: string
+    incerteza_declarada?: string
+    indicativo?: boolean
+    bloqueado_atestado?: boolean
   }>
   pecas_detalhes: PecaCalculoResultadoV2[]
   status_processamento?: 'processado' | 'conflito_reivindicacao'
@@ -715,6 +772,14 @@ export function calcularLoteOrbisV2(input: LoteInputV2): LoteCalculoResultadoV2 
       fonte: fatorObj.fonte,
       vigencia: fatorObj.vigencia,
       tier: tierPeca,
+      material: categoriaEscolhida,
+      autor_fonte: fatorObj.autor_fonte || fatorObj.fonte,
+      versao: fatorObj.versao || 'v2025.2',
+      data_publicacao: fatorObj.data_publicacao || '2025-01-15',
+      fronteira: fatorObj.fronteira || 'Berço ao Portão (Cradle-to-Gate)',
+      incerteza_declarada: fatorObj.incerteza_declarada || `±${(fatorObj.u_fe * 100).toFixed(1)}%`,
+      indicativo: fatorObj.indicativo ?? false,
+      bloqueado_atestado: fatorObj.bloqueado_atestado ?? false,
     })
   }
 
