@@ -98,4 +98,30 @@ describe('Página Pública /fatores - Métricas e Referências', () => {
     expect(textoCompleto).not.toContain('Certificado de Carbono')
     expect(textoCompleto).not.toContain('Certificação')
   })
+
+  it('deve exibir a seção de histórico de revisões com v1.0 e v1.1 e destacar a versão v1.1 como vigente', () => {
+    renderComponent()
+
+    // Seção de histórico de revisões
+    expect(screen.getByText('Histórico de Revisões da Norma DM-ORB-001')).not.toBeNull()
+
+    // Ambas as revisões devem estar presentes
+    expect(screen.getByText('Versão v1.1')).not.toBeNull()
+    expect(screen.getByText('Versão v1.0')).not.toBeNull()
+
+    // Versão vigente v1.1 destacada
+    expect(screen.getByText('Vigente')).not.toBeNull()
+    expect(screen.getByText('Histórica')).not.toBeNull()
+
+    // O que mudou e por quê na v1.1
+    expect(screen.getByText(/Incerteza declarada formal por fator de emissão/i)).not.toBeNull()
+    expect(
+      screen.getByText(/Bloqueio estrito de fatores indicativos para Atestado de Conformidade/i),
+    ).not.toBeNull()
+    expect(screen.getByText(/Metadados canônicos de proveniência versionada/i)).not.toBeNull()
+
+    // Menções e justificativas da v1.1
+    expect(screen.getByText(/Inclusão da margem de incerteza declarada explícita/i)).not.toBeNull()
+    expect(screen.getByText(/Garantir aderência estrita ao ISO 14064-1/i)).not.toBeNull()
+  })
 })

@@ -14,7 +14,12 @@ import {
   HelpCircle,
   FileText,
   Search,
+  History,
+  GitCommit,
+  Calendar,
+  AlertCircle,
 } from 'lucide-react'
+import { HISTORICO_REVISOES_DM_ORB_001 } from '@/data/historicoNormaDmOrb001'
 
 interface ReferenciaCanonica {
   id: string
@@ -386,6 +391,143 @@ export default function FatoresEmissaoPublicoPage() {
               <span>Acessar Diretriz DM-ORB-001</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
+          </div>
+        </div>
+
+        {/* HISTÓRICO DE REVISÕES DA NORMA DM-ORB-001 */}
+        <div
+          id="historico-revisoes"
+          className="p-8 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-5">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-[#12B886] text-xs font-mono font-bold uppercase tracking-wider">
+                <History className="w-4 h-4" />
+                <span>Governança Versionada • Registro de Revisões</span>
+              </div>
+              <h2 className="font-heading font-black text-2xl text-slate-900 dark:text-[#F8FAFC]">
+                Histórico de Revisões da Norma DM-ORB-001
+              </h2>
+              <p className="text-xs text-slate-600 dark:text-[#94A3B8]">
+                Controle cronológico de alterações metodológicas, justificativas técnicas periciais
+                e congelamento de vigência.
+              </p>
+            </div>
+            <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-slate-100 dark:bg-[#111827] text-slate-700 dark:text-slate-300 font-mono text-xs font-semibold border border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
+              <GitCommit className="w-3.5 h-3.5 text-emerald-600 dark:text-[#12B886]" />
+              {HISTORICO_REVISOES_DM_ORB_001.length} versões registradas
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            {HISTORICO_REVISOES_DM_ORB_001.map((rev) => {
+              const isVigente = rev.status === 'vigente'
+              return (
+                <div
+                  key={rev.versao}
+                  className={`p-6 sm:p-7 rounded-2xl border transition-all ${
+                    isVigente
+                      ? 'bg-emerald-50/40 dark:bg-[#059669]/5 border-emerald-500/50 shadow-md ring-1 ring-emerald-500/20'
+                      : 'bg-slate-50/60 dark:bg-[#0A1628]/60 border-slate-200 dark:border-slate-800'
+                  }`}
+                >
+                  {/* Cabeçalho da revisão */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span
+                        className={`px-3 py-1 rounded-md font-mono text-xs font-black tracking-wide ${
+                          isVigente
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        Versão {rev.versao}
+                      </span>
+                      {isVigente ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#059669]/20 text-emerald-800 dark:text-[#12B886] font-mono text-[11px] font-bold border border-emerald-300 dark:border-[#059669]/40 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Vigente
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-mono text-[11px] font-medium border border-slate-200 dark:border-slate-700">
+                          Histórica
+                        </span>
+                      )}
+                      <span className="text-xs font-mono text-slate-500 dark:text-[#94A3B8] flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        Vigência: {rev.dataVigencia}
+                      </span>
+                    </div>
+
+                    {rev.responsavelTecnico && (
+                      <span className="text-[11px] font-mono text-slate-500 dark:text-[#94A3B8]">
+                        {rev.responsavelTecnico}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Título e Resumo da revisão */}
+                  <div className="space-y-2 mb-5">
+                    <h3 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F8FAFC]">
+                      {rev.titulo}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+                      {rev.resumo}
+                    </p>
+                  </div>
+
+                  {/* Lista detalhada das alterações */}
+                  <div className="space-y-3 pt-3 border-t border-slate-200/70 dark:border-slate-800/80">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+                      Detalhamento das Alterações e Justificativas Periciais:
+                    </span>
+                    <div className="grid grid-cols-1 gap-3">
+                      {rev.alteracoes.map((alt, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-heading font-bold text-slate-900 dark:text-[#F8FAFC] flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              {alt.item}
+                            </span>
+                            {alt.referenciaSecao && (
+                              <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] font-mono text-[10px]">
+                                Ref. {alt.referenciaSecao}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+                            <strong className="text-slate-800 dark:text-slate-200">
+                              O que mudou:
+                            </strong>{' '}
+                            {alt.descricao}
+                          </p>
+                          <p className="text-emerald-800 dark:text-[#12B886] leading-relaxed">
+                            <strong className="text-emerald-900 dark:text-[#34D399]">
+                              Por quê:
+                            </strong>{' '}
+                            {alt.justificativa}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 flex items-start gap-3 text-xs text-slate-600 dark:text-[#94A3B8]">
+            <AlertCircle className="w-4 h-4 text-emerald-600 dark:text-[#12B886] shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong>Princípio de Imutabilidade Prospectiva:</strong> Alterações normativas possuem
+              efeito estritamente prospectivo a partir da data de vigência de cada revisão. Nenhum
+              laudo, lote dMRV ou Atestado de Conformidade Orbis emitido sob a vigência anterior tem
+              seus cálculos retroagidos ou recalculados, preservando a imutabilidade pericial
+              congelada no hash SHA-256 de origem.
+            </p>
           </div>
         </div>
 
