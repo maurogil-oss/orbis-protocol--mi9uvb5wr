@@ -51,6 +51,16 @@ import { BalancoMassaVeiculoSection } from '@/components/BalancoMassaVeiculoSect
 import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
 import { BadgeOrigemLote } from '@/components/BadgeOrigemLote'
 
+const obterCodigoPublicoLote = (loteObj: CdvLoteRecord | null, param?: string): string => {
+  const bruto =
+    loteObj?.cdv_codigo ||
+    loteObj?.veiculo_baixa_detran ||
+    (loteObj?.id && loteObj.id !== 'vrtclotew292022' ? loteObj.id : null) ||
+    param ||
+    'VERTEC-IW29-2022'
+  return bruto === 'vrtclotew292022' ? 'VERTEC-IW29-2022' : bruto
+}
+
 // Mapeamento amigável e ordenado das categorias de materiais / subsistemas veiculares
 const CATEGORIAS_CONFIG: Record<string, { label: string; cor: string }> = {
   aco: { label: 'Aço & Carroceria Estrutural', cor: '#93A3B5' },
@@ -84,13 +94,10 @@ export default function PassaporteLotePublicoPage() {
   const [lote, setLote] = useState<CdvLoteRecord | null>(null)
   const [pecas, setPecas] = useState<CdvPecaRecord[]>([])
 
-  const codigoCanonicoExibicao =
-    lote?.cdv_codigo || lote?.veiculo_baixa_detran || lote?.id || loteParam
+  const codigoCanonicoExibicao = obterCodigoPublicoLote(lote, loteParam)
 
   useSeo({
-    title: codigoCanonicoExibicao
-      ? `Passaporte Consolidado do Lote ${codigoCanonicoExibicao} — Orbis Protocol`
-      : 'Passaporte Digital Consolidado do Lote — Orbis Protocol',
+    title: `Passaporte Consolidado do Lote ${codigoCanonicoExibicao} — Orbis Protocol`,
     description:
       'Consulta pública e pericial do lote veicular dMRV, peças desmontadas rastreadas, emissões evitadas e conformidade CONTRAN 611/MOVER.',
   })
@@ -480,7 +487,8 @@ export default function PassaporteLotePublicoPage() {
           <div className="p-16 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] text-center no-print">
             <div className="w-8 h-8 border-2 border-[#12B886] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-sm text-[#93A3B5]">
-              Recuperando Passaporte Digital Consolidado do Lote ({loteParam})...
+              Recuperando Passaporte Digital Consolidado do Lote (
+              {obterCodigoPublicoLote(lote, loteParam)})...
             </p>
           </div>
         ) : !lote ? (
@@ -493,8 +501,10 @@ export default function PassaporteLotePublicoPage() {
             </h2>
             <p className="text-xs text-[#93A3B5] leading-relaxed max-w-md mx-auto">
               O lote ou baixa veicular{' '}
-              <span className="font-mono text-[#D9B36C] font-bold">{loteParam}</span> não foi
-              encontrado na base operacional de desmontagem veicular do Orbis Protocol.
+              <span className="font-mono text-[#D9B36C] font-bold">
+                {obterCodigoPublicoLote(lote, loteParam)}
+              </span>{' '}
+              não foi encontrado na base operacional de desmontagem veicular do Orbis Protocol.
             </p>
             <div className="pt-4">
               <Link
@@ -663,9 +673,7 @@ export default function PassaporteLotePublicoPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-[#93A3B5] tracking-wider">
-                        {lote.veiculo_baixa_detran || lote.veiculo_chassi
-                          ? 'Veículo Doador'
-                          : 'Origem do Lote / Material Industrial'}
+                        Veículo Doador
                       </span>
                       {lote.status === 'anulado' && (
                         <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40">
@@ -673,14 +681,25 @@ export default function PassaporteLotePublicoPage() {
                         </span>
                       )}
                     </div>
-                    <h1 className="font-heading font-black text-xl text-[#F4F7FA] mt-0.5">
-                      {lote.veiculo_marca_modelo}
-                    </h1>
+                    {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
+                      <h1 className="font-heading font-black text-xl text-[#F4F7FA] mt-0.5">
+                        {lote.veiculo_marca_modelo}
+                      </h1>
+                    ) : (
+                      <div className="mt-1">
+                        <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-lg bg-[#16202B] text-[#93A3B5] border border-[rgba(244,247,250,0.08)]">
+                          Lote industrial — sem veículo doador associado
+                        </span>
+                        <div className="text-sm font-semibold text-[#F4F7FA] mt-1.5">
+                          {lote.veiculo_marca_modelo}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#93A3B5] mt-1 font-mono">
                       <span>
                         LOTE:{' '}
                         <strong className="text-[#12B886]">
-                          {lote.cdv_codigo || lote.veiculo_baixa_detran || lote.id}
+                          {obterCodigoPublicoLote(lote, loteParam)}
                         </strong>
                       </span>
                       {lote.veiculo_baixa_detran && (
@@ -710,7 +729,7 @@ export default function PassaporteLotePublicoPage() {
                         lote.veiculo_baixa_detran === 'PR-BX-2026-991204'
                           ? '(DEMO)'
                           : ''}{' '}
-                        • {lote.cdv_codigo || '—'}
+                        • Centro de Desmonte de origem: {lote.cdv_codigo || '—'}
                       </p>
                     </div>
                   </div>
@@ -890,15 +909,17 @@ export default function PassaporteLotePublicoPage() {
                 <div className="p-4 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
                   <div className="flex items-center gap-2 text-[#D9B36C] font-bold text-xs uppercase">
                     <Car className="w-4 h-4" />
-                    <span>
-                      {lote.veiculo_baixa_detran || lote.veiculo_chassi
-                        ? 'Rastreabilidade DETRAN & Doação'
-                        : 'Origem do Lote / Material Industrial'}
-                    </span>
+                    <span>Identificação do Veículo Doador</span>
                   </div>
                   <div className="space-y-1.5 text-xs divide-y divide-[rgba(244,247,250,0.06)]">
                     {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
                       <>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-[#93A3B5]">Marca / Modelo:</span>
+                          <span className="font-semibold text-[#F4F7FA] text-right">
+                            {lote.veiculo_marca_modelo}
+                          </span>
+                        </div>
                         <div className="flex justify-between pt-1">
                           <span className="text-[#93A3B5]">Chassi Mascarado:</span>
                           <span className="font-mono font-bold text-[#12B886]">
@@ -937,15 +958,15 @@ export default function PassaporteLotePublicoPage() {
                     ) : (
                       <>
                         <div className="flex justify-between pt-1">
-                          <span className="text-[#93A3B5]">Produto / Descrição:</span>
-                          <span className="font-semibold text-[#F4F7FA] text-right">
-                            {lote.veiculo_marca_modelo}
+                          <span className="text-[#93A3B5]">Veículo Doador:</span>
+                          <span className="font-medium text-[#93A3B5] text-right italic">
+                            Lote industrial — sem veículo doador associado
                           </span>
                         </div>
                         <div className="flex justify-between pt-1">
                           <span className="text-[#93A3B5]">Código Canônico:</span>
                           <span className="font-mono font-bold text-[#12B886]">
-                            {lote.cdv_codigo || lote.id}
+                            {obterCodigoPublicoLote(lote, loteParam)}
                           </span>
                         </div>
                       </>
@@ -1285,8 +1306,9 @@ export default function PassaporteLotePublicoPage() {
                         REGISTRO VERIFICÁVEL DE CUSTÓDIA • dMRV ORBIS
                       </h1>
                       <p className="text-xs sm:text-sm text-[#93A3B5] mt-1 print:text-slate-600">
-                        Lote Veicular: {lote.veiculo_marca_modelo} • Desmontagem Sustentável &
-                        Economia Circular Veicular
+                        {lote.veiculo_baixa_detran || lote.veiculo_chassi
+                          ? `Lote Veicular: ${lote.veiculo_marca_modelo} • Desmontagem Sustentável & Economia Circular Veicular`
+                          : 'Lote industrial — sem veículo doador associado • Rastreabilidade de Materiais & Economia Circular'}
                       </p>
                     </div>
 
@@ -1295,7 +1317,7 @@ export default function PassaporteLotePublicoPage() {
                         CÓDIGO DO LOTE dMRV
                       </div>
                       <div className="font-mono text-sm sm:text-base font-bold text-[#12B886] print:text-emerald-700">
-                        {lote.cdv_codigo || lote.veiculo_baixa_detran || lote.id}
+                        {obterCodigoPublicoLote(lote, loteParam)}
                       </div>
                       <div className="text-[10px] text-[#93A3B5] mt-0.5 print:text-slate-500">
                         Emissão: {new Date(lote.created).toLocaleDateString('pt-BR')}
@@ -1309,25 +1331,19 @@ export default function PassaporteLotePublicoPage() {
                     <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3 print:bg-slate-50 print:border-slate-300 print-card">
                       <div className="flex items-center gap-2 text-[#D9B36C] font-bold text-xs uppercase print:text-amber-700">
                         <Car className="w-4 h-4" />
-                        <span>
-                          {lote.veiculo_baixa_detran || lote.veiculo_chassi
-                            ? 'Identificação do Veículo Doador'
-                            : 'Origem do Lote / Material Industrial'}
-                        </span>
+                        <span>Identificação do Veículo Doador</span>
                       </div>
                       <div className="space-y-1.5 text-xs">
-                        <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
-                          <span className="text-[#93A3B5] print:text-slate-600">
-                            {lote.veiculo_baixa_detran || lote.veiculo_chassi
-                              ? 'Marca / Modelo:'
-                              : 'Produto / Descrição:'}
-                          </span>
-                          <span className="font-bold text-[#F4F7FA] print:text-slate-900 text-right">
-                            {lote.veiculo_marca_modelo}
-                          </span>
-                        </div>
                         {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
                           <>
+                            <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                              <span className="text-[#93A3B5] print:text-slate-600">
+                                Marca / Modelo:
+                              </span>
+                              <span className="font-bold text-[#F4F7FA] print:text-slate-900 text-right">
+                                {lote.veiculo_marca_modelo}
+                              </span>
+                            </div>
                             <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                               <span className="text-[#93A3B5] print:text-slate-600">
                                 Chassi Mascarado:
@@ -1384,14 +1400,24 @@ export default function PassaporteLotePublicoPage() {
                             )}
                           </>
                         ) : (
-                          <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
-                            <span className="text-[#93A3B5] print:text-slate-600">
-                              Código Canônico dMRV:
-                            </span>
-                            <span className="font-mono font-bold text-[#12B886] print:text-emerald-700">
-                              {lote.cdv_codigo || lote.id}
-                            </span>
-                          </div>
+                          <>
+                            <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                              <span className="text-[#93A3B5] print:text-slate-600">
+                                Veículo Doador:
+                              </span>
+                              <span className="font-medium text-[#93A3B5] print:text-slate-600 text-right italic">
+                                Lote industrial — sem veículo doador associado
+                              </span>
+                            </div>
+                            <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                              <span className="text-[#93A3B5] print:text-slate-600">
+                                Código Canônico dMRV:
+                              </span>
+                              <span className="font-mono font-bold text-[#12B886] print:text-emerald-700">
+                                {obterCodigoPublicoLote(lote, loteParam)}
+                              </span>
+                            </div>
+                          </>
                         )}
                         <div className="flex justify-between">
                           <span className="text-[#93A3B5] print:text-slate-600">
@@ -1434,7 +1460,7 @@ export default function PassaporteLotePublicoPage() {
                         </div>
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                           <span className="text-[#93A3B5] print:text-slate-600">
-                            Credenciamento / Código:
+                            Centro de Desmonte de origem:
                           </span>
                           <span className="font-mono text-[#12B886] print:text-emerald-700 font-semibold">
                             {lote.cdv_codigo || '—'}
