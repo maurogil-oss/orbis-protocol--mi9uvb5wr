@@ -10,8 +10,20 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ShieldCheck, Lock, AlertCircle, CheckCircle2, Loader2, FileText } from 'lucide-react'
 import { assinarLaudoComCertificadoA1 } from '@/services/assinaturaLaudoService'
+import {
+  MAPA_DECLARACAO_INDEPENDENCIA,
+  type DeclaracaoIndependenciaTipo,
+} from '@/services/consentimentoPeritoService'
 
 interface ModalAssinaturaLaudoProps {
   aberto: boolean
@@ -37,6 +49,9 @@ export function ModalAssinaturaLaudo({
   onAssinaturaConcluida,
 }: ModalAssinaturaLaudoProps) {
   const [senha, setSenha] = useState('')
+  const [tipoDeclaracao, setTipoDeclaracao] =
+    useState<DeclaracaoIndependenciaTipo>('terceiro_independente')
+  const [observacaoDeclaracao, setObservacaoDeclaracao] = useState('')
   const [assinando, setAssinando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [sucesso, setSucesso] = useState<{
@@ -48,6 +63,8 @@ export function ModalAssinaturaLaudo({
   const handleFechar = () => {
     if (assinando) return
     setSenha('')
+    setTipoDeclaracao('terceiro_independente')
+    setObservacaoDeclaracao('')
     setErro(null)
     setSucesso(null)
     onClose()
@@ -56,6 +73,10 @@ export function ModalAssinaturaLaudo({
   const handleAssinar = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!relatorio) return
+    if (!tipoDeclaracao) {
+      setErro('A seleção da declaração de independência do perito é obrigatória.')
+      return
+    }
     if (!senha) {
       setErro('Informe a senha do certificado A1 custodiado para autorizar a assinatura.')
       return
@@ -68,6 +89,11 @@ export function ModalAssinaturaLaudo({
       const res = await assinarLaudoComCertificadoA1({
         relatorioId: relatorio.id,
         senhaPfx: senha,
+        declaracaoIndependencia: {
+          tipo: tipoDeclaracao,
+          observacao: observacaoDeclaracao.trim() || undefined,
+          data: new Date().toISOString(),
+        },
       })
 
       if (!res.sucesso) {
@@ -175,6 +201,62 @@ export function ModalAssinaturaLaudo({
                 <span>{erro}</span>
               </div>
             )}
+
+            {/* Declaração de Independência do Perito (Obrigatório) */}
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="declaracaoIndependenciaSelect"
+                className="text-xs text-[#93A3B5] flex items-center justify-between"
+              >
+                <span>Declaração de independência do perito</span>
+                <span className="text-[10px] text-[#12B886] font-semibold">Obrigatório</span>
+              </Label>
+              <Select
+                value={tipoDeclaracao}
+                onValueChange={(val) => setTipoDeclaracao(val as DeclaracaoIndependenciaTipo)}
+                disabled={assinando}
+              >
+                <SelectTrigger
+                  id="declaracaoIndependenciaSelect"
+                  className="bg-[#0A0E12] border-[rgba(244,247,250,0.15)] text-[#F4F7FA] text-xs h-auto py-2"
+                >
+                  <SelectValue placeholder="Selecione o vínculo pericial" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#111820] border-[rgba(244,247,250,0.15)] text-[#F4F7FA]">
+                  {(
+                    Object.keys(MAPA_DECLARACAO_INDEPENDENCIA) as DeclaracaoIndependenciaTipo[]
+                  ).map((chave) => (
+                    <SelectItem
+                      key={chave}
+                      value={chave}
+                      className="text-xs focus:bg-[#16202B] focus:text-[#F4F7FA] cursor-pointer"
+                    >
+                      {MAPA_DECLARACAO_INDEPENDENCIA[chave]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Observação opcional */}
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="obsDeclaracaoIndependencia"
+                className="text-xs text-[#93A3B5] flex items-center justify-between"
+              >
+                <span>Observação da declaração (opcional)</span>
+                <span className="text-[10px] text-[#93A3B5]">Texto livre</span>
+              </Label>
+              <Textarea
+                id="obsDeclaracaoIndependencia"
+                value={observacaoDeclaracao}
+                onChange={(e) => setObservacaoDeclaracao(e.target.value)}
+                placeholder="Ex.: prestador autônomo sem vínculo societário / credenciado sob ART..."
+                disabled={assinando}
+                rows={2}
+                className="bg-[#0A0E12] border-[rgba(244,247,250,0.15)] text-[#F4F7FA] text-xs resize-none"
+              />
+            </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="senhaA1Assinatura" className="text-xs text-[#93A3B5]">

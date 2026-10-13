@@ -74,7 +74,7 @@ const ETAPAS: EtapaGuia[] = [
     titulo: 'Rastreabilidade veicular (Centros de Desmonte / MOVER)',
     rotuloCurto: 'Rastreabilidade Desmonte',
     descricaoCurta:
-      'Lote demo Renault Clio (77 peças: CONTRAN 611 + MOVER) e selo DPP com SHA-256.',
+      'Lote demo Renault Clio (77 peças: CONTRAN 611 + MOVER) e selo DPP com SHA-256 — exemplo didático de demonstração.',
     icon: Car,
   },
   {

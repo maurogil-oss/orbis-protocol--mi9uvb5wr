@@ -50,6 +50,8 @@ import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
 import { BalancoMassaVeiculoSection } from '@/components/BalancoMassaVeiculoSection'
 import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
 import { BadgeOrigemLote } from '@/components/BadgeOrigemLote'
+import { resolverDeclaracaoIndependencia } from '@/services/consentimentoPeritoService'
+import { isLoteDemo, TEXTO_AVISO_LOTE_DEMO } from '@/services/loteDemoService'
 
 const obterCodigoPublicoLote = (loteObj: CdvLoteRecord | null, param?: string): string => {
   const bruto =
@@ -327,6 +329,23 @@ export default function PassaporteLotePublicoPage() {
     return resolverExibicaoPerito(rawPerito, consentimentoPerito)
   }, [pecas, consentimentoPerito])
 
+  // Declaração de Independência do Perito (lote legado sem o campo => "não registrada na emissão")
+  const textoDeclaracaoIndependencia = useMemo(() => {
+    const loteAny = lote as any
+    const decl = loteAny?.metadados_assinatura_json?.declaracao_independencia
+    if (decl?.tipo) {
+      return resolverDeclaracaoIndependencia(decl.tipo, decl.observacao)
+    }
+    const pecasComDecl = pecas.filter(
+      (p: any) => p?.metadados_assinatura_json?.declaracao_independencia,
+    )
+    if (pecasComDecl.length > 0) {
+      const primeiraDecl = pecasComDecl[0].metadados_assinatura_json.declaracao_independencia
+      return resolverDeclaracaoIndependencia(primeiraDecl.tipo, primeiraDecl.observacao)
+    }
+    return resolverDeclaracaoIndependencia(undefined)
+  }, [lote, pecas])
+
   const metricas = useMemo(() => {
     const totalPecas = pecas.length || lote?.total_pecas || 0
     const totalPeso = pecas.length
@@ -519,6 +538,17 @@ export default function PassaporteLotePublicoPage() {
         ) : (
           <>
             {/* AVISO DESTACADO DE LOTE ANULADO (Item 3) */}
+            {isLoteDemo(lote as any) && (
+              <div
+                data-testid="badge-lote-demo"
+                className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-[#D9B36C] text-xs font-bold uppercase tracking-wide text-center mb-6 shadow-sm"
+                title="Material didático / pedagógico"
+              >
+                {TEXTO_AVISO_LOTE_DEMO}
+              </div>
+            )}
+
+            {/* AVISO DESTACADO DE LOTE ANULADO (Item 3) */}
             {lote.status === 'anulado' && (
               <div className="p-5 sm:p-6 rounded-3xl bg-[#EF4444]/15 border-2 border-[#EF4444] text-xs text-[#EF4444] space-y-2 mb-6 shadow-xl animate-fade-in no-print">
                 <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-sm text-[#EF4444]">
@@ -680,6 +710,11 @@ export default function PassaporteLotePublicoPage() {
                           LOTE ANULADO
                         </span>
                       )}
+                      {isLoteDemo(lote as any) && (
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-500/20 text-amber-600 dark:text-[#D9B36C] border border-amber-500/40">
+                          Exemplo Didático
+                        </span>
+                      )}{' '}
                     </div>
                     {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
                       <h1 className="font-heading font-black text-xl text-[#F4F7FA] mt-0.5">
@@ -994,6 +1029,12 @@ export default function PassaporteLotePublicoPage() {
                           (Mascaramento LGPD por padrão — revelação sob consentimento formal)
                         </span>
                       )}
+                      <div className="flex justify-between items-baseline gap-2 mt-1 pt-1 border-t border-[rgba(244,247,250,0.04)]">
+                        <span className="text-[#93A3B5]">Declaração de independência:</span>
+                        <span className="text-[#F4F7FA] text-right font-medium text-[11px]">
+                          {textoDeclaracaoIndependencia}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1501,6 +1542,14 @@ export default function PassaporteLotePublicoPage() {
                               (Mascaramento LGPD por padrão — revelação sob consentimento formal)
                             </span>
                           )}
+                          <div className="flex justify-between items-baseline gap-2 mt-1 pt-1 border-t border-[rgba(244,247,250,0.04)] print:border-slate-200">
+                            <span className="text-[#93A3B5] print:text-slate-600">
+                              Declaração de independência:
+                            </span>
+                            <span className="text-[#F4F7FA] print:text-slate-900 text-right font-medium text-[11px]">
+                              {textoDeclaracaoIndependencia}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>

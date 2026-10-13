@@ -8,6 +8,7 @@
 
 import forge from 'node-forge'
 import pb from '@/lib/pocketbase/client'
+import type { DeclaracaoIndependencia } from './consentimentoPeritoService'
 
 export interface AssinaturaLaudoInput {
   relatorioId: string
@@ -15,6 +16,7 @@ export interface AssinaturaLaudoInput {
   arquivoPfxBase64?: string
   pdfOriginalBytes?: Uint8Array
   certificadoId?: string
+  declaracaoIndependencia?: DeclaracaoIndependencia
 }
 
 export interface AssinaturaLaudoResultado {
@@ -220,6 +222,7 @@ export async function assinarLaudoComCertificadoA1(
         titular_nome: titularNome,
         cnpj_titular: cnpjTitular,
         certificado_id: certificadoId,
+        declaracao_independencia: input.declaracaoIndependencia,
       }),
     })
 
@@ -228,6 +231,39 @@ export async function assinarLaudoComCertificadoA1(
       return {
         sucesso: false,
         erro: resJson.erro || resJson.message || 'Erro ao registrar assinatura no servidor.',
+      }
+    }
+
+    // 5.1 Atualizar metadados_assinatura_json no registro de relatorios_exportados se houver declaracao
+    if (input.declaracaoIndependencia) {
+      try {
+        const relatorioAtual = await pb.collection('relatorios_exportados').getOne(relatorioId)
+        let metadados: Record<string, any> = {}
+        const rawMeta = relatorioAtual.get('metadados_assinatura_json')
+        if (typeof rawMeta === 'string' && rawMeta.trim()) {
+          try {
+            metadados = JSON.parse(rawMeta)
+          } catch {
+            metadados = {}
+          }
+        } else if (rawMeta && typeof rawMeta === 'object') {
+          metadados = { ...rawMeta }
+        }
+
+        metadados.declaracao_independencia = {
+          tipo: input.declaracaoIndependencia.tipo,
+          observacao: input.declaracaoIndependencia.observacao || '',
+          data: input.declaracaoIndependencia.data || new Date().toISOString(),
+        }
+
+        await pb.collection('relatorios_exportados').update(relatorioId, {
+          metadados_assinatura_json: JSON.stringify(metadados),
+        })
+      } catch (metaErr) {
+        console.warn(
+          '[assinarLaudoComCertificadoA1] Falha ao atualizar metadados_assinatura_json:',
+          metaErr,
+        )
       }
     }
 

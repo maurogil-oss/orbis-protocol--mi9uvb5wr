@@ -12,6 +12,7 @@ import {
   type CdvPecaRecord,
 } from '@/services/cdvService'
 import { FATORES_MATERIAIS_V2 } from '@/services/cdvEngineV2'
+import { isLoteDemo, TEXTO_AVISO_LOTE_DEMO } from '@/services/loteDemoService'
 import {
   ShieldCheck,
   Search,
@@ -464,6 +465,15 @@ export default function Verificador() {
           >
             {loteEncontrado ? (
               <div className="p-8 rounded-2xl bg-gradient-to-b from-[#111820] to-[#16202B] border-2 border-[#12B886] shadow-emerald-glow space-y-6">
+                {isLoteDemo(loteEncontrado.lote as any) && (
+                  <div
+                    data-testid="badge-lote-demo"
+                    className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-[#D9B36C] text-xs font-bold uppercase tracking-wide text-center"
+                    title="Material didático / pedagógico"
+                  >
+                    {TEXTO_AVISO_LOTE_DEMO}
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[rgba(244,247,250,0.1)]">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#12B886] block mb-1">

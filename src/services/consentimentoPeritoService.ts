@@ -22,6 +22,50 @@ export interface ConsentimentoPeritoRecord {
   updated: string
 }
 
+export type DeclaracaoIndependenciaTipo =
+  | 'terceiro_independente'
+  | 'vinculo_empregaticio'
+  | 'outro_vinculo'
+
+export interface DeclaracaoIndependencia {
+  tipo: DeclaracaoIndependenciaTipo
+  observacao?: string
+  data?: string
+}
+
+export const MAPA_DECLARACAO_INDEPENDENCIA: Record<DeclaracaoIndependenciaTipo, string> = {
+  terceiro_independente: 'Terceiro independente sem vínculo societário ou empregatício',
+  vinculo_empregaticio: 'Vínculo empregatício com o cliente',
+  outro_vinculo: 'Outro vínculo declarado',
+}
+
+export const TEXTO_DECLARACAO_NAO_REGISTRADA = 'não registrada na emissão'
+
+/**
+ * Resolve o texto descritivo da declaração de independência do perito.
+ * Retorna "não registrada na emissão" para registros legados ou não informados.
+ */
+export function resolverDeclaracaoIndependencia(
+  valor?: DeclaracaoIndependenciaTipo | string | null,
+  observacao?: string | null,
+): string {
+  if (!valor || typeof valor !== 'string') {
+    return TEXTO_DECLARACAO_NAO_REGISTRADA
+  }
+  const limpo = valor.trim()
+  if (!limpo) {
+    return TEXTO_DECLARACAO_NAO_REGISTRADA
+  }
+  const base =
+    MAPA_DECLARACAO_INDEPENDENCIA[limpo as DeclaracaoIndependenciaTipo] ||
+    (limpo === 'não registrada na emissão' ? TEXTO_DECLARACAO_NAO_REGISTRADA : limpo)
+
+  if (observacao && observacao.trim() && base !== TEXTO_DECLARACAO_NAO_REGISTRADA) {
+    return `${base} (${observacao.trim()})`
+  }
+  return base
+}
+
 export interface DadosPeritoExibicao {
   /** Se os dados estão protegidos por mascaramento LGPD padrão */
   mascarado: boolean

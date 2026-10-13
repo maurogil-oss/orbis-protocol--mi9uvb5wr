@@ -39,6 +39,11 @@ import {
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
 import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
+import { isLoteDemo, TEXTO_AVISO_LOTE_DEMO } from '@/services/loteDemoService'
+import {
+  resolverDeclaracaoIndependencia,
+  type DeclaracaoIndependencia,
+} from '@/services/consentimentoPeritoService'
 
 import { useSeo } from '@/hooks/useSeo'
 
@@ -226,6 +231,16 @@ export default function PassaportePublicoPage() {
           </div>
         ) : (
           <div className="space-y-8 animate-fade-in">
+            {/* AVISO DE EXEMPLO DIDÁTICO (Lotes/PASSAPORTES DEMO) */}
+            {isLoteDemo(peca as any) && (
+              <div
+                data-testid="badge-lote-demo"
+                className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-[#D9B36C] text-xs font-bold uppercase tracking-wide text-center shadow-sm"
+              >
+                {TEXTO_AVISO_LOTE_DEMO}
+              </div>
+            )}
+
             {/* NAVEGAÇÃO DE ABAS: DPP DA PEÇA & DESTINAÇÃO FINAL */}
             <div className="flex border-b border-[rgba(244,247,250,0.12)] gap-2 pb-px">
               <button
@@ -469,6 +484,23 @@ export default function PassaportePublicoPage() {
                                   ) : (
                                     <span>ART / Laudo Pericial Vinculado (Mascarado LGPD)</span>
                                   )}
+                                </div>
+                                <div className="text-[11px] text-[#93A3B5] mt-1.5 pt-1.5 border-t border-[rgba(244,247,250,0.06)] flex justify-between items-baseline gap-2">
+                                  <span>Declaração de independência:</span>
+                                  <span className="text-[#F4F7FA] text-right font-medium">
+                                    {(() => {
+                                      const decl = (peca as any)?.metadados_assinatura_json
+                                        ?.declaracao_independencia as
+                                        | DeclaracaoIndependencia
+                                        | undefined
+                                      return decl?.tipo
+                                        ? resolverDeclaracaoIndependencia(
+                                            decl.tipo,
+                                            decl.observacao,
+                                          )
+                                        : resolverDeclaracaoIndependencia(undefined)
+                                    })()}
+                                  </span>
                                 </div>
                               </div>
                             )

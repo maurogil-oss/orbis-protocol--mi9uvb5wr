@@ -96,14 +96,14 @@ export default function CaseCDVerde() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.3)] transition-all text-xs"
               >
                 <FileCheck className="w-4 h-4 text-[#93A3B5]" />
-                <span>Lote Gol (DEMO)</span>
+                <span>Lote Gol (exemplo didático)</span>
               </Link>
               <Link
                 to="/passaporte-lote/12401050711"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] hover:bg-[#1F2C3A] hover:border-[rgba(244,247,250,0.3)] transition-all text-xs"
               >
                 <FileCheck className="w-4 h-4 text-[#93A3B5]" />
-                <span>Lote demo (Clio • 49 peças)</span>
+                <span>Lote exemplo didático (Clio • 49 peças)</span>
               </Link>
               <Link
                 to="/api-docs-cdv"

@@ -59,6 +59,7 @@ export interface DadosRelatorioDossie {
       uf: string
       numeroArtRrt?: string
       termoVersao?: string
+      declaracaoIndependencia?: string
     }
     // Avaliação de Adicionalidade MOVER (Camada Declaratória Anexa - Fora do Hash)
     avaliacaoAdicionalidade?: {
@@ -703,6 +704,15 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
 
   <!-- ==================== MARCA D'ÁGUA DEMONSTRAÇÃO SE APLICÁVEL ==================== -->
   ${isDemo ? '<div class="watermark-demo">DEMONSTRAÇÃO</div>' : ''}
+  ${
+    isDemo
+      ? `
+  <div style="position: fixed; top: 0; left: 0; right: 0; background: #FEF3C7; color: #92400E; border-bottom: 1px solid #F59E0B; text-align: center; font-size: 7.5pt; font-weight: 800; padding: 4px 10px; z-index: 99999; text-transform: uppercase; letter-spacing: 0.5px;">
+    EXEMPLO DIDÁTICO — material de demonstração, não constitui prova documental de operação real
+  </div>
+  `
+      : ''
+  }
 
   <!-- ==================== PÁGINA 1: CAPA INSTITUCIONAL ==================== -->
   <div class="capa-container page-break">
@@ -1207,7 +1217,8 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
         Responsável Técnico: <strong>${dados.identificacao.peritoCredenciado.nome}</strong> • 
         Registro: <strong>${dados.identificacao.peritoCredenciado.conselho}-${dados.identificacao.peritoCredenciado.uf} ${dados.identificacao.peritoCredenciado.registro}</strong><br/>
         ${dados.identificacao.peritoCredenciado.numeroArtRrt ? `Referência ART / RRT: <strong>${dados.identificacao.peritoCredenciado.numeroArtRrt}</strong> • ` : ''}
-        Termo de Credenciamento: <strong>${dados.identificacao.peritoCredenciado.termoVersao || 'v1.0-2025'}</strong>
+        Termo de Credenciamento: <strong>${dados.identificacao.peritoCredenciado.termoVersao || 'v1.0-2025'}</strong><br/>
+        Declaração de independência: <strong>${dados.identificacao.peritoCredenciado.declaracaoIndependencia || 'não registrada na emissão'}</strong>
       </div>
       `
           : ''
