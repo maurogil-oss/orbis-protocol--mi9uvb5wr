@@ -487,7 +487,7 @@ export default function Verificador() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                   <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                     <span className="text-[#93A3B5] block uppercase font-semibold">
-                      Centro Emissor:
+                      Centro de Desmonte de Origem:
                     </span>
                     <div className="font-bold text-[#F4F7FA] mt-0.5">
                       {loteEncontrado.lote.cdv_nome}
@@ -600,7 +600,7 @@ export default function Verificador() {
                       {loteEncontrado.hashLote}
                     </span>
                     <Link
-                      to={`/passaporte-lote/${loteEncontrado.lote.id}`}
+                      to={`/passaporte-lote/${loteEncontrado.lote.cdv_codigo || loteEncontrado.lote.id}`}
                       className="px-3 py-1.5 rounded-lg bg-[#16202B] text-xs font-semibold text-[#12B886] hover:bg-[#12B886]/20 transition-all flex items-center gap-1 shrink-0"
                     >
                       <span>Abrir Passaporte do Lote</span>

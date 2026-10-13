@@ -116,7 +116,7 @@ export default function LaudoIntegridadeDemoPage() {
                 Executando varredura pericial de integridade sobre todas as coleções dMRV...
               </p>
               <p className="text-xs text-muted-foreground">
-                Cruzando cdv_lotes, cdv_pecas, selos e emissoes_inventario.
+                Cruzando lotes dMRV, peças rastreadas, atestados e inventário de emissões.
               </p>
             </CardContent>
           </Card>

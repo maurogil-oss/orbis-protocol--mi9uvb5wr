@@ -76,13 +76,6 @@ import { useSeo } from '@/hooks/useSeo'
 
 export default function PassaporteLotePublicoPage() {
   const { lote: loteParam } = useParams<{ lote: string }>()
-  useSeo({
-    title: loteParam
-      ? `Passaporte Consolidado do Lote ${loteParam} — Orbis Protocol`
-      : 'Passaporte Digital Consolidado do Lote — Orbis Protocol',
-    description:
-      'Consulta pública e pericial do lote veicular dMRV, peças desmontadas rastreadas, emissões evitadas e conformidade CONTRAN 611/MOVER.',
-  })
   const [searchParams] = useSearchParams()
   const canalParam = searchParams.get('via') // 'qr' | 'embed' | 'web'
   const canalDetectado: 'qr' | 'web' | 'embed' =
@@ -90,6 +83,17 @@ export default function PassaporteLotePublicoPage() {
 
   const [lote, setLote] = useState<CdvLoteRecord | null>(null)
   const [pecas, setPecas] = useState<CdvPecaRecord[]>([])
+
+  const codigoCanonicoExibicao =
+    lote?.cdv_codigo || lote?.veiculo_baixa_detran || lote?.id || loteParam
+
+  useSeo({
+    title: codigoCanonicoExibicao
+      ? `Passaporte Consolidado do Lote ${codigoCanonicoExibicao} — Orbis Protocol`
+      : 'Passaporte Digital Consolidado do Lote — Orbis Protocol',
+    description:
+      'Consulta pública e pericial do lote veicular dMRV, peças desmontadas rastreadas, emissões evitadas e conformidade CONTRAN 611/MOVER.',
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [hashCalculado, setHashCalculado] = useState<string>('')
   const [copiedHash, setCopiedHash] = useState(false)
@@ -518,7 +522,7 @@ export default function PassaporteLotePublicoPage() {
                   </strong>{' '}
                   — motivo registrado na trilha de auditoria: &ldquo;
                   <span className="italic text-[#EF4444] font-semibold">
-                    {(lote as any).motivo_anulacao || 'Anulação homologada'}
+                    {(lote as any).motivo_anulacao || 'Anulação confirmada'}
                   </span>
                   &rdquo;.
                 </p>
@@ -606,7 +610,7 @@ export default function PassaporteLotePublicoPage() {
               </div>
             )}
 
-            {/* ABA LAUDO / CERTIFICADO CONSOLIDADO (MOSTRADA QUANDO ABA LAUDO OU NA IMPRESSÃO) */}
+            {/* ABA LAUDO / ATESTADO ORBIS CONSOLIDADO (MOSTRADA QUANDO ABA LAUDO OU NA IMPRESSÃO) */}
             <div className={abaLoteAtiva !== 'laudo' ? 'hidden print:block' : 'block'}>
               {/* ========================================================================= */}
               {/* VISUALIZAÇÃO MOBILE (breakpoint < md / < 768px): Cartão de resumo + fluxo vertical */}
@@ -659,7 +663,9 @@ export default function PassaporteLotePublicoPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-[#93A3B5] tracking-wider">
-                        Veículo Doador
+                        {lote.veiculo_baixa_detran || lote.veiculo_chassi
+                          ? 'Veículo Doador'
+                          : 'Origem do Lote / Material Industrial'}
                       </span>
                       {lote.status === 'anulado' && (
                         <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40">
@@ -672,22 +678,29 @@ export default function PassaporteLotePublicoPage() {
                     </h1>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#93A3B5] mt-1 font-mono">
                       <span>
-                        ID: <strong className="text-[#12B886]">{lote.id}</strong>
+                        LOTE:{' '}
+                        <strong className="text-[#12B886]">
+                          {lote.cdv_codigo || lote.veiculo_baixa_detran || lote.id}
+                        </strong>
                       </span>
-                      <span>•</span>
-                      <span>
-                        Baixa DETRAN:{' '}
-                        <strong className="text-[#F4F7FA]">{lote.veiculo_baixa_detran}</strong>
-                      </span>
+                      {lote.veiculo_baixa_detran && (
+                        <>
+                          <span>•</span>
+                          <span>
+                            Baixa DETRAN:{' '}
+                            <strong className="text-[#F4F7FA]">{lote.veiculo_baixa_detran}</strong>
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  {/* Empresa CDV Credenciada */}
+                  {/* Centro de Desmonte de Origem Validado */}
                   <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] flex items-start gap-2.5 text-xs">
                     <Building2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
-                        Centro de Desmontagem Validado
+                        Centro de Desmonte de Origem Validado
                       </span>
                       <p className="font-semibold text-[#F4F7FA] truncate">{lote.cdv_nome}</p>
                       <p className="text-[11px] font-mono text-[#D9B36C] font-semibold mt-0.5">
@@ -697,7 +710,7 @@ export default function PassaporteLotePublicoPage() {
                         lote.veiculo_baixa_detran === 'PR-BX-2026-991204'
                           ? '(DEMO)'
                           : ''}{' '}
-                        • {lote.cdv_codigo || 'DETRAN-CDV'}
+                        • {lote.cdv_codigo || '—'}
                       </p>
                     </div>
                   </div>
@@ -873,49 +886,74 @@ export default function PassaporteLotePublicoPage() {
                   </div>
                 </div>
 
-                {/* FLUXO VERTICAL MOBILE: DADOS DETALHADOS DO VEÍCULO & CDV */}
+                {/* FLUXO VERTICAL MOBILE: DADOS DE ORIGEM DO LOTE */}
                 <div className="p-4 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
                   <div className="flex items-center gap-2 text-[#D9B36C] font-bold text-xs uppercase">
                     <Car className="w-4 h-4" />
-                    <span>Rastreabilidade DETRAN & Doação</span>
+                    <span>
+                      {lote.veiculo_baixa_detran || lote.veiculo_chassi
+                        ? 'Rastreabilidade DETRAN & Doação'
+                        : 'Origem do Lote / Material Industrial'}
+                    </span>
                   </div>
                   <div className="space-y-1.5 text-xs divide-y divide-[rgba(244,247,250,0.06)]">
-                    <div className="flex justify-between pt-1">
-                      <span className="text-[#93A3B5]">Chassi Mascarado:</span>
-                      <span className="font-mono font-bold text-[#12B886]">
-                        {lote.veiculo_chassi || '9BWAA05U0DP***204'}
-                      </span>
-                    </div>
-                    {lote.veiculo_placa && (
-                      <div className="flex justify-between pt-1">
-                        <span className="text-[#93A3B5]">Placa Anterior:</span>
-                        <span className="font-mono text-[#F4F7FA]">{lote.veiculo_placa}</span>
-                      </div>
+                    {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
+                      <>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-[#93A3B5]">Chassi Mascarado:</span>
+                          <span className="font-mono font-bold text-[#12B886]">
+                            {lote.veiculo_chassi || '9BWAA05U0DP***204'}
+                          </span>
+                        </div>
+                        {lote.veiculo_placa && (
+                          <div className="flex justify-between pt-1">
+                            <span className="text-[#93A3B5]">Placa Anterior:</span>
+                            <span className="font-mono text-[#F4F7FA]">{lote.veiculo_placa}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between pt-1">
+                          <span className="text-[#93A3B5]">Baixa DETRAN:</span>
+                          <span className="font-mono font-bold text-[#12B886]">
+                            {lote.veiculo_baixa_detran}
+                          </span>
+                        </div>
+                        {lote.cartela_desmontagem && (
+                          <div className="flex justify-between pt-1">
+                            <span className="text-[#93A3B5]">Cartela Desmontagem:</span>
+                            <span className="font-mono text-[#D9B36C] font-bold">
+                              {lote.cartela_desmontagem}
+                            </span>
+                          </div>
+                        )}
+                        {lote.selo_detran_lote && (
+                          <div className="flex justify-between pt-1">
+                            <span className="text-[#93A3B5]">Selo DETRAN Lote:</span>
+                            <span className="font-mono text-[#12B886]">
+                              {lote.selo_detran_lote}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-[#93A3B5]">Produto / Descrição:</span>
+                          <span className="font-semibold text-[#F4F7FA] text-right">
+                            {lote.veiculo_marca_modelo}
+                          </span>
+                        </div>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-[#93A3B5]">Código Canônico:</span>
+                          <span className="font-mono font-bold text-[#12B886]">
+                            {lote.cdv_codigo || lote.id}
+                          </span>
+                        </div>
+                      </>
                     )}
                     <div className="flex justify-between pt-1">
-                      <span className="text-[#93A3B5]">Baixa DETRAN:</span>
-                      <span className="font-mono font-bold text-[#12B886]">
-                        {lote.veiculo_baixa_detran}
-                      </span>
-                    </div>
-                    {lote.cartela_desmontagem && (
-                      <div className="flex justify-between pt-1">
-                        <span className="text-[#93A3B5]">Cartela Desmontagem:</span>
-                        <span className="font-mono text-[#D9B36C] font-bold">
-                          {lote.cartela_desmontagem}
-                        </span>
-                      </div>
-                    )}
-                    {lote.selo_detran_lote && (
-                      <div className="flex justify-between pt-1">
-                        <span className="text-[#93A3B5]">Selo DETRAN Lote:</span>
-                        <span className="font-mono text-[#12B886]">{lote.selo_detran_lote}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between pt-1">
-                      <span className="text-[#93A3B5]">Seguradora / Origem:</span>
+                      <span className="text-[#93A3B5]">Origem / Destinador:</span>
                       <span className="text-[#F4F7FA] font-medium">
-                        {lote.veiculo_seguradora || 'Porto Seguro Cia de Seguros'}
+                        {lote.veiculo_seguradora || lote.cdv_nome || 'Origem Documentada'}
                       </span>
                     </div>
                     <div className="flex flex-col pt-1 border-t border-[rgba(244,247,250,0.06)]">
@@ -1254,10 +1292,10 @@ export default function PassaporteLotePublicoPage() {
 
                     <div className="text-right shrink-0">
                       <div className="text-[10px] uppercase font-bold text-[#93A3B5] print:text-slate-500">
-                        ID DO LOTE NA REDE
+                        CÓDIGO DO LOTE dMRV
                       </div>
                       <div className="font-mono text-sm sm:text-base font-bold text-[#12B886] print:text-emerald-700">
-                        {lote.id}
+                        {lote.cdv_codigo || lote.veiculo_baixa_detran || lote.id}
                       </div>
                       <div className="text-[10px] text-[#93A3B5] mt-0.5 print:text-slate-500">
                         Emissão: {new Date(lote.created).toLocaleDateString('pt-BR')}
@@ -1265,91 +1303,112 @@ export default function PassaporteLotePublicoPage() {
                     </div>
                   </div>
 
-                  {/* Bloco 1: Identificação Completa do Lote e Rastreabilidade DETRAN */}
+                  {/* Bloco 1: Identificação Completa do Lote e Rastreabilidade */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Dados do Veículo Doador */}
+                    {/* Dados de Origem do Lote */}
                     <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3 print:bg-slate-50 print:border-slate-300 print-card">
                       <div className="flex items-center gap-2 text-[#D9B36C] font-bold text-xs uppercase print:text-amber-700">
                         <Car className="w-4 h-4" />
-                        <span>Identificação do Veículo Doador</span>
+                        <span>
+                          {lote.veiculo_baixa_detran || lote.veiculo_chassi
+                            ? 'Identificação do Veículo Doador'
+                            : 'Origem do Lote / Material Industrial'}
+                        </span>
                       </div>
                       <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                           <span className="text-[#93A3B5] print:text-slate-600">
-                            Marca / Modelo:
+                            {lote.veiculo_baixa_detran || lote.veiculo_chassi
+                              ? 'Marca / Modelo:'
+                              : 'Produto / Descrição:'}
                           </span>
-                          <span className="font-bold text-[#F4F7FA] print:text-slate-900">
+                          <span className="font-bold text-[#F4F7FA] print:text-slate-900 text-right">
                             {lote.veiculo_marca_modelo}
                           </span>
                         </div>
-                        <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
-                          <span className="text-[#93A3B5] print:text-slate-600">
-                            Chassi Mascarado:
-                          </span>
-                          <span
-                            className="font-mono font-bold text-[#12B886] print:text-emerald-700"
-                            title="Padrão WMI/VDS + final mascarado"
-                          >
-                            {(() => {
-                              const ch = lote.veiculo_chassi || '9BWAA05U0DP***204'
-                              if (ch.includes('***')) return ch
-                              if (ch.length >= 11) return `${ch.slice(0, 8)}***${ch.slice(-3)}`
-                              return ch
-                            })()}
-                          </span>
-                        </div>
-                        {lote.veiculo_placa && (
+                        {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
+                          <>
+                            <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                              <span className="text-[#93A3B5] print:text-slate-600">
+                                Chassi Mascarado:
+                              </span>
+                              <span
+                                className="font-mono font-bold text-[#12B886] print:text-emerald-700"
+                                title="Padrão WMI/VDS + final mascarado"
+                              >
+                                {(() => {
+                                  const ch = lote.veiculo_chassi || '9BWAA05U0DP***204'
+                                  if (ch.includes('***')) return ch
+                                  if (ch.length >= 11) return `${ch.slice(0, 8)}***${ch.slice(-3)}`
+                                  return ch
+                                })()}
+                              </span>
+                            </div>
+                            {lote.veiculo_placa && (
+                              <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                                <span className="text-[#93A3B5] print:text-slate-600">
+                                  Placa Anterior:
+                                </span>
+                                <span className="font-mono text-[#F4F7FA] print:text-slate-900">
+                                  {lote.veiculo_placa}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                              <span className="text-[#93A3B5] print:text-slate-600">
+                                Baixa DETRAN:
+                              </span>
+                              <span className="font-mono font-bold text-[#12B886] print:text-emerald-700">
+                                {lote.veiculo_baixa_detran}
+                              </span>
+                            </div>
+                            {lote.cartela_desmontagem && (
+                              <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                                <span className="text-[#93A3B5] print:text-slate-600">
+                                  Cartela Desmontagem:
+                                </span>
+                                <span className="font-mono font-bold text-[#D9B36C] print:text-amber-800">
+                                  {lote.cartela_desmontagem}
+                                </span>
+                              </div>
+                            )}
+                            {lote.selo_detran_lote && (
+                              <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
+                                <span className="text-[#93A3B5] print:text-slate-600">
+                                  Selo DETRAN Lote:
+                                </span>
+                                <span className="font-mono text-[#12B886] print:text-emerald-700 font-semibold">
+                                  {lote.selo_detran_lote}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
                           <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                             <span className="text-[#93A3B5] print:text-slate-600">
-                              Placa Anterior:
+                              Código Canônico dMRV:
                             </span>
-                            <span className="font-mono text-[#F4F7FA] print:text-slate-900">
-                              {lote.veiculo_placa}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
-                          <span className="text-[#93A3B5] print:text-slate-600">Baixa DETRAN:</span>
-                          <span className="font-mono font-bold text-[#12B886] print:text-emerald-700">
-                            {lote.veiculo_baixa_detran}
-                          </span>
-                        </div>
-                        {lote.cartela_desmontagem && (
-                          <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
-                            <span className="text-[#93A3B5] print:text-slate-600">
-                              Cartela Desmontagem:
-                            </span>
-                            <span className="font-mono font-bold text-[#D9B36C] print:text-amber-800">
-                              {lote.cartela_desmontagem}
-                            </span>
-                          </div>
-                        )}
-                        {lote.selo_detran_lote && (
-                          <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
-                            <span className="text-[#93A3B5] print:text-slate-600">
-                              Selo DETRAN Lote:
-                            </span>
-                            <span className="font-mono text-[#12B886] print:text-emerald-700 font-semibold">
-                              {lote.selo_detran_lote}
+                            <span className="font-mono font-bold text-[#12B886] print:text-emerald-700">
+                              {lote.cdv_codigo || lote.id}
                             </span>
                           </div>
                         )}
                         <div className="flex justify-between">
                           <span className="text-[#93A3B5] print:text-slate-600">
-                            Seguradora / Origem:
+                            Origem / Destinador:
                           </span>
                           <span className="font-semibold text-[#F4F7FA] print:text-slate-900">
-                            {lote.veiculo_seguradora || 'Porto Seguro Cia de Seguros'}
+                            {lote.veiculo_seguradora || lote.cdv_nome || 'Origem Documentada'}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Dados do CDV Remetente Homologado */}
+                    {/* Dados do Centro de Desmonte de Origem Validado */}
                     <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3 print:bg-slate-50 print:border-slate-300 print-card">
                       <div className="flex items-center gap-2 text-[#12B886] font-bold text-xs uppercase print:text-emerald-700">
                         <Building2 className="w-4 h-4" />
-                        <span>Centro de Desmontagem Credenciado</span>
+                        <span>Centro de Desmonte de Origem Validado</span>
                       </div>
                       <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
@@ -1375,10 +1434,10 @@ export default function PassaporteLotePublicoPage() {
                         </div>
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                           <span className="text-[#93A3B5] print:text-slate-600">
-                            Credenciamento:
+                            Credenciamento / Código:
                           </span>
                           <span className="font-mono text-[#12B886] print:text-emerald-700 font-semibold">
-                            {lote.cdv_codigo || 'DETRAN-PR-CDV-0089'}
+                            {lote.cdv_codigo || '—'}
                           </span>
                         </div>
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
@@ -2294,9 +2353,10 @@ export default function PassaporteLotePublicoPage() {
                       </div>
                       <div className="text-[9px] text-[#93A3B5] print:text-slate-500 italic">
                         * Nota metodológica: PE = 0,00 quando não há faturas de energia elétrica ou
-                        combustíveis do CDV vinculadas ao lote (conservador). A incerteza individual
-                        (u_FE) varia por material (Aço ±3,5%, Alumínio ±4,0%, Cobre ±4,5%, Polímeros
-                        ±5,0%, Outros ±10,0%) e é combinada quadraticamente com u_massa (±1,0%).
+                        combustíveis do Centro de Desmonte de origem vinculados ao lote
+                        (conservador). A incerteza individual (u_FE) varia por material (Aço ±3,5%,
+                        Alumínio ±4,0%, Cobre ±4,5%, Polímeros ±5,0%, Outros ±10,0%) e é combinada
+                        quadraticamente com u_massa (±1,0%).
                       </div>
                     </div>
                   </div>

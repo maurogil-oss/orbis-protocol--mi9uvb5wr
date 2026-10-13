@@ -811,7 +811,7 @@ export function estruturarCamadasDestinacao(
   return {
     lote_id: loteInfo.id,
     veiculo_baixa_detran: loteInfo.baixa,
-    veiculo_modelo: loteInfo.modelo || 'Veículo em Lote CDV',
+    veiculo_modelo: loteInfo.modelo || 'Veículo em Lote dMRV',
     is_demo: Boolean(loteInfo.isDemo),
     gateDespoluicaoConforme,
     hashGeralDestinacao: c1Itens[0]?.hash_sha256
@@ -914,7 +914,7 @@ export async function consultarDestinacaoFinalLote(
   return estruturarCamadasDestinacao(DEMO_DESTINACAO_GOL, {
     id: param,
     baixa: param,
-    modelo: 'Veículo em Lote CDV',
+    modelo: 'Veículo em Lote dMRV',
     isDemo: true,
     massaCircularPecasKg,
   })

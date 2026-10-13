@@ -289,8 +289,8 @@ export default function PassaportePublicoPage() {
                       </strong>{' '}
                       — motivo registrado na trilha de auditoria: &ldquo;
                       <span className="italic text-[#EF4444] font-semibold">
-                        {(peca as any).motivo_anulacao || 'Anulação formal homologada'}
-                      </span>
+                        {(peca as any).motivo_anulacao || 'Anulação formal confirmada'}
+                      </span>{' '}
                       &rdquo;.
                     </p>
                     <p className="text-[11px] text-[#93A3B5]">
@@ -436,13 +436,13 @@ export default function PassaportePublicoPage() {
                         <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                           <div className="flex items-center gap-2 text-[#93A3B5] font-bold uppercase mb-2">
                             <Building2 className="w-4 h-4 text-[#12B886]" />
-                            <span>Centro Emissor / Desmanche</span>
+                            <span>Centro de Desmonte de Origem</span>
                           </div>
                           <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                            {peca.cdv_origem || 'DETRAN-PR-CDV-0089'}
+                            {peca.cdv_origem || '—'}
                           </div>
                           <div className="font-mono text-[11px] text-[#D9B36C]">
-                            CNPJ: {peca.cdv_cnpj || '76.123.456/0001-00'}
+                            CNPJ: {peca.cdv_cnpj || '—'}
                           </div>
                         </div>
 
@@ -582,8 +582,8 @@ export default function PassaportePublicoPage() {
                     <p className="text-[10px] text-[#93A3B5] leading-relaxed">
                       O hash canônico vincula de forma imutável o selo ({peca.selo_dpp}), o SKU (
                       {peca.sku_interno}), o peso aferido ({peca.peso_kg} kg), o CO₂e evitado (-
-                      {peca.co2e_evitado_kg} kg), a certidão de baixa DETRAN e o CNPJ do centro emissor
-                      validado.
+                      {peca.co2e_evitado_kg} kg), a certidão de baixa DETRAN e o CNPJ do Centro de
+                      Desmonte validado.
                     </p>
                   </div>
                 </div>
@@ -619,7 +619,7 @@ export default function PassaportePublicoPage() {
                     </h3>
                     <p className="text-xs text-[#93A3B5] leading-relaxed">
                       Instale o selo ecológico dinâmico no catálogo do Mercado Livre, Shopee ou loja
-                      própria do centro emissor:
+                      própria do Centro de Desmonte:
                     </p>
                     <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] font-mono text-[11px] text-[#12B886] truncate">
                       &lt;div class=&quot;orbis-eco-seal&quot; data-seal=&quot;{peca.selo_dpp}
