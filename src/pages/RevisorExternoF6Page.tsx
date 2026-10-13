@@ -416,7 +416,7 @@ export function RevisorExternoF6Page() {
                     </div>
                     <div>
                       <span className="text-slate-500 dark:text-[#94A3B8] block text-[10px] font-mono uppercase">
-                        Baixa DETRAN Homologada
+                        Baixa DETRAN Confirmada
                       </span>
                       <strong className="text-slate-900 dark:text-[#F8FAFC] font-mono">
                         PR-BX-2026-991204
@@ -698,7 +698,7 @@ export function RevisorExternoF6Page() {
                 <CardHeader>
                   <CardTitle className="text-lg font-heading font-bold text-slate-900 dark:text-[#F8FAFC] flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-emerald-600 dark:text-[#059669]" />
-                    Catálogo de Fatores Oficiais Homologados no Lote Gol (DM-ORB-001 Apêndice B)
+                    Catálogo de Fatores Oficiais Validados no Lote Gol (DM-ORB-001 Apêndice B)
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-600 dark:text-[#94A3B8]">
                     Citação formal completa das fontes internacionais e nacionais reconhecidas com
@@ -738,7 +738,7 @@ export function RevisorExternoF6Page() {
                           </td>
                           <td className="p-3">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                              Homologado worldsteel
+                              Validado worldsteel
                             </span>
                           </td>
                         </tr>
@@ -760,7 +760,7 @@ export function RevisorExternoF6Page() {
                           </td>
                           <td className="p-3">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                              Homologado ICA
+                              Validado ICA
                             </span>
                           </td>
                         </tr>
@@ -782,7 +782,7 @@ export function RevisorExternoF6Page() {
                           </td>
                           <td className="p-3">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                              Homologado PlasticsEurope
+                              Validado PlasticsEurope
                             </span>
                           </td>
                         </tr>

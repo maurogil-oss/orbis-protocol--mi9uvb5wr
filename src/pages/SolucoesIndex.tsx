@@ -417,7 +417,7 @@ export default function SolucoesIndex() {
                   Cadeias Produtivas
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Parâmetros técnicos, fatores oficiais e regras setoriais homologadas para
+                  Parâmetros técnicos, fatores oficiais e regras setoriais validadas para
                   siderurgia, cimento, químico, agro, papel e mais.
                 </p>
               </div>

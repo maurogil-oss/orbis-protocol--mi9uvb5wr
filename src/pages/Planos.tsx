@@ -93,9 +93,9 @@ export default function Planos() {
     {
       id: 'mover',
       servicoId: 'laudo_pericial',
-      nome: catalogo['laudo_pericial']?.nome || 'Plano MOVER & CDV',
+      nome: catalogo['laudo_pericial']?.nome || 'Plano MOVER & Centros de Desmonte',
       servicoTitulo: 'Laudo Pericial com ART / RRT',
-      indicacao: 'Exclusivo Segmento Automotivo & CDVs DETRAN',
+      indicacao: 'Exclusivo Segmento Automotivo & Centros de Desmonte DETRAN',
       valorNumerico: precoMover,
       valorFormatado: formatPreco(precoMover),
       periodo: 'por laudo validado',
@@ -384,7 +384,7 @@ export default function Planos() {
             >
               {p.popular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#12B886] text-[#0A0E12] text-[10px] font-bold uppercase tracking-wider">
-                  SETOR AUTOMOTIVO & CDVs
+                  SETOR AUTOMOTIVO & CENTROS DE DESMONTE
                 </span>
               )}
 

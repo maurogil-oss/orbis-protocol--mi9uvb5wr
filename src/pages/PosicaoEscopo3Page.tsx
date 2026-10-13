@@ -185,7 +185,7 @@ export default function PosicaoEscopo3Page() {
                 <tr className="bg-white dark:bg-[#0E1A2E] hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
                   <td className="p-3 sm:p-4 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Truck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <span>Fornecedor (CDV / Reciclador / Sucateiro)</span>
+                    <span>Fornecedor (Centro de Desmonte / Reciclador / Sucateiro)</span>
                   </td>
                   <td className="p-3 sm:p-4">
                     Executa o desmanche, triagem, pesagem, descontaminação e faturamento fiscal.

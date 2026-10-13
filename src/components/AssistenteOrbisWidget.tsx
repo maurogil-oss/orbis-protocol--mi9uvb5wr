@@ -203,7 +203,7 @@ export function AssistenteOrbisWidget() {
       lower.includes('peça')
     ) {
       return (
-        'O **Programa MOVER (Lei 14.902/2024)** contempla estritamente montadoras e Centrais de Desmontagem Veicular (CDVs credenciados). Ele permite créditos sobre descarbonização e reutilização de peças com rastreabilidade.\n\n' +
+        'O **Programa MOVER (Lei 14.902/2024)** contempla estritamente montadoras e Centrais de Desmontagem Veicular (Centros de Desmonte credenciados). Ele permite créditos sobre descarbonização e reutilização de peças com rastreabilidade.\n\n' +
         'Clique em "Continuar no diagnóstico completo" para validar o enquadramento do seu CNPJ.'
       )
     }

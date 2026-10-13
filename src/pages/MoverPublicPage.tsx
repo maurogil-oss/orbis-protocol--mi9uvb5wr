@@ -284,12 +284,13 @@ export function MoverPublicPage() {
               CADASTRO ABERTO PARA CENTRAIS DE DESMONTAGEM
             </span>
             <h3 className="font-heading font-extrabold text-xl sm:text-2xl text-[#F4F7FA]">
-              QUALIFIQUE SEU CDV COMO VPA (VOLUNTARY PROJECT ACTIVITY — ÁREA DE PROJETO VOLUNTÁRIO)
+              QUALIFIQUE SEU CENTRO DE DESMONTE COMO VPA (VOLUNTARY PROJECT ACTIVITY — ÁREA DE
+              PROJETO VOLUNTÁRIO)
             </h3>
             <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              CDVs credenciados pelo DETRAN com volume comprovado de VFV (Veículos em Fim de Vida) e
-              rastreabilidade fiscal podem se candidatar ao programa piloto. O Selo CDV Conforme é o
-              pré-requisito de conformidade do projeto.
+              Centros de Desmonte credenciados pelo DETRAN com volume comprovado de VFV (Veículos em
+              Fim de Vida) e rastreabilidade fiscal podem se candidatar ao programa piloto. O Selo
+              de Conformidade de Desmonte é o pré-requisito de conformidade do projeto.
             </p>
           </div>
 

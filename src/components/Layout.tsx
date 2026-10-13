@@ -174,7 +174,7 @@ export default function Layout() {
     },
     {
       persona: 'Para desmontagem veicular',
-      rotuloCurto: 'Centros de Desmontagem (CDVs) e cadeia automotiva',
+      rotuloCurto: 'Centros de Desmontagem (Centros de Desmonte) e cadeia automotiva',
       itens: [
         {
           title: 'Case CDVerde',

@@ -154,7 +154,7 @@ export const CADEIAS_PRODUTIVAS: CadeiaProdutiva[] = [
       'Fuga de fluidos refrigerantes',
       'Eficiência de caldeiras a vapor',
     ],
-    tipoLaudo: 'Certificado de Conformidade Sanitário-Ambiental',
+    tipoLaudo: 'Atestado de Conformidade Orbis (Sanitário-Ambiental)',
   },
   {
     id: 'papel',

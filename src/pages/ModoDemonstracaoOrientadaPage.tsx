@@ -71,8 +71,8 @@ const ETAPAS: EtapaGuia[] = [
   {
     id: 4,
     slug: 'rastreabilidade-cdv-mover',
-    titulo: 'Rastreabilidade veicular (CDV / MOVER)',
-    rotuloCurto: 'Rastreabilidade CDV',
+    titulo: 'Rastreabilidade veicular (Centros de Desmonte / MOVER)',
+    rotuloCurto: 'Rastreabilidade Desmonte',
     descricaoCurta:
       'Lote demo Renault Clio (77 peças: CONTRAN 611 + MOVER) e selo DPP com SHA-256.',
     icon: Car,
@@ -976,8 +976,8 @@ export default function ModoDemonstracaoOrientadaPage() {
 
                   <p className="text-sm text-[#93A3B5] leading-relaxed">
                     O Orbis Protocol é pioneiro na tokenização probatória de centros de desmontagem
-                    veicular (CDVs credenciados). Abaixo, você confere o lote real de demonstração
-                    rastreado sob a baixa DETRAN{' '}
+                    veicular (Centros de Desmonte credenciados). Abaixo, você confere o lote real de
+                    demonstração rastreado sob a baixa DETRAN{' '}
                     <strong className="text-[#12B886]">PR-BX-2026-1240105</strong>, com suas 77
                     peças divididas entre o rol oficial do CONTRAN 611 e os novos componentes do
                     Programa MOVER.

@@ -1378,7 +1378,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       'Eficiência energética térmica de caldeiras a vapor',
       'Percentual de embalagens recicladas na logística reversa',
     ],
-    tipoLaudo: 'Certificado de Conformidade Sanitário-Ambiental & Pegada de Produto',
+    tipoLaudo: 'Atestado de Conformidade Orbis & Pegada de Produto',
     enquadramentoLegal: [
       {
         norma: 'Decreto Federal nº 11.413/2023',

@@ -54,7 +54,7 @@ export const DADOS_PADRAO_DEMO_DCP: DadosDemonstracaoDcp = {
   hashSha256: '', // calculado dinamicamente
   razaoSocialEmissor: 'Orbis Mineração Urbana & Reciclagem Tecnológica S.A. (Demonstração)',
   cnpjEmissor: '33.000.168/0001-09',
-  entidadeGestora: 'Entidade Gestora Homologada de Logística Reversa (Decreto 11.413/2023)',
+  entidadeGestora: 'Entidade Gestora Validada de Logística Reversa (Decreto 11.413/2023)',
   periodo: 'Competência 2026 • Lote Piloto de Mineração Urbana',
 }
 
@@ -291,7 +291,7 @@ export function DcpDemonstracaoPublicaPage() {
               <div className="p-4 rounded-xl border border-[rgba(244,247,250,0.08)] bg-[#0A0E12] space-y-1.5">
                 <div className="flex items-center gap-2 text-[10px] font-semibold text-[#93A3B5] uppercase tracking-wider">
                   <FileCheck2 className="h-4 w-4 text-[#12B886]" />
-                  <span>Destino / Entidade Gestora Homologada</span>
+                  <span>Destino / Entidade Gestora Validada</span>
                 </div>
                 <div className="font-bold text-sm text-[#F4F7FA]">{dados.entidadeGestora}</div>
                 <div className="text-xs text-[#93A3B5] font-mono">{dados.periodo}</div>
@@ -473,7 +473,7 @@ export function DcpDemonstracaoPublicaPage() {
                   <span className="text-[#D9B36C] break-all">{dados.chaveNfe}</span>
                 </div>
                 <div className="text-[10px] text-[#93A3B5]">
-                  ✓ DANFE e MTR-SINIR vinculados ao lote • Fornecedor e transportador homologados
+                  ✓ DANFE e MTR-SINIR vinculados ao lote • Fornecedor e transportador validados
                 </div>
               </div>
             </div>

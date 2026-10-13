@@ -1343,8 +1343,8 @@ export default function Diagnostico() {
                         <option value="Empresário / Diretor / Gestor da Empresa">
                           Empresário / Diretor / Gestor da Empresa
                         </option>
-                        <option value="Centro de Desmontagem Veicular (CDV / Desmanche Credenciado)">
-                          Centro de Desmontagem Veicular (CDV)
+                        <option value="Centro de Desmonte Veicular (Desmanche Credenciado)">
+                          Centro de Desmonte Veicular (Desmanche Credenciado)
                         </option>
                         <option value="Contador / Auditor Independente (CRC)">
                           Contador / Auditor Independente (CRC)
@@ -1474,8 +1474,8 @@ export default function Diagnostico() {
                         sub: 'Condição Subsidiada PME • Bureau ACP + IBESG',
                       },
                       {
-                        val: 'Cadeia Automotiva / CDV (Programa MOVER)',
-                        title: 'Cadeia Automotiva / CDV (Programa MOVER)',
+                        val: 'Cadeia Automotiva / Desmonte (Programa MOVER)',
+                        title: 'Cadeia Automotiva / Desmonte (Programa MOVER)',
                         sub: 'Programa MOVER • Exclusivo para fabricantes e desmanches DETRAN credenciados',
                       },
                     ].map((opt) => (

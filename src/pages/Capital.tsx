@@ -374,7 +374,7 @@ export default function Capital() {
                   Frota Elétrica, Híbrida ou a Biometano / GNV
                 </option>
                 <option value="economia_circular">
-                  Economia Circular, Reciclagem & Reúso (CDVs / MOVER)
+                  Economia Circular, Reciclagem & Reúso (Centros de Desmonte / MOVER)
                 </option>
                 <option value="agro_verde">
                   Agro Sustentável, Bioinsumos & Recuperação de Pastagens

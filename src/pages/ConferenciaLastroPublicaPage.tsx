@@ -69,7 +69,7 @@ export function ConferenciaLastroPublicaPage() {
               razao_social_emissor:
                 'Orbis Mineração Urbana & Reciclagem Tecnológica S.A. (Demonstração)',
               entidade_gestora_alvo:
-                'Entidade Gestora Homologada de Logística Reversa (Decreto 11.413/2023)',
+                'Entidade Gestora Validada de Logística Reversa (Decreto 11.413/2023)',
               cnpj_entidade_gestora: '00.000.000/0001-00',
               periodo_inicio: '01/01/2026',
               periodo_fim: '31/12/2026',
@@ -279,7 +279,7 @@ export function ConferenciaLastroPublicaPage() {
               <div className="p-4 rounded-xl border border-border bg-card space-y-2">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <FileCheck2 className="h-4 w-4 text-primary" />
-                  <span>Entidade Gestora Homologada Destino</span>
+                  <span>Entidade Gestora Validada Destino</span>
                 </div>
                 <div className="font-bold text-base text-foreground">
                   {lastro.entidade_gestora_alvo}

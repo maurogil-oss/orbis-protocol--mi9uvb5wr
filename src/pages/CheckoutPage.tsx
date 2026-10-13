@@ -169,7 +169,7 @@ export default function CheckoutPage() {
     // CNPJs da base demonstrativa não geram cobrança real
     if (isCnpjDemonstracao(tomador.cpf_cnpj)) {
       setErro(
-        'Este CNPJ é um modelo demonstrativo pedagógico homologado. Diagnósticos e simulações com ele são isentos de cobrança e não geram faturamento.',
+        'Este CNPJ é um modelo demonstrativo pedagógico validado. Diagnósticos e simulações com ele são isentos de cobrança e não geram faturamento.',
       )
       setIsSubmitting(false)
       return

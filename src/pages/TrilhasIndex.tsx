@@ -231,7 +231,7 @@ export default function TrilhasIndex() {
               { slug: 'logistica', nome: 'Logística & Transporte' },
               { slug: 'textil', nome: 'Têxtil & Calçados' },
               { slug: 'mineracao', nome: 'Mineração & Terras Raras' },
-              { slug: 'automotiva', nome: 'Automotiva & CDVs' },
+              { slug: 'automotiva', nome: 'Automotiva & Centros de Desmonte' },
               { slug: 'alimentos', nome: 'Alimentos & Bebidas' },
               { slug: 'papel', nome: 'Papel & Celulose' },
               { slug: 'plasticos', nome: 'Plásticos & Reciclagem' },

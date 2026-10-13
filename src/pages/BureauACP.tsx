@@ -319,7 +319,7 @@ export function BureauACP() {
             }`}
           >
             <Leaf className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
-            <span>Programa Carbono • CDVs ({cdvsCarbono.length})</span>
+            <span>Programa Carbono • Centros de Desmonte ({cdvsCarbono.length})</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-700 dark:text-[#D9B36C] font-mono">
               MOVER GS 448
             </span>
@@ -339,7 +339,7 @@ export function BureauACP() {
           <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
             <div>
               <span className="text-xs text-slate-600 dark:text-[#94A3B8] block">
-                Fornecedores Homologados
+                Fornecedores Validados
               </span>
               <div className="font-heading font-black text-3xl text-emerald-600 dark:text-[#059669] mt-1">
                 {passaportes.length}
@@ -514,7 +514,8 @@ export function BureauACP() {
               <ShieldCheck className="w-5 h-5 flex-shrink-0 text-amber-600 dark:text-[#D9B36C] mt-0.5" />
               <div className="space-y-1">
                 <span className="font-bold uppercase tracking-wider block">
-                  Reserva Metodológica Pré-Laudo (Programa de Descarbonização de CDVs)
+                  Reserva Metodológica Pré-Laudo (Programa de Descarbonização de Centros de
+                  Desmonte)
                 </span>
                 <p className="text-slate-600 dark:text-[#94A3B8] leading-relaxed">
                   {RESERVA_METODOLOGICA_PRE_LAUDO}
@@ -526,12 +527,12 @@ export function BureauACP() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-[#F8FAFC]">
-                  MONITORAMENTO DE CDVs & ELEGIBILIDADE AO PROGRAMA CARBONO
+                  MONITORAMENTO DE CENTROS DE DESMONTE & ELEGIBILIDADE AO PROGRAMA CARBONO
                 </h2>
                 <p className="text-xs text-slate-600 dark:text-[#94A3B8] mt-1">
-                  Acompanhamento de Centrais de Desmontagem Veicular candidatas e homologadas. O
-                  Selo CDV Conforme atesta conformidade prévia com Lei 12.977/2014, credenciamento
-                  DETRAN e rastreabilidade fiscal de lotes.
+                  Acompanhamento de Centrais de Desmontagem Veicular candidatas e validadas. O Selo
+                  CDV Conforme atesta conformidade prévia com Lei 12.977/2014, credenciamento DETRAN
+                  e rastreabilidade fiscal de lotes.
                 </p>
               </div>
 

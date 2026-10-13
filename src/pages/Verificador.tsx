@@ -437,7 +437,7 @@ export default function Verificador() {
               </Link>
               {/* Atalho para o DPP Consolidado do Lote dMRV */}
               <Link
-                to="/passaporte-lote/h1dpr8wniludemh"
+                to="/passaporte-lote/PR-BX-2026-1240105"
                 className="px-3 py-1 rounded-lg bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-xs text-[#D9B36C] hover:bg-[#D9B36C]/20 transition-colors font-mono font-bold flex items-center gap-1"
               >
                 <span>DPP Consolidado do Lote (dMRV)</span>
@@ -737,7 +737,7 @@ export default function Verificador() {
                     Chancela dMRV Orbis Protocol • Registro Permanente em Banco de Dados
                   </span>
                   <span className="text-[11px] font-mono text-[#93A3B5]">
-                    ID: {seloEncontrado.id}
+                    Selo: {seloEncontrado.codigo_selo}
                   </span>
                 </div>
               </div>

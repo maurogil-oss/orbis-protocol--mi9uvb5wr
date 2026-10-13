@@ -284,8 +284,8 @@ export default function MateriaisCriticosPublicPage() {
               <CardContent className="text-xs text-[#93A3B5] space-y-2 leading-relaxed">
                 <p>
                   Blindagem jurídica contra autuações por receptação qualificada de cabos e sucata:
-                  conferência da NF-e de entrada, validação do fornecedor, transportador homologado
-                  e segregação física no pátio.
+                  conferência da NF-e de entrada, validação do fornecedor, transportador validado e
+                  segregação física no pátio.
                 </p>
                 <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] text-[11px] text-[#12B886]">
                   ✓ Dossiê pronto para envio perante fiscalizações fazendárias e ambientais.

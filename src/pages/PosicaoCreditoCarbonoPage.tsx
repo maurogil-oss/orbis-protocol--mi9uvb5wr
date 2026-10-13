@@ -31,7 +31,7 @@ const FAQS_CREDITO_CARBONO: FaqItem[] = [
   {
     pergunta: 'Posso vender o carbono evitado do meu lote?',
     resposta:
-      'Não como crédito de carbono autônomo. O fornecedor de material circular (reciclador, CDV ou transformador) não comercializa reduções de carbono como ativos separados. O valor gerado permanece incorporado no próprio produto físico: o fornecedor entrega uma peça ou matéria-prima circular com intensidade de carbono comprovadamente menor, permitindo ao comprador corporativo reduzir suas emissões de Escopo 3.',
+      'Não como crédito de carbono autônomo. O fornecedor de material circular (reciclador, centro de desmonte ou transformador) não comercializa reduções de carbono como ativos separados. O valor gerado permanece incorporado no próprio produto físico: o fornecedor entrega uma peça ou matéria-prima circular com intensidade de carbono comprovadamente menor, permitindo ao comprador corporativo reduzir suas emissões de Escopo 3.',
   },
   {
     pergunta: 'O que falta para virar crédito de carbono de mercado?',

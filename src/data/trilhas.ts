@@ -23,19 +23,19 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     lei: 'Lei 14.902/2024',
     titulo: 'Mobilidade Verde & Programa MOVER',
     subtitulo:
-      'Rastreabilidade de economia circular exclusiva para fabricantes de veículos, sistemistas de autopeças e Centrais de Desmontagem de Veículos (CDVs DETRAN).',
+      'Rastreabilidade de economia circular exclusiva para fabricantes de veículos, sistemistas de autopeças e Centrais de Desmontagem de Veículos (Centros de Desmonte DETRAN).',
     descricao:
-      'Capacitação preparatória e protocolo técnico para habilitação de incentivos fiscais de IPI — restritos por lei a fabricantes/importadores automotivos e CDVs credenciados — via rastreabilidade de peças reaproveitadas, Passaporte Digital de Produto (DPP) e governança técnica.',
+      'Capacitação preparatória e protocolo técnico para habilitação de incentivos fiscais de IPI — restritos por lei a fabricantes/importadores automotivos e Centros de Desmonte credenciados — via rastreabilidade de peças reaproveitadas, Passaporte Digital de Produto (DPP) e governança técnica.',
     publico:
-      'Centros de Desmontagem Veicular (CDV), Fabricantes/Montadoras de Veículos, Sistemistas de Autopeças e Recicladores Automotivos.',
+      'Centros de Desmonte DETRAN, Fabricantes/Montadoras de Veículos, Sistemistas de Autopeças e Recicladores Automotivos.',
     destaques: [
-      'Passaporte Digital de Produto (DPP) & Selo DETRAN para CDVs',
+      'Passaporte Digital de Produto (DPP) & Selo DETRAN para Centros de Desmonte',
       'Auditoria preparatória para créditos financeiros de IPI do MOVER',
       'Case Integrado CDVerde: peças de reúso automotivo e desmanche legal',
       'Rastreio de baterias elétricas automotivas (2ª Vida)',
     ],
     objetivos: [
-      'Implementar rotina de inventário com rastreio QR Code por peça desmontada em CDVs',
+      'Implementar rotina de inventário com rastreio QR Code por peça desmontada em Centros de Desmonte',
       'Validar o Passaporte Digital de Produto em conformidade com as diretrizes do MDIC',
       'Apurar índice de reciclabilidade e preparar comprovação para créditos de IPI do MOVER no segmento automotivo',
       'Gerar dossiê técnico de conformidade preparatória para auditoria da Receita Federal',
@@ -59,7 +59,7 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
       },
       {
         numero: 'Módulo 03',
-        titulo: 'Operação de CDVs Credenciados & Selo DETRAN',
+        titulo: 'Operação de Centros de Desmonte Credenciados & Selo DETRAN',
         duracao: '90 min',
         conteudo:
           'Fluxo operacional de recepção de Veículos em Fim de Vida (VFV), descontaminação de fluidos, catalogação de peças de reúso e integração com sistemas estaduais do DETRAN.',

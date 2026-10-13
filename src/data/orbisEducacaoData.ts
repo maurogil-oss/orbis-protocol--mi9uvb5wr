@@ -110,7 +110,7 @@ export const LICOES_ORBIS_EDUCACAO_MEI: LicaoEducacaoMEI[] = [
     descricao:
       'Política Nacional de Resíduos Sólidos (Lei 12.305/2010): responsabilidade compartilhada.',
     conteudoTexto:
-      'A Política Nacional de Resíduos Sólidos estabelece que fabricantes, importadores, distribuidores e comerciantes têm responsabilidade compartilhada pelo ciclo de vida dos produtos e embalagens. Quem comercializa embalagens plásticas, papelão, lâmpadas, pilhas ou óleo deve viabilizar pontos de entrega ou comprovar parcerias com cooperativas e operadores homologados. Cidades e grandes redes já exigem comprovantes rastreáveis de destinação ambientalmente adequada.',
+      'A Política Nacional de Resíduos Sólidos estabelece que fabricantes, importadores, distribuidores e comerciantes têm responsabilidade compartilhada pelo ciclo de vida dos produtos e embalagens. Quem comercializa embalagens plásticas, papelão, lâmpadas, pilhas ou óleo deve viabilizar pontos de entrega ou comprovar parcerias com cooperativas e operadores validados. Cidades e grandes redes já exigem comprovantes rastreáveis de destinação ambientalmente adequada.',
     dicaPratica:
       'Guarde os comprovantes de coleta do óleo vegetal ou de doação de recicláveis para cooperativas locais cadastradas.',
     perguntaQuiz: {

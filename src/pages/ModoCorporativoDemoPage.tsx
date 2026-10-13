@@ -606,7 +606,7 @@ export default function ModoCorporativoDemoPage() {
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-bold tracking-wider uppercase mb-2">
                     <FileCode className="w-3.5 h-3.5" />
-                    Etapa 2: Módulo Fiscal • 10 Modelos Fiscais Homologados
+                    Etapa 2: Módulo Fiscal • 10 Modelos Fiscais Validados
                   </div>
                   <h3 className="font-heading font-extrabold text-xl sm:text-2xl text-[#F4F7FA]">
                     Leitor de XML NF-e, CT-e, Faturas de Concessionárias & Insumos Verdes

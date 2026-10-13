@@ -36,7 +36,7 @@ export default function PortalCorporativo() {
     },
     {
       titulo: 'Motor Pericial dMRV de Escopos 1, 2 e 3 (MCTI, GHG Protocol & AR6)',
-      desc: 'Apuração automatizada com duplo reporte de Escopo 2 (Localização MCTI vs Mercado I-REC), insetting circular ISO 14067 para CDVs e enquadramento nos limiares de 10k e 25k tCO2e da Lei 15.042/2024 (SBCE).',
+      desc: 'Apuração automatizada com duplo reporte de Escopo 2 (Localização MCTI vs Mercado I-REC), insetting circular ISO 14067 para Centros de Desmonte e enquadramento nos limiares de 10k e 25k tCO2e da Lei 15.042/2024 (SBCE).',
     },
   ]
 
