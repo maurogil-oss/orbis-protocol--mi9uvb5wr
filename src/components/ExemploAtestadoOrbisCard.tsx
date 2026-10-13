@@ -86,7 +86,7 @@ export function ExemploAtestadoOrbisCard({ className = '' }: ExemploAtestadoOrbi
               Anotação de Responsabilidade
             </span>
             <span className="font-mono font-bold text-sm text-emerald-700 dark:text-[#059669] block">
-              ART/RRT Homologada
+              ART/RRT Validada
             </span>
             <span className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 block">
               Engenharia / Perícia técnica credenciada

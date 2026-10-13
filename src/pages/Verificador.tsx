@@ -435,12 +435,12 @@ export default function Verificador() {
                 <span>PR-SEAL-2026-991823 (DPP Peça)</span>
                 <span className="text-[10px]">↗</span>
               </Link>
-              {/* Atalho para o DPP Consolidado do Lote CDVerde */}
+              {/* Atalho para o DPP Consolidado do Lote dMRV */}
               <Link
                 to="/passaporte-lote/h1dpr8wniludemh"
                 className="px-3 py-1 rounded-lg bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-xs text-[#D9B36C] hover:bg-[#D9B36C]/20 transition-colors font-mono font-bold flex items-center gap-1"
               >
-                <span>DPP Consolidado do Lote (CDVerde)</span>
+                <span>DPP Consolidado do Lote (dMRV)</span>
                 <span className="text-[10px]">↗</span>
               </Link>
               {/* Atalho para o DPP Lote Demo Renault Clio (Cartela 12401050711) */}
@@ -487,7 +487,7 @@ export default function Verificador() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                   <div className="p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                     <span className="text-[#93A3B5] block uppercase font-semibold">
-                      CDV Origem:
+                      Centro Emissor:
                     </span>
                     <div className="font-bold text-[#F4F7FA] mt-0.5">
                       {loteEncontrado.lote.cdv_nome}

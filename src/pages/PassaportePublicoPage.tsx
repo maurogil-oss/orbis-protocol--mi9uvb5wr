@@ -402,7 +402,7 @@ export default function PassaportePublicoPage() {
                             <span>Veículo Doador Validado</span>
                           </div>
                           <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                            {peca.veiculo_marca_modelo || 'Veículo em Lote CDV'}
+                            {peca.veiculo_marca_modelo || 'Veículo em Lote dMRV'}
                           </div>
                           <div className="font-mono text-[11px] text-[#93A3B5] mb-2">
                             Chassi: {peca.veiculo_chassi_mascarado || '9BWAA***204'}
@@ -436,7 +436,7 @@ export default function PassaportePublicoPage() {
                         <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                           <div className="flex items-center gap-2 text-[#93A3B5] font-bold uppercase mb-2">
                             <Building2 className="w-4 h-4 text-[#12B886]" />
-                            <span>CDV Remetente / Desmanche</span>
+                            <span>Centro Emissor / Desmanche</span>
                           </div>
                           <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
                             {peca.cdv_origem || 'DETRAN-PR-CDV-0089'}
@@ -582,7 +582,7 @@ export default function PassaportePublicoPage() {
                     <p className="text-[10px] text-[#93A3B5] leading-relaxed">
                       O hash canônico vincula de forma imutável o selo ({peca.selo_dpp}), o SKU (
                       {peca.sku_interno}), o peso aferido ({peca.peso_kg} kg), o CO₂e evitado (-
-                      {peca.co2e_evitado_kg} kg), a certidão de baixa DETRAN e o CNPJ do CDV
+                      {peca.co2e_evitado_kg} kg), a certidão de baixa DETRAN e o CNPJ do centro emissor
                       validado.
                     </p>
                   </div>
@@ -619,7 +619,7 @@ export default function PassaportePublicoPage() {
                     </h3>
                     <p className="text-xs text-[#93A3B5] leading-relaxed">
                       Instale o selo ecológico dinâmico no catálogo do Mercado Livre, Shopee ou loja
-                      própria do CDV:
+                      própria do centro emissor:
                     </p>
                     <div className="p-2.5 rounded-lg bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] font-mono text-[11px] text-[#12B886] truncate">
                       &lt;div class=&quot;orbis-eco-seal&quot; data-seal=&quot;{peca.selo_dpp}
