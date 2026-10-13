@@ -374,4 +374,130 @@ describe('PassaporteLotePublicoPage - Anexo I u_FE e Incerteza Consolidada', () 
     // Valida badge "Pendente de verificação de fonte" renderizado para polímeros
     expect(desktopView?.textContent).toContain('Pendente de verificação de fonte')
   })
+
+  it('adapta a identificação de origem para lote industrial (sem veículo doador)', async () => {
+    const mockLoteIndustrial: cdvService.CdvLoteRecord = {
+      id: 'vrtclotew292022',
+      collectionId: 'col-lotes',
+      collectionName: 'cdv_lotes',
+      cdv_nome: 'Pan Urania / VERTEC Engenheiros Associados Ltda',
+      cdv_cnpj: '03.366.187/0001-30',
+      cdv_codigo: 'VERTEC-IW29-2022',
+      veiculo_marca_modelo: 'Painéis Sanduíche Termoisolantes PUR/PIR',
+      origem_envio: 'erp',
+      status: 'processado',
+      total_pecas: 2,
+      total_peso_kg: 500.0,
+      total_co2e_evitado_kg: 750.0,
+      veiculo_baixa_detran: '',
+      veiculo_chassi: '',
+      hash_sha256: 'sha256-hash-industrial-pan-urania',
+      created: '2026-03-01T12:00:00.000Z',
+      updated: '2026-03-01T12:00:00.000Z',
+    }
+
+    const mockPecasIndustrial: cdvService.CdvPecaRecord[] = [
+      {
+        id: 'p-ind-1',
+        collectionId: 'col-pecas',
+        collectionName: 'cdv_pecas',
+        lote: 'vrtclotew292022',
+        sku_interno: 'SKU-IND-1',
+        descricao_peca: 'Painel PUR 50mm',
+        categoria_material: 'aco',
+        material_declarado: 'Aço Galvanizado + PUR',
+        peso_kg: 250.0,
+        fator_co2e_kg: 2.18,
+        co2e_evitado_kg: 375.0,
+        hash_sha256: 'hash-p-ind-1',
+        status: 'ativo',
+        selo_dpp: 'ORB-IND-01',
+        created: '2026-03-01T10:00:00.000Z',
+        updated: '2026-03-01T10:00:00.000Z',
+      },
+    ]
+
+    vi.mocked(cdvService.consultarLoteConsolidado).mockResolvedValue({
+      lote: mockLoteIndustrial,
+      pecas: mockPecasIndustrial,
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/passaporte-lote/VERTEC-IW29-2022']}>
+        <Routes>
+          <Route path="/passaporte-lote/:lote" element={<PassaporteLotePublicoPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Painéis Sanduíche/i).length).toBeGreaterThan(0)
+    })
+
+    const desktopView = container.querySelector('.desktop-document-view')
+    expect(desktopView).not.toBeNull()
+
+    // 1) Desktop: cabeçalho adaptado para Identificação da Origem e Origem Validada
+    expect(desktopView?.textContent).toContain('Identificação da Origem')
+    expect(desktopView?.textContent).toContain('Origem Validada')
+    expect(desktopView?.textContent).toContain('Código Canônico dMRV:')
+
+    // Não deve conter os rótulos de desmonte / veículo doador no card
+    expect(desktopView?.textContent).not.toContain('Identificação do Veículo Doador')
+    expect(desktopView?.textContent).not.toContain('Centro de Desmonte de Origem Validado')
+    expect(desktopView?.textContent).not.toContain(
+      'Veículo Doador: Lote industrial — sem veículo doador associado',
+    )
+
+    // 2) Mobile: deve conter Identificação da Origem e Origem Validada
+    const mobileView = container.querySelector('.mobile-view-only')
+    expect(mobileView).not.toBeNull()
+    expect(mobileView?.textContent).toContain('Identificação da Origem')
+    expect(mobileView?.textContent).toContain('Origem Validada')
+    expect(mobileView?.textContent).not.toContain('• Centro de Desmonte de origem:')
+  })
+
+  it('mantém a terminologia automotiva para lote com veículo doador', async () => {
+    const mockLoteVeicular: cdvService.CdvLoteRecord = {
+      id: 'lote-gol-veicular',
+      collectionId: 'col-lotes',
+      collectionName: 'cdv_lotes',
+      cdv_nome: 'CDV Renascer Peças Usadas',
+      cdv_cnpj: '12.345.678/0001-90',
+      cdv_codigo: 'CDV-RENASCER-01',
+      veiculo_marca_modelo: 'VW Gol 1.0 Trendline 2018',
+      origem_envio: 'erp',
+      status: 'processado',
+      total_pecas: 1,
+      total_peso_kg: 20.0,
+      total_co2e_evitado_kg: 40.0,
+      veiculo_baixa_detran: 'PR-BX-2026-GOL-99',
+      veiculo_chassi: '9BWAA05U0DP123456',
+      hash_sha256: 'sha256-hash-gol-veicular',
+      created: '2026-03-01T12:00:00.000Z',
+      updated: '2026-03-01T12:00:00.000Z',
+    }
+
+    vi.mocked(cdvService.consultarLoteConsolidado).mockResolvedValue({
+      lote: mockLoteVeicular,
+      pecas: [],
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/passaporte-lote/PR-BX-2026-GOL-99']}>
+        <Routes>
+          <Route path="/passaporte-lote/:lote" element={<PassaporteLotePublicoPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/VW Gol 1.0/i).length).toBeGreaterThan(0)
+    })
+
+    const desktopView = container.querySelector('.desktop-document-view')
+    expect(desktopView?.textContent).toContain('Identificação do Veículo Doador')
+    expect(desktopView?.textContent).toContain('Centro de Desmonte de Origem Validado')
+    expect(desktopView?.textContent).toContain('Centro de Desmonte de origem:')
+  })
 })

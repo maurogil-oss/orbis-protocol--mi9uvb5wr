@@ -346,6 +346,8 @@ export default function PassaporteLotePublicoPage() {
     return resolverDeclaracaoIndependencia(undefined)
   }, [lote, pecas])
 
+  const temVeiculoDoador = Boolean(lote?.veiculo_baixa_detran || lote?.veiculo_chassi)
+
   const metricas = useMemo(() => {
     const totalPecas = pecas.length || lote?.total_pecas || 0
     const totalPeso = pecas.length
@@ -703,7 +705,7 @@ export default function PassaporteLotePublicoPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-[#93A3B5] tracking-wider">
-                        Veículo Doador
+                        {temVeiculoDoador ? 'Veículo Doador' : 'Identificação da Origem'}
                       </span>
                       {lote.status === 'anulado' && (
                         <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40">
@@ -716,7 +718,7 @@ export default function PassaporteLotePublicoPage() {
                         </span>
                       )}{' '}
                     </div>
-                    {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
+                    {temVeiculoDoador ? (
                       <h1 className="font-heading font-black text-xl text-[#F4F7FA] mt-0.5">
                         {lote.veiculo_marca_modelo}
                       </h1>
@@ -754,7 +756,9 @@ export default function PassaporteLotePublicoPage() {
                     <Building2 className="w-4 h-4 text-[#12B886] shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <span className="text-[10px] text-[#93A3B5] uppercase font-bold block">
-                        Centro de Desmonte de Origem Validado
+                        {temVeiculoDoador
+                          ? 'Centro de Desmonte de Origem Validado'
+                          : 'Origem Validada'}
                       </span>
                       <p className="font-semibold text-[#F4F7FA] truncate">{lote.cdv_nome}</p>
                       <p className="text-[11px] font-mono text-[#D9B36C] font-semibold mt-0.5">
@@ -764,7 +768,11 @@ export default function PassaporteLotePublicoPage() {
                         lote.veiculo_baixa_detran === 'PR-BX-2026-991204'
                           ? '(DEMO)'
                           : ''}{' '}
-                        • Centro de Desmonte de origem: {lote.cdv_codigo || '—'}
+                        •{' '}
+                        {temVeiculoDoador
+                          ? 'Centro de Desmonte de origem: ' + (lote.cdv_codigo || '—')
+                          : 'Código Canônico dMRV: ' +
+                            (lote.cdv_codigo || obterCodigoPublicoLote(lote, loteParam))}
                       </p>
                     </div>
                   </div>
@@ -943,11 +951,19 @@ export default function PassaporteLotePublicoPage() {
                 {/* FLUXO VERTICAL MOBILE: DADOS DE ORIGEM DO LOTE */}
                 <div className="p-4 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3">
                   <div className="flex items-center gap-2 text-[#D9B36C] font-bold text-xs uppercase">
-                    <Car className="w-4 h-4" />
-                    <span>Identificação do Veículo Doador</span>
+                    {temVeiculoDoador ? (
+                      <Car className="w-4 h-4" />
+                    ) : (
+                      <Building2 className="w-4 h-4" />
+                    )}
+                    <span>
+                      {temVeiculoDoador
+                        ? 'Identificação do Veículo Doador'
+                        : 'Identificação da Origem'}
+                    </span>
                   </div>
                   <div className="space-y-1.5 text-xs divide-y divide-[rgba(244,247,250,0.06)]">
-                    {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
+                    {temVeiculoDoador ? (
                       <>
                         <div className="flex justify-between pt-1">
                           <span className="text-[#93A3B5]">Marca / Modelo:</span>
@@ -992,12 +1008,6 @@ export default function PassaporteLotePublicoPage() {
                       </>
                     ) : (
                       <>
-                        <div className="flex justify-between pt-1">
-                          <span className="text-[#93A3B5]">Veículo Doador:</span>
-                          <span className="font-medium text-[#93A3B5] text-right italic">
-                            Lote industrial — sem veículo doador associado
-                          </span>
-                        </div>
                         <div className="flex justify-between pt-1">
                           <span className="text-[#93A3B5]">Código Canônico:</span>
                           <span className="font-mono font-bold text-[#12B886]">
@@ -1371,11 +1381,19 @@ export default function PassaporteLotePublicoPage() {
                     {/* Dados de Origem do Lote */}
                     <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3 print:bg-slate-50 print:border-slate-300 print-card">
                       <div className="flex items-center gap-2 text-[#D9B36C] font-bold text-xs uppercase print:text-amber-700">
-                        <Car className="w-4 h-4" />
-                        <span>Identificação do Veículo Doador</span>
+                        {temVeiculoDoador ? (
+                          <Car className="w-4 h-4" />
+                        ) : (
+                          <Building2 className="w-4 h-4" />
+                        )}
+                        <span>
+                          {temVeiculoDoador
+                            ? 'Identificação do Veículo Doador'
+                            : 'Identificação da Origem'}
+                        </span>
                       </div>
                       <div className="space-y-1.5 text-xs">
-                        {lote.veiculo_baixa_detran || lote.veiculo_chassi ? (
+                        {temVeiculoDoador ? (
                           <>
                             <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                               <span className="text-[#93A3B5] print:text-slate-600">
@@ -1444,14 +1462,6 @@ export default function PassaporteLotePublicoPage() {
                           <>
                             <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                               <span className="text-[#93A3B5] print:text-slate-600">
-                                Veículo Doador:
-                              </span>
-                              <span className="font-medium text-[#93A3B5] print:text-slate-600 text-right italic">
-                                Lote industrial — sem veículo doador associado
-                              </span>
-                            </div>
-                            <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
-                              <span className="text-[#93A3B5] print:text-slate-600">
                                 Código Canônico dMRV:
                               </span>
                               <span className="font-mono font-bold text-[#12B886] print:text-emerald-700">
@@ -1475,7 +1485,11 @@ export default function PassaporteLotePublicoPage() {
                     <div className="p-5 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-3 print:bg-slate-50 print:border-slate-300 print-card">
                       <div className="flex items-center gap-2 text-[#12B886] font-bold text-xs uppercase print:text-emerald-700">
                         <Building2 className="w-4 h-4" />
-                        <span>Centro de Desmonte de Origem Validado</span>
+                        <span>
+                          {temVeiculoDoador
+                            ? 'Centro de Desmonte de Origem Validado'
+                            : 'Origem Validada'}
+                        </span>
                       </div>
                       <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
@@ -1501,10 +1515,12 @@ export default function PassaporteLotePublicoPage() {
                         </div>
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
                           <span className="text-[#93A3B5] print:text-slate-600">
-                            Centro de Desmonte de origem:
+                            {temVeiculoDoador
+                              ? 'Centro de Desmonte de origem:'
+                              : 'Código Canônico dMRV:'}
                           </span>
                           <span className="font-mono text-[#12B886] print:text-emerald-700 font-semibold">
-                            {lote.cdv_codigo || '—'}
+                            {lote.cdv_codigo || obterCodigoPublicoLote(lote, loteParam)}
                           </span>
                         </div>
                         <div className="flex justify-between border-b border-[rgba(244,247,250,0.06)] pb-1 print:border-slate-200">
