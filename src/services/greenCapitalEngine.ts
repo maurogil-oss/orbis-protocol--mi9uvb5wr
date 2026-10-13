@@ -1,9 +1,9 @@
 /**
- * GREEN CAPITAL ENGINE — MOTOR DE CRÉDITO VERDE & SPREAD BONIFICADO
+ * GREEN CAPITAL ENGINE — MOTOR DE CRÉDITO VERDE & PREPARAÇÃO PARA EXIGÊNCIAS ESG
  * Orbis Protocol • Conexão dMRV para Financiamento Sustentável
  *
- * Compara taxas de mercado padrão x taxas bonificadas por comprovação de descarbonização
- * (inventário GHG Protocol, laudo com ART, selo Orbis dMRV).
+ * Compara taxas referenciais de mercado x condições de linhas verdes mediante
+ * preparação documental para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição.
  *
  * Base regulatória e bancária:
  * - Resolução BCB 4.945/2021 (Políticas de Responsabilidade Social, Ambiental e Climática - PRSAC)
@@ -77,7 +77,7 @@ export const LINHAS_CREDITO_VERDE: LinhaCreditoVerde[] = [
       'Projetos de infraestrutura urbana, mobilidade de baixa emissão e circularidade',
     ],
     descricao:
-      'Linha federal com os menores spreads do país para mitigação de mudanças climáticas. Exige rigorosa comprovação dMRV de redução de emissões.',
+      'Linha federal de referência para mitigação de mudanças climáticas com preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição.',
   },
   {
     id: 'brde_dossie_verde',
@@ -106,7 +106,7 @@ export const LINHAS_CREDITO_VERDE: LinhaCreditoVerde[] = [
       'Cadastro de fornecedores homologados',
     ],
     evidenciasQueOrbisAtende: [
-      'Dossiê Verde para Spread Bancário gerado no Orbis Protocol',
+      'Dossiê Verde para Credores (Res. BCB 4.945/2021) gerado no Orbis Protocol',
       'Duplo reporte Escopo 2 (Localização x Mercado Livre com I-REC)',
       'Memória de cálculo baseada em fatores oficiais MCTI/SIN',
     ],
@@ -115,7 +115,7 @@ export const LINHAS_CREDITO_VERDE: LinhaCreditoVerde[] = [
       'Apresentação de métricas mensuráveis de ecoeficiência operacional',
     ],
     descricao:
-      'Financiamento estruturado para a região Sul com bonificação tarifária atrelada à apresentação do dossiê de descarbonização pericial.',
+      'Financiamento estruturado para a região Sul com preparação documental para exigências ESG de credores (Res. BCB 4.945/2021), a critério da instituição.',
   },
   {
     id: 'fomento_parana_verde',
@@ -175,7 +175,7 @@ export const LINHAS_CREDITO_VERDE: LinhaCreditoVerde[] = [
       'Projetos de bioinsumos, recuperação de pastagens e energia fotovoltaica',
     ],
     descricao:
-      'Taxa subsidiada com desconto no spread do BB para empresas e produtores com práticas comprovadas de preservação e baixa emissão.',
+      'Linha subsidiada com preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério da instituição, para produtores com práticas comprovadas.',
   },
   {
     id: 'santander_sll',
@@ -207,11 +207,11 @@ export const LINHAS_CREDITO_VERDE: LinhaCreditoVerde[] = [
       'Selo Orbis Protocol com QR Code verificável',
     ],
     criteriosEnquadramento: [
-      'Compromisso contratual com redução escalonada de pegada de carbono',
-      'Spread cai progressivamente a cada ano em que a meta do laudo é batida',
+      'Compromisso contratual com metas verificáveis de sustentabilidade',
+      'Preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério da instituição contratante',
     ],
     descricao:
-      'Empréstimo atrelado a metas: o spread bancário diminui automaticamente conforme a empresa atesta a redução de emissões via laudos periciais.',
+      'Empréstimo atrelado a metas: preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição financeira.',
   },
   {
     id: 'sicredi_agro_associados',
@@ -241,7 +241,7 @@ export const LINHAS_CREDITO_VERDE: LinhaCreditoVerde[] = [
       'Adequação aos critérios cooperativos de sustentabilidade comunitária',
     ],
     descricao:
-      'Linha do sistema cooperativo que bonifica associados que adotam práticas limpas e comprovam responsabilidade ambiental com laudo formal.',
+      'Linha do sistema cooperativo com preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério da instituição, para associados que comprovam responsabilidade ambiental com laudo formal.',
   },
   {
     id: 'sicredi_circularidade',
@@ -478,7 +478,7 @@ export function simularGreenCapitalEngine(
     economiaAnualMaxima,
     totalLinhasCompativeis: compativeis.length,
     disclaimer:
-      'Simulação indicativa baseada nas condições médias de mercado e normativos vigentes das instituições financeiras. Documentos e laudos verificáveis prontos para envio aos agentes financeiros. Não constitui promessa ou garantia de aprovação de crédito, estando a concessão e a taxa final sujeitas à análise cadastral, garantias, score de crédito e governança ambiental da empresa pelo agente financeiro.',
+      'Simulação indicativa baseada nas condições médias de mercado e normativos vigentes das instituições financeiras. Documentos e laudos verificáveis para preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição. Não constitui promessa ou garantia de aprovação de crédito nem de redução de spread ou taxa, estando a concessão e eventuais condições comerciais sujeitas exclusivamente à análise e política de cada instituição financeira.',
   }
 }
 

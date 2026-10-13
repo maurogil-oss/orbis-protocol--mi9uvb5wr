@@ -468,7 +468,7 @@ export function calcularInventarioEmissoes(
     'isento_monitoramento'
   let tituloSBCE = 'Isento de Reporte Compulsório (< 10.000 tCO₂e/ano)'
   let explicacaoSBCE =
-    'Suas emissões operacionais estão abaixo do piso regulatório de 10.000 tCO₂e/ano da Lei 15.042/2024. A organização não possui deveres sancionatórios, podendo utilizar seu inventário de forma voluntária para redução de spread bancário e atração de clientes.'
+    'Suas emissões operacionais estão abaixo do piso regulatório de 10.000 tCO₂e/ano da Lei 15.042/2024. A organização não possui deveres sancionatórios, podendo utilizar seu inventário de forma voluntária na preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição, e atração de clientes.'
 
   if (emissoesTotaisFosseis >= 25000) {
     statusSBCE = 'dever_compensacao_25k'

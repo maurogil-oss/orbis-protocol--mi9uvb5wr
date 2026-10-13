@@ -61,7 +61,7 @@ export default function Capital() {
   useSeo({
     title: 'Green Capital Engine — Finanças Sustentáveis — Orbis Protocol',
     description:
-      'Simulador de crédito verde e spread bonificado. Compare linhas bancárias de descarbonização com laudo pericial Orbis Protocol.',
+      'Simulador de crédito verde e preparação para exigências ESG de credores. Compare linhas de financiamento sustentável com laudo pericial Orbis Protocol.',
   })
 
   const { user } = useAuth()
@@ -210,12 +210,12 @@ export default function Capital() {
               ORBIS GREEN CAPITAL ENGINE • FINANÇAS SUSTENTÁVEIS
             </div>
             <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-[#F4F7FA]">
-              SIMULADOR DE CRÉDITO VERDE & SPREAD BONIFICADO
+              SIMULADOR DE CRÉDITO VERDE & PREPARAÇÃO ESG
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] mt-1 max-w-3xl">
-              Monetize sua conformidade climática: compare as taxas padrão de mercado com as taxas
-              bonificadas oferecidas por bancos ao comprovar descarbonização com o laudo pericial
-              Orbis Protocol.
+              Monetize sua conformidade climática: compare as taxas referenciais com linhas verdes
+              mediante preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério
+              de cada instituição, com laudo pericial dMRV.
             </p>
           </div>
 

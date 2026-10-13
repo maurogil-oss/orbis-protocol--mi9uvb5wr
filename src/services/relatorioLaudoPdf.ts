@@ -8,7 +8,7 @@
  * - Seção 1: Diagnóstico Regulatório & Perfil Climático (SBCE Lei 15.042/2024, limiares 10k/25k, CBAM UE)
  * - Seção 2: Inventário Pericial de Emissões GEE (Escopos 1, 2 e 3, duplo reporte Localização x Mercado, GWP AR6, incerteza)
  * - Seção 3: Diagnóstico Comparativo da Reforma Tributária (Tributos Hoje x Reforma EC 132/2023, créditos NF-e apurados)
- * - Seção 4: Green Capital Engine — 8 Linhas de Crédito Verde & Spread Bonificado (taxa padrão x bonificada, economia em R$)
+ * - Seção 4: Green Capital Engine — 8 Linhas de Crédito Verde & Preparação ESG (taxa padrão x bonificada, economia em R$)
  * - Seção 5: Conclusão Pericial, Hash Criptográfico SHA-256 e Disclaimers Regulatórios Obrigatórios
  * - Cabeçalho e numeração de páginas profissional
  *
@@ -718,7 +718,7 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
       <div class="capa-subtitle">RELATÓRIO PERICIAL CONSOLIDADO</div>
       <h1 class="capa-title">INVENTÁRIO DE EMISSÕES & COMPARATIVO TRIBUTÁRIO</h1>
       <p class="capa-desc">
-        Demonstrativo pericial de emissões de GEE (Escopos 1, 2 e 3), apuração qualitativa da Reforma Tributária (IBS/CBS), simulação do Green Capital Engine e evidências probatórias para mitigação de spread bancário.
+        Demonstrativo pericial de emissões de GEE (Escopos 1, 2 e 3), apuração qualitativa da Reforma Tributária (IBS/CBS), simulação do Green Capital Engine e evidências probatórias para preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição.
       </p>
     </div>
 
@@ -823,7 +823,7 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
         <div class="card-value" style="font-size: 11pt; color: #1E40AF;">
           Res. BCB 4.945/2021
         </div>
-        <div class="card-desc">Preparado para questionários de bancos e redução de spread</div>
+        <div class="card-desc">Preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério da instituição</div>
       </div>
     </div>
 
@@ -1074,9 +1074,9 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
     </div>
 
     <!-- SEÇÃO 4: GREEN CAPITAL ENGINE -->
-    <div class="section-title">4. Green Capital Engine — 8 Linhas de Crédito Verde & Spread Bonificado</div>
+    <div class="section-title">4. Green Capital Engine — 8 Linhas de Crédito Verde & Preparação ESG</div>
     <div class="section-subtitle">
-      Simulação indicativa da economia financeira obtida ao comprovar práticas de descarbonização com o laudo pericial Orbis perante instituições financeiras públicas, cooperativas e privadas.
+      Simulação indicativa de linhas de crédito verde e preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição, mediante comprovação técnica pericial.
     </div>
 
     ${
@@ -1090,15 +1090,15 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
         </div>
 
         <div class="card card-highlight">
-          <div class="card-label">Economia Anual em Spread</div>
+          <div class="card-label">Diferencial Anual Referencial</div>
           <div class="card-value card-value-green">${formatCurrencyBRL(cap.melhorLinha.economiaAnual)}</div>
-          <div class="card-desc">Redução de juros no fluxo de caixa</div>
+          <div class="card-desc">Simulação comparativa indicativa de taxa</div>
         </div>
 
         <div class="card card-highlight">
-          <div class="card-label">Economia Total no Contrato</div>
+          <div class="card-label">Diferencial Total no Contrato</div>
           <div class="card-value card-value-green">${formatCurrencyBRL(cap.melhorLinha.economiaTotalPrazo)}</div>
-          <div class="card-desc">Spread bonificado vs taxa padrão</div>
+          <div class="card-desc">Condição referencial vs taxa padrão</div>
         </div>
       </div>
 
@@ -1139,7 +1139,7 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
         : `
       <div class="card" style="margin-bottom: 15px;">
         <div class="card-desc">
-          Simulação de crédito verde padrão para R$ 500.000 em 48 meses: redução média de 5,5 a 7,5 pontos percentuais no spread anual com o laudo pericial dMRV acoplado.
+          Simulação de crédito verde padrão para R$ 500.000 em 48 meses: diferencial médio referencial de 5,5 a 7,5 pontos percentuais em simulação comparativa com o laudo pericial dMRV acoplado, para preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério da instituição.
         </div>
       </div>
     `
@@ -2105,7 +2105,7 @@ export function gerarHtmlDemonstracaoOrientada(
       <div class="card">
         <div class="card-label">Pilar 4 • Documentos Prontos para Envio</div>
         <div class="card-desc" style="font-size: 8pt; color: #1F2937; line-height: 1.45;">
-          Relatórios técnicos estruturados em PDF para contabilidade (IFRS/SPED), instituições financeiras para redução de spread (Green Capital Engine) e órgãos de controle fiscal/ambiental sem retrabalho.
+          Relatórios técnicos estruturados em PDF para contabilidade (IFRS/SPED), instituições financeiras para preparação para exigências ESG de credores (Green Capital Engine) e órgãos de controle fiscal/ambiental sem retrabalho.
         </div>
       </div>
     </div>
@@ -2367,7 +2367,7 @@ export function gerarHtmlDemonstracaoOrientada(
         <div class="card-label">Instituições Financeiras</div>
         <div style="font-size: 9pt; font-weight: 700; color: #065F46; margin: 2px 0;">Parecer Green Capital Engine</div>
         <div class="card-desc">
-          8 linhas de financiamento verde (BNDES, BRDE, Sicredi, Fomento PR) para redução de spread em contratos de crédito.
+          8 linhas de financiamento verde (BNDES, BRDE, Sicredi, Fomento PR) para preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição.
         </div>
       </div>
     </div>

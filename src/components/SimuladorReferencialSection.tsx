@@ -430,7 +430,9 @@ export function SimuladorReferencialSection({ simulacao }: SimuladorReferencialS
             variant="outline"
             className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-bold"
           >
-            {simulacao.reconciliacao.somaBatePerfeitamente ? '100% CONFORME' : 'DIVERGÊNCIA'}
+            {simulacao.reconciliacao.somaBatePerfeitamente
+              ? 'Conciliação aritmética OK'
+              : 'DIVERGÊNCIA'}
           </Badge>
         </div>
 

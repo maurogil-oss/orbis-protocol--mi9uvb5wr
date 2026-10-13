@@ -172,7 +172,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       tco2ePorUnidade: '0,45 a 1,10 tCO2e / tonelada de grão produzido (média safra nacional)',
       elegibilidadeLinhasVerdes: [
         'BNDES Agro Sustentável / Pronaf Bioeconomia',
-        'Linha Sicredi Agro Cooperados Sustentabilidade (spread bonificado de até -1,8% a.a.)',
+        'Linha Sicredi Agro Cooperados Sustentabilidade (preparação para exigências ESG de credores - Res. BCB 4.945/2021, a critério da instituição)',
         'Banco do Brasil Pronampe Verde & Cédula de Produto Rural (CPR Verde)',
       ],
       beneficiosTributarios: [
@@ -329,7 +329,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         '1,4 a 2,2 tCO2e / t de aço em rota coque fóssil; 0,3 a 0,7 tCO2e / t com bio-redutores e forno elétrico a arco (EAF)',
       elegibilidadeLinhasVerdes: [
         'BNDES Fundo Clima (Descarbonização Industrial)',
-        'Financiamentos internacionais com spread bonificado para transição energética',
+        'Financiamentos internacionais com preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição',
         'Debêntures verdes incentivadas (Lei 14.801/2024)',
       ],
       beneficiosTributarios: [
@@ -470,7 +470,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         'Atestado pericial de taxa de substituição térmica alcançada no ano-base',
         'Inventário de emissões de processo (calcinação) e de combustão',
         'Comprovação de redução de intensidade carbônica frente à média setorial nacional',
-        'Dossiê de emissão de créditos de logística reversa e economia circular',
+        'Dossiê de recuperação de materiais com prova documental e economia circular',
       ],
       tco2ePorUnidade:
         '540 a 620 kg CO2 / t de cimento no Brasil (referência SNIC, entre as menores do mundo)',
@@ -480,7 +480,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       ],
       beneficiosTributarios: [
         'Mitigação do Imposto Seletivo sobre combustíveis fósseis (coque de petróleo)',
-        'Geração de créditos de reciclagem e logística reversa utilizáveis para dedução',
+        'Dossiê de recuperação de materiais com prova documental para fins de logística reversa',
       ],
     },
     fatoresPeculiares: [
@@ -1042,7 +1042,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       ],
       beneficiosTributarios: [
         'Crédito integral de IBS/CBS sobre aquisições de insumos têxteis e energia',
-        'Geração de créditos de reciclagem e descarte zero de aterro',
+        'Dossiê de recuperação de materiais com prova documental e descarte zero de aterro',
       ],
     },
     fatoresPeculiares: [
@@ -1298,7 +1298,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         'Evitação de 10 a 180 kg CO2e por peça reaproveitada (frente à produção virgem)',
       elegibilidadeLinhasVerdes: [
         'Linha de Financiamento para Modernização de CDVs e Frotas Verdes (BNDES)',
-        'Spread reduzido para revendas e oficinas que compram peças verdes rastreadas',
+        'Preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério da instituição, para revendas e oficinas que compram peças verdes rastreadas',
       ],
       beneficiosTributarios: [
         'Crédito financeiro direto de IPI no âmbito do Programa MOVER para fabricantes',
@@ -1426,11 +1426,11 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
         '0,15 a 0,60 kg CO2e / kg de alimento processado; 8 a 15 kg CO2e / hL de cerveja',
       elegibilidadeLinhasVerdes: [
         'BNDES Finem Linhas Verdes Agroindústria',
-        'Dossiê técnico com cálculo de pegada de carbono pronto para envio a instituições financeiras para redução de spread',
+        'Dossiê técnico com cálculo de pegada de carbono pronto para envio a instituições financeiras na preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição',
       ],
       beneficiosTributarios: [
         'Desoneração ou redução de alíquota na Cesta Básica Nacional (LC 214/2025)',
-        'Aproveitamento integral de créditos de reciclagem para cumprimento de obrigações',
+        'Dossiê de recuperação de materiais com prova documental para cumprimento de obrigações',
       ],
     },
     fatoresPeculiares: [
@@ -1618,16 +1618,16 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
     nome: 'Plásticos & Economia Circular',
     icone: 'Recycle',
     tagline:
-      'Resina pós-consumo reciclada (PCR), extrusão, créditos de reciclagem e circularidade PNRS',
+      'Resina pós-consumo reciclada (PCR), extrusão, prova documental de recuperação e circularidade PNRS',
     fatorEmissao: 'Injeção, extrusão e consumo de resinas fósseis virgens',
     regulamentacao:
       'PNRS (Lei 12.305/2010), Decreto 11.413/2023, Tratado Global de Plásticos da ONU',
     descricao:
-      'Protocolo para recicladores mecânicos de plástico, transformadores e convertedores de embalagens. Atestado de incorporação de PCR, cálculo de emissões evitadas de resina virgem e emissão de lastro para créditos de reciclagem.',
+      'Protocolo para recicladores mecânicos de plástico, transformadores e convertedores de embalagens. Atestado de incorporação de PCR, cálculo de emissões evitadas de resina virgem e emissão de dossiê de recuperação de materiais com prova documental.',
     principaisIndicadores: [
       'Percentual de resina pós-consumo (PCR) incorporado na produção',
       'Consumo energético por kg de peça plástica injetada (kWh/kg)',
-      'Créditos de reciclagem certificados emitidos',
+      'Dossiês de recuperação de materiais com prova documental emitidos',
       'Volume de plástico desviado de aterros sanitários',
     ],
     tipoLaudo: 'Atestado Pericial de Circularidade de Polímeros & PNRS',
@@ -1663,7 +1663,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       entregas: [
         'Atestado de circularidade probatória com rastreabilidade da origem dos fardos',
         'Cálculo de emissões evitadas frente ao polímero fóssil virgem correspondente',
-        'Chancela pericial para emissão de Certificados de Crédito de Reciclagem',
+        'Chancela pericial para emissão de dossiê de recuperação de materiais com prova documental',
       ],
       tco2ePorUnidade:
         'Evitação de 1,2 a 1,8 kg CO2e / kg de resina PCR reciclada em relação ao plástico virgem',
@@ -1787,7 +1787,7 @@ export const PROTOCOLOS_SETORIAIS: Record<string, ProtocoloSetorial> = {
       tco2ePorUnidade: '2,8 a 8,5 kg CO2e / mil doses ou unidades comercializadas',
       elegibilidadeLinhasVerdes: [
         'Financiamentos de Inovação e Sustentabilidade da Finep e BNDES',
-        'Spreads bonificados em bancos para laboratórios com alta pontuação ESG',
+        'Preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição, para laboratórios com alta pontuação ESG',
       ],
       beneficiosTributarios: [
         'Isenção ou redução na lista da Cesta Básica e medicamentos da Reforma Tributária (LC 214/2025)',

@@ -218,7 +218,8 @@ export function MeusDocumentosHub({
               </p>
             </div>
             <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0A0E12] border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-[#93A3B5]">
-              Passaporte DPP e redução de spread via Res. BCB 4.945/2021.
+              Passaporte DPP e preparação para exigências ESG de credores (Res. BCB 4.945/2021), a
+              critério de cada instituição.
             </div>
           </div>
           <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">

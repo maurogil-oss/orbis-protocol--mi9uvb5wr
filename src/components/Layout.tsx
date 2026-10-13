@@ -1011,7 +1011,7 @@ export default function Layout() {
               </div>
               <div className="p-3 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-xs sm:col-span-2 lg:col-span-1">
                 <span className="block text-xs font-bold text-slate-900 dark:text-[#F8FAFC]">
-                  Crédito Bacen 4.945
+                  Res. BCB 4.945/2021
                 </span>
                 <span className="text-[12px] text-slate-600 dark:text-[#94A3B8] leading-tight mt-0.5 block">
                   Políticas PRSAC no Crédito Bancário

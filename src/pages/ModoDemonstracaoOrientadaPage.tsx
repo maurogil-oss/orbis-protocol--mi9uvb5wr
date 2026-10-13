@@ -1244,8 +1244,9 @@ export default function ModoDemonstracaoOrientadaPage() {
                           Parecer Green Capital Engine (8 Linhas de Crédito)
                         </h3>
                         <p className="text-xs text-[#93A3B5] max-w-xl">
-                          Simulação e dossiê de elegibilidade técnica para redução de spread em
-                          linhas ESG do BNDES, Pronaf Verde e Financiamento Sustentável.
+                          Simulação e dossiê de preparação para exigências ESG de credores (Res. BCB
+                          4.945/2021), a critério de cada instituição, em linhas do BNDES e
+                          financiamento sustentável.
                         </p>
                       </div>
 

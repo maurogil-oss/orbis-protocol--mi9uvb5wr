@@ -567,7 +567,7 @@ export function exportarSimuladorReferencialCsv(simulacao: SimuladorReferencialR
   )
   linhas.push(`CO2e de Fracoes Excluidas (kg);${simulacao.reconciliacao.co2eExcluidoKg.toFixed(2)}`)
   linhas.push(
-    `Status de Reconciliacao;${simulacao.reconciliacao.somaBatePerfeitamente ? '100% CONFORME (Soma bate perfeitamente)' : 'DIVERGENCIA DETECTADA'}`,
+    `Status de Reconciliacao;${simulacao.reconciliacao.somaBatePerfeitamente ? 'Conciliação aritmética OK (Soma bate perfeitamente)' : 'DIVERGENCIA DETECTADA'}`,
   )
 
   const csvContent = linhas.join('\r\n')

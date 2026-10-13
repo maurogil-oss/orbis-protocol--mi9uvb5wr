@@ -86,8 +86,8 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
     publico:
       'Indústrias com potencial emissor, Exportadores para a União Europeia, Gestores Financeiros e Tesourarias.',
     destaques: [
-      'Green Capital Engine: 8 linhas de crédito verde e spread bonificado',
-      'Preparação para exigências ESG de credores e redução de spread (Res. BCB 4.945/2021)',
+      'Green Capital Engine: 8 linhas de crédito verde e preparação para exigências ESG',
+      'Preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição',
       'Gateway preparatório CBAM União Europeia: comprovação de emissões incorporadas',
       'Reporte voluntário IFRS S1/S2 (Res. CVM 244/2026) com preparação para asseguração',
       'Estimativa preliminar de Cotas Brasileiras de Emissão (CBE)',
@@ -128,7 +128,7 @@ export const TRILHAS_DATA: Record<string, Trilha> = {
         titulo: 'Preparação para Exigências ESG de Credores (Res. BCB 4.945/2021)',
         duracao: '60 min',
         conteudo:
-          'Como estruturar o dossiê socioambiental e climático para atender às políticas PRSAC das instituições financeiras, qualificando a empresa a spreads e linhas verdes de crédito.',
+          'Como estruturar o dossiê socioambiental e climático para atender às políticas PRSAC das instituições financeiras, na preparação para exigências ESG de credores (Res. BCB 4.945/2021), a critério de cada instituição.',
         requerLogin: true,
       },
     ],
