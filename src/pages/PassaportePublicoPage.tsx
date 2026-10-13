@@ -439,7 +439,7 @@ export default function PassaportePublicoPage() {
                             <span>Centro de Desmonte de origem</span>
                           </div>
                           <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                            {peca.cdv_origem || 'Centro de Desmonte'}
+                            {peca.cdv_origem || 'Centro de Desmonte de origem'}
                           </div>
                           <div className="font-mono text-[11px] text-[#D9B36C]">
                             CNPJ: {peca.cdv_cnpj || '—'}
