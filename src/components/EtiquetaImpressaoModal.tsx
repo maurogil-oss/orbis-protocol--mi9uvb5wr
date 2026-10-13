@@ -23,7 +23,7 @@ export function EtiquetaImpressaoModal({ peca, onClose }: EtiquetaImpressaoModal
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#059669]" />
             <h3 className="font-heading font-bold text-base text-[#F8FAFC]">
-              ETIQUETA TÉCNICA DPP (PADRÃO CDV / DETRAN)
+              ETIQUETA TÉCNICA DPP (PADRÃO CENTRO DE DESMONTE / DETRAN)
             </h3>
           </div>
           <button
@@ -125,7 +125,7 @@ export function EtiquetaImpressaoModal({ peca, onClose }: EtiquetaImpressaoModal
           </div>
 
           <div className="border-t border-black/30 mt-2 pt-1.5 flex items-center justify-between text-[8px] text-gray-600 font-mono">
-            <span>CDV: {peca.cdv_origem || 'DETRAN-PR-CDV-0089'}</span>
+            <span>Centro de Desmonte: {peca.cdv_origem || 'Centro de Desmonte'}</span>
             <span className="truncate max-w-[170px]" title={peca.hash_sha256}>
               SHA-256: {peca.hash_sha256.slice(0, 16)}...
             </span>

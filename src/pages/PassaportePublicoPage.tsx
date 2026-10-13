@@ -436,10 +436,10 @@ export default function PassaportePublicoPage() {
                         <div className="p-4 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)]">
                           <div className="flex items-center gap-2 text-[#93A3B5] font-bold uppercase mb-2">
                             <Building2 className="w-4 h-4 text-[#12B886]" />
-                            <span>Centro de Desmonte de Origem</span>
+                            <span>Centro de Desmonte de origem</span>
                           </div>
                           <div className="font-semibold text-sm text-[#F4F7FA] mb-1">
-                            {peca.cdv_origem || '—'}
+                            {peca.cdv_origem || 'Centro de Desmonte'}
                           </div>
                           <div className="font-mono text-[11px] text-[#D9B36C]">
                             CNPJ: {peca.cdv_cnpj || '—'}
