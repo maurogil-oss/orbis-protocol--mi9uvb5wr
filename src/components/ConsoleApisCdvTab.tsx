@@ -46,7 +46,8 @@ import pb from '@/lib/pocketbase/client'
 import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService'
 import { ShieldCheck, Info } from 'lucide-react'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
-import { QrCode, Globe, History } from 'lucide-react'
+import { GestaoPendenciasRespondentes } from '@/components/GestaoPendenciasRespondentes'
+import { QrCode, Globe, History, ListTodo } from 'lucide-react'
 
 interface ConsoleApisCdvTabProps {
   cdvNome: string
@@ -77,6 +78,9 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
   const [abaRastreabilidade, setAbaRastreabilidade] = useState<Record<string, '611' | 'mover'>>({})
   const [moverHabilitado, setMoverHabilitado] = useState(false)
   const [salvandoSituacaoId, setSalvandoSituacaoId] = useState<string | null>(null)
+  const [secaoExpandidaLote, setSecaoExpandidaLote] = useState<
+    Record<string, 'checklist' | 'pendencias'>
+  >({})
 
   // Consultas de Auditoria de DPPs
   const [consultasDpp, setConsultasDpp] = useState<DppConsultaRecord[]>([])
@@ -1139,247 +1143,299 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
                         </span>
                       </div>
 
-                      {/* NAVEGAÇÃO DAS DUAS ABAS */}
-                      {(() => {
-                        const tabAtiva = abaRastreabilidade[lote.id] || '611'
-                        const catalogoTotal = catalogoDoLote[lote.id] || []
-                        const itens611 = catalogoTotal.filter(
-                          (it) => it.catalogo.origem === '611_vigente',
-                        )
-                        const itensMover = catalogoTotal.filter(
-                          (it) => it.catalogo.origem === 'ampliada_mover',
-                        )
+                      {/* SUB-ABAS DO LOTE: CHECKLIST DE PEÇAS VS GESTÃO DE PENDÊNCIAS */}
+                      <div className="mb-4 flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSecaoExpandidaLote((prev) => ({ ...prev, [lote.id]: 'checklist' }))
+                          }
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            (secaoExpandidaLote[lote.id] || 'checklist') === 'checklist'
+                              ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm'
+                              : 'bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                        >
+                          <Database className="w-3.5 h-3.5" />
+                          <span>Checklist de Peças & DPPs</span>
+                        </button>
 
-                        const itensExibidos = tabAtiva === '611' ? itens611 : itensMover
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSecaoExpandidaLote((prev) => ({ ...prev, [lote.id]: 'pendencias' }))
+                          }
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            secaoExpandidaLote[lote.id] === 'pendencias'
+                              ? 'bg-emerald-600 text-white dark:bg-[#059669] shadow-sm'
+                              : 'bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                        >
+                          <ListTodo className="w-3.5 h-3.5" />
+                          <span>Respondentes & Pendências da Coleta</span>
+                        </button>
+                      </div>
 
-                        return (
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setAbaRastreabilidade((prev) => ({ ...prev, [lote.id]: '611' }))
-                                }
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                                  tabAtiva === '611'
-                                    ? 'bg-[#059669] text-white shadow-sm'
-                                    : 'bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
-                                }`}
-                              >
-                                <span>CONTRAN 611 (vigente)</span>
-                                <span
-                                  className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
-                                    tabAtiva === '611'
-                                      ? 'bg-black/20 text-white'
-                                      : 'bg-slate-200 dark:bg-[#0A1628] text-slate-700 dark:text-[#94A3B8]'
-                                  }`}
-                                >
-                                  49 peças
-                                </span>
-                              </button>
+                      {/* CONTEÚDO: GESTÃO DE PENDÊNCIAS */}
+                      {secaoExpandidaLote[lote.id] === 'pendencias' ? (
+                        <div className="pt-2">
+                          <GestaoPendenciasRespondentes
+                            loteId={lote.id}
+                            loteIdentificador={
+                              lote.veiculo_baixa_detran || lote.veiculo_marca_modelo || lote.id
+                            }
+                          />
+                        </div>
+                      ) : (
+                        /* NAVEGAÇÃO DAS DUAS ABAS DE CHECKLIST */
+                        (() => {
+                          const tabAtiva = abaRastreabilidade[lote.id] || '611'
+                          const catalogoTotal = catalogoDoLote[lote.id] || []
+                          const itens611 = catalogoTotal.filter(
+                            (it) => it.catalogo.origem === '611_vigente',
+                          )
+                          const itensMover = catalogoTotal.filter(
+                            (it) => it.catalogo.origem === 'ampliada_mover',
+                          )
 
-                              {moverHabilitado && (
+                          const itensExibidos = tabAtiva === '611' ? itens611 : itensMover
+
+                          return (
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    setAbaRastreabilidade((prev) => ({
-                                      ...prev,
-                                      [lote.id]: 'mover',
-                                    }))
+                                    setAbaRastreabilidade((prev) => ({ ...prev, [lote.id]: '611' }))
                                   }
                                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                                    tabAtiva === 'mover'
-                                      ? 'bg-[#D9B36C] text-[#0A1628]'
+                                    tabAtiva === '611'
+                                      ? 'bg-[#059669] text-white shadow-sm'
                                       : 'bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
                                   }`}
                                 >
-                                  <span>Ampliação MOVER (em validação)</span>
+                                  <span>CONTRAN 611 (vigente)</span>
                                   <span
                                     className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
-                                      tabAtiva === 'mover'
-                                        ? 'bg-[#0A1628]/30 text-[#0A1628]'
+                                      tabAtiva === '611'
+                                        ? 'bg-black/20 text-white'
                                         : 'bg-slate-200 dark:bg-[#0A1628] text-slate-700 dark:text-[#94A3B8]'
                                     }`}
                                   >
-                                    28 peças
+                                    49 peças
                                   </span>
                                 </button>
+
+                                {moverHabilitado && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setAbaRastreabilidade((prev) => ({
+                                        ...prev,
+                                        [lote.id]: 'mover',
+                                      }))
+                                    }
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                                      tabAtiva === 'mover'
+                                        ? 'bg-[#D9B36C] text-[#0A1628]'
+                                        : 'bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
+                                    }`}
+                                  >
+                                    <span>Ampliação MOVER (em validação)</span>
+                                    <span
+                                      className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                                        tabAtiva === 'mover'
+                                          ? 'bg-[#0A1628]/30 text-[#0A1628]'
+                                          : 'bg-slate-200 dark:bg-[#0A1628] text-slate-700 dark:text-[#94A3B8]'
+                                      }`}
+                                    >
+                                      28 peças
+                                    </span>
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Marca fixa na aba MOVER */}
+                              {tabAtiva === 'mover' && moverHabilitado && (
+                                <div className="p-3 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-xs text-[#D9B36C] flex items-center gap-2 font-medium">
+                                  <Info className="w-4 h-4 shrink-0" />
+                                  <span>Informativo — não integra o laudo de conformidade 611</span>
+                                </div>
                               )}
-                            </div>
 
-                            {/* Marca fixa na aba MOVER */}
-                            {tabAtiva === 'mover' && moverHabilitado && (
-                              <div className="p-3 rounded-xl bg-[#D9B36C]/10 border border-[#D9B36C]/30 text-xs text-[#D9B36C] flex items-center gap-2 font-medium">
-                                <Info className="w-4 h-4 shrink-0" />
-                                <span>Informativo — não integra o laudo de conformidade 611</span>
-                              </div>
-                            )}
+                              {isLoadingPecas && catalogoTotal.length === 0 ? (
+                                <div className="text-center py-6 text-xs text-[#94A3B8]">
+                                  Carregando catálogo e peças do lote...
+                                </div>
+                              ) : itensExibidos.length === 0 ? (
+                                <div className="text-center py-6 text-xs text-[#94A3B8]">
+                                  Nenhuma peça encontrada nesta categoria.
+                                </div>
+                              ) : (
+                                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1628]">
+                                  <table className="w-full text-left text-xs">
+                                    <thead className="border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-[#94A3B8] uppercase font-semibold text-[10px]">
+                                      <tr>
+                                        <th className="py-2.5 px-3 w-12 text-center">Nº</th>
+                                        <th className="py-2.5 px-3">Peça do Catálogo</th>
+                                        <th className="py-2.5 px-3">Subsistema</th>
+                                        <th className="py-2.5 px-3">Situação Checklist</th>
+                                        <th className="py-2.5 px-3">Código DPP / SKU</th>
+                                        <th className="py-2.5 px-3 text-right">Peso</th>
+                                        <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
+                                        <th className="py-2.5 px-3 text-center">Ações</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-900 dark:text-[#F8FAFC]">
+                                      {itensExibidos.map((item) => {
+                                        const cat = item.catalogo
+                                        const peca = item.peca
+                                        const situacao =
+                                          peca?.situacao_checklist || 'nao_desmontada'
+                                        const isSalvando = peca && salvandoSituacaoId === peca.id
 
-                            {isLoadingPecas && catalogoTotal.length === 0 ? (
-                              <div className="text-center py-6 text-xs text-[#94A3B8]">
-                                Carregando catálogo e peças do lote...
-                              </div>
-                            ) : itensExibidos.length === 0 ? (
-                              <div className="text-center py-6 text-xs text-[#94A3B8]">
-                                Nenhuma peça encontrada nesta categoria.
-                              </div>
-                            ) : (
-                              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1628]">
-                                <table className="w-full text-left text-xs">
-                                  <thead className="border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-[#94A3B8] uppercase font-semibold text-[10px]">
-                                    <tr>
-                                      <th className="py-2.5 px-3 w-12 text-center">Nº</th>
-                                      <th className="py-2.5 px-3">Peça do Catálogo</th>
-                                      <th className="py-2.5 px-3">Subsistema</th>
-                                      <th className="py-2.5 px-3">Situação Checklist</th>
-                                      <th className="py-2.5 px-3">Código DPP / SKU</th>
-                                      <th className="py-2.5 px-3 text-right">Peso</th>
-                                      <th className="py-2.5 px-3 text-right">CO₂e Evitado</th>
-                                      <th className="py-2.5 px-3 text-center">Ações</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-900 dark:text-[#F8FAFC]">
-                                    {itensExibidos.map((item) => {
-                                      const cat = item.catalogo
-                                      const peca = item.peca
-                                      const situacao = peca?.situacao_checklist || 'nao_desmontada'
-                                      const isSalvando = peca && salvandoSituacaoId === peca.id
-
-                                      return (
-                                        <tr
-                                          key={cat.id || cat.numero}
-                                          className="hover:bg-slate-50 dark:hover:bg-[#111827]/60 transition-colors"
-                                        >
-                                          <td className="py-2.5 px-3 text-center font-mono text-xs text-slate-500 dark:text-[#94A3B8]">
-                                            {cat.numero}
-                                          </td>
-                                          <td className="py-2.5 px-3">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                              <span className="font-semibold text-slate-900 dark:text-[#F8FAFC]">
-                                                {cat.nome_peca}
-                                              </span>
-                                              {cat.item_seguranca && (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F03E54]/20 border border-[#F03E54]/40 text-[#F03E54]">
-                                                  <ShieldCheck className="w-3 h-3" />
-                                                  <span>Item de segurança</span>
+                                        return (
+                                          <tr
+                                            key={cat.id || cat.numero}
+                                            className="hover:bg-slate-50 dark:hover:bg-[#111827]/60 transition-colors"
+                                          >
+                                            <td className="py-2.5 px-3 text-center font-mono text-xs text-slate-500 dark:text-[#94A3B8]">
+                                              {cat.numero}
+                                            </td>
+                                            <td className="py-2.5 px-3">
+                                              <div className="flex items-center gap-2 flex-wrap">
+                                                <span className="font-semibold text-slate-900 dark:text-[#F8FAFC]">
+                                                  {cat.nome_peca}
                                                 </span>
-                                              )}
-                                            </div>
-                                            {cat.notas && (
-                                              <p className="text-[10px] text-slate-500 dark:text-[#94A3B8]/80 mt-0.5 line-clamp-1">
-                                                {cat.notas}
-                                              </p>
-                                            )}
-                                          </td>
-                                          <td className="py-2.5 px-3">
-                                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8]">
-                                              {cat.subsistema}
-                                            </span>
-                                          </td>
-                                          <td className="py-2.5 px-3">
-                                            {peca ? (
-                                              <div className="flex items-center gap-1.5">
-                                                <select
-                                                  value={situacao}
-                                                  disabled={isSalvando}
-                                                  onChange={(e) =>
-                                                    handleAtualizarSituacao(
-                                                      lote.id,
-                                                      peca.id,
-                                                      e.target.value as SituacaoChecklistPeca,
-                                                    )
-                                                  }
-                                                  className={`px-2 py-1 rounded-lg text-xs font-semibold border bg-white dark:bg-[#0E1A2E] transition-all focus:outline-none focus:ring-1 ${
-                                                    situacao === 'etiquetada'
-                                                      ? 'text-[#059669] border-[#059669]/40 focus:ring-[#059669]'
-                                                      : situacao === 'inservivel'
-                                                        ? 'text-[#F03E54] border-[#F03E54]/40 focus:ring-[#F03E54]'
-                                                        : situacao === 'nao_aplicavel_ausente'
-                                                          ? 'text-[#94A3B8] border-slate-300 dark:border-slate-800'
-                                                          : situacao === 'aguardando_avaliacao'
-                                                            ? 'text-[#D9B36C] border-[#D9B36C]/40 focus:ring-[#D9B36C]'
-                                                            : 'text-slate-900 dark:text-[#F8FAFC] border-slate-300 dark:border-slate-700'
-                                                  }`}
-                                                >
-                                                  <option value="nao_desmontada">
-                                                    Não desmontada
-                                                  </option>
-                                                  <option value="etiquetada">Etiquetada</option>
-                                                  <option value="inservivel">Inservível</option>
-                                                  <option value="nao_aplicavel_ausente">
-                                                    Não aplicável / ausente
-                                                  </option>
-                                                  <option value="aguardando_avaliacao">
-                                                    Aguardando avaliação
-                                                  </option>
-                                                </select>
-                                                {isSalvando && (
-                                                  <RefreshCw className="w-3 h-3 text-[#059669] animate-spin" />
+                                                {cat.item_seguranca && (
+                                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F03E54]/20 border border-[#F03E54]/40 text-[#F03E54]">
+                                                    <ShieldCheck className="w-3 h-3" />
+                                                    <span>Item de segurança</span>
+                                                  </span>
                                                 )}
                                               </div>
-                                            ) : (
-                                              <span className="text-[11px] text-[#94A3B8] italic">
-                                                Aguardando vínculo
+                                              {cat.notas && (
+                                                <p className="text-[10px] text-slate-500 dark:text-[#94A3B8]/80 mt-0.5 line-clamp-1">
+                                                  {cat.notas}
+                                                </p>
+                                              )}
+                                            </td>
+                                            <td className="py-2.5 px-3">
+                                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8]">
+                                                {cat.subsistema}
                                               </span>
-                                            )}
-                                          </td>
-                                          <td className="py-2.5 px-3">
-                                            {peca ? (
-                                              <div>
-                                                <span className="font-mono font-bold text-[#059669] block text-xs">
-                                                  {peca.selo_dpp}
+                                            </td>
+                                            <td className="py-2.5 px-3">
+                                              {peca ? (
+                                                <div className="flex items-center gap-1.5">
+                                                  <select
+                                                    value={situacao}
+                                                    disabled={isSalvando}
+                                                    onChange={(e) =>
+                                                      handleAtualizarSituacao(
+                                                        lote.id,
+                                                        peca.id,
+                                                        e.target.value as SituacaoChecklistPeca,
+                                                      )
+                                                    }
+                                                    className={`px-2 py-1 rounded-lg text-xs font-semibold border bg-white dark:bg-[#0E1A2E] transition-all focus:outline-none focus:ring-1 ${
+                                                      situacao === 'etiquetada'
+                                                        ? 'text-[#059669] border-[#059669]/40 focus:ring-[#059669]'
+                                                        : situacao === 'inservivel'
+                                                          ? 'text-[#F03E54] border-[#F03E54]/40 focus:ring-[#F03E54]'
+                                                          : situacao === 'nao_aplicavel_ausente'
+                                                            ? 'text-[#94A3B8] border-slate-300 dark:border-slate-800'
+                                                            : situacao === 'aguardando_avaliacao'
+                                                              ? 'text-[#D9B36C] border-[#D9B36C]/40 focus:ring-[#D9B36C]'
+                                                              : 'text-slate-900 dark:text-[#F8FAFC] border-slate-300 dark:border-slate-700'
+                                                    }`}
+                                                  >
+                                                    <option value="nao_desmontada">
+                                                      Não desmontada
+                                                    </option>
+                                                    <option value="etiquetada">Etiquetada</option>
+                                                    <option value="inservivel">Inservível</option>
+                                                    <option value="nao_aplicavel_ausente">
+                                                      Não aplicável / ausente
+                                                    </option>
+                                                    <option value="aguardando_avaliacao">
+                                                      Aguardando avaliação
+                                                    </option>
+                                                  </select>
+                                                  {isSalvando && (
+                                                    <RefreshCw className="w-3 h-3 text-[#059669] animate-spin" />
+                                                  )}
+                                                </div>
+                                              ) : (
+                                                <span className="text-[11px] text-[#94A3B8] italic">
+                                                  Aguardando vínculo
                                                 </span>
-                                                <span className="font-mono text-[10px] text-[#94A3B8]">
-                                                  {peca.sku_interno}
+                                              )}
+                                            </td>
+                                            <td className="py-2.5 px-3">
+                                              {peca ? (
+                                                <div>
+                                                  <span className="font-mono font-bold text-[#059669] block text-xs">
+                                                    {peca.selo_dpp}
+                                                  </span>
+                                                  <span className="font-mono text-[10px] text-[#94A3B8]">
+                                                    {peca.sku_interno}
+                                                  </span>
+                                                </div>
+                                              ) : (
+                                                <span className="text-[#94A3B8] text-[11px]">
+                                                  —
                                                 </span>
-                                              </div>
-                                            ) : (
-                                              <span className="text-[#94A3B8] text-[11px]">—</span>
-                                            )}
-                                          </td>
-                                          <td className="py-2.5 px-3 text-right font-mono">
-                                            {peca && peca.peso_kg > 0 ? `${peca.peso_kg} kg` : '—'}
-                                          </td>
-                                          <td className="py-2.5 px-3 text-right font-mono font-bold text-[#059669]">
-                                            {peca && peca.co2e_evitado_kg > 0
-                                              ? `-${peca.co2e_evitado_kg} kg`
-                                              : '—'}
-                                          </td>
-                                          <td className="py-2.5 px-3 text-center">
-                                            {peca ? (
-                                              <div className="flex items-center justify-center gap-1.5">
-                                                <a
-                                                  href={`/passaporte/${peca.selo_dpp}`}
-                                                  target="_blank"
-                                                  rel="noreferrer"
-                                                  className="p-1 rounded text-slate-500 dark:text-[#94A3B8] hover:text-[#059669] hover:bg-[#059669]/10 transition-colors"
-                                                  title="Abrir Passaporte Público (DPP)"
-                                                >
-                                                  <ExternalLink className="w-3.5 h-3.5" />
-                                                </a>
-                                                <button
-                                                  type="button"
-                                                  onClick={() => setPecaParaEtiqueta(peca)}
-                                                  className="p-1 rounded text-slate-500 dark:text-[#94A3B8] hover:text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-colors"
-                                                  title="Imprimir Etiqueta com QR Code"
-                                                >
-                                                  <Printer className="w-3.5 h-3.5" />
-                                                </button>
-                                              </div>
-                                            ) : (
-                                              <span className="text-[#94A3B8] text-[11px]">—</span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                      )
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })()}
+                                              )}
+                                            </td>
+                                            <td className="py-2.5 px-3 text-right font-mono">
+                                              {peca && peca.peso_kg > 0
+                                                ? `${peca.peso_kg} kg`
+                                                : '—'}
+                                            </td>
+                                            <td className="py-2.5 px-3 text-right font-mono font-bold text-[#059669]">
+                                              {peca && peca.co2e_evitado_kg > 0
+                                                ? `-${peca.co2e_evitado_kg} kg`
+                                                : '—'}
+                                            </td>
+                                            <td className="py-2.5 px-3 text-center">
+                                              {peca ? (
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                  <a
+                                                    href={`/passaporte/${peca.selo_dpp}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="p-1 rounded text-slate-500 dark:text-[#94A3B8] hover:text-[#059669] hover:bg-[#059669]/10 transition-colors"
+                                                    title="Abrir Passaporte Público (DPP)"
+                                                  >
+                                                    <ExternalLink className="w-3.5 h-3.5" />
+                                                  </a>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => setPecaParaEtiqueta(peca)}
+                                                    className="p-1 rounded text-slate-500 dark:text-[#94A3B8] hover:text-[#D9B36C] hover:bg-[#D9B36C]/10 transition-colors"
+                                                    title="Imprimir Etiqueta com QR Code"
+                                                  >
+                                                    <Printer className="w-3.5 h-3.5" />
+                                                  </button>
+                                                </div>
+                                              ) : (
+                                                <span className="text-[#94A3B8] text-[11px]">
+                                                  —
+                                                </span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        )
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })()
+                      )}
                     </div>
                   )}
                 </div>

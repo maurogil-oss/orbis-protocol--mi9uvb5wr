@@ -49,6 +49,13 @@ import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { DestinacaoFinalTab } from '@/components/DestinacaoFinalTab'
 import { BalancoMassaVeiculoSection } from '@/components/BalancoMassaVeiculoSection'
 import { SecaoAvaliacaoAdicionalidade } from '@/components/SecaoAvaliacaoAdicionalidade'
+import { GestaoPendenciasRespondentes } from '@/components/GestaoPendenciasRespondentes'
+import {
+  calcularResumoPendencias,
+  listarPendenciasDoLote,
+  type ResumoPendenciasLote,
+} from '@/services/cdvPendenciasService'
+import { ListTodo } from 'lucide-react'
 import { BadgeOrigemLote } from '@/components/BadgeOrigemLote'
 import { resolverDeclaracaoIndependencia } from '@/services/consentimentoPeritoService'
 import { isLoteDemo, TEXTO_AVISO_LOTE_DEMO } from '@/services/loteDemoService'
@@ -107,7 +114,10 @@ export default function PassaporteLotePublicoPage() {
   const [hashCalculado, setHashCalculado] = useState<string>('')
   const [copiedHash, setCopiedHash] = useState(false)
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todos')
-  const [abaLoteAtiva, setAbaLoteAtiva] = useState<'laudo' | 'balanco' | 'destinacao'>('laudo')
+  const [abaLoteAtiva, setAbaLoteAtiva] = useState<
+    'laudo' | 'balanco' | 'destinacao' | 'pendencias'
+  >('laudo')
+  const [resumoPendencias, setResumoPendencias] = useState<ResumoPendenciasLote | null>(null)
   const [dadosDestinacao, setDadosDestinacao] = useState<DestinacaoFinalLoteResponse | null>(null)
   const [moverHabilitado, setMoverHabilitado] = useState(false)
   const [consentimentoPerito, setConsentimentoPerito] = useState<ConsentimentoPeritoRecord | null>(
@@ -187,6 +197,16 @@ export default function PassaporteLotePublicoPage() {
           const dest = await consultarDestinacaoFinalLote(chaveBusca, massaCircularLote)
           if (isMounted) {
             setDadosDestinacao(dest)
+          }
+
+          // Carregar resumo das pendências de coleta do lote
+          try {
+            const listaPendencias = await listarPendenciasDoLote(resultado.lote.id)
+            if (isMounted) {
+              setResumoPendencias(calcularResumoPendencias(listaPendencias))
+            }
+          } catch {
+            if (isMounted) setResumoPendencias(null)
           }
 
           // Carregar flag da ampliação do Programa MOVER
@@ -626,6 +646,31 @@ export default function PassaporteLotePublicoPage() {
                   </span>
                 )}
               </button>
+
+              <button
+                type="button"
+                onClick={() => setAbaLoteAtiva('pendencias')}
+                className={`flex items-center gap-2 px-4 sm:px-5 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all ${
+                  abaLoteAtiva === 'pendencias'
+                    ? 'border-[#12B886] text-[#12B886] bg-[#12B886]/10 rounded-t-xl'
+                    : 'border-transparent text-[#93A3B5] hover:text-[#F4F7FA] hover:bg-[#16202B]/60 rounded-t-xl'
+                }`}
+              >
+                <ListTodo className="w-4 h-4" />
+                <span>Pendências de Coleta</span>
+                {resumoPendencias && resumoPendencias.total > 0 && (
+                  <span
+                    data-testid="badge-resumo-pendencias-aba"
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                      resumoPendencias.todasResolvidas
+                        ? 'bg-[#12B886]/20 text-[#12B886]'
+                        : 'bg-amber-500/20 text-[#D9B36C]'
+                    }`}
+                  >
+                    {resumoPendencias.resolvidas}/{resumoPendencias.total} resolvidas
+                  </span>
+                )}
+              </button>
             </div>
 
             {/* ABA BALANÇO DE MASSA DO VEÍCULO (VISUALIZAÇÃO DEDICADA INTERATIVA) */}
@@ -649,6 +694,17 @@ export default function PassaporteLotePublicoPage() {
             {abaLoteAtiva === 'destinacao' && dadosDestinacao && (
               <div className="no-print mb-12">
                 <DestinacaoFinalTab dados={dadosDestinacao} />
+              </div>
+            )}
+
+            {/* ABA PENDÊNCIAS & GESTÃO DE RESPONDENTES DO LOTE */}
+            {abaLoteAtiva === 'pendencias' && lote && (
+              <div className="no-print mb-12">
+                <GestaoPendenciasRespondentes
+                  loteId={lote.id}
+                  loteIdentificador={obterCodigoPublicoLote(lote, loteParam)}
+                  onResumoChange={(novoResumo) => setResumoPendencias(novoResumo)}
+                />
               </div>
             )}
 

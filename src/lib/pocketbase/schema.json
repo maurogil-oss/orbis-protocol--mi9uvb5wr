@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:26:07.182Z",
+  "generatedAt": "2026-10-14T10:18:25.241Z",
   "collections": [
     {
       "name": "users",
@@ -5887,6 +5887,130 @@
         },
         {
           "name": "observacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "cdv_lote_pendencias",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "lote",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "cdv_lotes"
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tipo_pendencia",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "nota_fiscal_destinador",
+            "foto_pesagem",
+            "art_responsavel_tecnico",
+            "baixa_detran",
+            "mtr_sinir",
+            "termo_descontaminacao",
+            "laudo_pericial",
+            "outro"
+          ]
+        },
+        {
+          "name": "respondente_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "respondente_email",
+          "type": "email",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "respondente_papel",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["pendente", "preenchida", "cancelada"]
+        },
+        {
+          "name": "data_atribuicao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "data_resolucao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resolvido_por_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resolvido_por_email",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "comprovante_documento_ref",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "observacao_resolucao",
           "type": "text",
           "required": false,
           "system": false
