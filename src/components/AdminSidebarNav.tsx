@@ -11,6 +11,7 @@ import {
   Layers,
   Sparkles,
   FileText,
+  TrendingUp,
 } from 'lucide-react'
 
 interface AdminSidebarNavProps {
@@ -163,8 +164,16 @@ export function AdminSidebarNav({
 
         <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
           <Link
+            to="/painel-resultados"
+            className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-300 border border-emerald-800/40 text-[11px] font-semibold text-center transition-colors flex items-center justify-center gap-1"
+            title="Painel Executivo de Resultados"
+          >
+            <span>Resultados</span>
+            <TrendingUp className="w-3 h-3 text-emerald-400" />
+          </Link>
+          <Link
             to="/painel"
-            className="flex-1 py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium text-center transition-colors flex items-center justify-center gap-1"
+            className="flex-1 py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium text-center transition-colors flex items-center justify-center gap-1"
           >
             <span>Meu Portal</span>
             <ExternalLink className="w-3 h-3" />

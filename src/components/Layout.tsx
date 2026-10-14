@@ -28,6 +28,7 @@ import {
   Compass,
   GraduationCap,
   Mail,
+  TrendingUp,
 } from 'lucide-react'
 
 export default function Layout() {
@@ -601,15 +602,25 @@ export default function Layout() {
                     </Link>
                   )}
 
-                  {/* Papel CLIENTE (inclui cliente_acp e default) -> "Meu Portal" (/painel) */}
+                  {/* Papel CLIENTE (inclui cliente_acp e default) -> "Meu Portal" (/painel) & Atalho Painel de Resultados */}
                   {isCliente && !isGestao && !isPerito && !isParceiro && (
-                    <Link
-                      to="/painel"
-                      className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
-                    >
-                      <LayoutDashboard className="w-4 h-4 stroke-[1.8] shrink-0" />
-                      <span>Meu Portal</span>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        to="/painel-resultados"
+                        title="Painel Executivo de Resultados"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-[#059669] border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0E1A2E] hover:border-emerald-300 dark:hover:border-emerald-800 transition-all min-h-[44px]"
+                      >
+                        <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+                        <span className="hidden xl:inline">Painel de Resultados</span>
+                      </Link>
+                      <Link
+                        to="/painel"
+                        className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
+                      >
+                        <LayoutDashboard className="w-4 h-4 stroke-[1.8] shrink-0" />
+                        <span>Meu Portal</span>
+                      </Link>
+                    </div>
                   )}
 
                   <div className="flex items-center pl-1.5 xl:pl-2 border-l border-slate-200 dark:border-slate-800 shrink-0">
@@ -921,14 +932,24 @@ export default function Layout() {
                   )}
 
                   {isCliente && !isGestao && !isPerito && !isParceiro && (
-                    <Link
-                      to="/painel"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 min-h-[44px] flex items-center justify-center gap-2"
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      <span>Meu Portal</span>
-                    </Link>
+                    <>
+                      <Link
+                        to="/painel-resultados"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full text-center py-2 rounded-lg text-xs font-semibold border border-emerald-500/30 text-emerald-400 bg-emerald-950/20 hover:bg-emerald-950/40 min-h-[40px] flex items-center justify-center gap-2"
+                      >
+                        <TrendingUp className="w-4 h-4 text-emerald-400" />
+                        <span>Painel de Resultados</span>
+                      </Link>
+                      <Link
+                        to="/painel"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 min-h-[44px] flex items-center justify-center gap-2"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        <span>Meu Portal</span>
+                      </Link>
+                    </>
                   )}
 
                   <button

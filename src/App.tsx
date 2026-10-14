@@ -34,6 +34,7 @@ import RedefinirSenhaPage from './pages/RedefinirSenhaPage'
 import ConfirmarEmailPage from './pages/ConfirmarEmailPage'
 import PreferenciasEmailPage from './pages/PreferenciasEmailPage'
 import PainelCliente from './pages/PainelCliente'
+import PainelResultadosPage from './pages/PainelResultadosPage'
 import ConsoleAuditor from './pages/ConsoleAuditor'
 import MeuConsentimentoPeritoLgpdPage from './pages/MeuConsentimentoPeritoLgpdPage'
 import AdminConsolePage from './pages/AdminConsolePage'
@@ -231,6 +232,18 @@ const App = () => (
                   <PainelCliente />
                 </ProtectedRoute>
               }
+            />
+            <Route
+              path="/painel-resultados"
+              element={
+                <ProtectedRoute>
+                  <PainelResultadosPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/painel/resultados"
+              element={<RedirectPreserveQuery to="/painel-resultados" />}
             />
             <Route
               path="/console-do-auditor"

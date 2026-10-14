@@ -23,6 +23,7 @@ import {
   Coins,
   KeyRound,
   Sliders,
+  TrendingUp,
 } from 'lucide-react'
 import { ModalAlterarSenha } from '@/components/ModalAlterarSenha'
 import { simularGreenCapitalEngine } from '@/services/greenCapitalEngine'
@@ -826,8 +827,45 @@ export default function PainelCliente() {
           />
         </div>
 
+        {/* BANNER ATALHO PARA O NOVO PAINEL DE RESULTADOS EXECUTIVO */}
+        <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-600/5 to-transparent border border-emerald-500/30 dark:border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Painel de Resultados Executivo</span>
+                <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  Para Bancos & Conselho
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                Visão consolidada de lotes, massa recuperada, CO₂e confirmado dos lotes, quebra por
+                material e exportação CSV.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/painel-resultados"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white shadow-sm shrink-0 transition-all"
+          >
+            <span>Acessar Resultados</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
         {/* SELETOR DE ABAS DO MÓDULO FISCAL & MOTOR PERICIAL */}
         <div className="flex border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] mb-8 gap-2 overflow-x-auto max-w-full min-w-0">
+          <Link
+            to="/painel-resultados"
+            className="pb-3 px-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 border-transparent text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-2 whitespace-nowrap"
+            title="Abrir o Painel Executivo de Resultados"
+          >
+            <TrendingUp className="w-4 h-4 text-emerald-500" />
+            <span>Painel de Resultados (Executivo)</span>
+          </Link>
+
           <button
             type="button"
             onClick={() => setAbaFiscalAtiva('dmrv_emissoes')}

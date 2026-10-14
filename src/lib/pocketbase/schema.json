@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T10:45:27.840Z",
+  "generatedAt": "2026-10-14T10:54:34.592Z",
   "collections": [
     {
       "name": "users",
@@ -6030,7 +6030,10 @@
           "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": []
+      "indexes": [
+        "CREATE INDEX `idx_cdv_lote_pendencias_lote` ON `cdv_lote_pendencias` (lote)",
+        "CREATE INDEX `idx_cdv_lote_pendencias_status` ON `cdv_lote_pendencias` (status)"
+      ]
     },
     {
       "name": "empresa_configuracoes",
