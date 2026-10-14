@@ -253,3 +253,250 @@ Diretrizes obrigatórias:
     return e.json(500, { error: err.message || 'Erro interno na triagem de ingestão.' })
   }
 })
+
+// Rota dedicada de leitura e extração estruturada de Nota Fiscal via agente nativo "triador-ingestao-cdv"
+// Suporta envio multipart (arquivo PDF/imagem) ou payload JSON com texto/markdown extraído
+routerAdd('POST', '/backend/v1/cdv/leitura-nota', (e) => {
+  try {
+    let userId = e.auth ? e.auth.id : null
+    if (!userId) {
+      try {
+        const anonUser = $app.findAuthRecordByEmail('users', 'visitante-ia@orbisprotocol.com')
+        userId = anonUser.id
+      } catch (_) {
+        return e.json(500, { error: 'Usuário de atendimento não configurado no backend.' })
+      }
+    }
+
+    let textoDocumento = ''
+    let nomeArquivo = ''
+    let isTruncated = false
+
+    // 1. Tentar ler arquivo enviado via multipart ("arquivo" ou "documento" ou "file")
+    let files = null
+    try {
+      files = e.findUploadedFiles('arquivo')
+      if (!files || files.length === 0) {
+        files = e.findUploadedFiles('documento')
+      }
+      if (!files || files.length === 0) {
+        files = e.findUploadedFiles('file')
+      }
+    } catch (_) {
+      files = null
+    }
+
+    if (files && files.length > 0) {
+      const file = files[0]
+      nomeArquivo = file.name || 'documento_nota_fiscal'
+      try {
+        if (typeof $documents !== 'undefined' && typeof $documents.toMarkdown === 'function') {
+          const docRes = $documents.toMarkdown({ file: file })
+          textoDocumento = docRes.markdown || ''
+          isTruncated = Boolean(docRes.truncated)
+        }
+      } catch (docErr) {
+        // Se o PDF for escaneado sem OCR ou formato ilegível
+        if (docErr && docErr.status === 422) {
+          return e.json(200, {
+            sucesso_leitura: false,
+            degradacao_graciosa: true,
+            motivo: 'Documento escaneado sem camada de texto selecionável.',
+            mensagem_aviso: 'Não foi possível ler o documento — preenchimento manual.',
+            dados_sugeridos: null,
+          })
+        }
+        console.log('[Triador NF-e] Aviso na conversão $documents.toMarkdown:', docErr)
+      }
+    }
+
+    // 2. Se não veio por multipart ou toMarkdown não retornou texto, verifica se veio no body JSON
+    if (!textoDocumento) {
+      const body = e.requestInfo().body || {}
+      textoDocumento =
+        body.texto ||
+        body.markdown ||
+        body.conteudo ||
+        body.xml ||
+        (body.dados ? JSON.stringify(body.dados) : '')
+      if (body.nome_arquivo) {
+        nomeArquivo = String(body.nome_arquivo)
+      }
+    }
+
+    // Degradação graciosa imediata se não houver texto legível para análise
+    if (!textoDocumento || textoDocumento.trim().length === 0) {
+      return e.json(200, {
+        sucesso_leitura: false,
+        degradacao_graciosa: true,
+        motivo: 'Nenhum texto legível encontrado no arquivo anexado.',
+        mensagem_aviso: 'Não foi possível ler o documento — preenchimento manual.',
+        dados_sugeridos: null,
+      })
+    }
+
+    // 3. Montar prompt estruturado de extração para o agente nativo "triador-ingestao-cdv"
+    const promptExtracao = `Você deve ler a seguinte Nota Fiscal / DANFE / Documento de Coleta e extrair os dados estruturais estritos para SUGESTÃO de pré-preenchimento:
+
+--- INÍCIO DO DOCUMENTO (${nomeArquivo || 'Anexo'}) ---
+${textoDocumento.slice(0, 15000)}
+--- FIM DO DOCUMENTO ---
+
+Instruções obrigatórias:
+1. Extraia com precisão:
+   - "numero_nota": número da nota fiscal
+   - "serie": série da nota (default: "1")
+   - "data_emissao": data no formato YYYY-MM-DD
+   - "emitente_razao_social": nome/razão social da empresa emitente
+   - "emitente_cnpj": CNPJ do emitente (apenas dígitos ou formatado)
+   - "destinatario_razao_social": nome/razão social do destinatário
+   - "destinatario_cnpj_cpf": CNPJ ou CPF do destinatário
+   - "descricao_material": descrição consolidada do produto/resíduo/peça
+   - "peso_liquido_kg": peso líquido em kg (numérico, default 0)
+   - "peso_bruto_kg": peso bruto em kg (numérico, default 0)
+   - "valor_total": valor total da nota em R$ (numérico, default 0)
+   - "itens": lista de itens com descrição, ncm, quantidade, valor_total, peso_kg, categoria_sugerida (aco, aluminio, cobre, polimeros, concreto, agro_rastreado, outros)
+2. NUNCA decida nem calcule CO₂e, fatores de desconto ou hash SHA-256 (regra inegociável do Orbis Protocol).
+3. Responda ESTRITAMENTE em formato JSON:
+{
+  "sucesso_leitura": true,
+  "confianca_geral": "alta" | "media" | "baixa",
+  "documento_tipo": "NFE" | "DANFE" | "CTE" | "DESCONHECIDO",
+  "dados_extraidos": {
+    "numero_nota": string,
+    "serie": string,
+    "data_emissao": string,
+    "emitente_razao_social": string,
+    "emitente_cnpj": string,
+    "destinatario_razao_social": string,
+    "destinatario_cnpj_cpf": string,
+    "descricao_material": string,
+    "peso_liquido_kg": number,
+    "peso_bruto_kg": number,
+    "valor_total": number,
+    "itens": [ ... ]
+  },
+  "alertas": [ string ],
+  "mensagem_operador": string
+}`
+
+    let agentResponse = ''
+    try {
+      const result = $ai.agent('triador-ingestao-cdv').chat({
+        user_id: userId,
+        message: promptExtracao,
+      })
+      agentResponse = result.content || ''
+    } catch (agentErr) {
+      console.log('[Triador NF-e] Aviso chamada agente IA:', agentErr)
+    }
+
+    // 4. Parse do JSON retornado pelo agente
+    let parsed = null
+    if (agentResponse) {
+      try {
+        const jsonMatch = agentResponse.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[0])
+        }
+      } catch (parseErr) {
+        console.log('[Triador NF-e] Erro no parse do JSON retornado pelo agente:', parseErr)
+      }
+    }
+
+    if (parsed && parsed.dados_extraidos) {
+      return e.json(200, {
+        sucesso_leitura: true,
+        degradacao_graciosa: false,
+        fonte: 'agente_nativo',
+        agente: 'triador-ingestao-cdv',
+        documento_arquivo: nomeArquivo,
+        documento_truncado: isTruncated,
+        confianca: parsed.confianca_geral || 'alta',
+        tipo_documento: parsed.documento_tipo || 'DANFE',
+        dados_sugeridos: parsed.dados_extraidos,
+        alertas: parsed.alertas || [],
+        mensagem_operador:
+          parsed.mensagem_operador ||
+          'Valores extraídos pela leitura da nota fiscal. Revise e confirme antes de salvar.',
+      })
+    }
+
+    // 5. Degradação Graciosa: se o agente não conseguiu extrair ou gerou resposta inválida,
+    // tenta regex determinístico básico nos campos estruturais para nunca deixar o usuário na mão
+    const numMatch = textoDocumento.match(/(?:N[ºo°F\.\s]*|NF-?e\s*[:\s]*)([0-9]{1,9})/i)
+    const cnpjEmitMatch = textoDocumento.match(
+      /([0-9]{2}\.?[0-9]{3}\.?[0-9]{3}\/?[0-9]{4}-?[0-9]{2})/i,
+    )
+    const valorMatch = textoDocumento.match(
+      /(?:VALOR\s+TOTAL(?:\s+DA\s+NOTA)?|TOTAL\s+NF|V\.?\s*TOTAL)[\s:]*R?\$?\s*([0-9\.\,]+)/i,
+    )
+    const pesoMatch = textoDocumento.match(
+      /(?:PESO\s+L[ÍI]QUIDO|PESO\s+BRUTO|PESO)[\s:]*([0-9\.\,]+)/i,
+    )
+
+    const parseNumStr = (str) => {
+      if (!str) return 0
+      const c = str.replace(/\./g, '').replace(',', '.')
+      const n = parseFloat(c)
+      return isNaN(n) ? 0 : n
+    }
+
+    const fallbackSugestoes = {
+      numero_nota: numMatch ? numMatch[1] : '',
+      serie: '1',
+      data_emissao: new Date().toISOString().slice(0, 10),
+      emitente_razao_social: '',
+      emitente_cnpj: cnpjEmitMatch ? cnpjEmitMatch[1] : '',
+      destinatario_razao_social: '',
+      destinatario_cnpj_cpf: '',
+      descricao_material: 'Material constante na nota fiscal',
+      peso_liquido_kg: pesoMatch ? parseNumStr(pesoMatch[1]) : 0,
+      peso_bruto_kg: pesoMatch ? parseNumStr(pesoMatch[1]) : 0,
+      valor_total: valorMatch ? parseNumStr(valorMatch[1]) : 0,
+      itens: [],
+    }
+
+    const temAlgumDado = Boolean(
+      fallbackSugestoes.numero_nota ||
+      fallbackSugestoes.emitente_cnpj ||
+      fallbackSugestoes.valor_total,
+    )
+
+    if (temAlgumDado) {
+      return e.json(200, {
+        sucesso_leitura: true,
+        degradacao_graciosa: false,
+        fonte: 'extracao_contingencia',
+        agente: 'triador-ingestao-cdv',
+        documento_arquivo: nomeArquivo,
+        documento_truncado: isTruncated,
+        confianca: 'media',
+        tipo_documento: 'DANFE',
+        dados_sugeridos: fallbackSugestoes,
+        alertas: ['Leitura efetuada por motor heurístico de contingência.'],
+        mensagem_operador:
+          'Sugestões parciais identificadas. Verifique e complete os campos manuais.',
+      })
+    }
+
+    // Falha limpa com degradação graciosa (sem 500)
+    return e.json(200, {
+      sucesso_leitura: false,
+      degradacao_graciosa: true,
+      motivo: 'Não foi possível extrair campos estruturais do documento.',
+      mensagem_aviso: 'Não foi possível ler o documento — preenchimento manual.',
+      dados_sugeridos: null,
+    })
+  } catch (err) {
+    console.log('[Triador NF-e] Erro na rota /backend/v1/cdv/leitura-nota:', err)
+    // Degradação graciosa: responde 200 com flag de falha limpa para não quebrar o frontend
+    return e.json(200, {
+      sucesso_leitura: false,
+      degradacao_graciosa: true,
+      motivo: err.message || 'Instabilidade temporária na leitura documental.',
+      mensagem_aviso: 'Não foi possível ler o documento — preenchimento manual.',
+      dados_sugeridos: null,
+    })
+  }
+})

@@ -47,7 +47,9 @@ import { obterMoverAmpliadoHabilitado } from '@/services/platformSettingsService
 import { ShieldCheck, Info } from 'lucide-react'
 import { EtiquetaImpressaoModal } from '@/components/EtiquetaImpressaoModal'
 import { GestaoPendenciasRespondentes } from '@/components/GestaoPendenciasRespondentes'
-import { QrCode, Globe, History, ListTodo } from 'lucide-react'
+import { FormularioIngestaoLoteLeituraNfe } from '@/components/FormularioIngestaoLoteLeituraNfe'
+import { type LoteComAuditoriaPreenchimento } from '@/services/leitorNotaFiscalService'
+import { QrCode, Globe, History, ListTodo, FileText } from 'lucide-react'
 
 interface ConsoleApisCdvTabProps {
   cdvNome: string
@@ -836,8 +838,67 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
         </div>
       </div>
 
+      {/* 2.5. FLUXO DE COLETA: PRÉ-PREENCHIMENTO POR LEITURA DE NOTA FISCAL (AGENTE NATIVO SKIP CLOUD) */}
+      <div className="space-y-4">
+        <FormularioIngestaoLoteLeituraNfe
+          usuarioAtual={{
+            nome: 'Operador Responsável CDV',
+            email: 'operador@orbisprotocol.com',
+          }}
+          onLoteConfirmado={(loteAuditado: LoteComAuditoriaPreenchimento) => {
+            // Quando o usuário confirma, pode transferir ou atualizar o payload para o testador/ingestão
+            try {
+              const pecasConvertidas =
+                loteAuditado.itens && loteAuditado.itens.length > 0
+                  ? loteAuditado.itens.map((it, idx) => ({
+                      sku: `NFE-${loteAuditado.numero_nota}-ITEM-${idx + 1}`,
+                      descricao: it.descricao,
+                      material: it.categoria_sugerida || 'Aço Laminado Automotivo',
+                      peso_kg: it.peso_kg || 5.0,
+                      ncm: it.ncm || '8708.29.99',
+                    }))
+                  : [
+                      {
+                        sku: `NFE-${loteAuditado.numero_nota}-REC`,
+                        descricao: loteAuditado.descricao_material || 'Peças automotivas do lote',
+                        material: 'Aço Laminado Automotivo',
+                        peso_kg: loteAuditado.peso_liquido_kg || 15.0,
+                        ncm: '8708.29.99',
+                      },
+                    ]
+
+              const novoPayload: IngestaoLoteInput = {
+                cdv: {
+                  nome:
+                    loteAuditado.destinatario_razao_social ||
+                    cdvNome ||
+                    'CDVerde Centro de Desmontagem Veicular',
+                  cnpj: loteAuditado.destinatario_cnpj_cpf || cdvCnpj || '76.123.456/0001-00',
+                  codigo: cdvCodigo || 'DETRAN-PR-CDV-0089',
+                  responsavel_crea: 'CREA-PR 182.940/D - Eng. Marcelo Brandão',
+                },
+                veiculo_doador: {
+                  marca_modelo: `Lote NF-e ${loteAuditado.numero_nota} (${loteAuditado.emitente_razao_social || 'Fornecedor Homologado'})`,
+                  chassi: '9BWAA05U0DP991204',
+                  placa: 'NF-E9912',
+                  baixa_detran: `PR-NFE-${loteAuditado.numero_nota}`,
+                  seguradora_sinistro: loteAuditado.emitente_razao_social || 'Desmontagem Veicular',
+                },
+                pecas: pecasConvertidas,
+                origem: 'erp',
+              }
+
+              setPayloadJsonStr(JSON.stringify(novoPayload, null, 2))
+            } catch {
+              /* intentionally ignored */
+            }
+          }}
+        />
+      </div>
+
       {/* 3. TESTADOR EM TEMPO REAL (SANDBOX REST) */}
       <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 shadow-sm">
+        {' '}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Terminal className="w-5 h-5 text-[#059669]" />
@@ -867,7 +928,6 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
           endpoint calculará os fatores de emissão evitada, gerará os selos e hashes SHA-256 e
           retornará os DPPs criados.
         </p>
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Editor JSON */}
           <div className="lg:col-span-7 space-y-2">
