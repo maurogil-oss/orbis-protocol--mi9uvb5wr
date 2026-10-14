@@ -42,6 +42,11 @@ import {
   obterMoverAmpliadoHabilitado,
   setMoverAmpliadoHabilitado,
 } from '@/services/platformSettingsService'
+import {
+  obterConfiguracaoEmpresa,
+  salvarLeituraAssistidaEmpresa,
+  type EmpresaConfiguracaoDTO,
+} from '@/services/empresaConfigService'
 import { GerenciadorLastrosTab } from '@/components/GerenciadorLastrosTab'
 import { CcrlrSinirInteroperabilidadeTab } from '@/components/CcrlrSinirInteroperabilidadeTab'
 import { PainelDmrvEmissoesEvitadas } from '@/components/PainelDmrvEmissoesEvitadas'
@@ -424,11 +429,52 @@ export default function AdminConsolePage() {
   const [moverAmpliadoHabilitado, setMoverAmpliadoHabilitadoState] = useState<boolean>(false)
   const [salvandoMoverFlag, setSalvandoMoverFlag] = useState<boolean>(false)
 
+  // Estado para Configurações da Empresa: Leitura assistida de documentos
+  const [configEmpresaAtual, setConfigEmpresaAtual] = useState<EmpresaConfiguracaoDTO>({
+    empresaCnpj: 'PADRAO',
+    empresaNome: 'Empresa Matriz / Geral',
+    leituraAssistidaAtiva: true,
+  })
+  const [salvandoLeituraAssistida, setSalvandoLeituraAssistida] = useState<boolean>(false)
+  const [cnpjEmpresaConfigFiltro, setCnpjEmpresaConfigFiltro] = useState<string>('')
+
   useEffect(() => {
     obterMoverAmpliadoHabilitado()
       .then((val) => setMoverAmpliadoHabilitadoState(val))
       .catch(() => {})
-  }, [])
+
+    obterConfiguracaoEmpresa(cnpjEmpresaConfigFiltro || undefined)
+      .then((cfg) => setConfigEmpresaAtual(cfg))
+      .catch(() => {})
+  }, [cnpjEmpresaConfigFiltro])
+
+  const handleToggleLeituraAssistida = async () => {
+    if (isReadOnly) return
+    const novoValor = !configEmpresaAtual.leituraAssistidaAtiva
+    setSalvandoLeituraAssistida(true)
+    try {
+      const responsavel = user?.email || user?.name || 'Gestor Master'
+      const cnpjAlvo = cnpjEmpresaConfigFiltro || configEmpresaAtual.empresaCnpj || 'PADRAO'
+      const nomeAlvo = configEmpresaAtual.empresaNome || 'Empresa Geral'
+
+      const salvo = await salvarLeituraAssistidaEmpresa({
+        empresaCnpj: cnpjAlvo,
+        empresaNome: nomeAlvo,
+        leituraAssistidaAtiva: novoValor,
+        responsavelNomeOuEmail: responsavel,
+      })
+      setConfigEmpresaAtual(salvo)
+      mostrarMensagem(
+        novoValor
+          ? 'Leitura assistida de documentos ATIVADA com registro de auditoria!'
+          : 'Leitura assistida de documentos DESATIVADA: formulário funcionará em modo 100% manual.',
+      )
+    } catch (err: any) {
+      alert('Erro ao atualizar configuração de leitura assistida: ' + err.message)
+    } finally {
+      setSalvandoLeituraAssistida(false)
+    }
+  }
 
   const handleToggleMoverAmpliado = async () => {
     if (isReadOnly) return
@@ -4035,9 +4081,125 @@ export default function AdminConsolePage() {
                   Parâmetros Regulatórios & Governança da Plataforma
                 </h2>
                 <p className="text-xs text-[#93A3B5]">
-                  Controle de escopo metodológico para centros de desmontagem veicular (CDV) e
-                  catálogo oficial.
+                  Controle de escopo metodológico para centros de desmontagem veicular (CDV),
+                  configurações por empresa e catálogo oficial.
                 </p>
+              </div>
+
+              {/* SEÇÃO: CONFIGURAÇÕES DA EMPRESA (LEITURA ASSISTIDA DE DOCUMENTOS) */}
+              <div
+                data-testid="secao-configuracoes-empresa"
+                className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-6"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[rgba(244,247,250,0.08)]">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full uppercase font-bold bg-[#12B886]/10 text-[#12B886] border border-[#12B886]/30">
+                      Configurações da Empresa
+                    </span>
+                    <h3 className="font-heading font-bold text-base text-[#F4F7FA]">
+                      Leitura Assistida de Documentos (NF-e / DANFE)
+                    </h3>
+                    <p className="text-xs text-[#93A3B5]">
+                      Controle da oferta do fluxo de leitura assistida de documentos no formulário
+                      de ingestão. Ativa por padrão. Quando desativada, o formulário de coleta segue
+                      100% manual sem menção a anexos ou leitura.
+                    </p>
+                  </div>
+
+                  {/* Seletor / Filtro por Empresa Cadastrada (se houver clientes) */}
+                  {clientes.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <label className="text-[#93A3B5] font-semibold text-[11px]">
+                        Empresa / CNPJ:
+                      </label>
+                      <select
+                        value={cnpjEmpresaConfigFiltro}
+                        onChange={(e) => setCnpjEmpresaConfigFiltro(e.target.value)}
+                        className="px-3 py-1.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] text-[#F4F7FA] font-mono text-xs focus:outline-none focus:border-[#12B886]"
+                      >
+                        <option value="">Geral / Padrão da Plataforma</option>
+                        {clientes
+                          .filter((c) => c.cnpj)
+                          .map((c) => (
+                            <option key={c.id} value={c.cnpj}>
+                              {c.name || c.razao_social || c.email} ({c.cnpj})
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div className="space-y-1 max-w-2xl">
+                    <div className="flex items-center gap-2">
+                      <span className="font-heading font-semibold text-sm text-[#F4F7FA]">
+                        Leitura assistida de documentos
+                      </span>
+                      <span
+                        data-testid="badge-status-leitura-assistida"
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase font-bold border ${
+                          configEmpresaAtual.leituraAssistidaAtiva
+                            ? 'bg-[#12B886]/10 text-[#12B886] border-[#12B886]/30'
+                            : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                        }`}
+                      >
+                        {configEmpresaAtual.leituraAssistidaAtiva ? 'ATIVA (PADRÃO)' : 'DESATIVADA'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#93A3B5] leading-relaxed">
+                      Ao desativar para esta empresa, o formulário de coleta do lote de peças não
+                      exibirá o controle de anexo/leitura por IA. A coleta funcionará 100% de forma
+                      manual sem bloqueios ou menções de leitura assistida.
+                    </p>
+
+                    {/* Metadados de Auditoria da Decisão */}
+                    {configEmpresaAtual.alteradaEm && (
+                      <div
+                        data-testid="auditoria-leitura-assistida"
+                        className="flex items-center gap-2 text-[11px] font-mono text-[#D9B36C] pt-2"
+                      >
+                        <span>Decisão registrada em:</span>
+                        <strong>
+                          {new Date(configEmpresaAtual.alteradaEm).toLocaleString('pt-BR')}
+                        </strong>
+                        <span>• Responsável:</span>
+                        <strong className="text-[#12B886]">
+                          {configEmpresaAtual.alteradaPor || 'Gestor Master'}
+                        </strong>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button
+                      type="button"
+                      data-testid="toggle-leitura-assistida-empresa"
+                      disabled={isReadOnly || salvandoLeituraAssistida}
+                      onClick={handleToggleLeituraAssistida}
+                      className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-40 ${
+                        configEmpresaAtual.leituraAssistidaAtiva ? 'bg-[#12B886]' : 'bg-[#16202B]'
+                      }`}
+                      role="switch"
+                      aria-checked={configEmpresaAtual.leituraAssistidaAtiva}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                          configEmpresaAtual.leituraAssistidaAtiva
+                            ? 'translate-x-7'
+                            : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                    <span className="text-xs font-bold text-[#F4F7FA]">
+                      {salvandoLeituraAssistida
+                        ? 'Gravando decisão...'
+                        : configEmpresaAtual.leituraAssistidaAtiva
+                          ? 'Ativa'
+                          : 'Desativada'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="p-6 sm:p-8 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.1)] space-y-6">

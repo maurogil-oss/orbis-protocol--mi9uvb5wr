@@ -3,12 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { FormularioIngestaoLoteLeituraNfe } from '../FormularioIngestaoLoteLeituraNfe'
 import * as leitorService from '@/services/leitorNotaFiscalService'
+import * as empresaConfigService from '@/services/empresaConfigService'
 
-describe('FormularioIngestaoLoteLeituraNfe Componente', () => {
+describe('FormularioIngestaoLoteLeituraNfe', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
+    empresaConfigService._limparMemoriaConfiguracaoEmpresa()
   })
-
   it('1. Renderiza o formulário vazio inicialmente com gravação bloqueada até confirmação humana', () => {
     render(<FormularioIngestaoLoteLeituraNfe />)
 
@@ -184,5 +185,62 @@ describe('FormularioIngestaoLoteLeituraNfe Componente', () => {
     const inputNota = screen.getByTestId('input-numero-nota') as HTMLInputElement
     fireEvent.change(inputNota, { target: { value: '999' } })
     expect(inputNota.value).toBe('999')
+  })
+
+  it('5. Quando configuração da empresa estiver DESATIVADA, controle de anexo/leitura não é oferecido e coleta manual funciona 100%', async () => {
+    const onLoteConfirmadoMock = vi.fn()
+
+    render(
+      <FormularioIngestaoLoteLeituraNfe
+        leituraAssistidaHabilitada={false}
+        onLoteConfirmado={onLoteConfirmadoMock}
+        usuarioAtual={{ nome: 'Operador Manual', email: 'op@dmrv.com' }}
+      />,
+    )
+
+    // A seção de anexo e leitura da NF NÃO deve existir no DOM
+    expect(screen.queryByTestId('secao-anexo-leitura-nfe')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Anexar Nota Fiscal \/ DANFE/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Selecionar Documento/i)).not.toBeInTheDocument()
+
+    // O cabeçalho reflete o preenchimento manual sem menção a leitura
+    expect(screen.getByText(/Coleta do Lote • Preenchimento Manual/i)).toBeInTheDocument()
+
+    // Operador preenche manualmente os campos obrigatórios
+    const inputNota = screen.getByTestId('input-numero-nota')
+    fireEvent.change(inputNota, { target: { value: 'NF-7890' } })
+
+    const inputEmitente = screen.getByTestId('input-emitente-nome')
+    fireEvent.change(inputEmitente, { target: { value: 'Metalúrgica Manual Ltda' } })
+
+    const inputDesc = screen.getByTestId('input-descricao-material')
+    fireEvent.change(inputDesc, { target: { value: 'Carcaça de motor coletada' } })
+
+    // Confirma lote normalmente
+    const btnConfirmar = screen.getByTestId('btn-confirmar-lote')
+    fireEvent.click(btnConfirmar)
+
+    expect(onLoteConfirmadoMock).toHaveBeenCalledTimes(1)
+    const lote = onLoteConfirmadoMock.mock.calls[0][0]
+    expect(lote.numero_nota).toBe('NF-7890')
+    expect(lote.auditoria.fonte_leitura).toBe('manual')
+    expect(lote.auditoria.campos['numero_nota'].origem).toBe('manual')
+  })
+
+  it('6. Default ausente na empresa: trata como ATIVA e degrada graciosamente', async () => {
+    // Configuração não existe para o CNPJ informado
+    vi.spyOn(empresaConfigService, 'obterConfiguracaoEmpresa').mockResolvedValue({
+      empresaCnpj: '00.000.000/0001-99',
+      empresaNome: 'Empresa Sem Config',
+      leituraAssistidaAtiva: true, // Default gracioso
+    })
+
+    render(<FormularioIngestaoLoteLeituraNfe empresaCnpj="00.000.000/0001-99" />)
+
+    await waitFor(() => {
+      // Por padrão ausente, leitura assistida fica ativa e o anexo é oferecido
+      expect(screen.getByTestId('secao-anexo-leitura-nfe')).toBeInTheDocument()
+      expect(screen.getByText(/Anexar Nota Fiscal \/ DANFE/i)).toBeInTheDocument()
+    })
   })
 })

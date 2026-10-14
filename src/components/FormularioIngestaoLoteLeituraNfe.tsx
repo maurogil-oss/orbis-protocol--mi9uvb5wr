@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   FileText,
   Upload,
@@ -20,9 +20,12 @@ import {
   type ItemNfeSugerido,
   type LoteComAuditoriaPreenchimento,
 } from '@/services/leitorNotaFiscalService'
+import { obterConfiguracaoEmpresa } from '@/services/empresaConfigService'
 
 interface FormularioIngestaoLoteLeituraNfeProps {
   loteId?: string
+  empresaCnpj?: string
+  leituraAssistidaHabilitada?: boolean
   usuarioAtual?: {
     nome?: string
     email?: string
@@ -48,10 +51,46 @@ const VALORES_INICIAIS_VAZIOS: DadosNotaFiscalSugeridos = {
 
 export function FormularioIngestaoLoteLeituraNfe({
   loteId,
+  empresaCnpj,
+  leituraAssistidaHabilitada,
   usuarioAtual,
   onLoteConfirmado,
   onCancelar,
 }: FormularioIngestaoLoteLeituraNfeProps) {
+  // Configuração por empresa: leitura assistida de documentos (ativa por padrão, default: true)
+  const [leituraAtiva, setLeituraAtiva] = useState<boolean>(() => {
+    if (typeof leituraAssistidaHabilitada === 'boolean') {
+      return leituraAssistidaHabilitada
+    }
+    return true
+  })
+
+  useEffect(() => {
+    // Se a prop foi explicitamente informada, respeita
+    if (typeof leituraAssistidaHabilitada === 'boolean') {
+      setLeituraAtiva(leituraAssistidaHabilitada)
+      return
+    }
+
+    // Caso contrário, busca a configuração da empresa no serviço (fallback gracioso: ativa)
+    let isMounted = true
+    obterConfiguracaoEmpresa(empresaCnpj)
+      .then((cfg) => {
+        if (isMounted) {
+          setLeituraAtiva(cfg.leituraAssistidaAtiva)
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setLeituraAtiva(true)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [empresaCnpj, leituraAssistidaHabilitada])
+
   // Estado do formulário editável pelo operador
   const [valoresForm, setValoresForm] = useState<DadosNotaFiscalSugeridos>(VALORES_INICIAIS_VAZIOS)
 
@@ -273,15 +312,18 @@ export function FormularioIngestaoLoteLeituraNfe({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-heading font-bold text-base text-slate-900 dark:text-[#F8FAFC]">
-                Coleta do Lote • Pré-preenchimento por Leitura de Nota Fiscal
+                {leituraAtiva
+                  ? 'Coleta do Lote • Pré-preenchimento por Leitura de Nota Fiscal'
+                  : 'Coleta do Lote • Preenchimento Manual'}
               </h3>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 dMRV
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-[#94A3B8]">
-              Anexe a NF-e / DANFE em PDF ou imagem. O Triador Skip Cloud sugere os campos, você
-              revisa e confirma.
+              {leituraAtiva
+                ? 'Anexe a NF-e / DANFE em PDF ou imagem. O Triador Skip Cloud sugere os campos, você revisa e confirma.'
+                : 'Informe os dados estruturais do lote de peças para auditoria e cálculo pericial.'}
             </p>
           </div>
         </div>
@@ -294,110 +336,115 @@ export function FormularioIngestaoLoteLeituraNfe({
         </div>
       </div>
 
-      {/* ÁREA DE ANEXO DO DOCUMENTO FISCAL */}
-      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-dashed border-slate-300 dark:border-slate-700 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <span className="text-xs font-bold text-slate-900 dark:text-[#F8FAFC] flex items-center gap-1.5">
-              <Upload className="w-3.5 h-3.5 text-indigo-500" />
-              Anexar Nota Fiscal / DANFE (PDF ou Imagem)
-            </span>
-            <p className="text-[11px] text-slate-500 dark:text-[#94A3B8]">
-              Formatos aceitos: PDF com texto selecionável, PNG ou JPG. Tamanho máximo: 10 MB.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.png,.jpg,.jpeg,.xml"
-              onChange={handleSelecionarArquivo}
-              disabled={isLendoDocumento}
-              className="hidden"
-              id="input-nota-fiscal-coleta"
-            />
-            <label
-              htmlFor="input-nota-fiscal-coleta"
-              className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm ${
-                isLendoDocumento
-                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                  : 'bg-indigo-600 dark:bg-indigo-700 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600'
-              }`}
-            >
-              {isLendoDocumento ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Lendo documento via Triador...</span>
-                </>
-              ) : (
-                <>
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Selecionar Documento</span>
-                </>
-              )}
-            </label>
-          </div>
-        </div>
-
-        {arquivoSelecionado && (
-          <div className="flex items-center justify-between text-xs font-mono text-slate-600 dark:text-slate-300 bg-white dark:bg-[#0E1A2E] p-2 rounded-lg border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-2 truncate">
-              <FileCheck2 className="w-4 h-4 text-emerald-600 dark:text-[#059669] shrink-0" />
-              <span className="truncate font-semibold">{arquivoSelecionado.name}</span>
-              <span className="text-[10px] text-slate-400">
-                ({(arquivoSelecionado.size / 1024).toFixed(1)} KB)
+      {/* ÁREA DE ANEXO DO DOCUMENTO FISCAL (SOMENTE QUANDO LEITURA ASSISTIDA ESTIVER ATIVA) */}
+      {leituraAtiva && (
+        <div
+          data-testid="secao-anexo-leitura-nfe"
+          className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-dashed border-slate-300 dark:border-slate-700 space-y-3"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-slate-900 dark:text-[#F8FAFC] flex items-center gap-1.5">
+                <Upload className="w-3.5 h-3.5 text-indigo-500" />
+                Anexar Nota Fiscal / DANFE (PDF ou Imagem)
               </span>
+              <p className="text-[11px] text-slate-500 dark:text-[#94A3B8]">
+                Formatos aceitos: PDF com texto selecionável, PNG ou JPG. Tamanho máximo: 10 MB.
+              </p>
             </div>
-            {sugestoesRecebidas && (
-              <button
-                type="button"
-                onClick={handleDescartarSugestoes}
-                className="text-[11px] text-rose-600 dark:text-rose-400 hover:underline shrink-0 ml-2"
-              >
-                Descartar sugestões
-              </button>
-            )}
-          </div>
-        )}
 
-        {/* FEEDBACK: SUCESSO DE LEITURA OU DEGRADAÇÃO GRACIOSA */}
-        {sucessoLeituraMsg && (
-          <div
-            data-testid="aviso-sucesso-leitura"
-            className="p-3 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/60 text-xs text-indigo-950 dark:text-indigo-200 space-y-1"
-          >
-            <div className="flex items-center justify-between font-semibold">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                {sucessoLeituraMsg}
-              </span>
-              <button
-                type="button"
-                onClick={handleConfirmarTodasSugestoes}
-                className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg,.xml"
+                onChange={handleSelecionarArquivo}
+                disabled={isLendoDocumento}
+                className="hidden"
+                id="input-nota-fiscal-coleta"
+              />
+              <label
+                htmlFor="input-nota-fiscal-coleta"
+                className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm ${
+                  isLendoDocumento
+                    ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                    : 'bg-indigo-600 dark:bg-indigo-700 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600'
+                }`}
               >
-                Confirmar todas as sugestões
-              </button>
+                {isLendoDocumento ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Lendo documento via Triador...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Selecionar Documento</span>
+                  </>
+                )}
+              </label>
             </div>
-            {alertasLeitura.length > 0 && (
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                {alertasLeitura.join(' | ')}
+          </div>
+
+          {arquivoSelecionado && (
+            <div className="flex items-center justify-between text-xs font-mono text-slate-600 dark:text-slate-300 bg-white dark:bg-[#0E1A2E] p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 truncate">
+                <FileCheck2 className="w-4 h-4 text-emerald-600 dark:text-[#059669] shrink-0" />
+                <span className="truncate font-semibold">{arquivoSelecionado.name}</span>
+                <span className="text-[10px] text-slate-400">
+                  ({(arquivoSelecionado.size / 1024).toFixed(1)} KB)
+                </span>
               </div>
-            )}
-          </div>
-        )}
+              {sugestoesRecebidas && (
+                <button
+                  type="button"
+                  onClick={handleDescartarSugestoes}
+                  className="text-[11px] text-rose-600 dark:text-rose-400 hover:underline shrink-0 ml-2"
+                >
+                  Descartar sugestões
+                </button>
+              )}
+            </div>
+          )}
 
-        {avisoDegradacao && (
-          <div
-            data-testid="aviso-degradacao-graciosa"
-            className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2"
-          >
-            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="font-medium">{avisoDegradacao}</span>
-          </div>
-        )}
-      </div>
+          {/* FEEDBACK: SUCESSO DE LEITURA OU DEGRADAÇÃO GRACIOSA */}
+          {sucessoLeituraMsg && (
+            <div
+              data-testid="aviso-sucesso-leitura"
+              className="p-3 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/60 text-xs text-indigo-950 dark:text-indigo-200 space-y-1"
+            >
+              <div className="flex items-center justify-between font-semibold">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                  {sucessoLeituraMsg}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleConfirmarTodasSugestoes}
+                  className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  Confirmar todas as sugestões
+                </button>
+              </div>
+              {alertasLeitura.length > 0 && (
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                  {alertasLeitura.join(' | ')}
+                </div>
+              )}
+            </div>
+          )}
+
+          {avisoDegradacao && (
+            <div
+              data-testid="aviso-degradacao-graciosa"
+              className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2"
+            >
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="font-medium">{avisoDegradacao}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* FORMULÁRIO EDITÁVEL DO LOTE */}
       <form onSubmit={handleConfirmarLoteFinal} className="space-y-5">
