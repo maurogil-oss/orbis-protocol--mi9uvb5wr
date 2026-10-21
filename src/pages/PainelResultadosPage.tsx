@@ -22,6 +22,7 @@ import {
   Leaf,
   Info,
   Calendar,
+  Printer,
   PieChart as PieChartIcon,
 } from 'lucide-react'
 import {
@@ -46,6 +47,7 @@ import {
   normalizarCnpj,
   type DadosPainelResultados,
 } from '@/services/painelResultadosService'
+import { RelatorioExecutivoPrintModal } from '@/components/RelatorioExecutivoPrintModal'
 
 export default function PainelResultadosPage() {
   useSeo({
@@ -59,6 +61,7 @@ export default function PainelResultadosPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [erroMsg, setErroMsg] = useState<string | null>(null)
   const [periodoSelecionado, setPeriodoSelecionado] = useState<12 | 6 | 3>(12)
+  const [modalPdfAberto, setModalPdfAberto] = useState(false)
 
   // Identifica o CNPJ da empresa do usuário logado
   // Pode estar no user.cnpj, ou em um lead associado ao usuário
@@ -351,10 +354,23 @@ export default function PainelResultadosPage() {
                   data-testid="btn-exportar-csv"
                   onClick={handleExportarCsv}
                   disabled={!dados || !dados.possuiEmpresaAssociada || isLoading}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  title="Exportar planilha analítica CSV"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>CSV</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-testid="btn-exportar-pdf-executivo"
+                  onClick={() => setModalPdfAberto(true)}
+                  disabled={!dados || !dados.possuiEmpresaAssociada || isLoading}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  title="Exportar relatório executivo de 1 página A4 para bancos/conselho"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Exportar PDF executivo</span>
                 </button>
 
                 <Link
@@ -1038,6 +1054,15 @@ export default function PainelResultadosPage() {
           </div>
         </div>
       </div>
+
+      {/* MODAL DE PRÉ-VISUALIZAÇÃO E IMPRESSÃO DO PDF EXECUTIVO (1 PÁGINA A4) */}
+      <RelatorioExecutivoPrintModal
+        aberto={modalPdfAberto}
+        onClose={() => setModalPdfAberto(false)}
+        dados={dados}
+        periodoSelecionado={periodoSelecionado}
+        empresaContexto={empresaContexto}
+      />
     </div>
   )
 }

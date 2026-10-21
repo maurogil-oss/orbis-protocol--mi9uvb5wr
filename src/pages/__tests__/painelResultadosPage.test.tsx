@@ -364,5 +364,256 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
 
     // Nota obrigatória de que a plataforma apura o CO2e dos lotes e NÃO emite créditos
     expect(screen.getAllByText(/NÃO emite créditos de carbono/i).length).toBeGreaterThan(0)
+
+    // Botão "Exportar PDF executivo" presente ao lado do CSV
+    const btnPdf = screen.getByTestId('btn-exportar-pdf-executivo')
+    expect(btnPdf).toBeInTheDocument()
+    expect(btnPdf).toHaveTextContent(/Exportar PDF executivo/i)
+    expect(screen.getByTestId('btn-exportar-csv')).toBeInTheDocument()
+  })
+
+  it('abre o modal de PDF executivo de 1 página A4 com dados da empresa e dispara window.print()', async () => {
+    const originalPrint = window.print
+    window.print = vi.fn()
+
+    vi.mocked(AuthContextModule.useAuth).mockReturnValue({
+      user: {
+        id: 'usr-cliente',
+        name: 'Gestor Alfa',
+        cnpj: '12.345.678/0001-90',
+        razao_social: 'Desmonte Alfa Ltda',
+      } as any,
+      role: 'cliente',
+      token: 'fake-token',
+      isAuthenticated: true,
+      isLoading: false,
+      isMaster: false,
+      isAdmin: false,
+      isFinanceiro: false,
+      isFinanceiroLeitor: false,
+      isController: false,
+      isClienteAcp: false,
+      isParceiro: false,
+      isAdminOrPerito: false,
+      isGestaoPendente: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshAuth: vi.fn(),
+      requestPasswordReset: vi.fn(),
+      confirmPasswordReset: vi.fn(),
+      requestVerification: vi.fn(),
+      confirmVerification: vi.fn(),
+    })
+
+    mockCarregarDados.mockResolvedValue({
+      cnpjEmpresa: '12.345.678/0001-90',
+      nomeEmpresa: 'Desmonte Alfa Ltda',
+      possuiEmpresaAssociada: true,
+      periodoMeses: 6,
+      kpis: {
+        lotesEmColeta: 3,
+        lotesValidadosConfirmados: 8,
+        massaRecuperadaKg: 15400,
+        massaRecuperadaToneladas: 15.4,
+        co2eConfirmadoTotalKg: 33800,
+        co2eConfirmadoTotalTco2e: 33.8,
+        documentosAtestadosEmitidos: 8,
+        documentosRelatoriosPreliminares: 2,
+        pendenciasColetaEmAberto: 0,
+        tendencias: {
+          lotesEmColeta: {
+            valorAtualMes: 3,
+            valorMesAnterior: 2,
+            diferencaAbsoluta: 1,
+            percentualVariacao: 50,
+            direcao: 'alta',
+            rotuloVariacao: '+50,0%',
+          },
+          lotesValidadosConfirmados: {
+            valorAtualMes: 8,
+            valorMesAnterior: 6,
+            diferencaAbsoluta: 2,
+            percentualVariacao: 33.3,
+            direcao: 'alta',
+            rotuloVariacao: '+33,3%',
+          },
+          massaRecuperadaKg: {
+            valorAtualMes: 15400,
+            valorMesAnterior: 12000,
+            diferencaAbsoluta: 3400,
+            percentualVariacao: 28.3,
+            direcao: 'alta',
+            rotuloVariacao: '+28,3%',
+          },
+          co2eConfirmadoTotalKg: {
+            valorAtualMes: 33800,
+            valorMesAnterior: 26000,
+            diferencaAbsoluta: 7800,
+            percentualVariacao: 30,
+            direcao: 'alta',
+            rotuloVariacao: '+30,0%',
+          },
+          documentosEmitidos: {
+            valorAtualMes: 8,
+            valorMesAnterior: 8,
+            diferencaAbsoluta: 0,
+            percentualVariacao: 0,
+            direcao: 'neutro',
+            rotuloVariacao: 'Estável',
+          },
+          pendenciasColetaEmAberto: {
+            valorAtualMes: 0,
+            valorMesAnterior: 0,
+            diferencaAbsoluta: 0,
+            percentualVariacao: 0,
+            direcao: 'neutro',
+            rotuloVariacao: '0',
+          },
+        },
+      },
+      evolucaoMensal: [
+        {
+          mesChave: '2026-03',
+          mesRotulo: 'mar/26',
+          massaKg: 7000,
+          co2eConfirmadoKg: 15000,
+          co2eConfirmadoTco2e: 15.0,
+          lotesCount: 4,
+        },
+        {
+          mesChave: '2026-04',
+          mesRotulo: 'abr/26',
+          massaKg: 8400,
+          co2eConfirmadoKg: 18800,
+          co2eConfirmadoTco2e: 18.8,
+          lotesCount: 4,
+        },
+      ],
+      quebraPorMaterial: [
+        {
+          categoria: 'aco',
+          nomeExibicao: 'Aço / Ferrosos',
+          pesoKg: 11000,
+          percentualPeso: 71.4,
+          co2eConfirmadoKg: 23980,
+          percentualCo2e: 70.9,
+        },
+        {
+          categoria: 'aluminio',
+          nomeExibicao: 'Alumínio',
+          pesoKg: 2400,
+          percentualPeso: 15.6,
+          co2eConfirmadoKg: 7420,
+          percentualCo2e: 22.0,
+        },
+        {
+          categoria: 'cobre',
+          nomeExibicao: 'Cobre / Fios',
+          pesoKg: 1000,
+          percentualPeso: 6.5,
+          co2eConfirmadoKg: 1400,
+          percentualCo2e: 4.1,
+        },
+        {
+          categoria: 'polimeros',
+          nomeExibicao: 'Polímeros / Plásticos',
+          pesoKg: 1000,
+          percentualPeso: 6.5,
+          co2eConfirmadoKg: 1000,
+          percentualCo2e: 3.0,
+        },
+      ],
+      statusConformidade: {
+        lotesComAtestadoAtivo: 8,
+        lotesEmColeta: 3,
+        lotesComPendencias: 0,
+        lotesAnuladosOuRejeitados: 0,
+        totalLotes: 11,
+      },
+      statusDossie: [
+        {
+          statusChave: 'em_coleta',
+          rotulo: 'Em Coleta',
+          quantidade: 3,
+          cor: '#F59E0B',
+          percentual: 27.3,
+        },
+        {
+          statusChave: 'validado',
+          rotulo: 'Validado',
+          quantidade: 8,
+          cor: '#3B82F6',
+          percentual: 72.7,
+        },
+        {
+          statusChave: 'confirmado',
+          rotulo: 'Confirmado',
+          quantidade: 8,
+          cor: '#6366F1',
+          percentual: 72.7,
+        },
+        {
+          statusChave: 'atestado',
+          rotulo: 'Atestado Orbis',
+          quantidade: 8,
+          cor: '#10B981',
+          percentual: 72.7,
+        },
+      ],
+      totalPecasRastreadas: 120,
+    })
+
+    render(
+      <MemoryRouter>
+        <PainelResultadosPage />
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('btn-exportar-pdf-executivo')).toBeInTheDocument()
+    })
+
+    // Clica no botão para abrir a pré-visualização do PDF executivo
+    fireEvent.click(screen.getByTestId('btn-exportar-pdf-executivo'))
+
+    expect(screen.getByTestId('modal-pdf-executivo')).toBeInTheDocument()
+    expect(screen.getByTestId('folha-a4-executiva')).toBeInTheDocument()
+
+    // Valida elementos do PDF executivo:
+    // 1. Cabeçalho com identificação da empresa (CNPJ e Razão Social) e período
+    expect(screen.getAllByText('12.345.678/0001-90').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Desmonte Alfa Ltda').length).toBeGreaterThan(0)
+    expect(screen.getByText(/Painel Executivo de Descarbonização/i)).toBeInTheDocument()
+
+    // 2. Os 6 KPIs com valores
+    expect(screen.getAllByText('15,40').length).toBeGreaterThan(0) // Massa em toneladas
+    expect(screen.getAllByText('33,80').length).toBeGreaterThan(0) // CO2e em tCO2e
+
+    // 3. Rosca por material e percentuais
+    expect(screen.getByText('71,4%')).toBeInTheDocument()
+    expect(screen.getByText('15,6%')).toBeInTheDocument()
+
+    // 4. Resumo por status do dossiê com contagem e percentual
+    expect(screen.getByText(/Resumo por Status do Dossiê dos Lotes/i)).toBeInTheDocument()
+    expect(screen.getByText('27,3%')).toBeInTheDocument()
+    expect(screen.getAllByText('72,7%').length).toBeGreaterThanOrEqual(1)
+
+    // 5. Gráfico mensal / tabela de evolução mensal
+    expect(screen.getByTestId('grafico-print-barras-mensais')).toBeInTheDocument()
+
+    // 6. Rodapé mandatório com aviso e menção ao Atestado Orbis
+    expect(screen.getAllByText(/a plataforma apura o CO₂e dos lotes e/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/NÃO emite créditos de carbono/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Atestado Orbis dMRV/i).length).toBeGreaterThan(0)
+
+    // 7. Regra Opção B: sem fatores expostos
+    expect(screen.queryByText(/Fator de Emissão \(kgCO2e\/kg\)/i)).not.toBeInTheDocument()
+
+    // 8. Disparo do print
+    const btnDispararPrint = screen.getByTestId('btn-disparar-print')
+    fireEvent.click(btnDispararPrint)
+    expect(window.print).toHaveBeenCalledTimes(1)
+
+    window.print = originalPrint
   })
 })
