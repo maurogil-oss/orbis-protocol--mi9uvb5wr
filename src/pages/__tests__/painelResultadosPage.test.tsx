@@ -54,6 +54,7 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
       cnpjEmpresa: '',
       nomeEmpresa: 'Perito Externo Sem CNPJ',
       possuiEmpresaAssociada: false,
+      periodoMeses: 12,
       kpis: {
         lotesEmColeta: 0,
         lotesValidadosConfirmados: 0,
@@ -74,6 +75,36 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
         lotesAnuladosOuRejeitados: 0,
         totalLotes: 0,
       },
+      statusDossie: [
+        {
+          statusChave: 'em_coleta',
+          rotulo: 'Em Coleta',
+          quantidade: 0,
+          cor: '#F59E0B',
+          percentual: 0,
+        },
+        {
+          statusChave: 'validado',
+          rotulo: 'Validado',
+          quantidade: 0,
+          cor: '#3B82F6',
+          percentual: 0,
+        },
+        {
+          statusChave: 'confirmado',
+          rotulo: 'Confirmado',
+          quantidade: 0,
+          cor: '#6366F1',
+          percentual: 0,
+        },
+        {
+          statusChave: 'atestado',
+          rotulo: 'Atestado Orbis',
+          quantidade: 0,
+          cor: '#10B981',
+          percentual: 0,
+        },
+      ],
       totalPecasRastreadas: 0,
     })
 
@@ -128,6 +159,7 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
       cnpjEmpresa: '12.345.678/0001-90',
       nomeEmpresa: 'Desmonte Alfa Ltda',
       possuiEmpresaAssociada: true,
+      periodoMeses: 12,
       kpis: {
         lotesEmColeta: 2,
         lotesValidadosConfirmados: 5,
@@ -138,6 +170,56 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
         documentosAtestadosEmitidos: 5,
         documentosRelatoriosPreliminares: 3,
         pendenciasColetaEmAberto: 1,
+        tendencias: {
+          lotesEmColeta: {
+            valorAtualMes: 2,
+            valorMesAnterior: 1,
+            diferencaAbsoluta: 1,
+            percentualVariacao: 100,
+            direcao: 'alta',
+            rotuloVariacao: '+100,0% vs mês ant.',
+          },
+          lotesValidadosConfirmados: {
+            valorAtualMes: 5,
+            valorMesAnterior: 4,
+            diferencaAbsoluta: 1,
+            percentualVariacao: 25,
+            direcao: 'alta',
+            rotuloVariacao: '+25,0% vs mês ant.',
+          },
+          massaRecuperadaKg: {
+            valorAtualMes: 12500,
+            valorMesAnterior: 10000,
+            diferencaAbsoluta: 2500,
+            percentualVariacao: 25,
+            direcao: 'alta',
+            rotuloVariacao: '+25,0% vs mês ant.',
+          },
+          co2eConfirmadoTotalKg: {
+            valorAtualMes: 28400,
+            valorMesAnterior: 22000,
+            diferencaAbsoluta: 6400,
+            percentualVariacao: 29.1,
+            direcao: 'alta',
+            rotuloVariacao: '+29,1% vs mês ant.',
+          },
+          documentosEmitidos: {
+            valorAtualMes: 5,
+            valorMesAnterior: 5,
+            diferencaAbsoluta: 0,
+            percentualVariacao: 0,
+            direcao: 'neutro',
+            rotuloVariacao: 'Estável vs mês ant.',
+          },
+          pendenciasColetaEmAberto: {
+            valorAtualMes: 1,
+            valorMesAnterior: 2,
+            diferencaAbsoluta: -1,
+            percentualVariacao: -50,
+            direcao: 'baixa',
+            rotuloVariacao: '-50,0% vs mês ant.',
+          },
+        },
       },
       evolucaoMensal: [
         {
@@ -152,7 +234,7 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
       quebraPorMaterial: [
         {
           categoria: 'aco',
-          nomeExibicao: 'Aço Estrutural / Laminado',
+          nomeExibicao: 'Aço / Ferrosos',
           pesoKg: 8500,
           percentualPeso: 68,
           co2eConfirmadoKg: 18530,
@@ -160,11 +242,35 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
         },
         {
           categoria: 'aluminio',
-          nomeExibicao: 'Alumínio Automotivo',
+          nomeExibicao: 'Alumínio',
           pesoKg: 1500,
           percentualPeso: 12,
           co2eConfirmadoKg: 6200,
           percentualCo2e: 21.8,
+        },
+        {
+          categoria: 'cobre',
+          nomeExibicao: 'Cobre / Fios',
+          pesoKg: 500,
+          percentualPeso: 4,
+          co2eConfirmadoKg: 1200,
+          percentualCo2e: 4.2,
+        },
+        {
+          categoria: 'polimeros',
+          nomeExibicao: 'Polímeros / Plásticos',
+          pesoKg: 1000,
+          percentualPeso: 8,
+          co2eConfirmadoKg: 1400,
+          percentualCo2e: 4.9,
+        },
+        {
+          categoria: 'outros',
+          nomeExibicao: 'Outros Materiais',
+          pesoKg: 1000,
+          percentualPeso: 8,
+          co2eConfirmadoKg: 1070,
+          percentualCo2e: 3.9,
         },
       ],
       statusConformidade: {
@@ -174,6 +280,36 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
         lotesAnuladosOuRejeitados: 0,
         totalLotes: 7,
       },
+      statusDossie: [
+        {
+          statusChave: 'em_coleta',
+          rotulo: 'Em Coleta',
+          quantidade: 2,
+          cor: '#F59E0B',
+          percentual: 28.6,
+        },
+        {
+          statusChave: 'validado',
+          rotulo: 'Validado',
+          quantidade: 5,
+          cor: '#3B82F6',
+          percentual: 71.4,
+        },
+        {
+          statusChave: 'confirmado',
+          rotulo: 'Confirmado',
+          quantidade: 5,
+          cor: '#6366F1',
+          percentual: 71.4,
+        },
+        {
+          statusChave: 'atestado',
+          rotulo: 'Atestado Orbis',
+          quantidade: 5,
+          cor: '#10B981',
+          percentual: 71.4,
+        },
+      ],
       totalPecasRastreadas: 84,
     })
 
@@ -187,26 +323,46 @@ describe('PainelResultadosPage — Componente e Comportamento', () => {
       expect(screen.getByTestId('kpi-lotes-confirmados')).toBeInTheDocument()
     })
 
-    // KPIs renderizados
+    // 1. Filtro de período no topo (3 / 6 / 12 meses)
+    expect(screen.getByTestId('filtro-periodo-container')).toBeInTheDocument()
+    expect(screen.getByTestId('filtro-periodo-3m')).toBeInTheDocument()
+    expect(screen.getByTestId('filtro-periodo-6m')).toBeInTheDocument()
+    expect(screen.getByTestId('filtro-periodo-12m')).toBeInTheDocument()
+
+    // 2. KPIs renderizados com indicadores de tendência vs mês anterior
     expect(screen.getByTestId('kpi-lotes-em-coleta')).toHaveTextContent('2')
     expect(screen.getByTestId('kpi-lotes-confirmados')).toHaveTextContent('5')
     expect(screen.getByTestId('kpi-massa-recuperada')).toHaveTextContent('12.500')
     expect(screen.getByTestId('kpi-co2e-confirmado')).toHaveTextContent('28,40')
     expect(screen.getByTestId('kpi-pendencias-aberto')).toHaveTextContent('1')
+    expect(screen.getAllByTestId(/tendencia-badge-/).length).toBeGreaterThanOrEqual(5)
+
+    // 3. Gráfico de barras mensais comparativas (massa × CO₂e lado a lado)
+    expect(screen.getByTestId('secao-barras-comparativas-mensais')).toBeInTheDocument()
+    expect(screen.getByTestId('grafico-barras-lado-a-lado')).toBeInTheDocument()
+
+    // 4. Gráfico de rosca (donut) colorido por material com percentuais exibidos
+    expect(screen.getByTestId('secao-grafico-donut-materiais')).toBeInTheDocument()
+    expect(screen.getByTestId('donut-material-aco')).toHaveTextContent('68,0%')
+    expect(screen.getByTestId('donut-material-aluminio')).toHaveTextContent('12,0%')
+    expect(screen.getByTestId('donut-material-cobre')).toHaveTextContent('4,0%')
+
+    // 5. Gráfico de barras por status do dossiê (em coleta, validado, confirmado, atestado)
+    expect(screen.getByTestId('secao-grafico-status-dossie')).toBeInTheDocument()
+    expect(screen.getByTestId('status-dossie-em_coleta')).toBeInTheDocument()
+    expect(screen.getByTestId('status-dossie-validado')).toBeInTheDocument()
+    expect(screen.getByTestId('status-dossie-confirmado')).toBeInTheDocument()
+    expect(screen.getByTestId('status-dossie-atestado')).toBeInTheDocument()
 
     // Terminologia obrigatória presente
     expect(screen.getByText(/Centro de Desmonte/i)).toBeInTheDocument()
     expect(screen.getAllByText(/validado\/confirmado/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Atestado Orbis/i).length).toBeGreaterThan(0)
 
-    // Quebra por material sem fatores
-    expect(screen.getByTestId('secao-distribuicao-materiais')).toBeInTheDocument()
-    expect(screen.getByText('Aço Estrutural / Laminado')).toBeInTheDocument()
-
     // Regra Opção B: sem coluna ou menção a catálogo de fatores na tabela
     expect(screen.queryByText(/Fator de Emissão \(kgCO2e\/kg\)/i)).not.toBeInTheDocument()
 
-    // Status de conformidade
-    expect(screen.getByTestId('secao-status-conformidade')).toBeInTheDocument()
+    // Nota obrigatória de que a plataforma apura o CO2e dos lotes e NÃO emite créditos
+    expect(screen.getAllByText(/NÃO emite créditos de carbono/i).length).toBeGreaterThan(0)
   })
 })

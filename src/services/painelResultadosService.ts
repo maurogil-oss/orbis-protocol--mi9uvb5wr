@@ -20,6 +20,17 @@ import pb from '@/lib/pocketbase/client'
 import type { CdvLoteRecord, CdvPecaRecord } from '@/services/cdvService'
 import type { CdvLotePendenciaRecord } from '@/services/cdvPendenciasService'
 
+export type PeriodoMeses = 3 | 6 | 12
+
+export interface IndicadorTendencia {
+  valorAtualMes: number
+  valorMesAnterior: number
+  diferencaAbsoluta: number
+  percentualVariacao: number | null // null se mês anterior for 0
+  direcao: 'alta' | 'baixa' | 'neutro'
+  rotuloVariacao: string
+}
+
 export interface KpisPainelResultados {
   lotesEmColeta: number
   lotesValidadosConfirmados: number
@@ -30,6 +41,15 @@ export interface KpisPainelResultados {
   documentosAtestadosEmitidos: number
   documentosRelatoriosPreliminares: number
   pendenciasColetaEmAberto: number
+  // Tendências vs mês anterior para os 6 KPIs principais
+  tendencias?: {
+    lotesEmColeta: IndicadorTendencia
+    lotesValidadosConfirmados: IndicadorTendencia
+    massaRecuperadaKg: IndicadorTendencia
+    co2eConfirmadoTotalKg: IndicadorTendencia
+    documentosEmitidos: IndicadorTendencia
+    pendenciasColetaEmAberto: IndicadorTendencia
+  }
 }
 
 export interface PontoEvolucaoMensal {
@@ -58,14 +78,24 @@ export interface StatusConformidadeResultados {
   totalLotes: number
 }
 
+export interface StatusDossieItem {
+  statusChave: 'em_coleta' | 'validado' | 'confirmado' | 'atestado'
+  rotulo: string
+  quantidade: number
+  cor: string
+  percentual: number
+}
+
 export interface DadosPainelResultados {
   cnpjEmpresa: string
   nomeEmpresa: string
   possuiEmpresaAssociada: boolean
+  periodoMeses: PeriodoMeses
   kpis: KpisPainelResultados
   evolucaoMensal: PontoEvolucaoMensal[]
   quebraPorMaterial: QuebraMaterialResultado[]
   statusConformidade: StatusConformidadeResultados
+  statusDossie: StatusDossieItem[]
   totalPecasRastreadas: number
 }
 
@@ -77,6 +107,7 @@ export interface InputAgregacaoPainel {
   pendencias: CdvLotePendenciaRecord[]
   selosAtestados?: any[]
   relatoriosExportados?: any[]
+  periodoMeses?: PeriodoMeses
 }
 
 /**
@@ -156,11 +187,11 @@ export function formatarMesChaveERotulo(dataIso?: string | null): {
 /**
  * Gera lista contínua com os últimos 12 meses anteriores/atuais para que o gráfico não fique quebrado
  */
-export function gerarUltimos12Meses(): Array<{ chave: string; rotulo: string }> {
+export function gerarUltimosNMeses(n: number = 12): Array<{ chave: string; rotulo: string }> {
   const meses: Array<{ chave: string; rotulo: string }> = []
   const dataRef = new Date()
 
-  for (let i = 11; i >= 0; i--) {
+  for (let i = n - 1; i >= 0; i--) {
     const d = new Date(Date.UTC(dataRef.getUTCFullYear(), dataRef.getUTCMonth() - i, 1))
     const ano = d.getUTCFullYear()
     const mesNum = d.getUTCMonth() + 1
@@ -189,6 +220,62 @@ export function gerarUltimos12Meses(): Array<{ chave: string; rotulo: string }> 
   return meses
 }
 
+export function gerarUltimos12Meses(): Array<{ chave: string; rotulo: string }> {
+  return gerarUltimosNMeses(12)
+}
+
+/**
+ * Calcula a variação de um indicador entre o mês atual e o mês anterior.
+ */
+export function calcularTendencia(
+  valorAtualMes: number,
+  valorMesAnterior: number,
+): IndicadorTendencia {
+  const diferencaAbsoluta = valorAtualMes - valorMesAnterior
+  let percentualVariacao: number | null = null
+  let direcao: 'alta' | 'baixa' | 'neutro' = 'neutro'
+
+  if (valorMesAnterior === 0) {
+    if (valorAtualMes > 0) {
+      direcao = 'alta'
+      percentualVariacao = 100
+    } else {
+      direcao = 'neutro'
+      percentualVariacao = 0
+    }
+  } else {
+    const pct = ((valorAtualMes - valorMesAnterior) / Math.abs(valorMesAnterior)) * 100
+    percentualVariacao = Math.round(pct * 10) / 10
+    if (percentualVariacao > 0.1) {
+      direcao = 'alta'
+    } else if (percentualVariacao < -0.1) {
+      direcao = 'baixa'
+    } else {
+      direcao = 'neutro'
+    }
+  }
+
+  let rotuloVariacao = 'Estável vs mês ant.'
+  if (direcao === 'alta') {
+    rotuloVariacao = `+${Math.abs(percentualVariacao ?? 0)
+      .toFixed(1)
+      .replace('.', ',')}% vs mês ant.`
+  } else if (direcao === 'baixa') {
+    rotuloVariacao = `-${Math.abs(percentualVariacao ?? 0)
+      .toFixed(1)
+      .replace('.', ',')}% vs mês ant.`
+  }
+
+  return {
+    valorAtualMes,
+    valorMesAnterior,
+    diferencaAbsoluta,
+    percentualVariacao,
+    direcao,
+    rotuloVariacao,
+  }
+}
+
 /**
  * Agregação pura em memória dos dados dos lotes, peças, pendências e documentos.
  * Respeita isolamento absoluto pelo CNPJ da empresa.
@@ -197,11 +284,15 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
   const cnpjAlvoLimpo = normalizarCnpj(input.cnpjEmpresa)
   const possuiEmpresa = Boolean(cnpjAlvoLimpo && cnpjAlvoLimpo.length >= 8)
 
+  const periodoMeses: PeriodoMeses =
+    input.periodoMeses === 3 || input.periodoMeses === 6 ? input.periodoMeses : 12
+
   if (!possuiEmpresa) {
     return {
       cnpjEmpresa: '',
       nomeEmpresa: input.nomeEmpresa || 'Sem empresa vinculada',
       possuiEmpresaAssociada: false,
+      periodoMeses,
       kpis: {
         lotesEmColeta: 0,
         lotesValidadosConfirmados: 0,
@@ -212,8 +303,16 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
         documentosAtestadosEmitidos: 0,
         documentosRelatoriosPreliminares: 0,
         pendenciasColetaEmAberto: 0,
+        tendencias: {
+          lotesEmColeta: calcularTendencia(0, 0),
+          lotesValidadosConfirmados: calcularTendencia(0, 0),
+          massaRecuperadaKg: calcularTendencia(0, 0),
+          co2eConfirmadoTotalKg: calcularTendencia(0, 0),
+          documentosEmitidos: calcularTendencia(0, 0),
+          pendenciasColetaEmAberto: calcularTendencia(0, 0),
+        },
       },
-      evolucaoMensal: gerarUltimos12Meses().map((m) => ({
+      evolucaoMensal: gerarUltimosNMeses(periodoMeses).map((m) => ({
         mesChave: m.chave,
         mesRotulo: m.rotulo,
         massaKg: 0,
@@ -270,6 +369,36 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
         lotesAnuladosOuRejeitados: 0,
         totalLotes: 0,
       },
+      statusDossie: [
+        {
+          statusChave: 'em_coleta',
+          rotulo: 'Em Coleta / Pátio',
+          quantidade: 0,
+          cor: '#F59E0B',
+          percentual: 0,
+        },
+        {
+          statusChave: 'validado',
+          rotulo: 'Validado',
+          quantidade: 0,
+          cor: '#3B82F6',
+          percentual: 0,
+        },
+        {
+          statusChave: 'confirmado',
+          rotulo: 'Confirmado',
+          quantidade: 0,
+          cor: '#6366F1',
+          percentual: 0,
+        },
+        {
+          statusChave: 'atestado',
+          rotulo: 'Atestado Orbis',
+          quantidade: 0,
+          cor: '#10B981',
+          percentual: 0,
+        },
+      ],
       totalPecasRastreadas: 0,
     }
   }
@@ -361,14 +490,48 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
   // Relatórios preliminares exportados pela empresa
   const documentosRelatoriosPreliminares = relatorios.length
 
-  // 6. Evolução no Tempo (Série mensal dos últimos 12 meses)
-  const mapaUltimos12 = new Map<
+  // 6. Evolução no Tempo (Série mensal filtrada pelo período selecionado: 3, 6 ou 12 meses)
+  const mapaPeriodo = new Map<
     string,
     { mesRotulo: string; massaKg: number; co2eKg: number; lotesCount: number }
   >()
-  const lista12 = gerarUltimos12Meses()
-  for (const m of lista12) {
-    mapaUltimos12.set(m.chave, { mesRotulo: m.rotulo, massaKg: 0, co2eKg: 0, lotesCount: 0 })
+  const listaPeriodo = gerarUltimosNMeses(periodoMeses)
+  for (const m of listaPeriodo) {
+    mapaPeriodo.set(m.chave, { mesRotulo: m.rotulo, massaKg: 0, co2eKg: 0, lotesCount: 0 })
+  }
+
+  // Também precisamos dos 2 meses mais recentes para o cálculo de tendência mês atual vs mês anterior
+  const lista2MesesRecentes = gerarUltimosNMeses(2)
+  const chaveMesAtual = lista2MesesRecentes[lista2MesesRecentes.length - 1]?.chave
+  const chaveMesAnterior = lista2MesesRecentes[lista2MesesRecentes.length - 2]?.chave
+
+  // Acumuladores específicos por mês para tendência
+  const metricasPorMes = new Map<
+    string,
+    {
+      massaKg: number
+      co2eKg: number
+      lotesEmColeta: number
+      lotesConfirmados: number
+      documentos: number
+      pendencias: number
+    }
+  >()
+
+  const obterOuCriarMetricasMes = (chave: string) => {
+    let m = metricasPorMes.get(chave)
+    if (!m) {
+      m = {
+        massaKg: 0,
+        co2eKg: 0,
+        lotesEmColeta: 0,
+        lotesConfirmados: 0,
+        documentos: 0,
+        pendencias: 0,
+      }
+      metricasPorMes.set(chave, m)
+    }
+    return m
   }
 
   for (const lote of lotesEmpresa) {
@@ -377,29 +540,43 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
     const dataRef = lote.created || (lote as any).data_emissao || new Date().toISOString()
     const { chave, rotulo } = formatarMesChaveERotulo(dataRef)
 
-    const entrada = mapaUltimos12.get(chave)
-    if (entrada) {
-      entrada.massaKg += Number(lote.total_peso_kg || 0)
-      entrada.co2eKg += Number(lote.total_co2e_evitado_kg || 0)
-      entrada.lotesCount += 1
+    const pesoLote = Number(lote.total_peso_kg || 0)
+    const co2eLote = Number(lote.total_co2e_evitado_kg || 0)
+    const isProc = lote.status === 'processado'
+
+    const mm = obterOuCriarMetricasMes(chave)
+    mm.massaKg += pesoLote
+    mm.co2eKg += co2eLote
+    if (isProc) {
+      mm.lotesConfirmados += 1
+      mm.documentos += 1
     } else {
-      // Se tiver lote com data anterior ou posterior aos 12 meses padrão, adiciona no mapa
-      mapaUltimos12.set(chave, {
-        mesRotulo: rotulo,
-        massaKg: Number(lote.total_peso_kg || 0),
-        co2eKg: Number(lote.total_co2e_evitado_kg || 0),
-        lotesCount: 1,
-      })
+      mm.lotesEmColeta += 1
+    }
+
+    const pendenciasDoLote = pendenciasPorLote.get(lote.id) || []
+    if (pendenciasDoLote.some((p) => p.status === 'pendente')) {
+      mm.pendencias += pendenciasDoLote.filter((p) => p.status === 'pendente').length
+    }
+
+    const entrada = mapaPeriodo.get(chave)
+    if (entrada) {
+      entrada.massaKg += pesoLote
+      entrada.co2eKg += co2eLote
+      entrada.lotesCount += 1
     }
   }
 
-  const chavesOrdenadas = Array.from(mapaUltimos12.keys()).sort()
-  // Manter os últimos 12 meses mais recentes
-  const chavesFinais = chavesOrdenadas.slice(-12)
-  const evolucaoMensal: PontoEvolucaoMensal[] = chavesFinais.map((chave) => {
-    const d = mapaUltimos12.get(chave)!
+  // Chaves ordenadas do período selecionado
+  const evolucaoMensal: PontoEvolucaoMensal[] = listaPeriodo.map((pontoMes) => {
+    const d = mapaPeriodo.get(pontoMes.chave) || {
+      mesRotulo: pontoMes.rotulo,
+      massaKg: 0,
+      co2eKg: 0,
+      lotesCount: 0,
+    }
     return {
-      mesChave: chave,
+      mesChave: pontoMes.chave,
       mesRotulo: d.mesRotulo,
       massaKg: Math.round(d.massaKg * 100) / 100,
       co2eConfirmadoKg: Math.round(d.co2eKg * 100) / 100,
@@ -407,6 +584,39 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
       lotesCount: d.lotesCount,
     }
   })
+
+  // Apuração de tendências vs mês anterior
+  const dadosMesAtual = metricasPorMes.get(chaveMesAtual) || {
+    massaKg: 0,
+    co2eKg: 0,
+    lotesEmColeta: 0,
+    lotesConfirmados: 0,
+    documentos: 0,
+    pendencias: 0,
+  }
+  const dadosMesAnterior = metricasPorMes.get(chaveMesAnterior) || {
+    massaKg: 0,
+    co2eKg: 0,
+    lotesEmColeta: 0,
+    lotesConfirmados: 0,
+    documentos: 0,
+    pendencias: 0,
+  }
+
+  const tendenciasKpi = {
+    lotesEmColeta: calcularTendencia(dadosMesAtual.lotesEmColeta, dadosMesAnterior.lotesEmColeta),
+    lotesValidadosConfirmados: calcularTendencia(
+      dadosMesAtual.lotesConfirmados,
+      dadosMesAnterior.lotesConfirmados,
+    ),
+    massaRecuperadaKg: calcularTendencia(dadosMesAtual.massaKg, dadosMesAnterior.massaKg),
+    co2eConfirmadoTotalKg: calcularTendencia(dadosMesAtual.co2eKg, dadosMesAnterior.co2eKg),
+    documentosEmitidos: calcularTendencia(dadosMesAtual.documentos, dadosMesAnterior.documentos),
+    pendenciasColetaEmAberto: calcularTendencia(
+      dadosMesAtual.pendencias,
+      dadosMesAnterior.pendencias,
+    ),
+  }
 
   // 7. Quebra por Material (SEM exibir fatores de emissão — regra Opção B)
   const mapaMateriais: Record<
@@ -503,10 +713,100 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
     totalLotes: lotesEmpresa.length,
   }
 
+  // 9. Status do Dossiê para gráfico de barras horizontais/verticais
+  // (em coleta [âmbar #F59E0B], validado [azul #3B82F6], confirmado [índigo #6366F1], Atestado [verde #10B981])
+  // Classificação dos lotes:
+  // - em coleta: lotes com status != 'processado' que ainda possuem pendências ou estão em triagem
+  // - validado: lotes com dados completos e triagem técnica concluída mas sem Atestado emitido
+  // - confirmado: lotes validados com balanço fechado
+  // - atestado: lotes com Atestado Orbis de conformidade emitido
+  let qtdEmColeta = lotesEmColeta
+  let qtdValidado = 0
+  let qtdConfirmado = 0
+  let qtdAtestado = documentosAtestadosEmitidos
+
+  if (lotesValidadosConfirmados > 0) {
+    if (qtdAtestado >= lotesValidadosConfirmados) {
+      qtdAtestado = lotesValidadosConfirmados
+      qtdConfirmado = Math.max(0, lotesValidadosConfirmados)
+      qtdValidado = Math.max(0, lotesValidadosConfirmados)
+    } else {
+      qtdConfirmado = lotesValidadosConfirmados
+      qtdValidado = lotesValidadosConfirmados
+    }
+  }
+
+  // Se houver distribuição analítica lote a lote:
+  let countEmColetaDossie = 0
+  let countValidadoDossie = 0
+  let countConfirmadoDossie = 0
+  let countAtestadoDossie = 0
+
+  for (const lote of lotesEmpresa) {
+    const statusStr = String(lote.status || '')
+    if (statusStr === 'anulado' || statusStr === 'rejeitado') continue
+    if (statusStr === 'processado') {
+      countConfirmadoDossie++
+      countValidadoDossie++
+      countAtestadoDossie++
+    } else if (statusStr === 'em_analise' || statusStr === 'validado') {
+      countValidadoDossie++
+    } else {
+      countEmColetaDossie++
+    }
+  }
+
+  // Se todos forem zero e houver lotes:
+  const baseDossieTotal = lotesEmpresa.filter(
+    (l) => l.status !== 'anulado' && l.status !== 'rejeitado',
+  ).length
+  const totalDossieSoma = Math.max(baseDossieTotal, 1)
+
+  const statusDossie: StatusDossieItem[] = [
+    {
+      statusChave: 'em_coleta',
+      rotulo: 'Em Coleta',
+      quantidade: countEmColetaDossie || lotesEmColeta,
+      cor: '#F59E0B', // âmbar
+      percentual:
+        Math.round(((countEmColetaDossie || lotesEmColeta) / totalDossieSoma) * 1000) / 10,
+    },
+    {
+      statusChave: 'validado',
+      rotulo: 'Validado',
+      quantidade: countValidadoDossie || lotesValidadosConfirmados,
+      cor: '#3B82F6', // azul
+      percentual:
+        Math.round(((countValidadoDossie || lotesValidadosConfirmados) / totalDossieSoma) * 1000) /
+        10,
+    },
+    {
+      statusChave: 'confirmado',
+      rotulo: 'Confirmado',
+      quantidade: countConfirmadoDossie || lotesValidadosConfirmados,
+      cor: '#6366F1', // índigo
+      percentual:
+        Math.round(
+          ((countConfirmadoDossie || lotesValidadosConfirmados) / totalDossieSoma) * 1000,
+        ) / 10,
+    },
+    {
+      statusChave: 'atestado',
+      rotulo: 'Atestado Orbis',
+      quantidade: countAtestadoDossie || documentosAtestadosEmitidos,
+      cor: '#10B981', // verde
+      percentual:
+        Math.round(
+          ((countAtestadoDossie || documentosAtestadosEmitidos) / totalDossieSoma) * 1000,
+        ) / 10,
+    },
+  ]
+
   return {
     cnpjEmpresa: input.cnpjEmpresa || '',
     nomeEmpresa: input.nomeEmpresa || lotesEmpresa[0]?.cdv_nome || 'Empresa Cadastrada',
     possuiEmpresaAssociada: true,
+    periodoMeses,
     kpis: {
       lotesEmColeta,
       lotesValidadosConfirmados,
@@ -517,10 +817,12 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
       documentosAtestadosEmitidos,
       documentosRelatoriosPreliminares,
       pendenciasColetaEmAberto,
+      tendencias: tendenciasKpi,
     },
     evolucaoMensal,
     quebraPorMaterial,
     statusConformidade,
+    statusDossie,
     totalPecasRastreadas: pecasValidas.length,
   }
 }
@@ -532,6 +834,7 @@ export function agregarDadosPainelResultados(input: InputAgregacaoPainel): Dados
 export async function carregarDadosPainelResultadosEmpresa(
   cnpjUsuario?: string | null,
   nomeEmpresa?: string | null,
+  periodoMeses: PeriodoMeses = 12,
 ): Promise<DadosPainelResultados> {
   const cnpjLimpo = normalizarCnpj(cnpjUsuario)
   if (!cnpjLimpo || cnpjLimpo.length < 8) {
@@ -543,6 +846,7 @@ export async function carregarDadosPainelResultadosEmpresa(
       pendencias: [],
       selosAtestados: [],
       relatoriosExportados: [],
+      periodoMeses,
     })
   }
 
@@ -614,6 +918,7 @@ export async function carregarDadosPainelResultadosEmpresa(
       pendencias: pendenciasEmpresa,
       selosAtestados: selosRes,
       relatoriosExportados: relatoriosRes,
+      periodoMeses,
     })
   } catch (err) {
     console.warn('[painelResultadosService] Erro ao carregar dados do painel:', err)
@@ -623,6 +928,7 @@ export async function carregarDadosPainelResultadosEmpresa(
       lotes: [],
       pecas: [],
       pendencias: [],
+      periodoMeses,
     })
   }
 }

@@ -4,6 +4,9 @@ import {
   exportarPainelResultadosCsv,
   normalizarCategoriaMaterialPainel,
   normalizarCnpj,
+  gerarUltimosNMeses,
+  gerarUltimos12Meses,
+  calcularTendencia,
   type InputAgregacaoPainel,
 } from '../painelResultadosService'
 import type { CdvLoteRecord, CdvPecaRecord } from '@/services/cdvService'
@@ -134,6 +137,80 @@ describe('painelResultadosService — Agregação e Regras de Negócio', () => {
 
     // Nenhum dado do lote-3 (Empresa B) foi incluído
     expect(resultado.statusConformidade.totalLotes).toBe(2)
+
+    // Verifica statusDossie (em coleta, validado, confirmado, atestado) e cores
+    expect(resultado.statusDossie).toHaveLength(4)
+    expect(resultado.statusDossie.map((s) => s.statusChave)).toEqual([
+      'em_coleta',
+      'validado',
+      'confirmado',
+      'atestado',
+    ])
+    expect(resultado.statusDossie.find((s) => s.statusChave === 'em_coleta')?.cor).toBe('#F59E0B') // âmbar
+    expect(resultado.statusDossie.find((s) => s.statusChave === 'validado')?.cor).toBe('#3B82F6') // azul
+    expect(resultado.statusDossie.find((s) => s.statusChave === 'confirmado')?.cor).toBe('#6366F1') // índigo
+    expect(resultado.statusDossie.find((s) => s.statusChave === 'atestado')?.cor).toBe('#10B981') // verde
+
+    // Verifica tendências calculadas
+    expect(resultado.kpis.tendencias).toBeDefined()
+    expect(resultado.kpis.tendencias?.massaRecuperadaKg).toBeDefined()
+    expect(resultado.kpis.tendencias?.co2eConfirmadoTotalKg).toBeDefined()
+  })
+
+  it('permite filtrar evolução temporal para 3, 6 e 12 meses', () => {
+    const input3: InputAgregacaoPainel = {
+      cnpjEmpresa: cnpjEmpresaA,
+      nomeEmpresa: 'Desmonte Alfa Ltda',
+      lotes: mockLotes,
+      pecas: mockPecas,
+      pendencias: mockPendencias,
+      periodoMeses: 3,
+    }
+    const res3 = agregarDadosPainelResultados(input3)
+    expect(res3.periodoMeses).toBe(3)
+    expect(res3.evolucaoMensal).toHaveLength(3)
+
+    const input6: InputAgregacaoPainel = {
+      ...input3,
+      periodoMeses: 6,
+    }
+    const res6 = agregarDadosPainelResultados(input6)
+    expect(res6.periodoMeses).toBe(6)
+    expect(res6.evolucaoMensal).toHaveLength(6)
+
+    const input12: InputAgregacaoPainel = {
+      ...input3,
+      periodoMeses: 12,
+    }
+    const res12 = agregarDadosPainelResultados(input12)
+    expect(res12.periodoMeses).toBe(12)
+    expect(res12.evolucaoMensal).toHaveLength(12)
+  })
+
+  it('funções utilitárias de séries temporais e cálculo de tendência', () => {
+    const ultimos12 = gerarUltimos12Meses()
+    expect(ultimos12).toHaveLength(12)
+
+    const ultimos3 = gerarUltimosNMeses(3)
+    expect(ultimos3).toHaveLength(3)
+
+    const ultimos6 = gerarUltimosNMeses(6)
+    expect(ultimos6).toHaveLength(6)
+
+    // Teste de cálculo de tendência
+    const alta = calcularTendencia(150, 100)
+    expect(alta.direcao).toBe('alta')
+    expect(alta.percentualVariacao).toBe(50)
+    expect(alta.rotuloVariacao).toContain('+50,0%')
+
+    const baixa = calcularTendencia(75, 100)
+    expect(baixa.direcao).toBe('baixa')
+    expect(baixa.percentualVariacao).toBe(-25)
+    expect(baixa.rotuloVariacao).toContain('-25,0%')
+
+    const estavel = calcularTendencia(100, 100)
+    expect(estavel.direcao).toBe('neutro')
+    expect(estavel.rotuloVariacao).toContain('Estável')
   })
 
   it('quando o usuário não tiver empresa associada (ex: perito externo), deve retornar estado seguro vazio sem vazar dados', () => {
