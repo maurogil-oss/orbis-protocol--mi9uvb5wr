@@ -29,6 +29,7 @@ export type ModeloFiscalTipo =
 import { classificarNCM, ClassificacaoISResultado } from './impostoSeletivo'
 import { validarChaveAcesso44 } from './validadorFiscalChave'
 import { validarFaixaPrecoANP } from './faixaPrecoANP'
+import { classificarItemCompradoNCM } from './classificacaoFisicaNCM'
 
 export { validarChaveAcesso44 }
 
