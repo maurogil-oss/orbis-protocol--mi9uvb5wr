@@ -3,6 +3,10 @@ import { Outlet, Link, useLocation } from 'react-router-dom'
 import { OrbisGlobe } from './OrbisGlobe'
 import { OrbisLogo } from './OrbisLogo'
 import { useAuth } from '@/contexts/AuthContext'
+import {
+  obterAcpCobrandingConfig,
+  type AcpCobrandingConfig,
+} from '@/services/platformSettingsService'
 import { AssistenteOrbisWidget } from './AssistenteOrbisWidget'
 import { ThemeToggle } from './ThemeToggle'
 import {
@@ -38,8 +42,44 @@ export default function Layout() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const location = useLocation()
-  const { isAuthenticated, user, logout, role, isMaster, isAdmin, isAdminOrPerito, isParceiro } =
-    useAuth()
+  const {
+    isAuthenticated,
+    user,
+    logout,
+    role,
+    isMaster,
+    isAdmin,
+    isAdminOrPerito,
+    isParceiro,
+    isAdminAcp,
+  } = useAuth()
+
+  const [acpCobranding, setAcpCobranding] = useState<AcpCobrandingConfig>(() =>
+    obterAcpCobrandingConfig(),
+  )
+
+  useEffect(() => {
+    let ativo = true
+    const carregar = async () => {
+      try {
+        const config = await obterAcpCobrandingConfig()
+        if (ativo) setAcpCobranding(config)
+      } catch (err) {
+        console.warn('Falha ao obter co-branding ACP:', err)
+      }
+    }
+    carregar()
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'orbis_acp_cobranding') {
+        carregar()
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => {
+      ativo = false
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [])
 
   // Determinação precisa do papel para exibição no cabeçalho
   const isGestao =
@@ -52,7 +92,9 @@ export default function Layout() {
     role === 'financeiro_leitor'
   const isPerito = role === 'perito'
   const isCliente =
-    role === 'cliente' || role === 'cliente_acp' || (!isGestao && !isPerito && !isParceiro)
+    role === 'cliente' ||
+    role === 'cliente_acp' ||
+    (!isGestao && !isPerito && !isParceiro && !isAdminAcp)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -286,29 +328,56 @@ export default function Layout() {
         >
           <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 flex items-center justify-between h-20 min-w-0 gap-2 xl:gap-4">
             {/* Brand Logo & Name — shrink-0 garante que o logo nunca seja comprimido ou invadido pela navegação */}
-            <Link
-              to="/"
-              className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0 min-h-[44px]"
-              title="Orbis Protocol"
-              aria-label="Orbis Protocol"
-            >
-              <div className="shrink-0" aria-hidden="true">
-                <div className="block sm:hidden">
-                  <OrbisGlobe size={32} />
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+              <Link
+                to="/"
+                className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0 min-h-[44px]"
+                title="Orbis Protocol"
+                aria-label="Orbis Protocol"
+              >
+                <div className="shrink-0" aria-hidden="true">
+                  <div className="block sm:hidden">
+                    <OrbisGlobe size={32} />
+                  </div>
+                  <div className="hidden sm:block">
+                    <OrbisGlobe size={40} />
+                  </div>
                 </div>
-                <div className="hidden sm:block">
-                  <OrbisGlobe size={40} />
+                <div className="flex flex-col items-start sm:items-center text-left sm:text-center min-w-0 shrink-0">
+                  <span className="font-heading font-black text-[13px] min-[380px]:text-sm sm:text-lg lg:text-xl tracking-[0.01em] min-[380px]:tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors whitespace-nowrap sm:text-center sm:w-full">
+                    ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
+                  </span>
+                  <span className="text-[12px] tracking-[0.04em] min-[380px]:tracking-[0.06em] sm:tracking-[0.18em] uppercase text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap sm:text-center sm:w-full">
+                    Economia Circular — dMRV
+                  </span>
                 </div>
-              </div>
-              <div className="flex flex-col items-start sm:items-center text-left sm:text-center min-w-0 shrink-0">
-                <span className="font-heading font-black text-[13px] min-[380px]:text-sm sm:text-lg lg:text-xl tracking-[0.01em] min-[380px]:tracking-[0.03em] sm:tracking-[0.08em] text-slate-900 dark:text-[#F8FAFC] group-hover:text-emerald-600 dark:group-hover:text-[#059669] transition-colors whitespace-nowrap sm:text-center sm:w-full">
-                  ORBIS<span className="text-emerald-600 dark:text-[#059669]">.</span>PROTOCOL
-                </span>
-                <span className="text-[12px] tracking-[0.04em] min-[380px]:tracking-[0.06em] sm:tracking-[0.18em] uppercase text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap sm:text-center sm:w-full">
-                  Economia Circular — dMRV
-                </span>
-              </div>
-            </Link>
+              </Link>
+
+              {/* Co-branding ACP Configurável no Cabeçalho */}
+              {acpCobranding.ativo && (
+                <Link
+                  to="/painel-acp"
+                  data-testid="header-acp-cobranding"
+                  title={acpCobranding.texto}
+                  className="hidden md:flex items-center gap-2 pl-2.5 sm:pl-3 border-l border-slate-200 dark:border-slate-800 text-left shrink-0 group py-1"
+                >
+                  <img
+                    src={acpCobranding.logoUrl}
+                    alt="Logo ACP"
+                    className="h-7 sm:h-8 w-auto object-contain shrink-0"
+                    loading="lazy"
+                  />
+                  <div className="flex flex-col leading-tight min-w-0 max-w-[170px] xl:max-w-[210px]">
+                    <span className="text-[10px] xl:text-[11px] font-semibold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                      {acpCobranding.texto}
+                    </span>
+                    <span className="text-[9px] font-mono uppercase tracking-wider text-blue-700 dark:text-blue-400">
+                      Piloto Regional
+                    </span>
+                  </div>
+                </Link>
+              )}
+            </div>
 
             {/* Desktop Navigation - 5 Destinos Públicos: Início, Soluções, Trilhas, Protocolo, Diagnóstico */}
             <nav
@@ -567,6 +636,17 @@ export default function Layout() {
                     >
                       <Lock className="w-4 h-4 stroke-[1.8] shrink-0" />
                       <span>Console</span>
+                    </Link>
+                  )}
+
+                  {/* Papel ADMIN ACP -> "Painel ACP" (/painel-acp) */}
+                  {isAdminAcp && (
+                    <Link
+                      to="/painel-acp"
+                      className="inline-flex items-center gap-1.5 px-3.5 xl:px-4 py-2.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700 dark:bg-[#2563EB] dark:hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-all duration-200 shadow-sm shrink-0 min-h-[44px]"
+                    >
+                      <Building2 className="w-4 h-4 stroke-[1.8] shrink-0" />
+                      <span>Painel ACP</span>
                     </Link>
                   )}
 
@@ -897,6 +977,17 @@ export default function Layout() {
                     >
                       <Lock className="w-4 h-4" />
                       <span>Console</span>
+                    </Link>
+                  )}
+
+                  {isAdminAcp && (
+                    <Link
+                      to="/painel-acp"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg text-sm font-bold bg-[#2563EB] text-white hover:bg-blue-600 min-h-[44px] flex items-center justify-center gap-2"
+                    >
+                      <Building2 className="w-4 h-4" />
+                      <span>Painel ACP</span>
                     </Link>
                   )}
 

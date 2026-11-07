@@ -16,6 +16,7 @@ interface AuthContextType {
     | 'financeiro'
     | 'financeiro_leitor'
     | 'cliente_acp'
+    | 'admin_acp'
     | 'parceiro'
     | string
   isMaster: boolean
@@ -24,6 +25,7 @@ interface AuthContextType {
   isFinanceiro: boolean
   isController: boolean
   isClienteAcp: boolean
+  isAdminAcp: boolean
   isParceiro: boolean
   isAdmin: boolean
   isGestaoPendente: boolean
@@ -263,6 +265,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isFinanceiroLeitor = role === 'financeiro_leitor'
   const isController = role === 'controller'
   const isClienteAcp = role === 'cliente_acp'
+  const isAdminAcp = role === 'admin_acp'
   const isParceiro = role === 'parceiro'
   const isAdminOrPerito = isMaster || role === 'admin' || role === 'perito'
   const statusAprovacao = (user as any)?.status_aprovacao
@@ -284,6 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isFinanceiroLeitor,
         isController,
         isClienteAcp,
+        isAdminAcp,
         isParceiro,
         isAdminOrPerito,
         isGestaoPendente,

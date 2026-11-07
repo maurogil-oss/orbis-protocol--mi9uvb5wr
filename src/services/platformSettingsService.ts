@@ -15,6 +15,81 @@ export interface PlatformSettingRecord extends RecordModel {
 
 export const CHAVE_MOVER_AMPLIADO = 'mover_ampliado_habilitado'
 
+export const CHAVE_ACP_COBRANDING_ATIVO = 'acp_cobranding_ativo'
+export const CHAVE_ACP_COBRANDING_TEXTO = 'acp_cobranding_texto'
+export const CHAVE_ACP_COBRANDING_LOGO_URL = 'acp_cobranding_logo_url'
+
+export const TEXTO_ACP_COBRANDING_PADRAO = 'em parceria com a Associação Comercial do Paraná'
+export const LOGO_ACP_COBRANDING_PADRAO = 'https://img.usecurling.com/i?q=parana&color=solid-black'
+
+export interface AcpCobrandingConfig {
+  ativo: boolean
+  texto: string
+  logoUrl: string
+}
+
+/**
+ * Obtém a configuração consolidada de Co-branding da ACP
+ */
+export async function obterAcpCobrandingConfig(): Promise<AcpCobrandingConfig> {
+  try {
+    const [ativoStr, textoStr, logoUrlStr] = await Promise.all([
+      obterSetting(CHAVE_ACP_COBRANDING_ATIVO, 'false'),
+      obterSetting(CHAVE_ACP_COBRANDING_TEXTO, TEXTO_ACP_COBRANDING_PADRAO),
+      obterSetting(CHAVE_ACP_COBRANDING_LOGO_URL, LOGO_ACP_COBRANDING_PADRAO),
+    ])
+
+    return {
+      ativo: ativoStr === 'true',
+      texto: textoStr || TEXTO_ACP_COBRANDING_PADRAO,
+      logoUrl: logoUrlStr || LOGO_ACP_COBRANDING_PADRAO,
+    }
+  } catch {
+    return {
+      ativo: false,
+      texto: TEXTO_ACP_COBRANDING_PADRAO,
+      logoUrl: LOGO_ACP_COBRANDING_PADRAO,
+    }
+  }
+}
+
+/**
+ * Atualiza a configuração de Co-branding ACP (requer papel master/admin)
+ */
+export async function salvarAcpCobrandingConfig(
+  config: Partial<AcpCobrandingConfig>,
+  atualizadoPor = 'master',
+): Promise<AcpCobrandingConfig> {
+  const promessas: Promise<unknown>[] = []
+
+  if (config.ativo !== undefined) {
+    promessas.push(
+      atualizarSetting(CHAVE_ACP_COBRANDING_ATIVO, config.ativo ? 'true' : 'false', atualizadoPor),
+    )
+  }
+  if (config.texto !== undefined) {
+    promessas.push(
+      atualizarSetting(
+        CHAVE_ACP_COBRANDING_TEXTO,
+        config.texto.trim() || TEXTO_ACP_COBRANDING_PADRAO,
+        atualizadoPor,
+      ),
+    )
+  }
+  if (config.logoUrl !== undefined) {
+    promessas.push(
+      atualizarSetting(
+        CHAVE_ACP_COBRANDING_LOGO_URL,
+        config.logoUrl.trim() || LOGO_ACP_COBRANDING_PADRAO,
+        atualizadoPor,
+      ),
+    )
+  }
+
+  await Promise.all(promessas)
+  return obterAcpCobrandingConfig()
+}
+
 /**
  * Obtém o valor booleano da flag da ampliação do Programa MOVER (default: false)
  */

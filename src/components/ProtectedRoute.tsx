@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
     | 'parceiro'
     | 'adminOrFinanceiro'
     | 'parceiroOrAdmin'
+    | 'adminAcpOrMaster'
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole }) => {
@@ -23,6 +24,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
     isMaster,
     isFinanceiroLeitor,
     isAdmin,
+    isAdminAcp,
     user,
   } = useAuth()
   const location = useLocation()
@@ -138,6 +140,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
         </div>
       </div>
     )
+  }
+
+  if (requireRole === 'adminAcpOrMaster' && !isMaster && !isAdminAcp) {
+    return <Navigate to="/painel" replace />
   }
 
   if (requireRole === 'master' && !isMaster) {

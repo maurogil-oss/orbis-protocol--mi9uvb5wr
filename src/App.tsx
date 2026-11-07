@@ -71,6 +71,7 @@ import EquipePage from './pages/EquipePage'
 import PosicaoCreditoCarbonoPage from './pages/PosicaoCreditoCarbonoPage'
 import PosicaoEscopo3Page from './pages/PosicaoEscopo3Page'
 import NormaDmOrb001Page from './pages/NormaDmOrb001Page'
+import PainelAcpPage from './pages/PainelAcpPage'
 import NotFound from './pages/NotFound'
 
 /**
@@ -286,6 +287,16 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Painel do Administrador ACP (só admin_acp ou gestor master) */}
+            <Route
+              path="/painel-acp"
+              element={
+                <ProtectedRoute requireRole="adminAcpOrAdmin">
+                  <PainelAcpPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/acp" element={<RedirectPreserveQuery to="/painel-acp" />} />
           </Route>
           {/* Pacote do Revisor Externo F6 — Acessível por link direto fora da navegação pública */}
           <Route path="/auditoria-f6" element={<RevisorExternoF6Page />} />

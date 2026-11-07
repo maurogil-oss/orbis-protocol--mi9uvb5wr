@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-07T23:34:01.867Z",
+  "generatedAt": "2026-11-07T23:49:44.642Z",
   "collections": [
     {
       "name": "users",
@@ -52,7 +52,8 @@
             "financeiro",
             "financeiro_leitor",
             "cliente_acp",
-            "parceiro"
+            "parceiro",
+            "admin_acp"
           ]
         },
         {
@@ -4496,9 +4497,9 @@
       "apiRules": {
         "list": "",
         "view": "",
-        "create": "@request.auth.id != '' && @request.auth.role = 'admin'",
-        "update": "@request.auth.id != '' && @request.auth.role = 'admin'",
-        "delete": "@request.auth.id != '' && @request.auth.role = 'admin'"
+        "create": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')"
       },
       "fields": [
         {

@@ -64,6 +64,9 @@ export function BureauACP() {
 
   useEffect(() => {
     carregarDados()
+    obterAcpCobrandingConfig()
+      .then(setCobranding)
+      .catch(() => {})
   }, [])
 
   const carregarDados = async () => {
@@ -264,7 +267,21 @@ export function BureauACP() {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] text-xs font-bold tracking-wider uppercase mb-2">
+            {cobranding.ativo && (
+              <div
+                data-testid="bureau-acp-cobranding-badge"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 text-xs font-semibold tracking-wide mb-3"
+              >
+                <img
+                  src={cobranding.logoUrl}
+                  alt="Logo ACP"
+                  className="w-4 h-4 object-contain"
+                  loading="lazy"
+                />
+                <span>{cobranding.texto}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#111827] border border-emerald-300 dark:border-[#059669]/40 text-emerald-700 dark:text-[#059669] text-xs font-bold tracking-wider uppercase mb-2 w-fit">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
               COCKPIT DO BUREAU ACP • ASSOCIAÇÃO COMERCIAL DO PARANÁ
             </div>

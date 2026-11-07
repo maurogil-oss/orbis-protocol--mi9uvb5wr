@@ -89,6 +89,8 @@ export default function Login() {
         }
       } else if (userRole === 'perito') {
         navigate('/revisor-f6', { replace: true })
+      } else if (userRole === 'admin_acp') {
+        navigate('/admin-acp', { replace: true })
       } else if (userRole === 'parceiro') {
         navigate('/parceiro', { replace: true })
       } else {
