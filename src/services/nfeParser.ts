@@ -10,12 +10,20 @@ import { validarChaveAcesso44 } from './validadorFiscalChave'
 
 export { validarChaveAcesso44 }
 
+import {
+  detectarCancelamentoXml,
+  checarCfopItem,
+  EventoCancelamentoNFe,
+} from './nfeCancelamentoDevolucaoService'
+
 export interface ItemNFeResumo {
   numeroItem: number
   codigo: string
   descricao: string
   ncm: string
   cfop: string
+  isDevolucao?: boolean
+  motivoExclusaoCfop?: string
   unidade: string
   quantidade: number
   valorUnitario: number
@@ -67,6 +75,9 @@ export interface NFeDadosExtraidos {
   qtdItens: number
   itens: ItemNFeResumo[]
   nomeArquivo?: string
+  eventoCancelamento?: EventoCancelamentoNFe
+  qtdItensDevolucaoExcluidos?: number
+  valorDevolucaoExcluido?: number
 }
 
 export interface AgregacaoCreditosNFe {
@@ -118,6 +129,15 @@ export function parseNFeXML(xmlString: string, nomeArquivo?: string): NFeDadosEx
     throw new Error(
       'Arquivo XML malformado ou corrompido: ' +
         (parserError.textContent || 'Erro de sintaxe XML.'),
+    )
+  }
+
+  // Verificação de Cancelamento de NF-e (Etapa 2 Piloto ACP - Recusa com mensagem clara)
+  const eventoCanc = detectarCancelamentoXml(xmlDoc)
+  if (eventoCanc.cancelada) {
+    throw new Error(
+      eventoCanc.motivoRecusa ||
+        'NF-e cancelada na SEFAZ — não pode ser usada na pegada de carbono.',
     )
   }
 
@@ -219,6 +239,9 @@ export function parseNFeXML(xmlString: string, nomeArquivo?: string): NFeDadosEx
     const valorUnitario = prod ? parseNumber(getNodeText(prod, 'vUnCom')) : 0
     const valorTotal = prod ? parseNumber(getNodeText(prod, 'vProd')) : 0
 
+    // Checagem de CFOP de devolução
+    const checkCfop = checarCfopItem(cfop)
+
     // Tributos vigentes destacados no item
     const itemIcms = imposto ? parseNumber(getNodeText(imposto, 'vICMS')) : 0
     const itemIpi = imposto ? parseNumber(getNodeText(imposto, 'vIPI')) : 0
@@ -293,6 +316,8 @@ export function parseNFeXML(xmlString: string, nomeArquivo?: string): NFeDadosEx
       descricao,
       ncm,
       cfop,
+      isDevolucao: checkCfop.isDevolucao ? true : undefined,
+      motivoExclusaoCfop: checkCfop.motivoExclusao,
       unidade,
       quantidade,
       valorUnitario,
@@ -312,6 +337,10 @@ export function parseNFeXML(xmlString: string, nomeArquivo?: string): NFeDadosEx
     })
   })
 
+  // Estatística de devoluções no documento
+  const itensDevolucao = itens.filter((it) => it.isDevolucao)
+  const qtdItensDevolucaoExcluidos = itensDevolucao.length
+  const valorDevolucaoExcluido = itensDevolucao.reduce((acc, it) => acc + (it.valorTotal || 0), 0)
   // Se o totalizador geral estava zerado mas os itens tinham IBS/CBS destacados, compõe o total
   const valorIbsTotalFinal = vIBSTot > 0 ? vIBSTot : somaItensIbs
   const valorCbsTotalFinal = vCBSTot > 0 ? vCBSTot : somaItensCbs
@@ -347,6 +376,9 @@ export function parseNFeXML(xmlString: string, nomeArquivo?: string): NFeDadosEx
     qtdItens: itens.length,
     itens,
     nomeArquivo,
+    qtdItensDevolucaoExcluidos:
+      qtdItensDevolucaoExcluidos > 0 ? qtdItensDevolucaoExcluidos : undefined,
+    valorDevolucaoExcluido: valorDevolucaoExcluido > 0 ? valorDevolucaoExcluido : undefined,
   }
 }
 

@@ -294,6 +294,13 @@ export default function PainelCliente() {
         }
 
         // Grava no PocketBase com suporte aos novos modelos fiscais
+        const flagsFinais = [...(parsedDoc.flagsRevisao || [])]
+        if (parsedDoc.qtdItensDevolucaoExcluidos && parsedDoc.qtdItensDevolucaoExcluidos > 0) {
+          flagsFinais.push(
+            `${parsedDoc.qtdItensDevolucaoExcluidos} item(ns) com CFOP de devolução excluído(s) da pegada`,
+          )
+        }
+
         await pb.collection('nfe_upload').create({
           usuario: user.id,
           chave_acesso: parsedDoc.chaveAcesso,
@@ -319,7 +326,7 @@ export default function PainelCliente() {
           combustivel_litros: parsedDoc.combustivelLitros,
           energia_kwh: parsedDoc.energiaKwh,
           transporte_tkm: parsedDoc.transporteTkm,
-          flags_revisao: parsedDoc.flagsRevisao || [],
+          flags_revisao: flagsFinais,
           dados_adicionais_json: {
             agua_m3: parsedDoc.aguaM3,
             telecom_gb: parsedDoc.telecomGb,
@@ -330,6 +337,8 @@ export default function PainelCliente() {
             aviso_fase_teste: parsedDoc.avisoFaseTesteIbsCbs,
             itens_sujeitos_is_qtd: parsedDoc.totalItensSujeitosIS || 0,
             itens_sujeitos_is: parsedDoc.itensSujeitosIS || [],
+            itens_devolucao_excluidos_qtd: parsedDoc.qtdItensDevolucaoExcluidos || 0,
+            valor_devolucao_excluido: parsedDoc.valorDevolucaoExcluido || 0,
           },
         })
         successCount++
@@ -372,6 +381,7 @@ export default function PainelCliente() {
   const currentSelo = selos[0]
 
   // Totais agregados das notas fiscais enviadas (incluindo IBS/CBS e itens sujeitos a IS)
+  // Itens com CFOP de devolução não entram no somatório como operação normal
   const totaisNfe = nfeList.reduce(
     (acc, curr) => {
       acc.totalNotas += 1
@@ -385,6 +395,8 @@ export default function PainelCliente() {
       const vCbs = dadosAdic.valor_cbs_total || 0
       const temDestaque = dadosAdic.tem_destaque_ibs_cbs || false
       const isQtd = dadosAdic.itens_sujeitos_is_qtd || 0
+      const itensDevolucao = dadosAdic.itens_devolucao_excluidos_qtd || 0
+      const valorDevolucao = dadosAdic.valor_devolucao_excluido || 0
 
       acc.somaIbs += vIbs
       acc.somaCbs += vCbs
@@ -394,11 +406,13 @@ export default function PainelCliente() {
         acc.notasSemIbsCbs += 1
       }
       acc.totalItensIS += isQtd
+      acc.totalItensDevolucaoExcluidos += itensDevolucao
+      acc.totalValorDevolucaoExcluido += valorDevolucao
 
-      // Coleta itens com NCM
+      // Coleta itens com NCM — exclui itens de devolução para comparativo
       if (Array.isArray(curr.resumo_itens_json)) {
         curr.resumo_itens_json.forEach((it: any) => {
-          if (it.ncm) {
+          if (it.ncm && !it.isDevolucao) {
             acc.itensParaComparativo.push({ ncm: it.ncm, descricao: it.descricao })
           }
         })
@@ -417,6 +431,8 @@ export default function PainelCliente() {
       notasComIbsCbs: 0,
       notasSemIbsCbs: 0,
       totalItensIS: 0,
+      totalItensDevolucaoExcluidos: 0,
+      totalValorDevolucaoExcluido: 0,
       itensParaComparativo: [] as Array<{ ncm?: string; descricao?: string }>,
     },
   )
@@ -1443,13 +1459,25 @@ export default function PainelCliente() {
                           <td className="py-2.5 px-3 text-center">
                             {Array.isArray((item as any).flags_revisao) &&
                             (item as any).flags_revisao.length > 0 ? (
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C] text-[10px] font-semibold cursor-help"
-                                title={(item as any).flags_revisao.join(' | ')}
-                              >
-                                <AlertCircle className="w-3 h-3 text-amber-700 dark:text-[#D9B36C]" />
-                                Desvio ANP
-                              </span>
+                              <div className="flex flex-col items-center gap-1">
+                                {(item as any).flags_revisao.map((fl: string, flIdx: number) => {
+                                  const isDevolucao = fl.toLowerCase().includes('devolução')
+                                  return (
+                                    <span
+                                      key={flIdx}
+                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold cursor-help ${
+                                        isDevolucao
+                                          ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300'
+                                          : 'bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C]'
+                                      }`}
+                                      title={fl}
+                                    >
+                                      <AlertCircle className="w-3 h-3" />
+                                      {isDevolucao ? 'Devolução Excluída' : 'Desvio ANP'}
+                                    </span>
+                                  )
+                                })}
+                              </div>
                             ) : (
                               <span className="text-[10px] text-[#12B886] font-mono">Conforme</span>
                             )}

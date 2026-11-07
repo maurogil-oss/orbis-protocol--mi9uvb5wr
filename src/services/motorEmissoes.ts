@@ -379,6 +379,11 @@ export function calcularInventarioEmissoes(
     // 5.1 ESCOPO 3: Bens e Serviços Comprados (Categoria 1) dos Itens da NF-e com NCM
     if (doc.itens && Array.isArray(doc.itens) && doc.itens.length > 0) {
       for (const item of doc.itens) {
+        // CFOP de Devolução (Etapa 2 Piloto ACP): não somar como operação normal / não compõe a pegada
+        if (item.isDevolucao) {
+          continue
+        }
+
         // Ignora itens de combustível/energia/telecom já apurados nos blocos anteriores
         const ncmRaw = item.ncm || ''
         if (ncmRaw.startsWith('2710') || ncmRaw.startsWith('2711') || ncmRaw.startsWith('2716')) {
