@@ -256,6 +256,7 @@ export interface IngestaoLoteInput {
   origem_cidade?: string | null
   origem_uf?: string | null
   tipo_material_predominante?: string | null
+  hipoteses_declaradas_json?: any
 }
 
 export interface IngestaoLoteResponse {

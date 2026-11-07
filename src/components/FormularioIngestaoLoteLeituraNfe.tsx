@@ -951,25 +951,20 @@ export function FormularioIngestaoLoteLeituraNfe({
             </div>
             <div>• Documento: {loteSalvoAuditado.auditoria.documento_lido_ref || 'Manual'}</div>
             <div>• Fonte de Extração: {loteSalvoAuditado.auditoria.fonte_leitura}</div>
-            {loteSalvoAuditado.valores_finais.transporte_distancia_km && (
+            {loteSalvoAuditado.transporte_distancia_km && (
               <div>
-                • Transporte: {loteSalvoAuditado.valores_finais.transporte_distancia_km} km (
-                {loteSalvoAuditado.valores_finais.transporte_modal || 'modal não informado'})
+                • Transporte: {loteSalvoAuditado.transporte_distancia_km} km (
+                {loteSalvoAuditado.transporte_modal || 'modal não informado'})
               </div>
             )}
-            {loteSalvoAuditado.valores_finais.origem_cidade && (
+            {loteSalvoAuditado.origem_cidade && (
               <div>
-                • Origem: {loteSalvoAuditado.valores_finais.origem_cidade}
-                {loteSalvoAuditado.valores_finais.origem_uf
-                  ? `/${loteSalvoAuditado.valores_finais.origem_uf}`
-                  : ''}
+                • Origem: {loteSalvoAuditado.origem_cidade}
+                {loteSalvoAuditado.origem_uf ? `/${loteSalvoAuditado.origem_uf}` : ''}
               </div>
             )}
-            {loteSalvoAuditado.valores_finais.tipo_material_predominante && (
-              <div>
-                • Material Predominante:{' '}
-                {loteSalvoAuditado.valores_finais.tipo_material_predominante}
-              </div>
+            {loteSalvoAuditado.tipo_material_predominante && (
+              <div>• Material Predominante: {loteSalvoAuditado.tipo_material_predominante}</div>
             )}
           </div>
           <p className="text-[10px] text-slate-500">

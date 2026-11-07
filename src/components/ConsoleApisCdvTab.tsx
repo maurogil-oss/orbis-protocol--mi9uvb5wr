@@ -884,13 +884,12 @@ export function ConsoleApisCdvTab({ cdvNome, cdvCnpj, cdvCodigo }: ConsoleApisCd
                   baixa_detran: `PR-NFE-${loteAuditado.numero_nota}`,
                   seguradora_sinistro: loteAuditado.emitente_razao_social || 'Desmontagem Veicular',
                 },
-                transporte_distancia_km:
-                  loteAuditado.valores_finais?.transporte_distancia_km ?? null,
-                transporte_modal: loteAuditado.valores_finais?.transporte_modal || null,
-                origem_cidade: loteAuditado.valores_finais?.origem_cidade || null,
-                origem_uf: loteAuditado.valores_finais?.origem_uf || null,
+                transporte_distancia_km: loteAuditado.transporte_distancia_km ?? null,
+                transporte_modal: (loteAuditado.transporte_modal as any) || null,
+                origem_cidade: loteAuditado.origem_cidade || null,
+                origem_uf: loteAuditado.origem_uf || null,
                 tipo_material_predominante:
-                  loteAuditado.valores_finais?.tipo_material_predominante || null,
+                  (loteAuditado.tipo_material_predominante as any) || null,
                 hipoteses_declaradas_json: loteAuditado.hipoteses_declaradas_json || null,
                 pecas: pecasConvertidas,
                 origem: 'erp',
