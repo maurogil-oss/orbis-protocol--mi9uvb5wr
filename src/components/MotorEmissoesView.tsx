@@ -356,10 +356,31 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
                       </div>
                     </td>
                     <td className="py-2.5 px-3 font-mono">
-                      {item.quantidade.toLocaleString('pt-BR')} {item.unidade}
+                      <div>
+                        {item.quantidade.toLocaleString('pt-BR')} {item.unidade}
+                      </div>
+                      {item.memoriaConversao && item.memoriaConversao.operacao !== 'identidade' && (
+                        <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-sans mt-0.5">
+                          {item.memoriaConversao.sucesso ? (
+                            <span>
+                              Origem: {item.quantidadeOriginal?.toLocaleString('pt-BR')}{' '}
+                              {item.unidadeOriginal} → {item.memoriaConversao.formulaTexto}
+                            </span>
+                          ) : (
+                            <span className="text-amber-600 dark:text-amber-400">
+                              Unidade {item.unidadeOriginal || 'ausente'} (não convertida)
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="py-2.5 px-3 text-[11px] text-slate-600 dark:text-[#93A3B5]">
                       <div className="text-[#12B886]">{item.fonteFator}</div>
+                      {item.memoriaCalculoTexto && (
+                        <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5] mt-0.5 break-all">
+                          {item.memoriaCalculoTexto}
+                        </div>
+                      )}
                     </td>
                     <td className="py-2.5 px-3">
                       {item.naoCalculado ? (

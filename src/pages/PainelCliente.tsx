@@ -1672,8 +1672,15 @@ export default function PainelCliente() {
                                                   {it.cfop || '-'}
                                                 </td>
                                                 <td className="py-1.5 px-2 font-mono text-slate-600 dark:text-[#93A3B5]">
-                                                  {it.quantidade?.toLocaleString('pt-BR') || '1'}{' '}
-                                                  {it.unidade || 'UN'}
+                                                  <div>
+                                                    {it.quantidade?.toLocaleString('pt-BR') || '1'}{' '}
+                                                    {it.unidade || 'UN'}
+                                                  </div>
+                                                  {it.memoriaConversaoTexto && (
+                                                    <div className="text-[9px] font-sans text-indigo-600 dark:text-indigo-400">
+                                                      {it.memoriaConversaoTexto}
+                                                    </div>
+                                                  )}
                                                 </td>
                                                 <td className="py-1.5 px-2 text-right font-mono text-slate-800 dark:text-slate-200">
                                                   {formatCurrencyBRL(it.valorTotal || 0)}

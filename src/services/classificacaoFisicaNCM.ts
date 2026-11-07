@@ -41,6 +41,29 @@ export interface FamiliaNCMConfig {
   fonteACV: string
 }
 
+export interface MemoriaConversaoUnidade {
+  unidadeOriginal: string
+  quantidadeOriginal: number
+  fatorConversao: number
+  operacao: 'multiplicacao' | 'divisao' | 'identidade' | 'incompativel'
+  quantidadeConvertidaKg: number
+  unidadeDestino: string
+  sucesso: boolean
+  motivo?: string
+  formulaTexto: string
+}
+
+export interface MemoriaCalculoItem {
+  entradaQtd: number
+  entradaUnidade: string
+  conversao: MemoriaConversaoUnidade
+  quantidadeKg: number
+  fatorEmissaoKgCo2ePorKg: number
+  emissaoFossilKgCo2e: number
+  emissaoFossilTco2e: number
+  formulaTexto: string
+}
+
 export const DECLARACAO_PROXY_NCM = 'proxy interno por NCM, validação do Revisor'
 
 export const FAMILIAS_NCM_CONFIG: Record<FamiliaNCMId, FamiliaNCMConfig> = {
@@ -158,6 +181,9 @@ export interface ItemClassificadoNCMResultado {
   declaracaoMetodologica: string
   // Etapa 2 Piloto ACP: itens sem NCM/fator mapeado são marcados como não calculados
   naoCalculado?: boolean
+  // Etapa 3 Peça 3a: conversão explícita de unidades e memória pericial
+  memoriaConversao?: MemoriaConversaoUnidade
+  memoriaCalculo?: MemoriaCalculoItem
 }
 
 export interface ResumoClassificacaoFamiliasNCM {
@@ -245,39 +271,176 @@ export function identificarFamiliaNCM(ncmRaw?: string | null): FamiliaNCMConfig 
 }
 
 /**
- * Verifica se a unidade declarada (uCom) é conversível/compatível com a família
+ * Realiza a conversão explícita de unidades físicas para a unidade de referência do fator (ex: kg).
+ *
+ * Regras mandatórias da casa (Etapa 3 Peça 3a):
+ * - Tonelada (t, ton, tonelada, toneladas) -> x1000 kg
+ * - Grama (g, gr, grama, gramas) -> /1000 kg
+ * - Quilograma (kg, kg., kilos, quilograma, quilogramas) -> x1 kg (identidade)
+ * - Litro (l, lt, lts, litro, litros) para combustíveis -> x1 L (ou m3 -> x1000, ml -> /1000)
+ * - Unidade desconhecida ou ausente (ex: vazia, null, "UN", "CX", "PC", "RL", etc., quando a base do fator for massa 'kg'):
+ *   NUNCA assumir kg silenciosamente. Tratar explicitamente como insucesso na conversão (sucesso = false),
+ *   forçando o item a ser marcado como 'não calculado' com emissão ZERO.
+ * - Litro -> kg para materiais sólidos com densidade estimada permanece pendente para futuras etapas.
  */
-function normalizarQuantidadeParaFamilia(
+export function converterUnidadeExplicita(
   qtdRaw: number,
-  unidadeRaw: string,
-  familia: FamiliaNCMConfig,
-): number {
-  if (qtdRaw <= 0) return 0
+  unidadeRaw: string | undefined | null,
+  unidadeDestino: string = 'kg',
+): MemoriaConversaoUnidade {
   const u = (unidadeRaw || '').toLowerCase().trim()
+  const uDestino = (unidadeDestino || 'kg').toLowerCase().trim()
 
-  // Se a família usa 'kg'
-  if (familia.unidadeFisica === 'kg') {
+  if (qtdRaw <= 0) {
+    return {
+      unidadeOriginal: unidadeRaw || '(ausente)',
+      quantidadeOriginal: qtdRaw,
+      fatorConversao: 0,
+      operacao: 'incompativel',
+      quantidadeConvertidaKg: 0,
+      unidadeDestino,
+      sucesso: false,
+      motivo: 'Quantidade física informada é menor ou igual a zero.',
+      formulaTexto: `${qtdRaw} ${unidadeRaw || '(ausente)'} → 0 ${unidadeDestino}`,
+    }
+  }
+
+  // Se o destino for massa em quilogramas (kg)
+  if (uDestino === 'kg') {
+    // 1. Tonelada: x1000
     if (u === 'ton' || u === 't' || u === 'tonelada' || u === 'toneladas') {
-      return qtdRaw * 1000
+      const convertida = qtdRaw * 1000
+      return {
+        unidadeOriginal: unidadeRaw || u,
+        quantidadeOriginal: qtdRaw,
+        fatorConversao: 1000,
+        operacao: 'multiplicacao',
+        quantidadeConvertidaKg: convertida,
+        unidadeDestino: 'kg',
+        sucesso: true,
+        formulaTexto: `${qtdRaw} ${unidadeRaw || u} × 1.000 = ${convertida.toLocaleString('pt-BR')} kg`,
+      }
     }
-    if (u === 'g' || u === 'grama' || u === 'gramas') {
-      return qtdRaw / 1000
+
+    // 2. Grama: /1000
+    if (u === 'g' || u === 'gr' || u === 'grama' || u === 'gramas') {
+      const convertida = qtdRaw / 1000
+      return {
+        unidadeOriginal: unidadeRaw || u,
+        quantidadeOriginal: qtdRaw,
+        fatorConversao: 0.001,
+        operacao: 'divisao',
+        quantidadeConvertidaKg: convertida,
+        unidadeDestino: 'kg',
+        sucesso: true,
+        formulaTexto: `${qtdRaw} ${unidadeRaw || u} ÷ 1.000 = ${convertida.toLocaleString('pt-BR')} kg`,
+      }
     }
-    return qtdRaw // Assume kg se compatível ou unidade padrão
+
+    // 3. Quilograma direto: x1 (identidade)
+    if (
+      u === 'kg' ||
+      u === 'kg.' ||
+      u === 'kilo' ||
+      u === 'kilos' ||
+      u === 'quilograma' ||
+      u === 'quilogramas'
+    ) {
+      return {
+        unidadeOriginal: unidadeRaw || u,
+        quantidadeOriginal: qtdRaw,
+        fatorConversao: 1,
+        operacao: 'identidade',
+        quantidadeConvertidaKg: qtdRaw,
+        unidadeDestino: 'kg',
+        sucesso: true,
+        formulaTexto: `${qtdRaw.toLocaleString('pt-BR')} ${unidadeRaw || u} (sem conversão necessária)`,
+      }
+    }
+
+    // 4. Unidade ausente ou desconhecida/incompatível com massa
+    return {
+      unidadeOriginal: unidadeRaw ? unidadeRaw.trim() : '(ausente)',
+      quantidadeOriginal: qtdRaw,
+      fatorConversao: 0,
+      operacao: 'incompativel',
+      quantidadeConvertidaKg: 0,
+      unidadeDestino: 'kg',
+      sucesso: false,
+      motivo:
+        !unidadeRaw || !unidadeRaw.trim()
+          ? 'Unidade física ausente no XML da nota fiscal — vedado assumir kg silenciosamente.'
+          : `Unidade original "${unidadeRaw}" incompatível com a base mássica (kg) do fator de emissão — conversão litro/unidade para kg não registrada sem densidade volumétrica pericial.`,
+      formulaTexto: `${qtdRaw} ${unidadeRaw || '(ausente)'} → conversão não aplicável (unidade desconhecida/incompatível)`,
+    }
   }
 
-  // Se a família usa 'L'
-  if (familia.unidadeFisica === 'L') {
+  // Se o destino for volume em litros (L) - ex: combustíveis
+  if (uDestino === 'l' || uDestino === 'litro' || uDestino === 'litros') {
     if (u === 'm3' || u === 'm³') {
-      return qtdRaw * 1000
+      const convertida = qtdRaw * 1000
+      return {
+        unidadeOriginal: unidadeRaw || u,
+        quantidadeOriginal: qtdRaw,
+        fatorConversao: 1000,
+        operacao: 'multiplicacao',
+        quantidadeConvertidaKg: convertida,
+        unidadeDestino: 'L',
+        sucesso: true,
+        formulaTexto: `${qtdRaw} ${unidadeRaw || u} × 1.000 = ${convertida.toLocaleString('pt-BR')} L`,
+      }
     }
+
     if (u === 'ml') {
-      return qtdRaw / 1000
+      const convertida = qtdRaw / 1000
+      return {
+        unidadeOriginal: unidadeRaw || u,
+        quantidadeOriginal: qtdRaw,
+        fatorConversao: 0.001,
+        operacao: 'divisao',
+        quantidadeConvertidaKg: convertida,
+        unidadeDestino: 'L',
+        sucesso: true,
+        formulaTexto: `${qtdRaw} ${unidadeRaw || u} ÷ 1.000 = ${convertida.toLocaleString('pt-BR')} L`,
+      }
     }
-    return qtdRaw
+
+    if (u === 'l' || u === 'lt' || u === 'lts' || u === 'litro' || u === 'litros') {
+      return {
+        unidadeOriginal: unidadeRaw || u,
+        quantidadeOriginal: qtdRaw,
+        fatorConversao: 1,
+        operacao: 'identidade',
+        quantidadeConvertidaKg: qtdRaw,
+        unidadeDestino: 'L',
+        sucesso: true,
+        formulaTexto: `${qtdRaw.toLocaleString('pt-BR')} ${unidadeRaw || u} (sem conversão necessária)`,
+      }
+    }
+
+    return {
+      unidadeOriginal: unidadeRaw ? unidadeRaw.trim() : '(ausente)',
+      quantidadeOriginal: qtdRaw,
+      fatorConversao: 0,
+      operacao: 'incompativel',
+      quantidadeConvertidaKg: 0,
+      unidadeDestino: 'L',
+      sucesso: false,
+      motivo: `Unidade "${unidadeRaw || '(ausente)'}" incompatível com a base volumétrica (L) do fator.`,
+      formulaTexto: `${qtdRaw} ${unidadeRaw || '(ausente)'} → conversão não aplicável`,
+    }
   }
 
-  return qtdRaw
+  return {
+    unidadeOriginal: unidadeRaw || '(ausente)',
+    quantidadeOriginal: qtdRaw,
+    fatorConversao: 1,
+    operacao: 'identidade',
+    quantidadeConvertidaKg: qtdRaw,
+    unidadeDestino,
+    sucesso: true,
+    formulaTexto: `${qtdRaw} ${unidadeRaw || ''}`,
+  }
 }
 
 /**
@@ -297,15 +460,58 @@ export function classificarItemCompradoNCM(
   const temQtdFisica = typeof item.quantidadeFisica === 'number' && item.quantidadeFisica > 0
   const valorBrl = Math.max(0, item.valorBrl || 0)
 
-  // Decisão de elevação para Tier 2
+  // Decisão de elevação para Tier 2 com conversão explícita de unidades
   if (temNcmMapeavel && temQtdFisica) {
-    const qtdConvertida = normalizarQuantidadeParaFamilia(
+    const conversao = converterUnidadeExplicita(
       item.quantidadeFisica!,
-      item.unidadeDeclarada || familia.unidadeFisica,
-      familia,
+      item.unidadeDeclarada,
+      familia.unidadeFisica,
     )
+
+    // Se a unidade não pôde ser convertida com segurança (ausente ou desconhecida/incompatível):
+    // Regra da casa: NUNCA assumir kg silenciosamente. Marcar como "não calculado" e emissão zero.
+    if (!conversao.sucesso) {
+      return {
+        id,
+        descricao: item.descricao,
+        ncmNormalizado: ncm,
+        familia,
+        unidadeFisica: item.unidadeDeclarada || '(ausente)',
+        quantidadeFisica: item.quantidadeFisica || 0,
+        valorBrl,
+        elevadoParaTier2: false,
+        motivoTier: `Item com unidade ausente ou desconhecida (${item.unidadeDeclarada || 'não informada'}) — marcado como não calculado (conversão para ${familia.unidadeFisica} vedada sem unidade válida).`,
+        tierIncerteza: 'Tier 1',
+        incertezaPct: 0,
+        fatorUtilizado: 0,
+        unidadeFator: `kg CO₂e/${familia.unidadeFisica}`,
+        emissaoFossilKgCo2e: 0,
+        emissaoFossilTco2e: 0,
+        fonteFator: 'Não calculado (unidade física ausente ou desconhecida)',
+        declaracaoMetodologica: DECLARACAO_PROXY_NCM,
+        naoCalculado: true,
+        memoriaConversao: conversao,
+        memoriaCalculo: {
+          entradaQtd: item.quantidadeFisica!,
+          entradaUnidade: item.unidadeDeclarada || '(ausente)',
+          conversao,
+          quantidadeKg: 0,
+          fatorEmissaoKgCo2ePorKg: familia.fatorKgCO2ePorUnidade,
+          emissaoFossilKgCo2e: 0,
+          emissaoFossilTco2e: 0,
+          formulaTexto: `${conversao.formulaTexto} → Emissão: não calculada (0 tCO₂e)`,
+        },
+      }
+    }
+
+    const qtdConvertida = conversao.quantidadeConvertidaKg
     const emissaoKg = qtdConvertida * familia.fatorKgCO2ePorUnidade
     const emissaoT = emissaoKg / 1000
+
+    const formulaTexto =
+      conversao.operacao === 'identidade'
+        ? `${qtdConvertida.toLocaleString('pt-BR')} kg × ${familia.fatorKgCO2ePorUnidade} kgCO₂e/kg = ${emissaoKg.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kgCO₂e (${emissaoT.toFixed(4)} tCO₂e)`
+        : `[Conversão: ${conversao.formulaTexto}] → ${qtdConvertida.toLocaleString('pt-BR')} kg × ${familia.fatorKgCO2ePorUnidade} kgCO₂e/kg = ${emissaoKg.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kgCO₂e (${emissaoT.toFixed(4)} tCO₂e)`
 
     return {
       id,
@@ -316,7 +522,7 @@ export function classificarItemCompradoNCM(
       quantidadeFisica: qtdConvertida,
       valorBrl,
       elevadoParaTier2: true,
-      motivoTier: `Elevado para Tier 2: NCM ${ncm.slice(0, 4)} mapeado para família ${familia.nome} com quantidade física disponível (${qtdConvertida.toLocaleString('pt-BR')} ${familia.unidadeFisica}).`,
+      motivoTier: `Elevado para Tier 2: NCM ${ncm.slice(0, 4)} mapeado para família ${familia.nome} com quantidade física convertida (${qtdConvertida.toLocaleString('pt-BR')} ${familia.unidadeFisica}).`,
       tierIncerteza: 'Tier 2',
       incertezaPct: familia.incertezaTier2Pct,
       fatorUtilizado: familia.fatorKgCO2ePorUnidade,
@@ -325,6 +531,17 @@ export function classificarItemCompradoNCM(
       emissaoFossilTco2e: Number(emissaoT.toFixed(4)),
       fonteFator: familia.fonteACV,
       declaracaoMetodologica: DECLARACAO_PROXY_NCM,
+      memoriaConversao: conversao,
+      memoriaCalculo: {
+        entradaQtd: item.quantidadeFisica!,
+        entradaUnidade: item.unidadeDeclarada || familia.unidadeFisica,
+        conversao,
+        quantidadeKg: qtdConvertida,
+        fatorEmissaoKgCo2ePorKg: familia.fatorKgCO2ePorUnidade,
+        emissaoFossilKgCo2e: Number(emissaoKg.toFixed(2)),
+        emissaoFossilTco2e: Number(emissaoT.toFixed(4)),
+        formulaTexto,
+      },
     }
   }
 
@@ -332,6 +549,18 @@ export function classificarItemCompradoNCM(
   // Etapa 2 Piloto ACP: nunca aplicar fallback silencioso nem spend-based automático para item sem fator.
   // Marca expressamente como naoCalculado: true e emissão ZERO.
   if (!temNcmMapeavel) {
+    const conversaoInaplicavel: MemoriaConversaoUnidade = {
+      unidadeOriginal: item.unidadeDeclarada || '(ausente)',
+      quantidadeOriginal: item.quantidadeFisica || 0,
+      fatorConversao: 0,
+      operacao: 'incompativel',
+      quantidadeConvertidaKg: 0,
+      unidadeDestino: 'kg',
+      sucesso: false,
+      motivo: 'Item sem NCM ou fator mapeado na plataforma — não calculado.',
+      formulaTexto: `${item.quantidadeFisica || 0} ${item.unidadeDeclarada || '(ausente)'} → não calculado (sem fator)`,
+    }
+
     return {
       id,
       descricao: item.descricao,
@@ -352,6 +581,17 @@ export function classificarItemCompradoNCM(
       fonteFator: 'Não calculado (sem fator de emissão aplicável)',
       declaracaoMetodologica: DECLARACAO_PROXY_NCM,
       naoCalculado: true,
+      memoriaConversao: conversaoInaplicavel,
+      memoriaCalculo: {
+        entradaQtd: item.quantidadeFisica || 0,
+        entradaUnidade: item.unidadeDeclarada || '(ausente)',
+        conversao: conversaoInaplicavel,
+        quantidadeKg: 0,
+        fatorEmissaoKgCo2ePorKg: 0,
+        emissaoFossilKgCo2e: 0,
+        emissaoFossilTco2e: 0,
+        formulaTexto: 'Item sem fator mapeado: emissão = 0,000 tCO₂e (não calculado)',
+      },
     }
   }
 

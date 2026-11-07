@@ -71,6 +71,9 @@ export interface ItemFiscalDocumento {
     | 'outro'
   // Etapa 2 Piloto ACP: item sem fator de emissão recebe flag e contribui zero
   naoCalculado?: boolean
+  // Etapa 3 Peça 3a: rastreabilidade da conversão de unidades e memória
+  memoriaCalculoTexto?: string
+  memoriaConversaoTexto?: string
 }
 
 export interface DocumentoFiscalProcessado {
@@ -459,6 +462,8 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
       impostoSeletivo: classIS.sujeito ? classIS : undefined,
       tipoInsumo: comb.tipo !== 'outro' ? comb.tipo : undefined,
       naoCalculado: classifItem.naoCalculado ? true : undefined,
+      memoriaCalculoTexto: classifItem.memoriaCalculo?.formulaTexto,
+      memoriaConversaoTexto: classifItem.memoriaConversao?.formulaTexto,
     })
   })
 

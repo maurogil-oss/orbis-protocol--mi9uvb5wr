@@ -14,7 +14,11 @@
  * - Tiers de incerteza (±% ponderado) e segregação estrita de emissões fósseis e biogênicas.
  */
 
-import { classificarItemCompradoNCM } from './classificacaoFisicaNCM'
+import {
+  classificarItemCompradoNCM,
+  MemoriaConversaoUnidade,
+  MemoriaCalculoItem,
+} from './classificacaoFisicaNCM'
 import { DocumentoFiscalProcessado } from './modelosFiscaisParser'
 import { FATORES_EMISSAO_CURADOS, GWP_AR6, FatorEmissaoCurado } from './fatoresEmissaoOficiais'
 import { FatorCanonicaItem } from './catalogoFatoresOficiais'
@@ -106,6 +110,14 @@ export interface ItemEmissaoApurada {
   fonteFator: string
   // Piloto ACP Etapa 2: itens sem fator mapeado são marcados como não calculados e contribuem zero
   naoCalculado?: boolean
+  // Etapa 3 Peça 3a: rastreabilidade e memória de cálculo da conversão de unidades
+  quantidadeOriginal?: number
+  unidadeOriginal?: string
+  fatorConversaoUnidade?: number
+  quantidadeConvertidaKg?: number
+  memoriaConversao?: MemoriaConversaoUnidade
+  memoriaCalculo?: MemoriaCalculoItem
+  memoriaCalculoTexto?: string
 }
 
 export interface InventarioEmissoesResultado {
@@ -240,6 +252,10 @@ export function calcularInventarioEmissoes(
         tierIncerteza: fator.tierIncertezaPadrao,
         incertezaPct: fator.incertezaPadraoPct,
         fonteFator: `${fator.fonte} (${fator.versaoTabela})`,
+        quantidadeOriginal: litros,
+        unidadeOriginal: fator.unidade,
+        fatorConversaoUnidade: 1,
+        memoriaCalculoTexto: `${litros.toLocaleString('pt-BR')} ${fator.unidade} × ${(fator.fatorFossilTCO2e * 1000).toFixed(4)} kgCO₂e/${fator.unidade} = ${tCO2eFossil.toFixed(4)} tCO₂e`,
       })
     }
 
@@ -279,6 +295,10 @@ export function calcularInventarioEmissoes(
         tierIncerteza: fatorLoc.tierIncertezaPadrao,
         incertezaPct: fatorLoc.incertezaPadraoPct,
         fonteFator: `${fatorLoc.fonte} (${fatorLoc.versaoTabela})`,
+        quantidadeOriginal: kwh,
+        unidadeOriginal: 'kWh',
+        fatorConversaoUnidade: 1,
+        memoriaCalculoTexto: `${kwh.toLocaleString('pt-BR')} kWh × ${fatorLoc.fatorFossilTCO2e} tCO₂e/kWh = ${tCO2eLocalizacao.toFixed(4)} tCO₂e`,
       })
     }
 
@@ -446,6 +466,13 @@ export function calcularInventarioEmissoes(
           incertezaPct: classif.incertezaPct,
           fonteFator: `${classif.fonteFator} (${classif.declaracaoMetodologica})`,
           naoCalculado: classif.naoCalculado,
+          quantidadeOriginal: item.quantidade,
+          unidadeOriginal: item.unidade,
+          fatorConversaoUnidade: classif.memoriaConversao?.fatorConversao,
+          quantidadeConvertidaKg: classif.memoriaConversao?.quantidadeConvertidaKg,
+          memoriaConversao: classif.memoriaConversao,
+          memoriaCalculo: classif.memoriaCalculo,
+          memoriaCalculoTexto: classif.memoriaCalculo?.formulaTexto,
         })
       }
     }
