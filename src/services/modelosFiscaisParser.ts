@@ -68,6 +68,8 @@ export interface ItemFiscalDocumento {
     | 'agua'
     | 'transporte'
     | 'outro'
+  // Etapa 2 Piloto ACP: item sem fator de emissão recebe flag e contribui zero
+  naoCalculado?: boolean
 }
 
 export interface DocumentoFiscalProcessado {
@@ -426,6 +428,14 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
       })
     }
 
+    const classifItem = classificarItemCompradoNCM({
+      descricao,
+      ncm,
+      unidadeDeclarada: unidade,
+      quantidadeFisica: quantidade,
+      valorBrl: valorItemTotal,
+    })
+
     itens.push({
       numeroItem: idx + 1,
       codigo,
@@ -447,6 +457,7 @@ function parseNFePadraoXML(infNFe: Element, nomeArquivo?: string): DocumentoFisc
       cClassTrib,
       impostoSeletivo: classIS.sujeito ? classIS : undefined,
       tipoInsumo: comb.tipo !== 'outro' ? comb.tipo : undefined,
+      naoCalculado: classifItem.naoCalculado ? true : undefined,
     })
   })
 

@@ -24,6 +24,8 @@ import {
   KeyRound,
   Sliders,
   TrendingUp,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import { ModalAlterarSenha } from '@/components/ModalAlterarSenha'
 import { simularGreenCapitalEngine } from '@/services/greenCapitalEngine'
@@ -137,6 +139,14 @@ export default function PainelCliente() {
 
   const { user, isMaster, isAdmin, role, isParceiro } = useAuth()
   const [modalAlterarSenhaAberto, setModalAlterarSenhaAberto] = useState(false)
+  const [itensAbertosPorNota, setItensAbertosPorNota] = useState<Record<string, boolean>>({})
+
+  const toggleItensNota = (notaId: string) => {
+    setItensAbertosPorNota((prev) => ({
+      ...prev,
+      [notaId]: !prev[notaId],
+    }))
+  }
 
   const [leads, setLeads] = useState<LeadDiagnostico[]>([])
   const [selos, setSelos] = useState<SeloRecord[]>([])
@@ -298,6 +308,12 @@ export default function PainelCliente() {
         if (parsedDoc.qtdItensDevolucaoExcluidos && parsedDoc.qtdItensDevolucaoExcluidos > 0) {
           flagsFinais.push(
             `${parsedDoc.qtdItensDevolucaoExcluidos} item(ns) com CFOP de devolução excluído(s) da pegada`,
+          )
+        }
+        const itensNaoCalc = parsedDoc.itens.filter((it) => it.naoCalculado).length
+        if (itensNaoCalc > 0) {
+          flagsFinais.push(
+            `${itensNaoCalc} item(ns) sem fator de emissão marcado(s) como não calculado(s)`,
           )
         }
 
@@ -1339,161 +1355,301 @@ export default function PainelCliente() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-[rgba(244,247,250,0.06)] text-slate-900 dark:text-[#F4F7FA]">
-                      {nfeList.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-slate-50 dark:hover:bg-[#16202B]/40 transition-colors"
-                        >
-                          <td className="py-2.5 px-3">
-                            <div className="font-mono font-semibold text-[#12B886]">
-                              Doc nº {item.numero_nota || 'S/N'} (Série {item.serie || '1'})
-                            </div>
-                            <div className="text-[10px] text-slate-500 dark:text-[#93A3B5]">
-                              {item.data_emissao
-                                ? item.data_emissao.slice(0, 10)
-                                : 'Data não informada'}{' '}
-                              • Mod. {(item as any).modelo_fiscal || item.modelo}
-                            </div>
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <span
-                              className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold ${
-                                (item as any).origem === 'infosimples'
-                                  ? 'bg-blue-100 dark:bg-[#3B82F6]/20 text-blue-700 dark:text-[#3B82F6]'
-                                  : 'bg-emerald-100 dark:bg-[#12B886]/20 text-emerald-800 dark:text-[#12B886]'
-                              }`}
-                            >
-                              {(item as any).origem || 'manual'}
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <div
-                              className="font-semibold truncate max-w-[150px]"
-                              title={item.nome_emitente}
-                            >
-                              {item.nome_emitente || 'Não informado'}
-                            </div>
-                            <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
-                              {item.cnpj_emitente}
-                            </div>
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <div className="truncate max-w-[150px]" title={item.nome_destinatario}>
-                              {item.nome_destinatario || 'Consumidor'}
-                            </div>
-                            <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
-                              {item.cnpj_destinatario}
-                            </div>
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-semibold">
-                            {formatCurrencyBRL(item.valor_total_nf || 0)}
-                          </td>
-                          {/* PRODUTO CENTRAL: Pegada de carbono por nota/produto */}
-                          <td className="py-2.5 px-3 text-right font-mono">
-                            {licenca.podeVerPegadaPorNota ? (
-                              <div className="text-emerald-700 dark:text-[#12B886] font-bold">
-                                {(item as any).combustivel_litros
-                                  ? (((item as any).combustivel_litros * 2.6) / 1000).toFixed(2) +
-                                    ' tCO₂e'
-                                  : (item as any).energia_kwh
-                                    ? (((item as any).energia_kwh * 0.08) / 1000).toFixed(2) +
-                                      ' tCO₂e'
-                                    : '0,14 tCO₂e'}
-                                <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5] font-normal">
-                                  dMRV auditável
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 dark:text-[#93A3B5]/60 font-mono">
-                                Disponível no Trial
-                              </span>
-                            )}
-                          </td>
-                          {/* PLUS: Situação tributária da empresa em relação à reforma tributária */}
-                          <td className="py-2.5 px-3 text-right font-mono">
-                            {licenca.podeVerSituacaoTributariaPorNota ? (
-                              ((item as any).dados_adicionais_json?.valor_ibs_total || 0) > 0 ||
-                              ((item as any).dados_adicionais_json?.valor_cbs_total || 0) > 0 ? (
-                                <div className="text-[#12B886] font-bold">
-                                  {formatCurrencyBRL(
-                                    ((item as any).dados_adicionais_json?.valor_ibs_total || 0) +
-                                      ((item as any).dados_adicionais_json?.valor_cbs_total || 0),
-                                  )}
-                                  <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5]">
-                                    IBS:{' '}
-                                    {formatCurrencyBRL(
-                                      (item as any).dados_adicionais_json?.valor_ibs_total || 0,
-                                    )}{' '}
-                                    | CBS:{' '}
-                                    {formatCurrencyBRL(
-                                      (item as any).dados_adicionais_json?.valor_cbs_total || 0,
-                                    )}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span
-                                  className="text-[10px] text-amber-700 dark:text-[#D9B36C] cursor-help block"
-                                  title="Nota sem destaque IBS/CBS — a partir de 1º/08/2026 o destaque (IBS 0,1% / CBS 0,9%) é obrigatório"
-                                >
-                                  Sem IBS/CBS
-                                </span>
-                              )
-                            ) : (
-                              <span className="text-[10px] text-slate-400 dark:text-[#93A3B5]/60 font-mono">
-                                Disponível no Trial
-                              </span>
-                            )}
-                            {((item as any).dados_adicionais_json?.itens_sujeitos_is_qtd || 0) >
-                              0 && (
-                              <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-rose-100 dark:bg-[#F03E54]/20 text-rose-700 dark:text-[#F03E54] text-[9px] font-bold">
-                                IS ({(item as any).dados_adicionais_json.itens_sujeitos_is_qtd})
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
-                            {formatCurrencyBRL((item.valor_pis || 0) + (item.valor_cofins || 0))}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-amber-700 dark:text-[#D9B36C]">
-                            {formatCurrencyBRL(item.valor_icms || 0)}
-                          </td>
-                          <td className="py-2.5 px-3 text-center">
-                            {Array.isArray((item as any).flags_revisao) &&
-                            (item as any).flags_revisao.length > 0 ? (
-                              <div className="flex flex-col items-center gap-1">
-                                {(item as any).flags_revisao.map((fl: string, flIdx: number) => {
-                                  const isDevolucao = fl.toLowerCase().includes('devolução')
-                                  return (
-                                    <span
-                                      key={flIdx}
-                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold cursor-help ${
-                                        isDevolucao
-                                          ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300'
-                                          : 'bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C]'
-                                      }`}
-                                      title={fl}
+                      {nfeList.map((item) => {
+                        const itensNota = Array.isArray((item as any).resumo_itens_json)
+                          ? ((item as any).resumo_itens_json as any[])
+                          : []
+                        const isAberto = Boolean(itensAbertosPorNota[item.id])
+
+                        return (
+                          <React.Fragment key={item.id}>
+                            <tr className="hover:bg-slate-50 dark:hover:bg-[#16202B]/40 transition-colors">
+                              <td className="py-2.5 px-3">
+                                <div className="flex items-center gap-1.5">
+                                  {itensNota.length > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleItensNota(item.id)}
+                                      className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-[#93A3B5] transition-colors"
+                                      title={
+                                        isAberto
+                                          ? 'Ocultar itens da nota'
+                                          : 'Ver detalhamento dos itens'
+                                      }
                                     >
-                                      <AlertCircle className="w-3 h-3" />
-                                      {isDevolucao ? 'Devolução Excluída' : 'Desvio ANP'}
+                                      {isAberto ? (
+                                        <ChevronDown className="w-3.5 h-3.5" />
+                                      ) : (
+                                        <ChevronRight className="w-3.5 h-3.5" />
+                                      )}
+                                    </button>
+                                  )}
+                                  <div className="font-mono font-semibold text-[#12B886]">
+                                    Doc nº {item.numero_nota || 'S/N'} (Série {item.serie || '1'})
+                                  </div>
+                                </div>
+                                <div className="text-[10px] text-slate-500 dark:text-[#93A3B5] ml-5">
+                                  {item.data_emissao
+                                    ? item.data_emissao.slice(0, 10)
+                                    : 'Data não informada'}{' '}
+                                  • Mod. {(item as any).modelo_fiscal || item.modelo}
+                                  {itensNota.length > 0 && ` • ${itensNota.length} item(ns)`}
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-3">
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold ${
+                                    (item as any).origem === 'infosimples'
+                                      ? 'bg-blue-100 dark:bg-[#3B82F6]/20 text-blue-700 dark:text-[#3B82F6]'
+                                      : 'bg-emerald-100 dark:bg-[#12B886]/20 text-emerald-800 dark:text-[#12B886]'
+                                  }`}
+                                >
+                                  {(item as any).origem || 'manual'}
+                                </span>
+                              </td>
+                              <td className="py-2.5 px-3">
+                                <div
+                                  className="font-semibold truncate max-w-[150px]"
+                                  title={item.nome_emitente}
+                                >
+                                  {item.nome_emitente || 'Não informado'}
+                                </div>
+                                <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
+                                  {item.cnpj_emitente}
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-3">
+                                <div
+                                  className="truncate max-w-[150px]"
+                                  title={item.nome_destinatario}
+                                >
+                                  {item.nome_destinatario || 'Consumidor'}
+                                </div>
+                                <div className="text-[10px] font-mono text-slate-500 dark:text-[#93A3B5]">
+                                  {item.cnpj_destinatario}
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                                {formatCurrencyBRL(item.valor_total_nf || 0)}
+                              </td>
+                              {/* PRODUTO CENTRAL: Pegada de carbono por nota/produto */}
+                              <td className="py-2.5 px-3 text-right font-mono">
+                                {licenca.podeVerPegadaPorNota ? (
+                                  <div className="text-emerald-700 dark:text-[#12B886] font-bold">
+                                    {(item as any).combustivel_litros
+                                      ? (((item as any).combustivel_litros * 2.6) / 1000).toFixed(
+                                          2,
+                                        ) + ' tCO₂e'
+                                      : (item as any).energia_kwh
+                                        ? (((item as any).energia_kwh * 0.08) / 1000).toFixed(2) +
+                                          ' tCO₂e'
+                                        : '0,14 tCO₂e'}
+                                    <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5] font-normal">
+                                      dMRV auditável
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 dark:text-[#93A3B5]/60 font-mono">
+                                    Disponível no Trial
+                                  </span>
+                                )}
+                              </td>
+                              {/* PLUS: Situação tributária da empresa em relação à reforma tributária */}
+                              <td className="py-2.5 px-3 text-right font-mono">
+                                {licenca.podeVerSituacaoTributariaPorNota ? (
+                                  ((item as any).dados_adicionais_json?.valor_ibs_total || 0) > 0 ||
+                                  ((item as any).dados_adicionais_json?.valor_cbs_total || 0) >
+                                    0 ? (
+                                    <div className="text-[#12B886] font-bold">
+                                      {formatCurrencyBRL(
+                                        ((item as any).dados_adicionais_json?.valor_ibs_total ||
+                                          0) +
+                                          ((item as any).dados_adicionais_json?.valor_cbs_total ||
+                                            0),
+                                      )}
+                                      <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5]">
+                                        IBS:{' '}
+                                        {formatCurrencyBRL(
+                                          (item as any).dados_adicionais_json?.valor_ibs_total || 0,
+                                        )}{' '}
+                                        | CBS:{' '}
+                                        {formatCurrencyBRL(
+                                          (item as any).dados_adicionais_json?.valor_cbs_total || 0,
+                                        )}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span
+                                      className="text-[10px] text-amber-700 dark:text-[#D9B36C] cursor-help block"
+                                      title="Nota sem destaque IBS/CBS — a partir de 1º/08/2026 o destaque (IBS 0,1% / CBS 0,9%) é obrigatório"
+                                    >
+                                      Sem IBS/CBS
                                     </span>
                                   )
-                                })}
-                              </div>
-                            ) : (
-                              <span className="text-[10px] text-[#12B886] font-mono">Conforme</span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 dark:text-[#93A3B5]/60 font-mono">
+                                    Disponível no Trial
+                                  </span>
+                                )}
+                                {((item as any).dados_adicionais_json?.itens_sujeitos_is_qtd || 0) >
+                                  0 && (
+                                  <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-rose-100 dark:bg-[#F03E54]/20 text-rose-700 dark:text-[#F03E54] text-[9px] font-bold">
+                                    IS ({(item as any).dados_adicionais_json.itens_sujeitos_is_qtd})
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-2.5 px-3 text-right font-mono text-[#12B886] font-semibold">
+                                {formatCurrencyBRL(
+                                  (item.valor_pis || 0) + (item.valor_cofins || 0),
+                                )}
+                              </td>
+                              <td className="py-2.5 px-3 text-right font-mono text-amber-700 dark:text-[#D9B36C]">
+                                {formatCurrencyBRL(item.valor_icms || 0)}
+                              </td>
+                              <td className="py-2.5 px-3 text-center">
+                                {Array.isArray((item as any).flags_revisao) &&
+                                (item as any).flags_revisao.length > 0 ? (
+                                  <div className="flex flex-col items-center gap-1">
+                                    {(item as any).flags_revisao.map(
+                                      (fl: string, flIdx: number) => {
+                                        const isDevolucao = fl.toLowerCase().includes('devolução')
+                                        const isNaoCalculado = fl
+                                          .toLowerCase()
+                                          .includes('não calculado')
+                                        return (
+                                          <span
+                                            key={flIdx}
+                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold cursor-help ${
+                                              isDevolucao
+                                                ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300'
+                                                : isNaoCalculado
+                                                  ? 'bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C]'
+                                                  : 'bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C]'
+                                            }`}
+                                            title={fl}
+                                          >
+                                            <AlertCircle className="w-3 h-3" />
+                                            {isDevolucao
+                                              ? 'Devolução Excluída'
+                                              : isNaoCalculado
+                                                ? 'Não calculado'
+                                                : 'Desvio ANP'}
+                                          </span>
+                                        )
+                                      },
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-[#12B886] font-mono">
+                                    Conforme
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-2.5 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteNfe(item.id)}
+                                  className="p-1 rounded text-slate-500 dark:text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
+                                  title="Remover nota fiscal"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+
+                            {/* Detalhamento expansível dos itens da nota */}
+                            {isAberto && itensNota.length > 0 && (
+                              <tr className="bg-slate-50/70 dark:bg-[#0A0E12]/60">
+                                <td colSpan={9} className="p-3 pl-8">
+                                  <div className="border border-slate-200 dark:border-[rgba(244,247,250,0.1)] rounded-lg p-2.5 bg-white dark:bg-[#111820]">
+                                    <div className="text-[11px] font-semibold text-slate-700 dark:text-[#F4F7FA] mb-2 flex items-center justify-between">
+                                      <span>
+                                        Detalhamento dos Itens da NF-e ({itensNota.length} itens)
+                                      </span>
+                                      <span className="text-[10px] text-slate-500 dark:text-[#93A3B5] font-normal">
+                                        Classificação NCM e Fator de Emissão
+                                      </span>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full text-left text-[11px]">
+                                        <thead className="text-[10px] uppercase text-slate-500 dark:text-[#93A3B5] border-b border-slate-100 dark:border-slate-800">
+                                          <tr>
+                                            <th className="py-1 px-2">#</th>
+                                            <th className="py-1 px-2">Descrição</th>
+                                            <th className="py-1 px-2">NCM</th>
+                                            <th className="py-1 px-2">CFOP</th>
+                                            <th className="py-1 px-2">Qtd / Un</th>
+                                            <th className="py-1 px-2 text-right">Valor Total</th>
+                                            <th className="py-1 px-2 text-center">
+                                              Status / Rótulo
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                          {itensNota.map((it: any, itIdx: number) => {
+                                            const isDevolucao = Boolean(it.isDevolucao)
+                                            const isNaoCalculado = Boolean(it.naoCalculado)
+
+                                            return (
+                                              <tr
+                                                key={itIdx}
+                                                className="hover:bg-slate-50/50 dark:hover:bg-[#16202B]/30"
+                                              >
+                                                <td className="py-1.5 px-2 font-mono text-slate-500">
+                                                  {it.numeroItem || itIdx + 1}
+                                                </td>
+                                                <td className="py-1.5 px-2 font-medium text-slate-900 dark:text-[#F4F7FA]">
+                                                  {it.descricao}
+                                                </td>
+                                                <td className="py-1.5 px-2 font-mono text-slate-600 dark:text-[#93A3B5]">
+                                                  {it.ncm || '-'}
+                                                </td>
+                                                <td className="py-1.5 px-2 font-mono text-slate-600 dark:text-[#93A3B5]">
+                                                  {it.cfop || '-'}
+                                                </td>
+                                                <td className="py-1.5 px-2 font-mono text-slate-600 dark:text-[#93A3B5]">
+                                                  {it.quantidade?.toLocaleString('pt-BR') || '1'}{' '}
+                                                  {it.unidade || 'UN'}
+                                                </td>
+                                                <td className="py-1.5 px-2 text-right font-mono text-slate-800 dark:text-slate-200">
+                                                  {formatCurrencyBRL(it.valorTotal || 0)}
+                                                </td>
+                                                <td className="py-1.5 px-2 text-center">
+                                                  {isDevolucao ? (
+                                                    <span
+                                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 cursor-help"
+                                                      title="Devolução de compra ou venda (CFOP de retorno) — excluído do somatório de emissões"
+                                                    >
+                                                      <AlertCircle className="w-2.5 h-2.5" />
+                                                      Devolução Excluída
+                                                    </span>
+                                                  ) : isNaoCalculado ? (
+                                                    <span
+                                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C] cursor-help"
+                                                      title="Item sem fator de emissão mapeado — não calculado (emissão zero; sem fallback silencioso)"
+                                                    >
+                                                      <AlertCircle className="w-2.5 h-2.5" />
+                                                      não calculado
+                                                    </span>
+                                                  ) : (
+                                                    <span className="text-[10px] text-[#12B886] font-mono">
+                                                      Calculado
+                                                    </span>
+                                                  )}
+                                                </td>
+                                              </tr>
+                                            )
+                                          })}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
                             )}
-                          </td>
-                          <td className="py-2.5 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteNfe(item.id)}
-                              className="p-1 rounded text-slate-500 dark:text-[#93A3B5] hover:text-[#F03E54] hover:bg-[#F03E54]/10 transition-colors"
-                              title="Remover nota fiscal"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                          </React.Fragment>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -108,14 +108,16 @@ export const FAMILIAS_NCM_CONFIG: Record<FamiliaNCMId, FamiliaNCMConfig> = {
   outros: {
     id: 'outros',
     nome: 'Outros Bens Comprados',
-    descricao: 'Demais insumos manufaturados ou mercadorias diversas',
+    descricao: 'Demais insumos manufaturados ou mercadorias diversas sem fator específico mapeado',
     capitulosNCM: [],
     exemplosNCM: [],
-    fatorKgCO2ePorUnidade: 1.5,
+    // Piloto ACP Etapa 2: Remoção do fallback silencioso de 1,5 kgCO2e/kg.
+    // Itens sem fator mapeado recebem fator zero e flag naoCalculado: true.
+    fatorKgCO2ePorUnidade: 0,
     unidadeFisica: 'kg',
     unidadesCompativeis: ['kg', 'un', 'pç'],
-    incertezaTier2Pct: 12.0,
-    fonteACV: 'Orbis dMRV Baseline Conservadora',
+    incertezaTier2Pct: 0,
+    fonteACV: 'Não calculado (sem fator de emissão oficial aplicável)',
   },
 }
 
@@ -154,6 +156,8 @@ export interface ItemClassificadoNCMResultado {
   emissaoFossilTco2e: number
   fonteFator: string
   declaracaoMetodologica: string
+  // Etapa 2 Piloto ACP: itens sem NCM/fator mapeado são marcados como não calculados
+  naoCalculado?: boolean
 }
 
 export interface ResumoClassificacaoFamiliasNCM {
@@ -324,7 +328,34 @@ export function classificarItemCompradoNCM(
     }
   }
 
-  // Caso contrário: mantém spend-based Tier 1 (±18%)
+  // Se o NCM não for mapeável para família física específica ('outros'):
+  // Etapa 2 Piloto ACP: nunca aplicar fallback silencioso nem spend-based automático para item sem fator.
+  // Marca expressamente como naoCalculado: true e emissão ZERO.
+  if (!temNcmMapeavel) {
+    return {
+      id,
+      descricao: item.descricao,
+      ncmNormalizado: ncm,
+      familia: FAMILIAS_NCM_CONFIG.outros,
+      unidadeFisica: item.unidadeDeclarada || 'kg',
+      quantidadeFisica: item.quantidadeFisica || 0,
+      valorBrl,
+      elevadoParaTier2: false,
+      motivoTier:
+        'Item sem NCM/fator mapeado — marcado como não calculado (emissão zero; sem fallback).',
+      tierIncerteza: 'Tier 1',
+      incertezaPct: 0,
+      fatorUtilizado: 0,
+      unidadeFator: 'kg CO₂e/kg',
+      emissaoFossilKgCo2e: 0,
+      emissaoFossilTco2e: 0,
+      fonteFator: 'Não calculado (sem fator de emissão aplicável)',
+      declaracaoMetodologica: DECLARACAO_PROXY_NCM,
+      naoCalculado: true,
+    }
+  }
+
+  // Se tem NCM mapeável mas não tem quantidade física (qCom <= 0), aplica spend-based da categoria
   const emissaoSpendKg = valorBrl * FATOR_SPEND_BASED_CAT1_KGCO2E_POR_BRL
   const emissaoSpendT = emissaoSpendKg / 1000
 
@@ -337,9 +368,8 @@ export function classificarItemCompradoNCM(
     quantidadeFisica: valorBrl,
     valorBrl,
     elevadoParaTier2: false,
-    motivoTier: !temQtdFisica
-      ? 'Mantido em Tier 1 (spend-based, ±18%): quantidade física (qCom) não disponível na nota fiscal.'
-      : 'Mantido em Tier 1 (spend-based, ±18%): NCM não classificado em família física específica.',
+    motivoTier:
+      'Mantido em Tier 1 (spend-based, ±18%): quantidade física (qCom) não disponível na nota fiscal.',
     tierIncerteza: 'Tier 1',
     incertezaPct: INCERTEZA_TIER1_SPEND_BASED_PCT,
     fatorUtilizado: FATOR_SPEND_BASED_CAT1_KGCO2E_POR_BRL,
@@ -348,6 +378,7 @@ export function classificarItemCompradoNCM(
     emissaoFossilTco2e: Number(emissaoSpendT.toFixed(4)),
     fonteFator: 'DEFRA UK / Ecoinvent 3.10 Input-Output (spend-based)',
     declaracaoMetodologica: DECLARACAO_PROXY_NCM,
+    naoCalculado: false,
   }
 }
 

@@ -104,6 +104,8 @@ export interface ItemEmissaoApurada {
   tierIncerteza: 'Tier 1' | 'Tier 2' | 'Tier 3'
   incertezaPct: number
   fonteFator: string
+  // Piloto ACP Etapa 2: itens sem fator mapeado são marcados como não calculados e contribuem zero
+  naoCalculado?: boolean
 }
 
 export interface InventarioEmissoesResultado {
@@ -402,9 +404,12 @@ export function calcularInventarioEmissoes(
           valorBrl: item.valorTotal || 0,
         })
 
-        escopo3Fossil += classif.emissaoFossilTco2e
-        somaIncertezaPonderada += classif.emissaoFossilTco2e * classif.incertezaPct
-        pesoTotalEmissoes += classif.emissaoFossilTco2e
+        // Piloto ACP Etapa 2: item sem fator recebe naoCalculado: true e contribui ZERO para a pegada
+        if (!classif.naoCalculado) {
+          escopo3Fossil += classif.emissaoFossilTco2e
+          somaIncertezaPonderada += classif.emissaoFossilTco2e * classif.incertezaPct
+          pesoTotalEmissoes += classif.emissaoFossilTco2e
+        }
 
         itensApurados.push({
           id: `e3_cat1_${doc.chaveAcesso.slice(-6)}_${item.numeroItem || itensApurados.length}`,
@@ -440,6 +445,7 @@ export function calcularInventarioEmissoes(
           tierIncerteza: classif.tierIncerteza,
           incertezaPct: classif.incertezaPct,
           fonteFator: `${classif.fonteFator} (${classif.declaracaoMetodologica})`,
+          naoCalculado: classif.naoCalculado,
         })
       }
     }

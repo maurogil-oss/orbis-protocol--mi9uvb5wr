@@ -336,7 +336,7 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
                   <th className="py-2 px-3">Escopo / Descrição</th>
                   <th className="py-2 px-3">Qtd / Insumo</th>
                   <th className="py-2 px-3">Fator & Fonte Oficial</th>
-                  <th className="py-2 px-3">Tier / Incerteza</th>
+                  <th className="py-2 px-3">Status / Tier</th>
                   <th className="py-2 px-3 text-right">tCO₂e Fóssil</th>
                   <th className="py-2 px-3 text-right">tCO₂ Bio</th>
                 </tr>
@@ -362,12 +362,25 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
                       <div className="text-[#12B886]">{item.fonteFator}</div>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#16202B] text-[10px] font-mono text-amber-700 dark:text-[#D9B36C]">
-                        {item.tierIncerteza} (±{item.incertezaPct}%)
-                      </span>
+                      {item.naoCalculado ? (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-[#D9B36C]/20 border border-amber-300 dark:border-[#D9B36C]/40 text-amber-800 dark:text-[#D9B36C]"
+                          title="Item sem fator de emissão mapeado — não calculado (emissão zero; sem fallback silencioso)"
+                        >
+                          Não calculado
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#16202B] text-[10px] font-mono text-amber-700 dark:text-[#D9B36C]">
+                          {item.tierIncerteza} (±{item.incertezaPct}%)
+                        </span>
+                      )}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-[#F4F7FA]">
-                      {item.fossilTCO2e.toFixed(3)}
+                      {item.naoCalculado ? (
+                        <span className="text-slate-400 dark:text-[#93A3B5]/60 text-xs">0,000</span>
+                      ) : (
+                        item.fossilTCO2e.toFixed(3)
+                      )}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-[#12B886]">
                       {item.biogenicoTCO2e > 0 ? item.biogenicoTCO2e.toFixed(3) : '-'}
