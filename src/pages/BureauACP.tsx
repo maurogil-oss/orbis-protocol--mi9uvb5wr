@@ -36,6 +36,10 @@ import {
   CdvCarbonoProgramaItem,
   RESERVA_METODOLOGICA_PRE_LAUDO,
 } from '@/services/moverService'
+import {
+  obterAcpCobrandingConfig,
+  type AcpCobrandingConfig,
+} from '@/services/platformSettingsService'
 import { useSeo } from '@/hooks/useSeo'
 
 export function BureauACP() {
@@ -50,6 +54,11 @@ export function BureauACP() {
 
   const [passaportes, setPassaportes] = useState<PassaporteFornecedorRecord[]>([])
   const [cdvsCarbono, setCdvsCarbono] = useState<CdvCarbonoProgramaItem[]>([])
+  const [cobranding, setCobranding] = useState<AcpCobrandingConfig>({
+    ativo: false,
+    texto: '',
+    logoUrl: '',
+  })
   const [abaAtiva, setAbaAtiva] = useState<'passaportes' | 'programa_carbono'>('passaportes')
   const [isLoading, setIsLoading] = useState(true)
   const [busca, setBusca] = useState('')

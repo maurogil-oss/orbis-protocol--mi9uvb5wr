@@ -25,7 +25,7 @@ interface AuthContextType {
   isFinanceiro: boolean
   isController: boolean
   isClienteAcp: boolean
-  isAdminAcp: boolean
+  isAdminAcp?: boolean
   isParceiro: boolean
   isAdmin: boolean
   isGestaoPendente: boolean

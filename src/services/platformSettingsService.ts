@@ -26,7 +26,14 @@ export interface AcpCobrandingConfig {
   ativo: boolean
   texto: string
   logoUrl: string
+  /**
+   * Alias de compatibilidade com outros componentes
+   */
+  texto_parceria?: string
+  logo_url?: string
 }
+
+export type CobrandingAcpConfig = AcpCobrandingConfig
 
 /**
  * Obtém a configuração consolidada de Co-branding da ACP
@@ -39,19 +46,30 @@ export async function obterAcpCobrandingConfig(): Promise<AcpCobrandingConfig> {
       obterSetting(CHAVE_ACP_COBRANDING_LOGO_URL, LOGO_ACP_COBRANDING_PADRAO),
     ])
 
+    const textoFinal = textoStr || TEXTO_ACP_COBRANDING_PADRAO
+    const logoFinal = logoUrlStr || LOGO_ACP_COBRANDING_PADRAO
     return {
       ativo: ativoStr === 'true',
-      texto: textoStr || TEXTO_ACP_COBRANDING_PADRAO,
-      logoUrl: logoUrlStr || LOGO_ACP_COBRANDING_PADRAO,
+      texto: textoFinal,
+      logoUrl: logoFinal,
+      texto_parceria: textoFinal,
+      logo_url: logoFinal,
     }
   } catch {
     return {
       ativo: false,
       texto: TEXTO_ACP_COBRANDING_PADRAO,
       logoUrl: LOGO_ACP_COBRANDING_PADRAO,
+      texto_parceria: TEXTO_ACP_COBRANDING_PADRAO,
+      logo_url: LOGO_ACP_COBRANDING_PADRAO,
     }
   }
 }
+
+/**
+ * Alias de compatibilidade para PainelAcpPage
+ */
+export const obterConfigCobrandingAcp = obterAcpCobrandingConfig
 
 /**
  * Atualiza a configuração de Co-branding ACP (requer papel master/admin)

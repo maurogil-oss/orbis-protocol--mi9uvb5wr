@@ -54,9 +54,11 @@ export default function Layout() {
     isAdminAcp,
   } = useAuth()
 
-  const [acpCobranding, setAcpCobranding] = useState<AcpCobrandingConfig>(() =>
-    obterAcpCobrandingConfig(),
-  )
+  const [acpCobranding, setAcpCobranding] = useState<AcpCobrandingConfig>({
+    ativo: false,
+    texto: '',
+    logoUrl: '',
+  })
 
   useEffect(() => {
     let ativo = true
