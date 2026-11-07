@@ -21,6 +21,15 @@ import {
   type LoteComAuditoriaPreenchimento,
 } from '@/services/leitorNotaFiscalService'
 import { obterConfiguracaoEmpresa } from '@/services/empresaConfigService'
+import {
+  construirMemoriaHipotesesLote,
+  MODAIS_TRANSPORTE_OPCOES,
+  TIPOS_MATERIAL_OPCOES,
+  UFS_BRASIL,
+  type ModalTransporte,
+  type TipoMaterialPredominante,
+} from '@/services/loteComplementarService'
+import { Truck, MapPin, Layers, Info } from 'lucide-react'
 
 interface FormularioIngestaoLoteLeituraNfeProps {
   loteId?: string
@@ -47,6 +56,11 @@ const VALORES_INICIAIS_VAZIOS: DadosNotaFiscalSugeridos = {
   peso_bruto_kg: 0,
   valor_total: 0,
   itens: [],
+  transporte_distancia_km: null,
+  transporte_modal: '',
+  origem_cidade: '',
+  origem_uf: '',
+  tipo_material_predominante: '',
 }
 
 export function FormularioIngestaoLoteLeituraNfe({
@@ -242,9 +256,21 @@ export function FormularioIngestaoLoteLeituraNfe({
       return
     }
 
+    // Hipóteses declaradas sobre dados complementares
+    const memoriaHipoteses = construirMemoriaHipotesesLote({
+      transporte_distancia_km: valoresForm.transporte_distancia_km,
+      transporte_modal: valoresForm.transporte_modal,
+      origem_cidade: valoresForm.origem_cidade,
+      origem_uf: valoresForm.origem_uf,
+      tipo_material_predominante: valoresForm.tipo_material_predominante,
+    })
+
     // Monta o objeto de auditoria registrando que nada foi automático
     const auditado = construirRegistroAuditoriaLote({
-      valoresFinais: valoresForm,
+      valoresFinais: {
+        ...valoresForm,
+        hipoteses_declaradas_json: memoriaHipoteses,
+      },
       sugestoesOriginais: sugestoesRecebidas,
       usuarioConfirmador: {
         nome: usuarioAtual?.nome || 'Operador Responsável',
@@ -253,6 +279,8 @@ export function FormularioIngestaoLoteLeituraNfe({
       documentoRef: arquivoSelecionado?.name || 'Documento Fiscal Anexo',
       fonteLeitura: sugestoesRecebidas ? 'triador-ingestao-cdv' : 'manual',
     })
+
+    auditado.hipoteses_declaradas_json = memoriaHipoteses
 
     setLoteSalvoAuditado(auditado)
     if (onLoteConfirmado) {
@@ -645,6 +673,177 @@ export function FormularioIngestaoLoteLeituraNfe({
           </div>
         </div>
 
+        {/* DADOS COMPLEMENTARES: TRANSPORTE, ORIGEM E TIPO DE MATERIAL */}
+        <div
+          data-testid="secao-dados-complementares-lote"
+          className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 space-y-4"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5">
+            <div className="flex items-center gap-2">
+              <Truck className="w-4 h-4 text-emerald-600 dark:text-[#059669]" />
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                Dados Complementares do Lote (Transporte, Origem e Material)
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              Campos opcionais • Hipóteses declaradas explicitamente se ausentes
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Distância */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                Distância Transporte (km)
+              </label>
+              <input
+                data-testid="input-transporte-distancia"
+                type="number"
+                step="0.1"
+                min="0"
+                value={valoresForm.transporte_distancia_km ?? ''}
+                onChange={(e) =>
+                  handleAlterarCampo(
+                    'transporte_distancia_km',
+                    e.target.value === '' ? null : parseFloat(e.target.value) || 0,
+                  )
+                }
+                placeholder="Ex.: 120"
+                className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+              />
+              <span className="text-[10px] text-slate-500 block mt-1">
+                {valoresForm.transporte_distancia_km
+                  ? `${valoresForm.transporte_distancia_km} km declarados`
+                  : 'Vazio: componente desconsiderado'}
+              </span>
+            </div>
+
+            {/* Modal */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                Modal de Transporte
+              </label>
+              <select
+                data-testid="select-transporte-modal"
+                value={valoresForm.transporte_modal || ''}
+                onChange={(e) => handleAlterarCampo('transporte_modal', e.target.value || null)}
+                className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="">Não informado (hipótese declarada)</option>
+                {MODAIS_TRANSPORTE_OPCOES.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              <span className="text-[10px] text-slate-500 block mt-1">
+                {valoresForm.transporte_modal
+                  ? 'Modalidade registrada'
+                  : 'Vazio: modalidade indeterminada'}
+              </span>
+            </div>
+
+            {/* Origem (Cidade e UF) */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                Origem (Cidade)
+              </label>
+              <input
+                data-testid="input-origem-cidade"
+                type="text"
+                value={valoresForm.origem_cidade || ''}
+                onChange={(e) => handleAlterarCampo('origem_cidade', e.target.value)}
+                placeholder="Ex.: Curitiba"
+                className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+              <span className="text-[10px] text-slate-500 block mt-1">
+                {valoresForm.origem_cidade
+                  ? 'Município do fornecedor'
+                  : 'Vazio: domicílio do emitente'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  UF Origem
+                </label>
+                <select
+                  data-testid="select-origem-uf"
+                  value={valoresForm.origem_uf || ''}
+                  onChange={(e) => handleAlterarCampo('origem_uf', e.target.value || null)}
+                  className="w-full px-2 py-2 rounded-xl text-xs bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                >
+                  <option value="">UF</option>
+                  {UFS_BRASIL.map((uf) => (
+                    <option key={uf} value={uf}>
+                      {uf}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Material
+                </label>
+                <select
+                  data-testid="select-tipo-material"
+                  value={valoresForm.tipo_material_predominante || ''}
+                  onChange={(e) =>
+                    handleAlterarCampo('tipo_material_predominante', e.target.value || null)
+                  }
+                  className="w-full px-2 py-2 rounded-xl text-xs bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="">Item a item</option>
+                  {TIPOS_MATERIAL_OPCOES.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* PRÉ-VISUALIZAÇÃO DAS HIPÓTESES DECLARADAS */}
+          <div
+            data-testid="box-hipoteses-declaradas-preview"
+            className="p-3 rounded-lg bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 space-y-1.5 text-[11px]"
+          >
+            <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+              <Info className="w-3.5 h-3.5 text-blue-500" />
+              <span>Memória Pericial de Hipóteses (será gravada no Laudo / Extrato do Lote)</span>
+            </div>
+            {construirMemoriaHipotesesLote({
+              transporte_distancia_km: valoresForm.transporte_distancia_km,
+              transporte_modal: valoresForm.transporte_modal,
+              origem_cidade: valoresForm.origem_cidade,
+              origem_uf: valoresForm.origem_uf,
+              tipo_material_predominante: valoresForm.tipo_material_predominante,
+            }).hipoteses.map((h, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-2 leading-relaxed text-slate-600 dark:text-slate-400"
+              >
+                <span
+                  className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase shrink-0 mt-0.5 ${
+                    h.status === 'informado'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-[#059669] border border-emerald-200 dark:border-emerald-900'
+                      : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900'
+                  }`}
+                >
+                  {h.status === 'informado' ? 'Declarado' : 'Hipótese'}
+                </span>
+                <div>
+                  <strong className="text-slate-800 dark:text-slate-200">{h.rotulo}:</strong>{' '}
+                  {h.hipoteseTexto}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 4. ITENS SUGERIDOS (SE HOUVER) */}
         {valoresForm.itens && valoresForm.itens.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
@@ -752,6 +951,26 @@ export function FormularioIngestaoLoteLeituraNfe({
             </div>
             <div>• Documento: {loteSalvoAuditado.auditoria.documento_lido_ref || 'Manual'}</div>
             <div>• Fonte de Extração: {loteSalvoAuditado.auditoria.fonte_leitura}</div>
+            {loteSalvoAuditado.valores_finais.transporte_distancia_km && (
+              <div>
+                • Transporte: {loteSalvoAuditado.valores_finais.transporte_distancia_km} km (
+                {loteSalvoAuditado.valores_finais.transporte_modal || 'modal não informado'})
+              </div>
+            )}
+            {loteSalvoAuditado.valores_finais.origem_cidade && (
+              <div>
+                • Origem: {loteSalvoAuditado.valores_finais.origem_cidade}
+                {loteSalvoAuditado.valores_finais.origem_uf
+                  ? `/${loteSalvoAuditado.valores_finais.origem_uf}`
+                  : ''}
+              </div>
+            )}
+            {loteSalvoAuditado.valores_finais.tipo_material_predominante && (
+              <div>
+                • Material Predominante:{' '}
+                {loteSalvoAuditado.valores_finais.tipo_material_predominante}
+              </div>
+            )}
           </div>
           <p className="text-[10px] text-slate-500">
             Os dados foram consolidados no fluxo de coleta do lote sem promessa de crédito de

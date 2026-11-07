@@ -113,6 +113,12 @@ export interface CdvLoteRecord extends RecordModel {
     tipoDocumento?: string
     loteColisorId?: string
   }
+  transporte_distancia_km?: number | null
+  transporte_modal?: string | null
+  origem_cidade?: string | null
+  origem_uf?: string | null
+  tipo_material_predominante?: string | null
+  hipoteses_declaradas_json?: any
 }
 
 export interface AvaliacaoAdicionalidadeData {
@@ -245,6 +251,11 @@ export interface IngestaoLoteInput {
     responsavel_crea?: string
   }>
   origem?: 'erp' | 'ecommerce' | 'manual_api' | 'planilha'
+  transporte_distancia_km?: number | null
+  transporte_modal?: string | null
+  origem_cidade?: string | null
+  origem_uf?: string | null
+  tipo_material_predominante?: string | null
 }
 
 export interface IngestaoLoteResponse {

@@ -45,6 +45,11 @@ export interface DadosNotaFiscalSugeridos {
   peso_bruto_kg: number
   valor_total: number
   itens?: ItemNfeSugerido[]
+  transporte_distancia_km?: number | null
+  transporte_modal?: string | null
+  origem_cidade?: string | null
+  origem_uf?: string | null
+  tipo_material_predominante?: string | null
 }
 
 export interface RespostaLeituraNotaFiscal {
@@ -85,6 +90,12 @@ export interface LoteComAuditoriaPreenchimento {
   peso_bruto_kg: number
   valor_total: number
   itens: ItemNfeSugerido[]
+  transporte_distancia_km?: number | null
+  transporte_modal?: string | null
+  origem_cidade?: string | null
+  origem_uf?: string | null
+  tipo_material_predominante?: string | null
+  hipoteses_declaradas_json?: any
   auditoria: {
     campos: Record<string, MetadadosAuditoriaCampo>
     confirmado_em: string
@@ -214,6 +225,11 @@ export function construirRegistroAuditoriaLote(params: {
     'peso_liquido_kg',
     'peso_bruto_kg',
     'valor_total',
+    'transporte_distancia_km',
+    'transporte_modal',
+    'origem_cidade',
+    'origem_uf',
+    'tipo_material_predominante',
   ]
 
   for (const chave of camposChave) {

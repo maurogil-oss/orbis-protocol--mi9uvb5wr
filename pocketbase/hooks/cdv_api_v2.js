@@ -226,6 +226,25 @@ routerAdd('POST', '/backend/v2/cdv/lotes', (e) => {
   loteRec.set('origem_envio', body.origem || 'erp')
   loteRec.set('payload_bruto_json', body)
 
+  if (body.transporte_distancia_km !== undefined && body.transporte_distancia_km !== null) {
+    loteRec.set('transporte_distancia_km', Number(body.transporte_distancia_km) || 0)
+  }
+  if (body.transporte_modal) {
+    loteRec.set('transporte_modal', String(body.transporte_modal))
+  }
+  if (body.origem_cidade) {
+    loteRec.set('origem_cidade', String(body.origem_cidade))
+  }
+  if (body.origem_uf) {
+    loteRec.set('origem_uf', String(body.origem_uf).toUpperCase())
+  }
+  if (body.tipo_material_predominante) {
+    loteRec.set('tipo_material_predominante', String(body.tipo_material_predominante))
+  }
+  if (body.hipoteses_declaradas_json) {
+    loteRec.set('hipoteses_declaradas_json', body.hipoteses_declaradas_json)
+  }
+
   const anoCorrente = new Date().getFullYear()
   const gerarSeloUnico = () => {
     let tentativas = 0
