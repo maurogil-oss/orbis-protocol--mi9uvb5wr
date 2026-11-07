@@ -319,7 +319,7 @@ export default function PainelCliente() {
           valor_pis: parsedDoc.valorPis,
           valor_cofins: parsedDoc.valorCofins,
           qtd_itens: parsedDoc.itens.length,
-          resumo_itens_json: parsedDoc.itens.slice(0, 15),
+          resumo_itens_json: parsedDoc.itens,
           nome_arquivo: file.name,
           origem: 'manual',
           combustivel_tipo: parsedDoc.combustivelTipo,

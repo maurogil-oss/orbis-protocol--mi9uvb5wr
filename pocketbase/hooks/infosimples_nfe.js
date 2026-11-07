@@ -289,7 +289,7 @@ routerAdd('POST', '/backend/v1/infosimples/consultar-nfe', (e) => {
         nfeRec.set('valor_pis', vPis)
         nfeRec.set('valor_cofins', vCofins)
         nfeRec.set('qtd_itens', produtosList.length)
-        nfeRec.set('resumo_itens_json', produtosList.slice(0, 15))
+        nfeRec.set('resumo_itens_json', produtosList)
         nfeRec.set('nome_arquivo', 'InfoSimples_API_' + chaveAcessoRaw.slice(0, 8) + '.json')
         nfeRec.set('origem', 'infosimples')
         nfeRec.set('modelo_fiscal', '55_nfe')
