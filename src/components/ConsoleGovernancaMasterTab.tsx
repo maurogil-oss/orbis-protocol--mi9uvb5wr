@@ -19,12 +19,29 @@ import {
 } from '@/services/adminConsoleService'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
-import { Check, Copy, Download, Database, UserPlus } from 'lucide-react'
+import {
+  Check,
+  Copy,
+  Download,
+  Database,
+  UserPlus,
+  Upload,
+  FileSpreadsheet,
+  XCircle,
+} from 'lucide-react'
 import {
   getCatalogoPericialCompleto,
   downloadCsvCatalogoPericial,
   gerarCsvCatalogoPericial,
 } from '@/services/catalogoFatoresDmrvService'
+import {
+  parseCsvFatoresEmissao,
+  importarFatoresCsvPocketBase,
+  MODELO_EXEMPLO_CSV_FATORES,
+  CABECALHO_CSV_FATORES_PADRAO,
+  ResultadoParseCsvFatores,
+  ResultadoImportacaoFatores,
+} from '@/services/fatoresVersionadosService'
 
 interface ConsoleGovernancaMasterTabProps {
   usuarios: any[]
@@ -146,6 +163,70 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
   const catalogoFatores = getCatalogoPericialCompleto()
   const { hashControle } = gerarCsvCatalogoPericial()
   const [copiouHashCsv, setCopiouHashCsv] = useState(false)
+
+  // Estado para Importação de Fatores via CSV (Etapa 3 Peça 3b)
+  const [csvConteudo, setCsvConteudo] = useState('')
+  const [previaCsv, setPreviaCsv] = useState<ResultadoParseCsvFatores | null>(null)
+  const [importandoCsv, setImportandoCsv] = useState(false)
+  const [resultadoImportacao, setResultadoImportacao] = useState<ResultadoImportacaoFatores | null>(
+    null,
+  )
+  const [mostrarExemploCsv, setMostrarExemploCsv] = useState(false)
+
+  const handleCarregarArquivoCsv = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || ''
+      setCsvConteudo(text)
+      const preview = parseCsvFatoresEmissao(text)
+      setPreviaCsv(preview)
+      setResultadoImportacao(null)
+    }
+    reader.readAsText(file, 'utf-8')
+  }
+
+  const handleExecutarImportacaoCsv = async () => {
+    if (!csvConteudo.trim()) return
+    setImportandoCsv(true)
+    try {
+      const res = await importarFatoresCsvPocketBase(csvConteudo)
+      setResultadoImportacao(res)
+      if (res.sucesso) {
+        toast({
+          title: 'Importação concluída com sucesso',
+          description: `${res.totalImportados} fator(es) foram gravados na tabela versionada.`,
+        })
+      } else {
+        toast({
+          title: 'Importação com pendências ou recusa',
+          description: res.mensagem,
+          variant: 'destructive',
+        })
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Erro na importação',
+        description: err?.message || 'Falha ao processar arquivo CSV.',
+        variant: 'destructive',
+      })
+    } finally {
+      setImportandoCsv(false)
+    }
+  }
+
+  const handleBaixarModeloCsv = () => {
+    const blob = new Blob([MODELO_EXEMPLO_CSV_FATORES], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'modelo_fatores_emissao_acp.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
 
   const handleDownloadCsvFatores = () => {
     downloadCsvCatalogoPericial()
@@ -1033,6 +1114,196 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-[#94A3B8] pt-2 border-t border-slate-200 dark:border-slate-800 font-mono">
           <span>Total de registros homologados no motor: {catalogoFatores.length}</span>
           <span>Arquivo CSV canônico: catalogo_fatores_dmrv_dm_orb_001.csv</span>
+        </div>
+
+        {/* SUB-BLOCO: IMPORTAÇÃO DE FATORES VERSIONADOS VIA CSV (ETAPA 3 PEÇA 3b) */}
+        <div
+          data-testid="secao-importacao-csv-fatores"
+          className="mt-6 p-5 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-emerald-300 dark:border-[#12B886]/40 space-y-4"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
+                <h4 className="font-heading font-bold text-sm text-slate-900 dark:text-[#F8FAFC]">
+                  Importação de Fatores de Emissão Versionados (CSV)
+                </h4>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-[#94A3B8] mt-0.5">
+                Regra rígida de governança: campos obrigatórios registrados com versão (fonte, ano,
+                escopo, geografia, unidade, validade).
+                <strong> Linhas sem fonte são estritamente recusadas</strong> e nenhum fator sem
+                fonte homologada entra na tabela.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleBaixarModeloCsv}
+                className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#111827] text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-emerald-500 flex items-center gap-1.5 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Baixar Modelo CSV</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMostrarExemploCsv(!mostrarExemploCsv)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 dark:text-[#12B886] hover:underline"
+              >
+                {mostrarExemploCsv ? 'Ocultar Estrutura' : 'Ver Colunas Aceitas'}
+              </button>
+            </div>
+          </div>
+
+          {mostrarExemploCsv && (
+            <div className="p-3 rounded-lg bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 text-[11px] font-mono space-y-2">
+              <div className="text-slate-700 dark:text-[#F8FAFC] font-bold">
+                Cabeçalho padrão esperado:
+              </div>
+              <div className="p-2 rounded bg-slate-100 dark:bg-[#0A1628] text-slate-800 dark:text-emerald-400 select-all overflow-x-auto">
+                {CABECALHO_CSV_FATORES_PADRAO}
+              </div>
+              <div className="text-slate-500 dark:text-slate-400 text-[10px]">
+                Campos obrigatórios: <code>codigo</code>, <code>fator</code>, <code>fonte</code>.
+                Colunas adicionais versionadas: <code>ano</code>, <code>escopo</code>,{' '}
+                <code>geografia</code>, <code>unidade</code>, <code>validade</code>,{' '}
+                <code>versao</code>, <code>incerteza_pct</code>, <code>tier</code>,{' '}
+                <code>descricao</code>.
+              </div>
+            </div>
+          )}
+
+          {/* Upload do Arquivo CSV */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <label className="flex-1 cursor-pointer">
+              <input
+                type="file"
+                accept=".csv,text/csv,text/plain"
+                onChange={handleCarregarArquivoCsv}
+                className="hidden"
+                data-testid="input-csv-fatores"
+              />
+              <div className="p-3 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl bg-white dark:bg-[#0E1A2E] text-center text-xs text-slate-600 dark:text-slate-400 transition-colors flex items-center justify-center gap-2">
+                <Upload className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
+                <span>
+                  {csvConteudo
+                    ? 'Arquivo carregado. Clique para trocar de arquivo'
+                    : 'Selecionar arquivo CSV no seu computador'}
+                </span>
+              </div>
+            </label>
+
+            <button
+              type="button"
+              disabled={!previaCsv || previaCsv.totalAceitas === 0 || importandoCsv}
+              onClick={handleExecutarImportacaoCsv}
+              className="px-5 py-3 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all flex items-center justify-center gap-2 shrink-0 shadow-emerald-glow"
+              data-testid="btn-importar-fatores-csv"
+            >
+              {importandoCsv ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Importando...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>Gravar Fatores Validados</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Prévia da Análise do CSV */}
+          {previaCsv && (
+            <div className="p-4 rounded-xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="font-bold text-slate-800 dark:text-[#F8FAFC]">
+                  Diagnóstico do Arquivo CSV:
+                </span>
+                <div className="flex items-center gap-3 font-mono text-[11px]">
+                  <span className="text-slate-600 dark:text-slate-400">
+                    Lidas: <strong>{previaCsv.totalLinhasLidas}</strong>
+                  </span>
+                  <span className="text-emerald-700 dark:text-[#12B886]">
+                    Válidas: <strong>{previaCsv.totalAceitas}</strong>
+                  </span>
+                  <span className="text-rose-600 dark:text-rose-400">
+                    Recusadas: <strong>{previaCsv.totalRecusadas}</strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Tabela de erros de validação (ex: linha sem fonte) */}
+              {previaCsv.erros.length > 0 && (
+                <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-900/60 space-y-2">
+                  <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-xs">
+                    <XCircle className="w-4 h-4 shrink-0" />
+                    <span>
+                      Linhas Rejeitadas pela Governança (Nenhum fator entra sem fonte homologada):
+                    </span>
+                  </div>
+                  <ul className="text-[11px] text-rose-700 dark:text-rose-300/90 list-disc list-inside space-y-1">
+                    {previaCsv.erros.map((err, idx) => (
+                      <li key={idx} className="font-mono">
+                        {err.motivo}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Lista dos fatores validados prontos para entrar */}
+              {previaCsv.fatoresValidos.length > 0 && (
+                <div className="overflow-x-auto max-h-48 rounded border border-slate-200 dark:border-slate-800">
+                  <table className="w-full text-left text-[11px]">
+                    <thead className="bg-slate-50 dark:bg-[#0A1628] text-slate-500 uppercase text-[9px] font-bold">
+                      <tr>
+                        <th className="py-1.5 px-2">Código</th>
+                        <th className="py-1.5 px-2">Material</th>
+                        <th className="py-1.5 px-2">Fator</th>
+                        <th className="py-1.5 px-2">Unidade</th>
+                        <th className="py-1.5 px-2">Fonte</th>
+                        <th className="py-1.5 px-2">Ano</th>
+                        <th className="py-1.5 px-2">Escopo</th>
+                        <th className="py-1.5 px-2">Validade</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {previaCsv.fatoresValidos.map((f, i) => (
+                        <tr key={i} className="hover:bg-slate-50 dark:hover:bg-[#111827]">
+                          <td className="py-1 px-2 font-mono">{f.codigo}</td>
+                          <td className="py-1 px-2">{f.material}</td>
+                          <td className="py-1 px-2 font-mono font-bold text-emerald-700 dark:text-[#12B886]">
+                            {f.fator}
+                          </td>
+                          <td className="py-1 px-2">{f.unidade}</td>
+                          <td className="py-1 px-2">{f.fonte}</td>
+                          <td className="py-1 px-2 font-mono">{f.ano}</td>
+                          <td className="py-1 px-2">{f.escopo}</td>
+                          <td className="py-1 px-2">{f.validade}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Feedback do Resultado da Gravação */}
+          {resultadoImportacao && (
+            <div
+              className={`p-3 rounded-lg text-xs font-semibold ${
+                resultadoImportacao.sucesso
+                  ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-300'
+                  : 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300'
+              }`}
+            >
+              {resultadoImportacao.mensagem}
+            </div>
+          )}
         </div>
       </div>
 

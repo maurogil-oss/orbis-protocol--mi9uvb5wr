@@ -20,6 +20,7 @@ import {
   MemoriaCalculoItem,
 } from './classificacaoFisicaNCM'
 import { DocumentoFiscalProcessado } from './modelosFiscaisParser'
+import { criarSnapshotFator, FatorSnapshotItem } from './fatoresVersionadosService'
 import { FATORES_EMISSAO_CURADOS, GWP_AR6, FatorEmissaoCurado } from './fatoresEmissaoOficiais'
 import { FatorCanonicaItem } from './catalogoFatoresOficiais'
 
@@ -118,6 +119,8 @@ export interface ItemEmissaoApurada {
   memoriaConversao?: MemoriaConversaoUnidade
   memoriaCalculo?: MemoriaCalculoItem
   memoriaCalculoTexto?: string
+  // Etapa 3 Peça 3b: snapshot imutável do fator (anti-retroatividade pericial)
+  fatorSnapshot?: FatorSnapshotItem
 }
 
 export interface InventarioEmissoesResultado {
@@ -235,18 +238,18 @@ export function calcularInventarioEmissoes(
       pesoTotalEmissoes += tCO2eFossil
 
       itensApurados.push({
-        id: `e1_${doc.chaveAcesso.slice(-8)}_${fatorKey}`,
+        id: `e1_${doc.chaveAcesso.slice(-8)}_combustivel`,
         origemDocChave: doc.chaveAcesso,
         modeloFiscal: doc.modeloFiscal,
-        descricaoItem: `Combustão Estacionária/Móvel: ${fator.descricao}`,
+        descricaoItem: `Combustível Fóssil Frota / Operações (${litros.toLocaleString('pt-BR')} L)`,
         categoria: 'Escopo 1',
-        subcategoria: 'Combustíveis Fósseis & Biocombustíveis',
+        subcategoria: 'Combustão Móvel / Estacionária',
         quantidade: litros,
         unidade: fator.unidade,
         fatorUtilizado: fator,
-        kgCO2,
-        kgCH4,
-        kgN2O,
+        kgCO2: litros * fator.kgCO2,
+        kgCH4: litros * fator.kgCH4,
+        kgN2O: litros * fator.kgN2O,
         fossilTCO2e: tCO2eFossil,
         biogenicoTCO2e: tCO2eBio,
         tierIncerteza: fator.tierIncertezaPadrao,
@@ -256,6 +259,18 @@ export function calcularInventarioEmissoes(
         unidadeOriginal: fator.unidade,
         fatorConversaoUnidade: 1,
         memoriaCalculoTexto: `${litros.toLocaleString('pt-BR')} ${fator.unidade} × ${(fator.fatorFossilTCO2e * 1000).toFixed(4)} kgCO₂e/${fator.unidade} = ${tCO2eFossil.toFixed(4)} tCO₂e`,
+        fatorSnapshot: criarSnapshotFator({
+          codigo: fator.id,
+          versao: fator.versaoTabela,
+          fator: fator.fatorFossilTCO2e * 1000,
+          unidade: fator.unidade,
+          fonte: fator.fonte,
+          ano: fator.anoReferencia,
+          escopo: 'Escopo 1',
+          geografia: 'Brasil',
+          tier: fator.tierIncertezaPadrao,
+          incerteza_pct: fator.incertezaPadraoPct,
+        }),
       })
     }
 
@@ -473,6 +488,18 @@ export function calcularInventarioEmissoes(
           memoriaConversao: classif.memoriaConversao,
           memoriaCalculo: classif.memoriaCalculo,
           memoriaCalculoTexto: classif.memoriaCalculo?.formulaTexto,
+          fatorSnapshot: criarSnapshotFator({
+            codigo: `ncm_${classif.familia.id}`,
+            versao: 'v2025.2',
+            fator: classif.fatorUtilizado,
+            unidade: classif.unidadeFator,
+            fonte: classif.fonteFator,
+            ano: 2024,
+            escopo: 'Escopo 3 Cat. 1',
+            geografia: 'Brasil / Global',
+            tier: classif.tierIncerteza,
+            incerteza_pct: classif.incertezaPct,
+          }),
         })
       }
     }
