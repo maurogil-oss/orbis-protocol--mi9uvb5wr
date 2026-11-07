@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-07T22:40:24.486Z",
+  "generatedAt": "2026-11-07T22:47:45.871Z",
   "collections": [
     {
       "name": "users",
@@ -752,6 +752,18 @@
         {
           "name": "flags_revisao",
           "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "arquivo_xml",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "xml_sha256",
+          "type": "text",
           "required": false,
           "system": false
         }

@@ -53,6 +53,11 @@ import {
 import { FLAG_DESVIO_ANP_MSG } from '@/services/faixaPrecoANP'
 import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/services/motorEmissoes'
 import { verificarDuplicidadeNfe } from '@/services/nfeDuplicidadeService'
+import {
+  calcularSha256Arquivo,
+  formatarHashCurto,
+  obterUrlArquivoXmlNfe,
+} from '@/services/nfeCustodiaService'
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
 import {
   dispararTriagemPericial,
@@ -117,6 +122,8 @@ interface NFeUploadRecord extends RecordModel {
   valor_cofins: number
   qtd_itens: number
   nome_arquivo: string
+  arquivo_xml?: string
+  xml_sha256?: string
 }
 
 interface SeloRecord extends RecordModel {
@@ -303,6 +310,9 @@ export default function PainelCliente() {
           }
         }
 
+        // Custódia probatória do arquivo XML: cálculo do hash SHA-256 sobre o arquivo original
+        const xmlSha256 = await calcularSha256Arquivo(file)
+
         // Grava no PocketBase com suporte aos novos modelos fiscais
         const flagsFinais = [...(parsedDoc.flagsRevisao || [])]
         if (parsedDoc.qtdItensDevolucaoExcluidos && parsedDoc.qtdItensDevolucaoExcluidos > 0) {
@@ -317,33 +327,39 @@ export default function PainelCliente() {
           )
         }
 
-        await pb.collection('nfe_upload').create({
-          usuario: user.id,
-          chave_acesso: parsedDoc.chaveAcesso,
-          numero_nota: parsedDoc.numeroDocumento,
-          serie: parsedDoc.serie,
-          modelo: parsedDoc.modeloFiscal.split('_')[0],
-          modelo_fiscal: parsedDoc.modeloFiscal,
-          data_emissao: parsedDoc.dataEmissao,
-          cnpj_emitente: parsedDoc.cnpjEmitente,
-          nome_emitente: parsedDoc.nomeEmitente,
-          cnpj_destinatario: parsedDoc.cnpjDestinatario,
-          nome_destinatario: parsedDoc.nomeDestinatario,
-          valor_total_nf: parsedDoc.valorTotal,
-          valor_icms: parsedDoc.valorIcms,
-          valor_ipi: parsedDoc.valorIpi,
-          valor_pis: parsedDoc.valorPis,
-          valor_cofins: parsedDoc.valorCofins,
-          qtd_itens: parsedDoc.itens.length,
-          resumo_itens_json: parsedDoc.itens,
-          nome_arquivo: file.name,
-          origem: 'manual',
-          combustivel_tipo: parsedDoc.combustivelTipo,
-          combustivel_litros: parsedDoc.combustivelLitros,
-          energia_kwh: parsedDoc.energiaKwh,
-          transporte_tkm: parsedDoc.transporteTkm,
-          flags_revisao: flagsFinais,
-          dados_adicionais_json: {
+        // Monta FormData para anexar o arquivo XML original mantendo compatibilidade nativa PocketBase
+        const formData = new FormData()
+        formData.append('usuario', user.id)
+        formData.append('chave_acesso', parsedDoc.chaveAcesso || '')
+        formData.append('numero_nota', parsedDoc.numeroDocumento || '')
+        formData.append('serie', parsedDoc.serie || '')
+        formData.append('modelo', parsedDoc.modeloFiscal.split('_')[0])
+        formData.append('modelo_fiscal', parsedDoc.modeloFiscal)
+        formData.append('data_emissao', parsedDoc.dataEmissao || '')
+        formData.append('cnpj_emitente', parsedDoc.cnpjEmitente || '')
+        formData.append('nome_emitente', parsedDoc.nomeEmitente || '')
+        formData.append('cnpj_destinatario', parsedDoc.cnpjDestinatario || '')
+        formData.append('nome_destinatario', parsedDoc.nomeDestinatario || '')
+        formData.append('valor_total_nf', String(parsedDoc.valorTotal || 0))
+        formData.append('valor_icms', String(parsedDoc.valorIcms || 0))
+        formData.append('valor_ipi', String(parsedDoc.valorIpi || 0))
+        formData.append('valor_pis', String(parsedDoc.valorPis || 0))
+        formData.append('valor_cofins', String(parsedDoc.valorCofins || 0))
+        formData.append('qtd_itens', String(parsedDoc.itens.length))
+        formData.append('resumo_itens_json', JSON.stringify(parsedDoc.itens))
+        formData.append('nome_arquivo', file.name)
+        formData.append('origem', 'manual')
+        if (parsedDoc.combustivelTipo)
+          formData.append('combustivel_tipo', parsedDoc.combustivelTipo)
+        if (parsedDoc.combustivelLitros)
+          formData.append('combustivel_litros', String(parsedDoc.combustivelLitros))
+        if (parsedDoc.energiaKwh) formData.append('energia_kwh', String(parsedDoc.energiaKwh))
+        if (parsedDoc.transporteTkm)
+          formData.append('transporte_tkm', String(parsedDoc.transporteTkm))
+        formData.append('flags_revisao', JSON.stringify(flagsFinais))
+        formData.append(
+          'dados_adicionais_json',
+          JSON.stringify({
             agua_m3: parsedDoc.aguaM3,
             telecom_gb: parsedDoc.telecomGb,
             pecas_cdv_qtd: parsedDoc.pecasReutilizadasQtd,
@@ -355,8 +371,13 @@ export default function PainelCliente() {
             itens_sujeitos_is: parsedDoc.itensSujeitosIS || [],
             itens_devolucao_excluidos_qtd: parsedDoc.qtdItensDevolucaoExcluidos || 0,
             valor_devolucao_excluido: parsedDoc.valorDevolucaoExcluido || 0,
-          },
-        })
+          }),
+        )
+        // Custódia: armazena arquivo XML original + hash SHA-256 vinculados à nota
+        formData.append('arquivo_xml', file, file.name)
+        formData.append('xml_sha256', xmlSha256)
+
+        await pb.collection('nfe_upload').create(formData)
         successCount++
       } catch (err: any) {
         errors.push(`${file.name}: ${err.message || 'Erro ao processar documento fiscal'}`)
@@ -1351,6 +1372,7 @@ export default function PainelCliente() {
                         <th className="py-2.5 px-3 text-right">Situação Reforma (IBS/CBS)</th>
                         <th className="py-2.5 px-3 text-right">ICMS</th>
                         <th className="py-2.5 px-3 text-center">Validação</th>
+                        <th className="py-2.5 px-3 text-center">Custódia XML</th>
                         <th className="py-2.5 px-3 text-center">Ação</th>{' '}
                       </tr>
                     </thead>
@@ -1545,6 +1567,48 @@ export default function PainelCliente() {
                                   </span>
                                 )}
                               </td>
+                              {/* CUSTÓDIA DO ARQUIVO XML ORIGINAL + HASH SHA-256 */}
+                              <td className="py-2.5 px-3 text-center">
+                                {item.xml_sha256 || item.arquivo_xml ? (
+                                  <div className="flex flex-col items-center gap-1">
+                                    {item.xml_sha256 && (
+                                      <span
+                                        className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#1A2633] text-slate-700 dark:text-[#93A3B5] border border-slate-200 dark:border-slate-700 inline-flex items-center gap-1 cursor-help"
+                                        title={`SHA-256 Probatório do XML: ${item.xml_sha256}`}
+                                      >
+                                        <FileCheck className="w-3 h-3 text-[#12B886]" />
+                                        {formatarHashCurto(item.xml_sha256)}
+                                      </span>
+                                    )}
+                                    {item.arquivo_xml ? (
+                                      <a
+                                        href={obterUrlArquivoXmlNfe(item) || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download={
+                                          item.nome_arquivo || `${item.numero_nota || 'nfe'}.xml`
+                                        }
+                                        className="inline-flex items-center gap-1 text-[10px] text-[#12B886] hover:underline font-medium"
+                                        title="Baixar arquivo XML original sob custódia"
+                                      >
+                                        <Download className="w-3 h-3" />
+                                        Baixar XML
+                                      </a>
+                                    ) : (
+                                      <span className="text-[9px] text-slate-400 dark:text-slate-500">
+                                        Legado
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span
+                                    className="text-[10px] text-slate-400 dark:text-slate-500 font-mono"
+                                    title="Importação anterior à ativação da custódia probatória de XML"
+                                  >
+                                    Sem custódia
+                                  </span>
+                                )}
+                              </td>
                               <td className="py-2.5 px-3 text-center">
                                 <button
                                   type="button"
@@ -1560,7 +1624,7 @@ export default function PainelCliente() {
                             {/* Detalhamento expansível dos itens da nota */}
                             {isAberto && itensNota.length > 0 && (
                               <tr className="bg-slate-50/70 dark:bg-[#0A0E12]/60">
-                                <td colSpan={9} className="p-3 pl-8">
+                                <td colSpan={10} className="p-3 pl-8">
                                   <div className="border border-slate-200 dark:border-[rgba(244,247,250,0.1)] rounded-lg p-2.5 bg-white dark:bg-[#111820]">
                                     <div className="text-[11px] font-semibold text-slate-700 dark:text-[#F4F7FA] mb-2 flex items-center justify-between">
                                       <span>
