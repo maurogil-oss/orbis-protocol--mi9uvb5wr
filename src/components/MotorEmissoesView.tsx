@@ -40,13 +40,36 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Header do Laudo Pericial de Emissões */}
+      {/* 1. Header do Laudo Pericial de Emissões com Rótulo ESTIMATIVA e Anti-Dupla-Contagem */}
       <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-100 via-white to-slate-100 dark:from-[#16202B] dark:via-[#111820] dark:to-[#16202B] border border-emerald-300 dark:border-[#12B886]/40 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/50 text-[#12B886] text-xs font-bold uppercase tracking-wider mb-2">
-              <Leaf className="w-3.5 h-3.5" />
-              LAUDO PERICIAL dMRV • LEI FEDERAL 15.042/2024 (SBCE)
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#111820] border border-emerald-300 dark:border-[#12B886]/50 text-[#12B886] text-xs font-bold uppercase tracking-wider">
+                <Leaf className="w-3.5 h-3.5" />
+                LAUDO PERICIAL dMRV • LEI FEDERAL 15.042/2024 (SBCE)
+              </div>
+              <span
+                data-testid="badge-rotulo-estimativa"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-400/15 border border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-black tracking-wide uppercase"
+              >
+                RÓTULO: {inventario.rotuloResultado || 'ESTIMATIVA'}
+              </span>
+              {inventario.auditoriaDuplaContagem && (
+                <span
+                  data-testid="badge-anti-dupla-contagem"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-[11px] font-mono font-medium"
+                >
+                  Anti-dupla-contagem:{' '}
+                  {inventario.auditoriaDuplaContagem.totalDocumentosUnicosProcessados} docs únicos
+                  {inventario.auditoriaDuplaContagem.documentosDuplicadosIgnorados > 0 && (
+                    <span className="text-amber-600 dark:text-amber-400 font-bold ml-1">
+                      ({inventario.auditoriaDuplaContagem.documentosDuplicadosIgnorados} dup.
+                      bloqueados)
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
             <h3 className="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 dark:text-[#F4F7FA]">
               BALANÇO PERICIAL DE EMISSÕES OPERACIONAIS (GHG PROTOCOL)
@@ -307,6 +330,46 @@ export const MotorEmissoesView: React.FC<MotorEmissoesViewProps> = ({
               Parecer Pericial dMRV:
             </strong>
             {enquadramentoSBCE.explicacao}
+          </div>
+        </div>
+
+        {/* Piloto ACP Etapa 3, Peça 3d: Box de Limitações Metodológicas e Rótulo ESTIMATIVA Visíveis ao Cliente */}
+        <div
+          data-testid="bloco-limitacoes-metodologicas"
+          className="mt-4 p-4 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-600/30 text-xs text-slate-700 dark:text-amber-100/90 leading-relaxed space-y-2.5"
+        >
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs uppercase tracking-wide">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>Limitações Metodológicas da Estimativa de Pegada de Carbono</span>
+            <span className="ml-auto font-mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200">
+              RÓTULO: {inventario.rotuloResultado || 'ESTIMATIVA'}
+            </span>
+          </div>
+
+          <p className="text-[11.5px] italic text-slate-600 dark:text-amber-200/80">
+            {inventario.declaracaoNaturezaResultado}
+          </p>
+
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] pt-1">
+            {(inventario.limitacoesMetodologicas || []).map((lim, idx) => (
+              <li
+                key={idx}
+                className="flex items-start gap-1.5 p-2 rounded-lg bg-white/70 dark:bg-[#0A0E12]/60 border border-amber-200/60 dark:border-amber-500/20"
+              >
+                <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">•</span>
+                <span>{lim}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="pt-1.5 border-t border-amber-200 dark:border-amber-500/20 text-[10.5px] text-slate-500 dark:text-amber-300/70 flex flex-wrap items-center justify-between gap-2">
+            <span>
+              <strong>Garantia de Não-Duplicidade:</strong> Cada NF-e é auditada por chave única de
+              44 dígitos; itens são segregados individualmente na agregação do inventário.
+            </span>
+            <span className="font-semibold text-slate-700 dark:text-amber-200">
+              Orbis Protocol • Infraestrutura de Prova Documental (dMRV)
+            </span>
           </div>
         </div>
       </div>

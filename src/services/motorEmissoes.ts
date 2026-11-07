@@ -166,6 +166,19 @@ export interface InventarioEmissoesResultado {
   // Conformidade e elegibilidade documental (§7 DM-ORB-001)
   tipoDocumento?: TipoDocumentoEmissao
   avisosDocumento?: string[]
+
+  // Piloto ACP Etapa 3, Peça 3d: Rótulo ESTIMATIVA e Limitações Metodológicas Explícitas
+  rotuloResultado: 'ESTIMATIVA'
+  declaracaoNaturezaResultado: string
+  limitacoesMetodologicas: string[]
+  auditoriaDuplaContagem: {
+    totalDocumentosRecebidos: number
+    totalDocumentosUnicosProcessados: number
+    documentosDuplicadosIgnorados: number
+    totalItensUnicosProcessados: number
+    itensDuplicadosIgnorados: number
+    chavesAcessoUnicas: string[]
+  }
 }
 
 export interface OpcoesCalculoInventario {
@@ -211,7 +224,35 @@ export function calcularInventarioEmissoes(
   let somaIncertezaPonderada = 0
   let pesoTotalEmissoes = 0
 
+  // ---------------------------------------------------------------------------
+  // Piloto ACP Etapa 3, Peça 3d: ANTI-DUPLA-CONTAGEM ESTATAL E ITEM-A-ITEM
+  // Garante que a mesma chave de acesso fiscal ou o mesmo item dentro da agregação
+  // jamais sejam contabilizados em duplicidade no somatório consolidado de emissões.
+  // ---------------------------------------------------------------------------
+  const totalDocumentosRecebidos = documentos.length
+  const chavesVistas = new Set<string>()
+  const docsFiltradosSemDuplicidade: DocumentoFiscalProcessado[] = []
+  let documentosDuplicadosIgnorados = 0
+
   for (const doc of documentos) {
+    const rawKey = doc.chaveAcesso ? doc.chaveAcesso.trim() : ''
+    const cleanKey = rawKey.replace(/\D/g, '') || rawKey
+    const chaveIdentificadora = cleanKey || `doc_sem_chave_${docsFiltradosSemDuplicidade.length}`
+
+    if (chavesVistas.has(chaveIdentificadora)) {
+      documentosDuplicadosIgnorados++
+      continue
+    }
+    chavesVistas.add(chaveIdentificadora)
+    docsFiltradosSemDuplicidade.push(doc)
+  }
+
+  // Rastreamento de itens já apurados por identificador canônico composto:
+  // [chaveAcessoNormalizada]::[tipoComponente]::[numeroItemOuIndice]
+  const itensVistosSet = new Set<string>()
+  let itensDuplicadosIgnorados = 0
+
+  for (const doc of docsFiltradosSemDuplicidade) {
     // 1. ESCOPO 1: Queima de Combustíveis em Frotas Próprias ou Queimadores (NF-e, NFC-e)
     if (doc.combustivelLitros && doc.combustivelLitros > 0 && doc.combustivelTipo) {
       const litros = doc.combustivelLitros
@@ -415,11 +456,23 @@ export function calcularInventarioEmissoes(
 
     // 5.1 ESCOPO 3: Bens e Serviços Comprados (Categoria 1) dos Itens da NF-e com NCM
     if (doc.itens && Array.isArray(doc.itens) && doc.itens.length > 0) {
-      for (const item of doc.itens) {
+      for (let idxItem = 0; idxItem < doc.itens.length; idxItem++) {
+        const item = doc.itens[idxItem]
         // CFOP de Devolução (Etapa 2 Piloto ACP): não somar como operação normal / não compõe a pegada
         if (item.isDevolucao) {
           continue
         }
+
+        // Identificador único canônico do item para garantia estrita de anti-dupla-contagem
+        const numItemIdentificador =
+          typeof item.numeroItem === 'number' ? String(item.numeroItem) : `item_idx_${idxItem}`
+        const itemUnicoChave = `${doc.chaveAcesso}::cat1::${numItemIdentificador}`
+
+        if (itensVistosSet.has(itemUnicoChave)) {
+          itensDuplicadosIgnorados++
+          continue
+        }
+        itensVistosSet.add(itemUnicoChave)
 
         // Ignora itens de combustível/energia/telecom já apurados nos blocos anteriores
         const ncmRaw = item.ncm || ''
@@ -625,12 +678,32 @@ export function calcularInventarioEmissoes(
   const limiar10kPct = Number(Math.min(100, (emissoesTotaisFosseis / 10000) * 100).toFixed(1))
   const limiar25kPct = Number(Math.min(100, (emissoesTotaisFosseis / 25000) * 100).toFixed(1))
 
+  // ---------------------------------------------------------------------------
+  // Piloto ACP Etapa 3, Peça 3d: RÓTULO "ESTIMATIVA" E LIMITAÇÕES METODOLÓGICAS
+  // Texto institucional neutro, pt-BR, sem prometer crédito de carbono (posição:
+  // apuramos e auditamos lastro, não emitimos créditos).
+  // ---------------------------------------------------------------------------
+  const itensNaoCalculadosQtd = itensApurados.filter((it) => it.naoCalculado).length
+  const totalItensApurados = itensApurados.length
+
+  const limitacoesMetodologicas: string[] = [
+    'Rótulo do resultado: ESTIMATIVA metodológica preliminar baseada em documentos fiscais apurados e amostragem informada.',
+    'Itens não calculados: insumos ou mercadorias com NCM sem fator curado na versão vigente ou unidades incompatíveis contribuem com 0,00 kgCO₂e e são destacados com flag indicativa pericial.',
+    'Fatores de emissão genéricos / médios: aplicação de fatores médios nacionais e setoriais (MCTI/SIN, worldsteel, IAI, ICA, Ecoinvent) com faixas de incerteza informadas por item.',
+    'Transporte e logística: distâncias e modais quando não expressamente descritos em CT-e/MDF-e utilizam parâmetros declarados sob hipótese pericial explícita.',
+    'Uso da terra e LUC: ausência de modelagem de Mudança de Uso da Terra (Land Use Change - LUC) na cadeia primária agroflorestal para insumos sem rastreabilidade de polígono.',
+    'Posição institucional: a plataforma Orbis Protocol atua na infraestrutura de prova documental criptográfica (dMRV); os resultados constituem inventário probatório e estimativa técnica, não configurando emissão, custódia ou transação de créditos de carbono.',
+  ]
+
+  const declaracaoNaturezaResultado =
+    'ESTIMATIVA — Este inventário reflete uma estimativa documental e metodológica preliminar baseada em evidências fiscais rastreadas por chave de acesso única, fatores de emissão oficiais e hipóteses periciais declaradas, sujeita a limitações metodológicas e sem emissão de créditos de carbono.'
+
   return {
     empresaNome: opcoes?.empresaNome || 'Empresa Cadastrada',
     cnpj: opcoes?.cnpj || '00.000.000/0001-00',
     anoBase: opcoes?.anoBase || new Date().getFullYear(),
     periodoReferencia: `${new Date().getFullYear()} (Acumulado)`,
-    totalDocumentosAnalisados: documentos.length,
+    totalDocumentosAnalisados: docsFiltradosSemDuplicidade.length,
     escopo1TotalTCO2e: Number(escopo1Fossil.toFixed(3)),
     escopo2LocalizacaoTCO2e: Number(escopo2Localizacao.toFixed(3)),
     escopo2MercadoTCO2e: Number(escopo2Mercado.toFixed(3)),
@@ -652,5 +725,16 @@ export function calcularInventarioEmissoes(
     versaoMetodologia: 'Orbis dMRV v3.2 • MCTI/SIN 2024 • IPCC AR6 • SBCE Lei 15.042/2024',
     tipoDocumento: tipoDoc,
     avisosDocumento: validacaoFatores.avisos,
+    rotuloResultado: 'ESTIMATIVA',
+    declaracaoNaturezaResultado,
+    limitacoesMetodologicas,
+    auditoriaDuplaContagem: {
+      totalDocumentosRecebidos,
+      totalDocumentosUnicosProcessados: docsFiltradosSemDuplicidade.length,
+      documentosDuplicadosIgnorados,
+      totalItensUnicosProcessados: totalItensApurados,
+      itensDuplicadosIgnorados,
+      chavesAcessoUnicas: Array.from(chavesVistas),
+    },
   }
 }

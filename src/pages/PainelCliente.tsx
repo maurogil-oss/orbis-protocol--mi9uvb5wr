@@ -1368,7 +1368,12 @@ export default function PainelCliente() {
                         <th className="py-2.5 px-3">Origem</th>
                         <th className="py-2.5 px-3">Emitente</th>
                         <th className="py-2.5 px-3 text-right">Valor Total</th>
-                        <th className="py-2.5 px-3 text-right">Pegada de Carbono</th>
+                        <th className="py-2.5 px-3 text-right">
+                          <span>Pegada (ESTIMATIVA)</span>
+                          <span className="block text-[9px] font-normal lowercase text-amber-600 dark:text-amber-400">
+                            anti-dupla-contagem ativa
+                          </span>
+                        </th>
                         <th className="py-2.5 px-3 text-right">Situação Reforma (IBS/CBS)</th>
                         <th className="py-2.5 px-3 text-right">ICMS</th>
                         <th className="py-2.5 px-3 text-center">Validação</th>
@@ -1454,7 +1459,7 @@ export default function PainelCliente() {
                               <td className="py-2.5 px-3 text-right font-mono font-semibold">
                                 {formatCurrencyBRL(item.valor_total_nf || 0)}
                               </td>
-                              {/* PRODUTO CENTRAL: Pegada de carbono por nota/produto */}
+                              {/* PRODUTO CENTRAL: Pegada de carbono por nota/produto com rótulo ESTIMATIVA */}
                               <td className="py-2.5 px-3 text-right font-mono">
                                 {licenca.podeVerPegadaPorNota ? (
                                   <div className="text-emerald-700 dark:text-[#12B886] font-bold">
@@ -1466,8 +1471,8 @@ export default function PainelCliente() {
                                         ? (((item as any).energia_kwh * 0.08) / 1000).toFixed(2) +
                                           ' tCO₂e'
                                         : '0,14 tCO₂e'}
-                                    <span className="block text-[9px] text-slate-500 dark:text-[#93A3B5] font-normal">
-                                      dMRV auditável
+                                    <span className="block text-[9px] text-amber-700 dark:text-amber-400 font-semibold uppercase">
+                                      ESTIMATIVA • dMRV
                                     </span>
                                   </div>
                                 ) : (

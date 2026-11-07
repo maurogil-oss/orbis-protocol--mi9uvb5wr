@@ -940,8 +940,20 @@ export function gerarHtmlRelatorioDossie(dados: DadosRelatorioDossie, hashSha256
       </tbody>
     </table>
 
-    <div class="disclaimer-box">
-      <strong>Nota Metodológica GEE:</strong> Inventário preliminar alinhado às diretrizes da Lei 15.042/2024 e ABNT NBR ISO 14064-1. A incerteza consolidada estimada da amostragem é de ±${inv ? inv.incertezaConsolidadaPct : 5.0}%.
+    <div class="disclaimer-box" style="border-left: 3px solid #d97706; background: #fffbeb;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <strong style="color: #92400e; font-size: 8.5pt;">RÓTULO METODOLÓGICO: ${inv?.rotuloResultado || 'ESTIMATIVA'} • LIMITAÇÕES METODOLÓGICAS</strong>
+        <span style="font-size: 7.5pt; font-family: monospace; color: #b45309; background: #fef3c7; padding: 1px 5px; border-radius: 3px;">
+          Anti-Dupla-Contagem: Chave Única Ativa
+        </span>
+      </div>
+      <p style="margin: 0 0 4px 0; font-size: 7.5pt; color: #78350f;">
+        ${inv?.declaracaoNaturezaResultado || 'ESTIMATIVA — Este inventário reflete uma estimativa documental e metodológica preliminar baseada em evidências fiscais rastreadas por chave de acesso única, fatores de emissão oficiais e hipóteses periciais declaradas, sujeita a limitações metodológicas e sem emissão de créditos de carbono.'}
+      </p>
+      <div style="font-size: 7pt; color: #92400e; line-height: 1.35;">
+        • <strong>Limitações metodológicas:</strong> Fatores médios nacionais/setoriais; itens com NCM sem fator curado contribuem com 0,00 kgCO₂e; transporte sob hipótese pericial quando ausente em documento auxiliar; sem modelagem de uso da terra (LUC).
+        <br />• <strong>Posição institucional:</strong> A plataforma Orbis Protocol atua na infraestrutura de prova documental criptográfica (dMRV); não há emissão, custódia ou promessa de créditos de carbono.
+      </div>
     </div>
 
     <div class="footer-fixed">
