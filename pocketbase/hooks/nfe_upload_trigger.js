@@ -41,18 +41,20 @@ onRecordCreate((e) => {
     } catch (_) {}
 
     // Deduplicação: verifica se já existe nota com a mesma chave ou mesmo hash
-    const usuarioId = e.record.getString('usuario')
     try {
       const existente = $app.findFirstRecordByData('nfe_upload', 'chave_acesso', chaveLimpa)
       if (existente && existente.id !== e.record.id) {
-        throw new ApiError(
-          409,
-          'Documento fiscal já importado anteriormente (duplicidade detectada).',
-          { chave_acesso: chaveLimpa, hash_chave: hashChave },
+        const dataAnterior =
+          existente.getString('created') || existente.getString('data_emissao') || ''
+        const dataFormatada = dataAnterior ? dataAnterior.slice(0, 10) : 'data anterior'
+        throw new BadRequestError(
+          'Esta nota já foi importada em ' +
+            dataFormatada +
+            ' — importação bloqueada por duplicidade.',
         )
       }
     } catch (err) {
-      if (err instanceof ApiError) throw err
+      if (err instanceof BadRequestError) throw err
     }
   }
 

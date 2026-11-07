@@ -50,6 +50,7 @@ import {
 } from '@/services/fechamentoCompetenciaService'
 import { FLAG_DESVIO_ANP_MSG } from '@/services/faixaPrecoANP'
 import { calcularInventarioEmissoes, InventarioEmissoesResultado } from '@/services/motorEmissoes'
+import { verificarDuplicidadeNfe } from '@/services/nfeDuplicidadeService'
 import { MotorEmissoesView } from '@/components/MotorEmissoesView'
 import {
   dispararTriagemPericial,
@@ -282,6 +283,15 @@ export default function PainelCliente() {
       try {
         const text = await file.text()
         const parsedDoc = processarDocumentoFiscal(text, file.name)
+
+        // Verificação prévia de duplicidade da chave de acesso no produto de pegada
+        if (parsedDoc.chaveAcesso) {
+          const checagem = await verificarDuplicidadeNfe(parsedDoc.chaveAcesso)
+          if (checagem.duplicada) {
+            errors.push(`${file.name}: ${checagem.mensagem}`)
+            continue
+          }
+        }
 
         // Grava no PocketBase com suporte aos novos modelos fiscais
         await pb.collection('nfe_upload').create({
