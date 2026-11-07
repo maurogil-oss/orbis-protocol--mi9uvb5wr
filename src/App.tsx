@@ -66,6 +66,7 @@ import MoverPublicPage from './pages/MoverPublicPage'
 import DossieMoverPage from './pages/DossieMoverPage'
 import MateriaisCriticosPublicPage from './pages/MateriaisCriticosPublicPage'
 import PropostaRemineraPage from './pages/PropostaRemineraPage'
+import ModeloAcpPage from './pages/ModeloAcpPage'
 import EquipePage from './pages/EquipePage'
 import PosicaoCreditoCarbonoPage from './pages/PosicaoCreditoCarbonoPage'
 import PosicaoEscopo3Page from './pages/PosicaoEscopo3Page'
@@ -291,6 +292,8 @@ const App = () => (
           <Route path="/revisor-f6" element={<RevisorExternoF6Page />} />
           {/* Proposta Comercial Reminera — Rota dedicada independente de Layout/Menu/Rodapé */}
           <Route path="/proposta-reminera" element={<PropostaRemineraPage />} />
+          {/* Documento Estratégico Modelo Comercial ACP — fora da navegação pública, só por link direto */}
+          <Route path="/modelo-acp" element={<ModeloAcpPage />} />
           {/* Rota 404 envolvida pelo Layout global */}
           <Route element={<Layout />}>
             <Route path="*" element={<NotFound />} />

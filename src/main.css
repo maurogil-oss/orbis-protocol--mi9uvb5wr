@@ -329,6 +329,40 @@
     size: A4 landscape;
     margin: 8mm;
   }
+}
+/* Print / PDF Export — Documento Estratégico Modelo Comercial ACP (/modelo-acp)
+   Tema claro corporativo: fundo branco, uma seção por página, cores preservadas. */
+@media print {
+  .acp-deck-root {
+    background-color: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .acp-deck-root .slide-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.15) !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .acp-deck-root .slide-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* Quando o documento ACP está na página, o papel fica branco (ignora o navy do deck Reminera) */
+  body:has(.acp-deck-root) {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
 
   /* Oculta barras de navegação, botões interativos e rodapés de tela */
   .no-print,
