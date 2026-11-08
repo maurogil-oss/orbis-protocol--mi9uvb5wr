@@ -9,6 +9,17 @@ export const VERSAO_DOCUMENTO_LGPD_ATUAL = 'v1.0 — 2026-02'
 export const DATA_VIGENCIA_LGPD_ATUAL = 'Fevereiro de 2026'
 
 /**
+ * Versão documental dos Termos de Uso e Condições Gerais dMRV.
+ */
+export const VERSAO_TERMOS_USO_ATUAL = 'v1.0 — 2026-02'
+export const DATA_VIGENCIA_TERMOS_ATUAL = 'Fevereiro de 2026'
+
+/**
+ * Versão unificada da política de privacidade e termos para registro de consentimento no cadastro.
+ */
+export const VERSAO_CONSENTIMENTO_CADASTRO = `${VERSAO_DOCUMENTO_LGPD_ATUAL} / Termos ${VERSAO_TERMOS_USO_ATUAL}`
+
+/**
  * Contato institucional do controlador / canal de privacidade e encarregado.
  * NÃO inventar dados de DPO pessoal físico sem chancela da governança.
  */
@@ -34,10 +45,15 @@ export interface RegistroConsentimentoUsuarioParams {
 /**
  * Verifica se um usuário autenticado possui registro do consentimento LGPD na versão vigente.
  */
-export function verificarConsentimentoLgpd(usuario: {
-  lgpd_termo_versao?: string | null
-  lgpd_consentimento_data_hora?: string | null
-} | null | undefined): {
+export function verificarConsentimentoLgpd(
+  usuario:
+    | {
+        lgpd_termo_versao?: string | null
+        lgpd_consentimento_data_hora?: string | null
+      }
+    | null
+    | undefined,
+): {
   possuiConsentimento: boolean
   versaoRegistrada: string | null
   versaoAtual: string

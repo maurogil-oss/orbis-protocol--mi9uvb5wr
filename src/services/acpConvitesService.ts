@@ -56,6 +56,8 @@ export interface AceitarConviteAcpPayload {
   password: string
   nome_responsavel?: string
   cnpj?: string
+  lgpd_versao?: string
+  termo_aceito?: boolean
 }
 
 export interface EmpresaParticipanteAcp {
@@ -240,8 +242,12 @@ export async function aceitarConviteAcp(payload: AceitarConviteAcpPayload): Prom
   if (!payload.password || payload.password.length < 8) {
     throw new Error('A senha deve conter no mínimo 8 caracteres.')
   }
+  if (payload.termo_aceito === false) {
+    throw new Error('É obrigatório aceitar a Política de Privacidade e os Termos de Uso.')
+  }
 
   try {
+    const versaoTermos = payload.lgpd_versao || 'v1.0 — 2026-02 / Termos v1.0 — 2026-02'
     const res = await pb.send('/backend/v1/acp/convites/aceitar', {
       method: 'POST',
       body: {
@@ -249,6 +255,7 @@ export async function aceitarConviteAcp(payload: AceitarConviteAcpPayload): Prom
         password: payload.password,
         nome_responsavel: payload.nome_responsavel?.trim() || '',
         cnpj: payload.cnpj?.trim() || '',
+        lgpd_versao: versaoTermos,
       },
     })
     return res

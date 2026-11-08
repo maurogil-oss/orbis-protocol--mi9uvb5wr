@@ -538,7 +538,7 @@ export default function Diagnostico() {
         body: JSON.stringify({
           ...leadPayload,
           ref_indicacao: searchRef,
-          termo_versao: 'v2026-01',
+          termo_versao: 'v1.0 — 2026-02 / Termos v1.0 — 2026-02',
           origem: searchRef ? 'radar_semanal_ref' : 'funil',
         }),
       })
@@ -555,14 +555,14 @@ export default function Diagnostico() {
           leadRecord = await pb.collection('leads_diagnostico').update(existingLead.id, {
             ...leadPayload,
             consentimento_data_hora: new Date().toISOString(),
-            termo_versao: 'v2026-01',
+            termo_versao: 'v1.0 — 2026-02 / Termos v1.0 — 2026-02',
           })
         } catch {
           try {
             leadRecord = await pb.collection('leads_diagnostico').create({
               ...leadPayload,
               consentimento_data_hora: new Date().toISOString(),
-              termo_versao: 'v2026-01',
+              termo_versao: 'v1.0 — 2026-02 / Termos v1.0 — 2026-02',
             })
           } catch {
             throw new Error(
@@ -1897,9 +1897,16 @@ export default function Diagnostico() {
                         <strong className="text-[#F4F7FA]">
                           MGM CONSULTORIA EMPRESARIAL LTDA (CNPJ 19.598.964/0001-01)
                         </strong>
-                        , com finalidade restrita à análise preliminar de elegibilidade tributária,
-                        triagem de emissões e emissão do protocolo pericial preliminar, em
-                        conformidade com a{' '}
+                        , nos termos das condições gerais estabelecidas nos{' '}
+                        <a
+                          href="/termos"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#12B886] underline font-semibold hover:text-[#12B886]/80"
+                        >
+                          Termos de Uso
+                        </a>{' '}
+                        e na{' '}
                         <a
                           href="/privacidade"
                           target="_blank"
@@ -1908,7 +1915,8 @@ export default function Diagnostico() {
                         >
                           Política de Privacidade LGPD
                         </a>{' '}
-                        (Lei 13.709/2018).
+                        (Lei 13.709/2018), com finalidade restrita à análise de elegibilidade,
+                        triagem de emissões e prova documental dMRV.
                       </span>
                     </label>
                     {fieldErrors.aceite_lgpd && (

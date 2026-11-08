@@ -20,6 +20,11 @@ import {
 import { useSearchParams } from 'react-router-dom'
 import { validarSenhaForte } from '@/lib/passwordPolicy'
 import { useSeo } from '@/hooks/useSeo'
+import {
+  VERSAO_DOCUMENTO_LGPD_ATUAL,
+  VERSAO_TERMOS_USO_ATUAL,
+  registrarConsentimentoUsuario,
+} from '@/services/termoConsentimentoService'
 
 export type PerfilRole = 'cliente' | 'perito' | 'cliente_acp' | 'parceiro'
 
@@ -126,7 +131,7 @@ export default function RegistroPage() {
       const agora = new Date()
       const dataTrialFim = new Date(agora.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString()
 
-      await pb.collection('users').create({
+      const createdUser = await pb.collection('users').create({
         email: cleanEmail,
         password,
         passwordConfirm,
@@ -134,6 +139,10 @@ export default function RegistroPage() {
         role: dbRole,
         parceiro_acesso_status: role === 'parceiro' ? 'pendente' : undefined,
         status_aprovacao: 'aprovado',
+        // Registro formal do consentimento LGPD e Termos de Uso
+        lgpd_termo_versao: `${VERSAO_DOCUMENTO_LGPD_ATUAL} / Termos ${VERSAO_TERMOS_USO_ATUAL}`,
+        lgpd_consentimento_data_hora: agora.toISOString(),
+        lgpd_consentimento_ip: 'origem_web_cadastro',
         // Campos de licença e trial do produto central (15 dias sem cartão, 5 notas iniciais)
         licenca_camada: 'trial',
         trial_tipo: 'trial_15d_5notas',
@@ -147,6 +156,18 @@ export default function RegistroPage() {
         radar_trial_fim: ehFluxoRadar ? dataTrialFim : undefined,
         radar_ref_origem: refParam,
       })
+
+      // Registro complementar na trilha de auditoria formal (audit_log)
+      if (createdUser?.id) {
+        await registrarConsentimentoUsuario({
+          userId: createdUser.id,
+          userEmail: cleanEmail,
+          versao: `${VERSAO_DOCUMENTO_LGPD_ATUAL} / Termos ${VERSAO_TERMOS_USO_ATUAL}`,
+          dataHora: agora.toISOString(),
+          ip: 'origem_web_cadastro',
+          origem: 'cadastro',
+        }).catch(() => null)
+      }
 
       // 2. Autentica automaticamente
       const authRes = await login(cleanEmail, password)
@@ -730,10 +751,10 @@ export default function RegistroPage() {
             })()}
           </div>
 
-          {/* Aceite dos Termos */}
+          {/* Aceite dos Termos de Uso e Política de Privacidade LGPD Obrigatórios */}
           <label
             htmlFor="registro-termo-aceite-input"
-            className="flex items-start gap-3 p-3 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.1)] cursor-pointer"
+            className="flex items-start gap-3 p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.15)] cursor-pointer hover:border-[rgba(244,247,250,0.25)] transition-colors"
           >
             <input
               ref={termoAceiteInputRef}
@@ -745,18 +766,31 @@ export default function RegistroPage() {
                 setError('')
               }}
               aria-invalid={isTermoInvalido}
+              required
               className="mt-0.5 w-4 h-4 rounded text-[#12B886] focus:ring-0 border-[rgba(244,247,250,0.2)] bg-[#111820]"
             />
             <span className="text-xs text-[#93A3B5] leading-relaxed">
-              Declaro que li e concordo com os{' '}
-              <Link to="/termos" className="text-[#12B886] hover:underline" target="_blank">
-                Termos de Uso
+              <strong className="text-[#F4F7FA] font-semibold block sm:inline">
+                Consentimento Obrigatório (LGPD / Termos dMRV):{' '}
+              </strong>
+              Declaro que li e concordo expressamente com os{' '}
+              <Link
+                to="/termos"
+                className="text-[#12B886] underline hover:text-[#12B886]/80 font-medium"
+                target="_blank"
+              >
+                Termos de Uso ({VERSAO_TERMOS_USO_ATUAL})
               </Link>{' '}
               e a{' '}
-              <Link to="/privacidade" className="text-[#12B886] hover:underline" target="_blank">
-                Política de Privacidade
-              </Link>{' '}
-              da infraestrutura dMRV do Orbis Protocol (LGPD Art. 7º/18).
+              <Link
+                to="/privacidade"
+                className="text-[#12B886] underline hover:text-[#12B886]/80 font-medium"
+                target="_blank"
+              >
+                Política de Privacidade ({VERSAO_DOCUMENTO_LGPD_ATUAL})
+              </Link>
+              , autorizando o tratamento de dados cadastrais e fiscais para reconciliação probatória
+              e emissão de atestados da plataforma (LGPD Art. 7º, I e V; Art. 18).
             </span>
           </label>
 

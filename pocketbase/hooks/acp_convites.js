@@ -272,10 +272,15 @@ routerAdd('POST', '/backend/v1/acp/convites/aceitar', (e) => {
     newUser.set('trial_fim', dataTrialFim)
     newUser.set('trial_notas_limite', 5)
     newUser.set('trial_notas_consumidas', 0)
-    // Consentimento LGPD registrado formalmente no aceite do convite ACP
-    newUser.set('lgpd_termo_versao', 'v1.0 — 2026-02')
+    // Consentimento LGPD e Termos de Uso registrados formalmente no aceite do convite ACP
+    const versaoConsentimento = (
+      body.lgpd_versao || 'v1.0 — 2026-02 / Termos v1.0 — 2026-02'
+    ).trim()
+    const headers = (reqInfo && reqInfo.headers) || {}
+    const ipOrigem = headers['x-forwarded-for'] || headers['x-real-ip'] || 'origem_convite_acp'
+    newUser.set('lgpd_termo_versao', versaoConsentimento)
     newUser.set('lgpd_consentimento_data_hora', agora.toISOString())
-    newUser.set('lgpd_consentimento_ip', 'origem_convite_acp')
+    newUser.set('lgpd_consentimento_ip', ipOrigem)
 
     $app.save(newUser)
 

@@ -22,6 +22,10 @@ import {
   ValidacaoConviteAcpResposta,
 } from '@/services/acpConvitesService'
 import { obterConfigCobrandingAcp, CobrandingAcpConfig } from '@/services/platformSettingsService'
+import {
+  VERSAO_DOCUMENTO_LGPD_ATUAL,
+  VERSAO_TERMOS_USO_ATUAL,
+} from '@/services/termoConsentimentoService'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSeo } from '@/hooks/useSeo'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -162,7 +166,9 @@ export default function ConviteAcpPage() {
     }
 
     if (!termoAceito) {
-      setErroSubmissao('É necessário aceitar os Termos de Adesão do Piloto ACP / Orbis Protocol.')
+      setErroSubmissao(
+        'É obrigatório concordar com a Política de Privacidade e os Termos de Uso para prosseguir com o cadastro.',
+      )
       return
     }
 
@@ -173,6 +179,8 @@ export default function ConviteAcpPage() {
         password: senha,
         nome_responsavel: nomeResponsavel.trim(),
         cnpj: cnpj.trim(),
+        termo_aceito: true,
+        lgpd_versao: `${VERSAO_DOCUMENTO_LGPD_ATUAL} / Termos ${VERSAO_TERMOS_USO_ATUAL}`,
       })
 
       setSucesso(true)
@@ -502,32 +510,46 @@ export default function ConviteAcpPage() {
                   </div>
                 </div>
 
-                {/* Termo de Adesão ACP */}
+                {/* Termo de Adesão ACP e Consentimento LGPD Obrigatório */}
                 <div className="pt-2">
-                  <label className="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                  <label className="flex items-start gap-2.5 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                     <input
                       type="checkbox"
+                      id="convite-acp-termo-aceito"
                       checked={termoAceito}
                       onChange={(e) => setTermoAceito(e.target.checked)}
-                      className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      required
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <span className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <strong className="text-slate-900 dark:text-white font-semibold block sm:inline">
+                        Consentimento Obrigatório LGPD &amp; Adesão ACP:{' '}
+                      </strong>
                       Declaro que a empresa <strong>{validacao.convite.empresa_nome}</strong> é
                       associada ativa da <strong>Associação Comercial do Paraná (ACP)</strong> e
-                      concorda com os{' '}
+                      concorda expressamente com os{' '}
                       <Link
                         to="/termos"
                         target="_blank"
-                        className="text-emerald-600 dark:text-emerald-400 underline inline-flex items-center gap-0.5"
+                        className="text-emerald-600 dark:text-emerald-400 underline font-semibold inline-flex items-center gap-0.5"
                       >
-                        Termos de Uso
+                        Termos de Uso ({VERSAO_TERMOS_USO_ATUAL})
                         <ExternalLink className="w-2.5 h-2.5 inline" />
                       </Link>{' '}
-                      e a Política de Prova Documental do Piloto ACP.
+                      e a{' '}
+                      <Link
+                        to="/privacidade"
+                        target="_blank"
+                        className="text-emerald-600 dark:text-emerald-400 underline font-semibold inline-flex items-center gap-0.5"
+                      >
+                        Política de Privacidade ({VERSAO_DOCUMENTO_LGPD_ATUAL})
+                        <ExternalLink className="w-2.5 h-2.5 inline" />
+                      </Link>
+                      , autorizando o tratamento de dados fiscais e cadastrais estritamente para a
+                      prova documental dMRV e indicadores agregados do piloto ACP.
                     </span>
                   </label>
                 </div>
-
                 {/* Alerta de Erro */}
                 {erroSubmissao && (
                   <Alert variant="destructive" className="py-2.5 text-xs">
