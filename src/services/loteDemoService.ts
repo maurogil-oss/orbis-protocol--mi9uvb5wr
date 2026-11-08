@@ -7,13 +7,19 @@
  * - Baixa DETRAN de teste: 'PR-BX-2026-991204'
  */
 
-export const IDS_LOTES_DEMO = ['vrtclotew292022', 'h1dpr8wniludemh'] as const
+export const IDS_LOTES_DEMO = [
+  'vrtclotew292022',
+  'h1dpr8wniludemh',
+  'acp_demo_lote_piloto_01',
+] as const
 export const BAIXA_TESTE_DEMO = 'PR-BX-2026-991204'
 export const CODIGOS_DEMO = [
   'VERTEC-IW29-2022',
   'PR-BX-2026-991204',
   'vrtclotew292022',
   'h1dpr8wniludemh',
+  'ORB-ACP-DEMO-2026-001',
+  'acp_demo_lote_piloto_01',
 ] as const
 
 export const TEXTO_AVISO_LOTE_DEMO =
