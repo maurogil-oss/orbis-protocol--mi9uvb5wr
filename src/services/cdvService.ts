@@ -449,6 +449,24 @@ export async function consultarLoteConsolidado(
 
     return { lote, pecas }
   } catch {
+    // Fallback: se o usuário for anônimo/público e bater na regra restritiva de cdv_lotes/cdv_pecas,
+    // consultar via endpoint público seguro /backend/v1/cdv/lotes/publico/{identificador}
+    try {
+      const publicRes = await pb.send(
+        `/backend/v1/cdv/lotes/publico/${encodeURIComponent(param)}`,
+        {
+          method: 'GET',
+        },
+      )
+      if (publicRes && publicRes.sucesso && publicRes.lote) {
+        return {
+          lote: publicRes.lote as CdvLoteRecord,
+          pecas: (publicRes.pecas || []) as CdvPecaRecord[],
+        }
+      }
+    } catch {
+      /* intentionally ignored */
+    }
     return null
   }
 }
@@ -461,6 +479,41 @@ export async function consultarPassaportePorSelo(selo: string): Promise<CdvPecaR
       .getFirstListItem<CdvPecaRecord>(`selo_dpp = "${seloNorm}"`)
     return record
   } catch {
+    // Fallback: se o usuário for anônimo/público e a API rule bloquear listagem em cdv_pecas,
+    // consultar via endpoint público seguro /backend/v1/cdv/pecas/{selo}
+    try {
+      const publicRes = await pb.send(`/backend/v1/cdv/pecas/${encodeURIComponent(seloNorm)}`, {
+        method: 'GET',
+      })
+      if (publicRes && publicRes.sucesso && publicRes.selo) {
+        return {
+          id: publicRes.selo,
+          lote: '',
+          sku_interno: publicRes.sku || '',
+          selo_dpp: publicRes.selo,
+          descricao_peca: publicRes.peca || '',
+          categoria_material: publicRes.categoria_material || '',
+          material_declarado: publicRes.material || '',
+          peso_kg: publicRes.peso_kg || 0,
+          ncm: publicRes.ncm || '',
+          fator_co2e_kg: publicRes.fator_co2e_kg || 0,
+          co2e_evitado_kg: publicRes.co2e_evitado_kg || 0,
+          hash_sha256: publicRes.hash_sha256 || '',
+          responsavel_crea: publicRes.responsavel_crea || '',
+          cdv_origem: publicRes.cdv_origem || '',
+          cdv_cnpj: publicRes.cdv_cnpj || '',
+          status: publicRes.status || 'ativo',
+          veiculo_marca_modelo: publicRes.veiculo_doador?.marca_modelo || '',
+          veiculo_chassi_mascarado: publicRes.veiculo_doador?.chassi_mascarado || '',
+          veiculo_baixa_detran: publicRes.veiculo_doador?.baixa_detran || '',
+          veiculo_seguradora: publicRes.veiculo_doador?.seguradora_sinistro || '',
+          created: publicRes.data_emissao || new Date().toISOString(),
+          updated: publicRes.data_emissao || new Date().toISOString(),
+        } as unknown as CdvPecaRecord
+      }
+    } catch {
+      /* intentionally ignored */
+    }
     return null
   }
 }

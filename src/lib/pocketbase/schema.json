@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T12:12:21.491Z",
+  "generatedAt": "2026-11-08T12:29:18.949Z",
   "collections": [
     {
       "name": "users",
@@ -577,11 +577,11 @@
       "name": "nfe_upload",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
-        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
-        "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
-        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')"
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "create": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin')"
       },
       "fields": [
         {
@@ -877,11 +877,11 @@
       "name": "cliente_certificados_a1",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
-        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin')",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')",
-        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin')"
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin')"
       },
       "fields": [
         {
@@ -1000,11 +1000,11 @@
       "name": "emissoes_inventario",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'perito')",
-        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'perito')",
+        "list": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "view": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'admin' || @request.auth.role = 'master' || @request.auth.role = 'perito')",
-        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin' || @request.auth.role = 'master')"
+        "update": "@request.auth.id != '' && (usuario = @request.auth.id || @request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')"
       },
       "fields": [
         {
@@ -1363,8 +1363,8 @@
       "name": "cdv_lotes",
       "type": "base",
       "apiRules": {
-        "list": "",
-        "view": "",
+        "list": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito' || (@request.auth.cnpj != '' && cdv_cnpj = @request.auth.cnpj) || is_demo = true)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito' || (@request.auth.cnpj != '' && cdv_cnpj = @request.auth.cnpj) || is_demo = true)",
         "create": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
         "update": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
         "delete": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')"
@@ -1576,8 +1576,8 @@
       "name": "cdv_pecas",
       "type": "base",
       "apiRules": {
-        "list": "",
-        "view": "",
+        "list": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito' || (@request.auth.cnpj != '' && cdv_cnpj = @request.auth.cnpj) || (@request.auth.cnpj != '' && lote.cdv_cnpj = @request.auth.cnpj) || lote.is_demo = true)",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin' || @request.auth.role = 'perito' || (@request.auth.cnpj != '' && cdv_cnpj = @request.auth.cnpj) || (@request.auth.cnpj != '' && lote.cdv_cnpj = @request.auth.cnpj) || lote.is_demo = true)",
         "create": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
         "update": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')",
         "delete": "@request.auth.id != '' && (@request.auth.role = 'master' || @request.auth.role = 'admin')"
@@ -6292,11 +6292,11 @@
       "name": "convites_acp",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
-        "view": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
-        "create": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
-        "update": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
-        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')"
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'master' || @request.auth.role = 'admin')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'master' || @request.auth.role = 'admin')"
       },
       "fields": [
         {
