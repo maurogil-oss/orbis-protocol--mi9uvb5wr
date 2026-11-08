@@ -72,6 +72,7 @@ import PosicaoCreditoCarbonoPage from './pages/PosicaoCreditoCarbonoPage'
 import PosicaoEscopo3Page from './pages/PosicaoEscopo3Page'
 import NormaDmOrb001Page from './pages/NormaDmOrb001Page'
 import PainelAcpPage from './pages/PainelAcpPage'
+import ConviteAcpPage from './pages/ConviteAcpPage'
 import NotFound from './pages/NotFound'
 
 /**
@@ -287,6 +288,9 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Fluxo de Adesão de Empresa Associada ACP via Link de Convite */}
+            <Route path="/convite/:token" element={<ConviteAcpPage />} />
+            <Route path="/convite" element={<ConviteAcpPage />} />
             {/* Painel do Administrador ACP (só admin_acp ou gestor master) */}
             <Route
               path="/painel-acp"

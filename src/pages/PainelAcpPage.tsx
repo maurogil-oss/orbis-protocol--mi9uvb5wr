@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Info,
 } from 'lucide-react'
+import { GestaoConvitesAcpSection } from '@/components/GestaoConvitesAcpSection'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSeo } from '@/hooks/useSeo'
 import { obterConfigCobrandingAcp, CobrandingAcpConfig } from '@/services/platformSettingsService'
@@ -241,6 +242,9 @@ export function PainelAcpPage() {
             </Link>
           </div>
         </div>
+
+        {/* Gestão de Convites & Empresas Associadas (Peça 4c) */}
+        <GestaoConvitesAcpSection />
 
         {/* Seção de Indicadores Agregados (Placeholder Honesto - Em Estruturação) */}
         <div className="space-y-4">

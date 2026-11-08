@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T11:37:47.516Z",
+  "generatedAt": "2026-11-08T11:51:18.969Z",
   "collections": [
     {
       "name": "users",
@@ -6268,6 +6268,100 @@
         "CREATE INDEX IF NOT EXISTS idx_fatores_codigo ON fatores_emissao (codigo)",
         "CREATE INDEX IF NOT EXISTS idx_fatores_escopo ON fatores_emissao (escopo)",
         "CREATE INDEX IF NOT EXISTS idx_fatores_versao ON fatores_emissao (versao)"
+      ]
+    },
+    {
+      "name": "convites_acp",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "view": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'admin_acp' || @request.auth.role = 'admin' || @request.auth.role = 'master')"
+      },
+      "fields": [
+        {
+          "name": "token",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "empresa_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cnpj",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["pendente", "usado", "expirado", "cancelado"]
+        },
+        {
+          "name": "expira_em",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "usado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "usuario_criado",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "criado_por",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "observacoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_convites_acp_token ON convites_acp (token)",
+        "CREATE INDEX idx_convites_acp_status_email ON convites_acp (status, email)"
       ]
     }
   ]
