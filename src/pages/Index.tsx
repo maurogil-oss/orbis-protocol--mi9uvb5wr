@@ -5,6 +5,7 @@ import { CardAtestadoHero } from '@/components/CardAtestadoHero'
 import { SecaoComoFuncionaEtapas } from '@/components/SecaoComoFuncionaEtapas'
 import { PlatformProofScreenshots } from '@/components/PlatformProofScreenshots'
 import { NumerosVerificaveisSection } from '@/components/NumerosVerificaveisSection'
+import { SecaoParceirosInstitucionais } from '@/components/SecaoParceirosInstitucionais'
 import { FormularioOrbisLpf } from '@/components/FormularioOrbisLpf'
 import { SecaoPerfilAbas } from '@/components/SecaoPerfilAbas'
 import { ListaRegulatoriaFixa } from '@/components/ListaRegulatoriaFixa'
@@ -66,14 +67,22 @@ export default function Index() {
                 <Link
                   to="/diagnostico"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-[#059669] dark:hover:bg-emerald-600 hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-md min-h-[44px]"
+                  title="Solicite uma demonstração e inicie o diagnóstico gratuito da sua empresa"
                 >
                   <span>Iniciar diagnóstico gratuito</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
+                <Link
+                  to="/demo/orientada"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-[#111827] border border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl transition-all min-h-[44px] shadow-xs"
+                >
+                  <span>Solicite uma demonstração</span>
+                </Link>
+
                 <a
                   href="#como-funciona"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all min-h-[44px]"
                 >
                   <span>Ver como funciona</span>
                 </a>
@@ -113,6 +122,9 @@ export default function Index() {
 
       {/* 5. SEÇÃO DE CREDIBILIDADE: Números Verificáveis fundidos ao Caso Real VERTEC */}
       <NumerosVerificaveisSection id="credibilidade-caso-vertec" />
+
+      {/* 5B. SEÇÃO DE PARCEIROS INSTITUCIONAIS: Associação Comercial do Paraná (ACP) */}
+      <SecaoParceirosInstitucionais id="parceiros-institucionais" />
 
       {/* DIVISOR ORBITAL ESTILO LINEAR */}
       <OrbisSectionDivider label="ORBIS LPF" />

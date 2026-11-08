@@ -55,6 +55,14 @@ export function NumerosVerificaveisSection({
               Primeiro lote real gravado no protocolo dMRV (lote VERTEC-IW29-2022). Rastreabilidade
               física e fiscal de painéis termoacústicos com lã de rocha a partir de NF-e Pan Urania.
             </p>
+            <div className="mt-2.5 inline-flex flex-wrap items-center gap-2 text-[11px] font-mono font-medium text-slate-500 dark:text-slate-400">
+              <span className="px-2 py-0.5 rounded bg-slate-200/80 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                Período auditado: Competência 2022 (NFs 157/158)
+              </span>
+              <span className="px-2 py-0.5 rounded bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                Metodologia: DM-ORB-001 v1.1 / Balanço de Massa e Fatores Oficiais
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">

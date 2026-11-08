@@ -35,6 +35,15 @@ const ETAPAS = [
     badge: 'Passo 3 · Verificação pública',
     destaque: false,
   },
+  {
+    numero: '04',
+    titulo: 'Fechamento do ciclo & rastreabilidade contínua',
+    descricao:
+      'Retroalimentação de dados ao inventário ESG e balanço de massa, gerando histórico imutável por lote e passaporte digital para os próximos ciclos da economia circular.',
+    icone: ShieldCheck,
+    badge: 'Ciclo Fechado · dMRV',
+    destaque: false,
+  },
 ]
 
 export function SecaoComoFuncionaEtapas({
@@ -68,8 +77,53 @@ export function SecaoComoFuncionaEtapas({
           </p>
         </div>
 
-        {/* Grade de 3 etapas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        {/* Diagrama / Fluxograma Circular de Etapas: Otimizado para Mobile (<768px) e Desktop */}
+        <div
+          data-testid="fluxograma-circular-container"
+          className="mb-8 p-4 sm:p-6 rounded-2xl bg-slate-50 dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800"
+        >
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-800 dark:text-[#059669]">
+              FLUXOGRAMA CIRCULAR DA ECONOMIA DE CARBONO (dMRV)
+            </span>
+            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+              Ciclo 100% Auditável
+            </span>
+          </div>
+
+          {/* Stepper / Trilho circular contínuo visível e legível em telas pequenas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {ETAPAS.map((etp, idx) => (
+              <div
+                key={`fluxo-${etp.numero}`}
+                className="flex items-start sm:flex-col gap-3 p-3.5 rounded-xl bg-white dark:bg-[#0A1628] border border-slate-200/80 dark:border-slate-800 relative group"
+              >
+                <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                  {etp.numero}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                    {etp.titulo}
+                  </p>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2">
+                    {etp.descricao}
+                  </p>
+                </div>
+                {idx < ETAPAS.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-slate-400 dark:text-slate-600 font-bold"
+                  >
+                    →
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Grade detalhada de etapas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
           {ETAPAS.map((etapa) => {
             const Icone =
               etapa.numero === '01' ? FileUp : etapa.numero === '02' ? Calculator : FileCheck2
