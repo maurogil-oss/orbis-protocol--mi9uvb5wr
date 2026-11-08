@@ -13,6 +13,7 @@ import {
   Info,
 } from 'lucide-react'
 import { GestaoConvitesAcpSection } from '@/components/GestaoConvitesAcpSection'
+import { IndicadoresAcpSection } from '@/components/IndicadoresAcpSection'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSeo } from '@/hooks/useSeo'
 import { obterConfigCobrandingAcp, CobrandingAcpConfig } from '@/services/platformSettingsService'
@@ -244,55 +245,12 @@ export function PainelAcpPage() {
         </div>
 
         {/* Gestão de Convites & Empresas Associadas (Peça 4c) */}
-        <GestaoConvitesAcpSection />
-
-        {/* Seção de Indicadores Agregados (Placeholder Honesto - Em Estruturação) */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <h2 className="font-heading font-bold text-sm uppercase tracking-wider text-slate-900 dark:text-[#F8FAFC]">
-                INDICADORES AGREGADOS DA CARTEIRA ACP
-              </h2>
-            </div>
-            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-300 dark:border-amber-700/40 font-bold uppercase">
-              Etapa 4, Peça 4b • Em estruturação
-            </span>
-          </div>
-
-          <div className="p-8 sm:p-10 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-4 shadow-sm">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-200 dark:border-blue-800">
-              <Info className="w-7 h-7" />
-            </div>
-
-            <div className="max-w-xl mx-auto space-y-2">
-              <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-[#F8FAFC]">
-                Análise Agregada e Anonimizada em Estruturação
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-[#94A3B8] leading-relaxed">
-                Os módulos de telemetria agregada por setor, cálculo de emissões evitadas
-                consolidadas e benchmarking anonimizado entre associados ACP estão programados para
-                a próxima peça (4b). Nenhum dado sintético ou estimativa não-auditada é exibido
-                preventivamente.
-              </p>
-            </div>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-500 dark:text-[#94A3B8]">
-              <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-slate-800">
-                • Total de Associados Ativos
-              </span>
-              <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-slate-800">
-                • Toneladas Rastreadas (tCO₂e)
-              </span>
-              <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-slate-800">
-                • Score Médio ESG da Carteira
-              </span>
-              <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-slate-800">
-                • Elegibilidade BRDE / Fomento PR
-              </span>
-            </div>
-          </div>
+        <div className="gestao-convites-bloco">
+          <GestaoConvitesAcpSection />
         </div>
+
+        {/* Indicadores Agregados e Anonimizáveis das Empresas Participantes (Peça 4d) */}
+        <IndicadoresAcpSection />
       </div>
     </div>
   )
