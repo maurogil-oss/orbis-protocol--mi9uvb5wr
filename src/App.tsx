@@ -182,8 +182,9 @@ const App = () => (
               }
             />
             <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/politica-privacidade" element={<Privacidade />} />
             <Route path="/termos" element={<TermosUsoPage />} />
-            <Route path="/termos-de-uso" element={<Navigate to="/termos" replace />} />
+            <Route path="/termos-de-uso" element={<TermosUsoPage />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/financeiro" element={<RedirectPreserveQuery to="/planos" />} />
             <Route path="/api-docs-cdv" element={<ApiDocsCdvPage />} />

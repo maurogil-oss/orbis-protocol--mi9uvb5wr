@@ -1,295 +1,195 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import {
-  ShieldCheck,
-  ArrowLeft,
-  Lock,
-  FileCheck2,
-  AlertTriangle,
-  Scale,
-  Hash,
-  Fingerprint,
-} from 'lucide-react'
-
+import { FileText, ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, AlertTriangle, Scale, Lock, Info } from 'lucide-react'
 import { useSeo } from '@/hooks/useSeo'
+import {
+  VERSAO_DOCUMENTO_LGPD_ATUAL,
+  DATA_VIGENCIA_LGPD_ATUAL,
+  CONTATO_CONTROLADOR_LGPD,
+} from '@/services/termoConsentimentoService'
 
 export default function TermosUsoPage() {
   useSeo({
-    title: 'Termos de Uso e Proteção de Propriedade Intelectual — Orbis Protocol',
+    title: 'Termos de Uso e Condições Gerais — Orbis Protocol',
     description:
-      'Termos de uso da plataforma, governança de dados, conformidade probatória dMRV e proteção de propriedade intelectual.',
+      'Termos de uso, condições gerais da plataforma probatória dMRV, diretrizes da Opção B de confidencialidade de fatores e responsabilidade técnica.',
   })
 
   return (
-    <div className="min-h-screen py-12 md:py-20 bg-[#0A0E12]">
-      <div className="max-w-[920px] mx-auto px-4 sm:px-6">
-        {/* Navegação de retorno */}
-        <div className="mb-6">
+    <div className="min-h-screen py-12 md:py-20 bg-slate-50 dark:bg-[#0A0E12] text-slate-800 dark:text-[#F4F7FA]">
+      <div className="max-w-[900px] mx-auto px-4 sm:px-6">
+        <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#93A3B5] hover:text-[#12B886] transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Voltar ao Início</span>
           </Link>
+
+          <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-slate-200 dark:bg-[#16202B] text-slate-600 dark:text-[#93A3B5]">
+            Versão {VERSAO_DOCUMENTO_LGPD_ATUAL}
+          </span>
         </div>
 
-        {/* Card Principal */}
-        <div className="p-8 sm:p-12 rounded-2xl bg-[#111820] border border-[rgba(244,247,250,0.12)] shadow-2xl space-y-8">
-          {/* Header */}
-          <div className="border-b border-[rgba(244,247,250,0.1)] pb-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#16202B] border border-[#12B886]/40 text-[#12B886] text-xs font-bold tracking-wider uppercase mb-3">
-              <ShieldCheck className="w-4 h-4 text-[#12B886]" />
-              GOVERNANÇA & PROTEÇÃO DOCUMENTAL • LEI Nº 9.610/1998
+        <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#111820] border border-slate-200 dark:border-[rgba(244,247,250,0.12)] shadow-xl space-y-8">
+          {/* Cabeçalho */}
+          <div className="border-b border-slate-200 dark:border-[rgba(244,247,250,0.1)] pb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#16202B] border border-emerald-500/30 text-emerald-700 dark:text-[#12B886] text-xs font-bold tracking-wider uppercase mb-3">
+              <FileText className="w-4 h-4 text-emerald-600 dark:text-[#12B886]" />
+              CONDICIONANTES CONTRATUAIS • PROVA DOCUMENTAL dMRV
             </div>
-            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-[#F4F7FA]">
-              TERMOS DE USO & PROTEÇÃO DE PROPRIEDADE INTELECTUAL
+            <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-[#F4F7FA]">
+              TERMOS DE USO E CONDIÇÕES GERAIS DA PLATAFORMA
             </h1>
-            <p className="text-xs sm:text-sm text-[#93A3B5] mt-2">
-              Última atualização: Março de 2026 • Operadora Técnica: MGM CONSULTORIA EMPRESARIAL
-              LTDA (CNPJ 19.598.964/0001-01) • Plataforma Orbis Protocol
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-[#93A3B5] mt-2">
+              Vigência: {DATA_VIGENCIA_LGPD_ATUAL} • Versão documental:{' '}
+              <strong className="text-slate-800 dark:text-slate-200">{VERSAO_DOCUMENTO_LGPD_ATUAL}</strong> •
+              Operadora Técnica: {CONTATO_CONTROLADOR_LGPD.razaoSocial} (CNPJ {CONTATO_CONTROLADOR_LGPD.cnpj})
             </p>
           </div>
 
-          {/* Destaque Institucional: Posicionamento */}
-          <div className="p-4 sm:p-5 rounded-xl bg-[#0A0E12] border-l-4 border-[#12B886] text-xs sm:text-sm text-[#93A3B5] leading-relaxed space-y-2">
-            <div className="flex items-center gap-2 text-[#12B886] font-bold uppercase tracking-wider text-xs">
-              <Fingerprint className="w-4 h-4 text-[#12B886]" />
-              <span>Infraestrutura Tecnológica de Prova Documental</span>
+          {/* Destaque Institucional: Rótulos e Opção B */}
+          <div className="p-4 sm:p-5 rounded-xl bg-slate-100 dark:bg-[#0A0E12] border-l-4 border-emerald-500 text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed space-y-2">
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-[#12B886] font-bold uppercase tracking-wider text-xs">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Natureza Probatória e Limites dos Atestados Orbis</span>
             </div>
             <p>
-              O <strong className="text-[#F4F7FA]">Orbis Protocol</strong> é uma plataforma de
-              tecnologia para cálculo, auditoria probatória e infraestrutura de prova documental
-              digital (dMRV). A plataforma não atua como certificadora governamental independente
-              nem emite créditos de carbono; sua missão é assegurar integridade matemática,
-              rastreabilidade fiscal e prova imutável via hash SHA-256 e trilha auditável para
-              documentos técnicos, laudos periciais e Atestados de Conformidade Orbis (com ART/RRT).
+              Estes Termos regulam o acesso e a utilização dos serviços e recursos oferecidos pelo{' '}
+              <strong className="text-slate-900 dark:text-[#F4F7FA]">ORBIS PROTOCOL</strong>. Os documentos gerados pela
+              plataforma denominam-se formalmente <strong className="text-slate-900 dark:text-[#F4F7FA]">Atestados Orbis</strong>{' '}
+              ou Laudos Técnicos Periciais. A plataforma não emite nem comercializa títulos de carbono voláteis (S3U)
+              sem lastro, tampouco utiliza rótulos proibidos como &quot;Certificação Oficial&quot; ou &quot;Selo Governamental&quot;.
+              Toda prova baseia-se na imutabilidade de notas fiscais eletrônicas e no rigor pericial normativo.
             </p>
           </div>
 
-          {/* Seção 1 */}
+          {/* 1. Objeto */}
           <section className="space-y-3">
-            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">1.</span> Objeto e Aceitação
+            <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA] flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-[#12B886]">1.</span> Objeto e Escopo de Serviços
             </h2>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              Estes Termos de Uso regulam o acesso e a utilização dos serviços digitais, ferramentas
-              de cálculo, módulos analíticos, relatórios e documentos emitidos pela plataforma{' '}
-              <strong className="text-[#F4F7FA]">Orbis Protocol</strong>, acessível em{' '}
-              <span className="text-[#12B886] font-mono">www.orbis-protocol.com</span> e seus
-              subdomínios, operada pela{' '}
-              <strong className="text-[#F4F7FA]">MGM CONSULTORIA EMPRESARIAL LTDA</strong>.
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
+              O Orbis Protocol disponibiliza infraestrutura de tecnologia para:
             </p>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              O cadastro, a navegação ou a recepção de qualquer laudo, dossiê, passaporte digital ou
-              Atestado de Conformidade Orbis emitido pela plataforma implica a adesão integral e
-              irretratável a estes termos.
+            <ul className="list-disc list-inside text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] space-y-1.5 pl-2">
+              <li>Ingestão, leitura estruturada e verificação de integridade criptográfica de XMLs de NF-e/NFS-e/CT-e;</li>
+              <li>Cálculo automatizado de emissões de CO₂e evitadas segundo metodologia dMRV e Norma Técnica DM-ORB-001;</li>
+              <li>Emissão de Passaportes Digitais e Atestados Orbis com hash SHA-256 e QR Code pericial;</li>
+              <li>Plataforma de cooperação no âmbito do piloto com a Associação Comercial do Paraná (ACP);</li>
+              <li>Módulos de conformidade regulatória (MTR, SINIR, PNRS, SBCE e Lei 15.042/2024 quando aplicáveis).</li>
+            </ul>
+          </section>
+
+          {/* 2. Aceite e Cadastro */}
+          <section className="space-y-3">
+            <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA] flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-[#12B886]">2.</span> Aceite Eletrônico Obrigatório e Cadastro
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
+              O acesso aos módulos operacionais depende da criação de conta com preenchimento verídico dos dados da
+              empresa e do seu preposto. A manifestação de concordância é efetuada mediante checkbox obrigatório no ato
+              do cadastro. Para fins de auditoria e segurança jurídica, o sistema registra em base imutável a versão
+              documental aceita, carimbo de data/hora UTC e IP de conexão.
             </p>
           </section>
 
-          {/* Seção 2 */}
+          {/* 3. Blindagem de Fatores (Opção B) */}
           <section className="space-y-3">
-            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">2.</span> Propriedade Intelectual sobre Estruturas,
-              Documentos e Laudos
+            <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA] flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-[#12B886]">3.</span> Sigilo Metodológico e Propriedade Intelectual (Opção B)
             </h2>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              Todos os direitos de propriedade intelectual relativos à arquitetura de software,
-              interfaces visuais, modelos de dados, algoritmos de cálculo de emissões, matrizes de
-              adicionalidade, taxonomia de componentes automotivos e resíduos industriais, formatos
-              de relatórios periciais e a estrutura visual e textual dos documentos emitidos
-              (incluindo o layout dos laudos dMRV e do Atestado de Conformidade Orbis com ART/RRT)
-              pertencem com exclusividade à{' '}
-              <strong className="text-[#F4F7FA]">MGM CONSULTORIA EMPRESARIAL LTDA</strong> e seus
-              licenciantes, protegidos pela Lei Federal nº 9.610/1998 (Direitos Autorais), Lei
-              Federal nº 9.609/1998 (Proteção da Propriedade Intelectual de Programa de Computador)
-              e tratados internacionais.
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
+              Os algoritmos de conversão, matrizes de cálculo e parametrizações técnicas do Orbis Protocol constituem
+              segredo de negócio e propriedade intelectual exclusiva da MGM Consultoria Empresarial Ltda. A plataforma adota
+              estritamente a <strong className="text-slate-900 dark:text-[#F4F7FA]">Opção B de Confidencialidade</strong>:{' '}
+              valores numéricos de fatores de emissão não são exportados abertamente em massa e estão vinculados
+              exclusivamente à conferência documental do Passaporte ou Verificador oficial. É vedada qualquer tentativa de
+              engenharia reversa, raspagem automatizada (scraping) ou reprodução não autorizada.
             </p>
           </section>
 
-          {/* Seção 3 */}
+          {/* 4. Responsabilidade das Partes */}
           <section className="space-y-3">
-            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">3.</span> Proibição Expressa de Cópia, Reprodução e
-              Engenharia Reversa
+            <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA] flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-[#12B886]">4.</span> Responsabilidade sobre Documentos Inseridos
             </h2>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              É expressamente proibido a qualquer usuário, cliente, parceiro, concorrente ou
-              terceiro:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
-                <span className="text-xs font-bold text-[#F03E54] flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Cópia e Clonagem de Estrutura
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div className="p-4 rounded-xl bg-slate-100 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] space-y-1.5">
+                <span className="text-xs font-bold text-emerald-700 dark:text-[#12B886] flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Responsabilidade da Empresa Usuária
                 </span>
-                <p className="text-xs text-[#93A3B5]">
-                  Reproduzir, imitar ou clonar layouts, esquemas documentais, modelos de atestados,
-                  dossiês periciais ou fluxo visual de passaportes digitais para aplicação em outros
-                  sistemas sem prévia autorização por escrito.
+                <p className="text-xs text-slate-600 dark:text-[#93A3B5]">
+                  A veracidade, autenticidade e validade fiscal das notas, chaves e manifestos inseridos é de
+                  responsabilidade exclusiva da organização emissora. Tentativas de duplicidade intencional ou envio
+                  de notas canceladas ensejam anulação do Atestado e notificação aos órgãos periciais.
                 </p>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
-                <span className="text-xs font-bold text-[#F03E54] flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Remoção de Elementos de Autenticidade
+
+              <div className="p-4 rounded-xl bg-slate-100 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] space-y-1.5">
+                <span className="text-xs font-bold text-amber-700 dark:text-[#D9B36C] flex items-center gap-1.5">
+                  <Scale className="w-3.5 h-3.5" />
+                  Responsabilidade do Orbis Protocol
                 </span>
-                <p className="text-xs text-[#93A3B5]">
-                  Remover, mascarar, recortar ou alterar qualquer marca d&apos;água de proveniência,
-                  hash criptográfico SHA-256, identificador de lote ou menção de emissão via Orbis
-                  Protocol.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
-                <span className="text-xs font-bold text-[#F03E54] flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Engenharia Reversa e Extração
-                </span>
-                <p className="text-xs text-[#93A3B5]">
-                  Realizar engenharia reversa, descompilação, varredura automatizada maliciosa ou
-                  extração não autorizada das bases de regras e fatores curados da plataforma.
-                </p>
-              </div>
-              <div className="p-3.5 rounded-xl bg-[#0A0E12] border border-[rgba(244,247,250,0.08)] space-y-1">
-                <span className="text-xs font-bold text-[#F03E54] flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Uso Indevido de Marcas e Nomes
-                </span>
-                <p className="text-xs text-[#93A3B5]">
-                  Utilizar os nomes comerciais, logomarcas ou expressões protegidas do Orbis
-                  Protocol para induzir terceiros em erro ou simular emissão de documentos por ente
-                  diverso do emissor real.
+                <p className="text-xs text-slate-600 dark:text-[#93A3B5]">
+                  A infraestrutura garante a fidelidade do processamento numérico, a imutabilidade do hash criptográfico
+                  e a disponibilidade do verificador público de conformidade pericial pelo prazo de retenção probatória contratado.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Seção 4 */}
+          {/* 5. Suspensão e Cancelamento */}
           <section className="space-y-3">
-            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">4.</span> Prova Documental via Hash SHA-256 e Trilha
-              Imutável
+            <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA] flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-[#12B886]">5.</span> Suspensão e Encerramento de Acesso
             </h2>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              Cada laudo pericial, relatório dMRV, passaporte digital e Atestado de Conformidade
-              Orbis gerado na plataforma recebe um identificador único e um resumo criptográfico
-              canônico calculado sob o algoritmo <strong className="text-[#F4F7FA]">SHA-256</strong>{' '}
-              (FIPS PUB 180-4), registrado em trilha imutável auditável.
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
+              O Orbis Protocol reserva-se o direito de suspender cautelarmente o acesso de contas que apresentem:
+              (i) violação flagrante da LGPD ou destes Termos; (ii) tentativa de burla a regras de controle de acesso ou
+              taxas de cobrança; (iii) inserção deliberada de dados falsificados em desacordo com as diretrizes da ACP e
+              da perícia independente.
             </p>
-            <div className="p-4 rounded-xl bg-[#0A0E12] border border-[#12B886]/30 space-y-2 text-xs sm:text-sm text-[#93A3B5]">
-              <div className="flex items-center gap-2 text-[#D9B36C] font-mono text-xs font-bold">
-                <Hash className="w-4 h-4 text-[#D9B36C]" />
-                <span>INTEGRIDADE E PROVA DE ANTERIORIDADE</span>
-              </div>
+          </section>
+
+          {/* 6. Foro e Disposições Finais */}
+          <section className="space-y-4 border-t border-slate-200 dark:border-[rgba(244,247,250,0.1)] pt-6">
+            <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-[#F4F7FA] flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-[#12B886]">6.</span> Legislação Aplicável e Foro de Eleição
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-[#93A3B5] leading-relaxed">
+              Estes Termos são regidos pelas leis da República Federativa do Brasil, em especial a Lei Federal nº 13.709/2018
+              (LGPD), a Lei Federal nº 12.965/2014 (Marco Civil da Internet) e o Código Civil Brasileiro. Fica eleito o Foro
+              Central da Comarca de Curitiba, Estado do Paraná, com expressa renúncia a qualquer outro, por mais privilegiado
+              que seja, para dirimir quaisquer controvérsias decorrentes destes Termos.
+            </p>
+
+            <div className="p-4 rounded-xl bg-slate-100 dark:bg-[#0A0E12] border border-slate-200 dark:border-[rgba(244,247,250,0.08)] text-xs text-slate-600 dark:text-[#93A3B5] space-y-1">
+              <span className="font-bold text-slate-900 dark:text-[#F4F7FA] block">Dúvidas sobre estes Termos?</span>
               <p>
-                O hash SHA-256 e os carimbos de tempo constituem meio de prova técnica de
-                anterioridade, integridade do conteúdo e autenticidade da emissão. Qualquer
-                adulteração posterior do arquivo ou documento altera irremediavelmente o hash
-                computado, evidenciando fraude documental perante o verificador público e instâncias
-                periciais.
-              </p>
-              <p className="text-[11px] text-[#93A3B5]">
-                A conferência da autenticidade pode ser realizada a qualquer momento por qualquer
-                terceiro interessado por meio da ferramenta pública em{' '}
-                <Link to="/verificador" className="text-[#12B886] underline font-medium">
-                  orbis-protocol.com/verificador
-                </Link>
+                Entre em contato com nossa equipe institucional pelo e-mail{' '}
+                <a
+                  href={`mailto:${CONTATO_CONTROLADOR_LGPD.emailContato}`}
+                  className="text-emerald-600 dark:text-[#12B886] underline font-semibold"
+                >
+                  {CONTATO_CONTROLADOR_LGPD.emailContato}
+                </a>
                 .
               </p>
             </div>
           </section>
 
-          {/* Seção 5 */}
-          <section className="space-y-3">
-            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">5.</span> Limites de Responsabilidade e Escopo de
-              Entrega
-            </h2>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              Em estrita aderência aos princípios da transparência e veracidade das informações:
-            </p>
-            <ul className="list-disc list-inside text-xs sm:text-sm text-[#93A3B5] space-y-2 pl-2">
-              <li>
-                <strong className="text-[#F4F7FA]">Infraestrutura de Prova Documental:</strong> A
-                plataforma fornece infraestrutura para apuração e custódia probatória de dados; a
-                veracidade primária das informações cadastrais e fiscais inseridas é de exclusiva
-                responsabilidade da organização usuária e dos profissionais técnicos declarantes.
-              </li>
-              <li>
-                <strong className="text-[#F4F7FA]">
-                  Inexistência de Emissão de Créditos de Carbono:
-                </strong>{' '}
-                O Orbis Protocol não emite nem comercializa créditos de carbono (incluindo unidades
-                de mercados regulados ou padrões privados). Os cálculos de emissões e emissões
-                evitadas prestam-se à gestão interna, inventários corporativos (GHG Protocol),
-                conformidade com diretrizes setoriais e suporte a questionários de instituições
-                financeiras.
-              </li>
-              <li>
-                <strong className="text-[#F4F7FA]">Logística Reversa PNRS:</strong> Módulos e
-                funcionalidades voltados a logística reversa e créditos de reciclagem encontram-se{' '}
-                <span className="text-[#D9B36C] font-semibold">&ldquo;em estruturação&rdquo;</span>,
-                não constituindo compromisso de prazo, produto acabado ou homologação antecipada
-                perante órgãos ambientais específicos.
-              </li>
-              <li>
-                <strong className="text-[#F4F7FA]">Responsabilidade Técnica:</strong> A vinculação
-                de Anotação de Responsabilidade Técnica (ART/CREA) ou Registro de Responsabilidade
-                Técnica (RRT/CAU) depende do credenciamento e da chancela do profissional pericial
-                habilitado, sendo de sua exclusiva competência a emissão de parecer técnico
-                profissional.
-              </li>
-            </ul>
-          </section>
-
-          {/* Seção 6 */}
-          <section className="space-y-3">
-            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">6.</span> Marca d&apos;Água de Proveniência e Uso
-              Legítimo
-            </h2>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              Os documentos gerados pela plataforma incorporam marca d&apos;água de proveniência
-              visível em tela e na impressão/exportação para PDF. O cliente possui licença de uso do
-              documento emitido para comprovação perante clientes, fornecedores, bancos e órgãos de
-              fiscalização, mantida a integridade de todos os elementos originais de autenticidade
-              (marca d&apos;água, conta emissora, data/hora e hash de identificação).
-            </p>
-          </section>
-
-          {/* Seção 7 */}
-          <section className="space-y-3">
-            <h2 className="font-heading font-bold text-lg text-[#F4F7FA] flex items-center gap-2">
-              <span className="text-[#12B886]">7.</span> Legislação Aplicável e Foro de Eleição
-            </h2>
-            <p className="text-xs sm:text-sm text-[#93A3B5] leading-relaxed">
-              Estes Termos de Uso são regidos pelas leis da República Federativa do Brasil. Para
-              dirimir quaisquer controvérsias decorrentes destes termos ou do uso da plataforma,
-              fica eleito o Foro da Comarca de Curitiba, Estado do Paraná, com renúncia expressa a
-              qualquer outro, por mais privilegiado que seja.
-            </p>
-          </section>
-
-          {/* Footer Card de Contato */}
-          <div className="pt-6 border-t border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#93A3B5]">
-            <div className="space-y-1 text-center sm:text-left">
-              <p className="text-[#F4F7FA] font-semibold">
-                Dúvidas sobre governança documental ou propriedade intelectual?
-              </p>
-              <p>Entre em contato com nossa equipe jurídica e técnica.</p>
-            </div>
+          {/* Rodapé interno */}
+          <div className="pt-6 border-t border-slate-200 dark:border-[rgba(244,247,250,0.1)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-[#93A3B5]">
+            <p>Documento auditável. Alterações são registradas em histórico formal de governança.</p>
             <div className="flex items-center gap-3">
               <Link
-                to="/privacidade"
-                className="px-4 py-2 rounded-lg bg-[#16202B] border border-[rgba(244,247,250,0.15)] text-[#93A3B5] hover:text-[#12B886] transition-colors"
+                to="/politica-privacidade"
+                className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-[#16202B] border border-slate-200 dark:border-[rgba(244,247,250,0.15)] text-slate-700 dark:text-[#93A3B5] hover:text-emerald-600 dark:hover:text-[#12B886] transition-colors"
               >
                 Política de Privacidade
-              </Link>
-              <Link
-                to="/titular-dados"
-                className="px-4 py-2 rounded-lg bg-[#12B886] text-[#0A0E12] font-semibold hover:bg-[#0CA678] transition-colors"
-              >
-                Canal LGPD
               </Link>
             </div>
           </div>
