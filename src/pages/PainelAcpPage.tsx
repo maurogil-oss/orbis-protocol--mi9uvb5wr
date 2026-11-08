@@ -28,7 +28,25 @@ export function PainelAcpPage() {
   const [carregando, setCarregando] = useState(true)
 
   useEffect(() => {
+    let ativo = true
     carregarConfig()
+
+    const handleAtualizacao = () => {
+      if (ativo) carregarConfig()
+    }
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'orbis_acp_cobranding') {
+        handleAtualizacao()
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener('orbis_acp_cobranding_change', handleAtualizacao)
+
+    return () => {
+      ativo = false
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('orbis_acp_cobranding_change', handleAtualizacao)
+    }
   }, [])
 
   const carregarConfig = async () => {

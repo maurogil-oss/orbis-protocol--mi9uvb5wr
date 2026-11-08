@@ -105,7 +105,25 @@ export async function salvarAcpCobrandingConfig(
   }
 
   await Promise.all(promessas)
-  return obterAcpCobrandingConfig()
+  const finalConfig = await obterAcpCobrandingConfig()
+
+  // Dispara evento local e storage para atualização em tempo real no cabeçalho e telas ACP
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(
+        'orbis_acp_cobranding',
+        JSON.stringify({
+          ...finalConfig,
+          _ts: Date.now(),
+        }),
+      )
+      window.dispatchEvent(new CustomEvent('orbis_acp_cobranding_change', { detail: finalConfig }))
+    } catch {
+      // Ignora erro em ambientes restritos de storage
+    }
+  }
+
+  return finalConfig
 }
 
 /**

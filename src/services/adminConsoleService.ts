@@ -171,6 +171,7 @@ export async function alterarPapelUsuarioMaster(params: {
     | 'financeiro_leitor'
     | 'cliente_acp'
     | 'parceiro'
+    | 'admin_acp'
     | string
   justificativa: string
 }) {

@@ -72,10 +72,30 @@ export function BureauACP() {
   const [isSalvando, setIsSalvando] = useState(false)
 
   useEffect(() => {
+    let ativo = true
     carregarDados()
-    obterAcpCobrandingConfig()
-      .then(setCobranding)
-      .catch(() => {})
+
+    const carregarCobranding = () => {
+      obterAcpCobrandingConfig()
+        .then((res) => {
+          if (ativo) setCobranding(res)
+        })
+        .catch(() => {})
+    }
+    carregarCobranding()
+
+    const handleAtualizacao = () => carregarCobranding()
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'orbis_acp_cobranding') carregarCobranding()
+    }
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener('orbis_acp_cobranding_change', handleAtualizacao)
+
+    return () => {
+      ativo = false
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('orbis_acp_cobranding_change', handleAtualizacao)
+    }
   }, [])
 
   const carregarDados = async () => {

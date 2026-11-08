@@ -350,6 +350,7 @@ describe('Governança Gestor Master — Especificação e Controles Estritos', (
       const rolesIds = PAPEIS_PERMITIDOS_GOVERNANCA.map((p) => p.id)
       expect(rolesIds).not.toContain('master')
       expect(rolesIds).toContain('admin')
+      expect(rolesIds).toContain('admin_acp')
       expect(rolesIds).toContain('controller')
       expect(rolesIds).toContain('financeiro')
       expect(rolesIds).toContain('financeiro_leitor')

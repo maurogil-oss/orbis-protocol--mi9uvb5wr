@@ -10,6 +10,11 @@ import {
   RefreshCw,
   Search,
   Sliders,
+  ShieldCheck,
+  Building2,
+  ToggleLeft,
+  ToggleRight,
+  ExternalLink,
 } from 'lucide-react'
 import {
   aprovarRecusarContaGestaoMaster,
@@ -42,6 +47,14 @@ import {
   ResultadoParseCsvFatores,
   ResultadoImportacaoFatores,
 } from '@/services/fatoresVersionadosService'
+import {
+  obterAcpCobrandingConfig,
+  salvarAcpCobrandingConfig,
+  TEXTO_ACP_COBRANDING_PADRAO,
+  LOGO_ACP_COBRANDING_PADRAO,
+  type AcpCobrandingConfig,
+} from '@/services/platformSettingsService'
+import { useEffect } from 'react'
 
 interface ConsoleGovernancaMasterTabProps {
   usuarios: any[]
@@ -53,6 +66,11 @@ export const PAPEIS_PERMITIDOS_GOVERNANCA = [
     id: 'admin',
     nome: 'Admin (Console Operacional)',
     desc: 'Opera cadastros, laudos e integrações; sem governança de acessos',
+  },
+  {
+    id: 'admin_acp',
+    nome: 'Administrador ACP (Parceria Comercial)',
+    desc: 'Gestão institucional do piloto ACP, Bureau ACP e acesso restrito ao Painel ACP',
   },
   {
     id: 'controller',
@@ -163,6 +181,146 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
   const catalogoFatores = getCatalogoPericialCompleto()
   const { hashControle } = gerarCsvCatalogoPericial()
   const [copiouHashCsv, setCopiouHashCsv] = useState(false)
+
+  // Estado para Co-branding ACP (Etapa 4 Peça 4b)
+  const [cobrandingConfig, setCobrandingConfig] = useState<AcpCobrandingConfig>({
+    ativo: false,
+    texto: TEXTO_ACP_COBRANDING_PADRAO,
+    logoUrl: LOGO_ACP_COBRANDING_PADRAO,
+  })
+  const [carregandoCobranding, setCarregandoCobranding] = useState(false)
+  const [salvandoCobranding, setSalvandoCobranding] = useState(false)
+
+  // Estado para confirmação rápida de atribuição/remoção do papel admin_acp
+  const [confirmacaoAdminAcp, setConfirmacaoAdminAcp] = useState<{
+    aberto: boolean
+    usuario: any | null
+    acao: 'atribuir' | 'remover'
+  }>({
+    aberto: false,
+    usuario: null,
+    acao: 'atribuir',
+  })
+
+  useEffect(() => {
+    let ativo = true
+    const carregar = async () => {
+      setCarregandoCobranding(true)
+      try {
+        const cfg = await obterAcpCobrandingConfig()
+        if (ativo) {
+          setCobrandingConfig(cfg)
+        }
+      } catch {
+        // Fallback já tratado no service
+      } finally {
+        if (ativo) setCarregandoCobranding(false)
+      }
+    }
+    carregar()
+    return () => {
+      ativo = false
+    }
+  }, [])
+
+  const handleSalvarCobranding = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSalvandoCobranding(true)
+    try {
+      const salvo = await salvarAcpCobrandingConfig(
+        {
+          ativo: cobrandingConfig.ativo,
+          texto: cobrandingConfig.texto,
+          logoUrl: cobrandingConfig.logoUrl,
+        },
+        user?.email || 'master',
+      )
+      setCobrandingConfig(salvo)
+      toast({
+        title: 'Co-branding ACP atualizado',
+        description:
+          'Configuração persistida com sucesso. O cabeçalho institucional e as telas ACP foram atualizados em tempo real.',
+      })
+      exibirFeedback('ok', 'Configurações de Co-branding ACP salvas e sincronizadas com sucesso.')
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao salvar co-branding',
+        description: err?.message || 'Falha ao gravar parâmetros de co-branding ACP.',
+        variant: 'destructive',
+      })
+      exibirFeedback('erro', 'Falha ao salvar parâmetros de co-branding ACP.')
+    } finally {
+      setSalvandoCobranding(false)
+    }
+  }
+
+  const handleToggleRapidoAdminAcp = (targetUser: any) => {
+    if (targetUser.role === 'master') {
+      toast({
+        title: 'Operação Não Permitida',
+        description: 'O papel Master não pode ser alterado.',
+        variant: 'destructive',
+      })
+      return
+    }
+    if (targetUser.id === user?.id) {
+      toast({
+        title: 'Operação Não Permitida',
+        description: 'Proteção anti-travamento: o Gestor Master não pode alterar o próprio papel.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const estaComoAdminAcp = targetUser.role === 'admin_acp'
+    setConfirmacaoAdminAcp({
+      aberto: true,
+      usuario: targetUser,
+      acao: estaComoAdminAcp ? 'remover' : 'atribuir',
+    })
+  }
+
+  const executarToggleAdminAcp = async () => {
+    if (!confirmacaoAdminAcp.usuario) return
+    const target = confirmacaoAdminAcp.usuario
+    const novoPapel = confirmacaoAdminAcp.acao === 'atribuir' ? 'admin_acp' : 'cliente'
+    const justificativa =
+      confirmacaoAdminAcp.acao === 'atribuir'
+        ? 'Atribuição do papel Administrador ACP deliberada pela Governança Master para gestão do piloto ACP.'
+        : 'Remoção do papel Administrador ACP deliberada pela Governança Master (retorno ao perfil cliente).'
+
+    setProcessandoId(target.id)
+    try {
+      const res = await alterarPapelUsuarioMaster({
+        userId: target.id,
+        novoPapel,
+        justificativa,
+      })
+
+      toast({
+        title:
+          confirmacaoAdminAcp.acao === 'atribuir'
+            ? 'Papel admin_acp atribuído'
+            : 'Papel admin_acp removido',
+        description:
+          confirmacaoAdminAcp.acao === 'atribuir'
+            ? `O usuário ${target.email} agora tem acesso ao Painel ACP e ao Bureau ACP.`
+            : `O usuário ${target.email} retornou ao papel 'cliente'.`,
+      })
+      exibirFeedback('ok', res.mensagem || 'Papel alterado e auditado com sucesso.')
+      setConfirmacaoAdminAcp({ aberto: false, usuario: null, acao: 'atribuir' })
+      onAtualizar()
+    } catch (err: any) {
+      toast({
+        title: 'Erro na alteração de papel',
+        description: err?.message || 'Falha ao alterar papel para admin_acp.',
+        variant: 'destructive',
+      })
+      exibirFeedback('erro', err?.message || 'Falha ao alterar papel para admin_acp.')
+    } finally {
+      setProcessandoId(null)
+    }
+  }
 
   // Estado para Importação de Fatores via CSV (Etapa 3 Peça 3b)
   const [csvConteudo, setCsvConteudo] = useState('')
@@ -759,6 +917,176 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
         )}
       </div>
 
+      {/* BLOCO ACP: CONTROLE DO CO-BRANDING ACP (ETAPA 4 PEÇA 4b) */}
+      <div
+        data-testid="bloco-controle-cobranding-acp"
+        className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border-2 border-blue-500/40 dark:border-[#3B82F6]/40 space-y-5 shadow-xl"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-blue-50 dark:bg-[#3B82F6]/10 text-blue-600 dark:text-[#60A5FA]">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-heading font-extrabold text-base text-slate-900 dark:text-[#F8FAFC]">
+                  Co-branding ACP (Parceria Comercial)
+                </h3>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border ${
+                    cobrandingConfig.ativo
+                      ? 'bg-emerald-50 dark:bg-[#059669]/20 text-emerald-700 dark:text-[#059669] border-emerald-300 dark:border-[#059669]/40'
+                      : 'bg-slate-100 dark:bg-[#111827] text-slate-500 dark:text-[#94A3B8] border-slate-200 dark:border-slate-800'
+                  }`}
+                >
+                  {cobrandingConfig.ativo ? 'ATIVO NO CABEÇALHO' : 'DESATIVADO'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 dark:text-[#94A3B8] mt-0.5">
+                Configuração persistida em <code>platform_settings</code> (chave{' '}
+                <code>acp_cobranding</code>). Sincronizada em tempo real com o cabeçalho
+                institucional e as telas do piloto ACP.
+              </p>
+            </div>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-[#3B82F6]/20 border border-blue-300 dark:border-[#3B82F6]/50 text-blue-700 dark:text-[#60A5FA] text-[10px] font-mono font-bold uppercase tracking-wider w-fit">
+            Piloto ACP • Master
+          </span>
+        </div>
+
+        <form onSubmit={handleSalvarCobranding} className="space-y-4 text-xs">
+          {/* Toggle Ativar / Desativar */}
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span className="font-bold text-slate-900 dark:text-[#F8FAFC] block">
+                Exibir Co-branding Institucional ACP
+              </span>
+              <span className="text-[11px] text-slate-600 dark:text-[#94A3B8]">
+                Quando ativo, insere a chancela da Associação Comercial do Paraná no cabeçalho e
+                destaca a parceria nas telas do convênio.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              data-testid="toggle-acp-cobranding"
+              onClick={() => setCobrandingConfig((prev) => ({ ...prev, ativo: !prev.ativo }))}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all shrink-0 ${
+                cobrandingConfig.ativo
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm'
+                  : 'bg-slate-200 dark:bg-[#111827] text-slate-700 dark:text-[#94A3B8] border-slate-300 dark:border-slate-700'
+              }`}
+            >
+              {cobrandingConfig.ativo ? (
+                <>
+                  <ToggleRight className="w-4 h-4 text-white" />
+                  <span>Co-branding Ativado</span>
+                </>
+              ) : (
+                <>
+                  <ToggleLeft className="w-4 h-4 text-slate-400" />
+                  <span>Co-branding Desativado</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Campo de Texto da Parceria */}
+            <div>
+              <label
+                htmlFor="acp-cobranding-texto-input"
+                className="block text-slate-600 dark:text-[#94A3B8] font-semibold mb-1"
+              >
+                Texto da Parceria (padrão oficial) *
+              </label>
+              <input
+                id="acp-cobranding-texto-input"
+                type="text"
+                required
+                value={cobrandingConfig.texto}
+                onChange={(e) =>
+                  setCobrandingConfig((prev) => ({ ...prev, texto: e.target.value }))
+                }
+                placeholder="em parceria com a Associação Comercial do Paraná"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+              />
+              <p className="text-[10px] text-slate-500 dark:text-[#94A3B8] mt-1">
+                Padrão: <code>{TEXTO_ACP_COBRANDING_PADRAO}</code>
+              </p>
+            </div>
+
+            {/* Campo URL do Logo */}
+            <div>
+              <label
+                htmlFor="acp-cobranding-logo-input"
+                className="block text-slate-600 dark:text-[#94A3B8] font-semibold mb-1"
+              >
+                URL do Logo ACP (opcional)
+              </label>
+              <input
+                id="acp-cobranding-logo-input"
+                type="url"
+                value={cobrandingConfig.logoUrl || ''}
+                onChange={(e) =>
+                  setCobrandingConfig((prev) => ({ ...prev, logoUrl: e.target.value }))
+                }
+                placeholder="https://... ou caminho relativo do logotipo"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+              />
+              <p className="text-[10px] text-slate-500 dark:text-[#94A3B8] mt-1">
+                Se vazio, a plataforma renderiza o badge tipográfico institucional ACP.
+              </p>
+            </div>
+          </div>
+
+          {/* Pré-visualização da Chancela */}
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-dashed border-slate-300 dark:border-slate-700 text-[11px] space-y-1">
+            <span className="font-semibold text-slate-500 dark:text-[#94A3B8] block uppercase text-[10px]">
+              Pré-visualização da Chancela no Cabeçalho:
+            </span>
+            <div className="flex items-center gap-2 pt-1">
+              <span className="font-heading font-black text-xs text-slate-900 dark:text-[#F8FAFC]">
+                ORBIS PROTOCOL
+              </span>
+              <span className="text-slate-400">•</span>
+              {cobrandingConfig.ativo ? (
+                <span className="text-blue-700 dark:text-[#60A5FA] font-medium flex items-center gap-1.5">
+                  {cobrandingConfig.logoUrl && (
+                    <img
+                      src={cobrandingConfig.logoUrl}
+                      alt="Logo ACP"
+                      className="h-4 w-auto object-contain inline"
+                      onError={(e) => {
+                        // Oculta imagem quebrada
+                        ;(e.target as HTMLElement).style.display = 'none'
+                      }}
+                    />
+                  )}
+                  <span>{cobrandingConfig.texto}</span>
+                </span>
+              ) : (
+                <span className="text-slate-400 italic">(chancela desativada)</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <button
+              type="submit"
+              data-testid="btn-salvar-cobranding-acp"
+              disabled={salvandoCobranding || carregandoCobranding}
+              className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>
+                {salvandoCobranding ? 'Salvando Co-branding...' : 'Salvar Co-branding ACP'}
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+
       {/* BLOCO 1: FILA DE CONTAS GESTÃO PENDENTES DE APROVAÇÃO */}
       <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-slate-200 dark:border-slate-800 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -882,6 +1210,7 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
               <option value="todos">Todos os Papéis</option>
               <option value="master">master</option>
               <option value="admin">admin</option>
+              <option value="admin_acp">admin_acp</option>
               <option value="controller">controller</option>
               <option value="financeiro">financeiro</option>
               <option value="financeiro_leitor">financeiro_leitor</option>
@@ -901,17 +1230,21 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
                 ? 'bg-amber-50 dark:bg-[#D9B36C]/20 text-amber-700 dark:text-[#D9B36C] border-amber-300 dark:border-[#D9B36C]/40'
                 : u.role === 'admin'
                   ? 'bg-red-500/10 text-red-600 border-red-300 dark:border-[#EF4444]/40'
-                  : u.role === 'controller'
-                    ? 'bg-purple-500/10 text-purple-600 border-purple-300 dark:border-[#A855F7]/40'
-                    : u.role === 'financeiro'
-                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-300 dark:border-[#10B981]/40'
-                      : u.role === 'financeiro_leitor'
-                        ? 'bg-amber-500/10 text-amber-600 border-amber-300 dark:border-[#D9B36C]/20'
-                        : u.role === 'perito'
-                          ? 'bg-cyan-500/10 text-cyan-600 border-cyan-300 dark:border-[#06B6D4]/40'
-                          : u.role === 'parceiro'
-                            ? 'bg-amber-500/10 text-amber-600 border-amber-300 dark:border-[#F59E0B]/40'
-                            : 'bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] border-slate-200 dark:border-slate-800'
+                  : u.role === 'admin_acp'
+                    ? 'bg-blue-500/10 text-blue-600 border-blue-300 dark:border-[#3B82F6]/40'
+                    : u.role === 'controller'
+                      ? 'bg-purple-500/10 text-purple-600 border-purple-300 dark:border-[#A855F7]/40'
+                      : u.role === 'financeiro'
+                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-300 dark:border-[#10B981]/40'
+                        : u.role === 'financeiro_leitor'
+                          ? 'bg-amber-500/10 text-amber-600 border-amber-300 dark:border-[#D9B36C]/20'
+                          : u.role === 'perito'
+                            ? 'bg-cyan-500/10 text-cyan-600 border-cyan-300 dark:border-[#06B6D4]/40'
+                            : u.role === 'parceiro'
+                              ? 'bg-amber-500/10 text-amber-600 border-amber-300 dark:border-[#F59E0B]/40'
+                              : u.role === 'cliente_acp'
+                                ? 'bg-amber-500/10 text-amber-700 dark:text-[#D9B36C] border-amber-300 dark:border-[#D9B36C]/30'
+                                : 'bg-slate-100 dark:bg-[#111827] text-slate-600 dark:text-[#94A3B8] border-slate-200 dark:border-slate-800'
 
             return (
               <div
@@ -957,6 +1290,29 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
                     </span>
                   ) : (
                     <>
+                      {/* Botão rápido para atribuir / remover papel admin_acp */}
+                      <button
+                        type="button"
+                        data-testid={`btn-toggle-admin-acp-${u.id}`}
+                        disabled={processandoId === u.id}
+                        onClick={() => handleToggleRapidoAdminAcp(u)}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                          u.role === 'admin_acp'
+                            ? 'bg-blue-50 dark:bg-[#3B82F6]/20 text-blue-700 dark:text-[#60A5FA] border-blue-300 dark:border-[#3B82F6]/40 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                            : 'bg-slate-100 dark:bg-[#111827] text-slate-700 dark:text-[#94A3B8] border-slate-200 dark:border-slate-800 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:hover:text-[#60A5FA]'
+                        }`}
+                        title={
+                          u.role === 'admin_acp'
+                            ? 'Remover papel admin_acp deste usuário'
+                            : 'Atribuir papel admin_acp (Acesso ao Painel e Bureau ACP)'
+                        }
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>
+                          {u.role === 'admin_acp' ? 'Remover Admin ACP' : 'Tornar Admin ACP'}
+                        </span>
+                      </button>
+
                       <button
                         type="button"
                         disabled={processandoId === u.id}
@@ -977,7 +1333,7 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
                         <span>Alterar Papel</span>
                       </button>
                     </>
-                  )}
+                  )}{' '}
                 </div>
               </div>
             )
@@ -1555,6 +1911,112 @@ export const ConsoleGovernancaMasterTab: React.FC<ConsoleGovernancaMasterTabProp
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMAÇÃO RÁPIDA: ATRIBUIR / REMOVER ADMIN ACP */}
+      {confirmacaoAdminAcp.aberto && confirmacaoAdminAcp.usuario && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0E1A2E] border-2 border-blue-500/40 dark:border-[#3B82F6]/50 p-6 space-y-4 shadow-2xl text-slate-900 dark:text-[#F8FAFC]">
+            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-blue-50 dark:bg-[#3B82F6]/10 text-blue-600 dark:text-[#60A5FA]">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-extrabold text-base text-slate-900 dark:text-[#F8FAFC]">
+                    {confirmacaoAdminAcp.acao === 'atribuir'
+                      ? 'Atribuir Papel admin_acp'
+                      : 'Remover Papel admin_acp'}
+                  </h3>
+                  <span className="text-[11px] text-slate-600 dark:text-[#94A3B8] block truncate max-w-[260px]">
+                    {confirmacaoAdminAcp.usuario.email}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setConfirmacaoAdminAcp({ aberto: false, usuario: null, acao: 'atribuir' })
+                }
+                className="text-slate-500 hover:text-slate-900 dark:text-[#94A3B8] dark:hover:text-[#F8FAFC]"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-700 dark:text-[#CBD5E1]">
+              <p>
+                {confirmacaoAdminAcp.acao === 'atribuir' ? (
+                  <>
+                    Você está prestes a conceder o papel <strong>admin_acp</strong> para o usuário{' '}
+                    <strong>
+                      {confirmacaoAdminAcp.usuario.name || confirmacaoAdminAcp.usuario.email}
+                    </strong>
+                    . Este usuário passará a ter permissão de acesso ao{' '}
+                    <strong>Painel ACP (/painel-acp)</strong>, ao Bureau ACP e aos fluxos
+                    institucionais da parceria ACP.
+                  </>
+                ) : (
+                  <>
+                    Você está prestes a remover o papel <strong>admin_acp</strong> do usuário{' '}
+                    <strong>
+                      {confirmacaoAdminAcp.usuario.name || confirmacaoAdminAcp.usuario.email}
+                    </strong>
+                    . O papel será revertido para <strong>cliente</strong> e o acesso ao Painel ACP
+                    será imediatamente revogado.
+                  </>
+                )}
+              </p>
+
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-slate-800 text-[11px] space-y-1">
+                <div className="text-slate-500 dark:text-[#94A3B8]">
+                  Papel Atual:{' '}
+                  <span className="font-mono font-bold text-slate-900 dark:text-[#F8FAFC]">
+                    {confirmacaoAdminAcp.usuario.role}
+                  </span>
+                </div>
+                <div className="text-slate-500 dark:text-[#94A3B8]">
+                  Novo Papel:{' '}
+                  <span className="font-mono font-bold text-blue-600 dark:text-[#60A5FA]">
+                    {confirmacaoAdminAcp.acao === 'atribuir' ? 'admin_acp' : 'cliente'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() =>
+                  setConfirmacaoAdminAcp({ aberto: false, usuario: null, acao: 'atribuir' })
+                }
+                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#111827] text-xs text-slate-600 dark:text-[#94A3B8] hover:bg-slate-200 dark:hover:bg-[#1E293B]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={processandoId === confirmacaoAdminAcp.usuario.id}
+                onClick={executarToggleAdminAcp}
+                className={`px-5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider text-white transition-all ${
+                  confirmacaoAdminAcp.acao === 'atribuir'
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {processandoId === confirmacaoAdminAcp.usuario.id
+                  ? 'Gravando...'
+                  : confirmacaoAdminAcp.acao === 'atribuir'
+                    ? 'Confirmar Atribuição'
+                    : 'Confirmar Remoção'}
+              </button>
+            </div>
           </div>
         </div>
       )}

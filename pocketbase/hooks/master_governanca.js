@@ -202,6 +202,7 @@ routerAdd(
         'financeiro_leitor',
         'cliente_acp',
         'parceiro',
+        'admin_acp',
       ]
       if (papeisValidos.indexOf(novoPapel) === -1) {
         return e.badRequestError(

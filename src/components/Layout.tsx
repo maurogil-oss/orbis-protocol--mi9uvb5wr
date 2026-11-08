@@ -76,10 +76,20 @@ export default function Layout() {
         carregar()
       }
     }
+    const handleCustomChange = (e: Event) => {
+      const custom = e as CustomEvent<AcpCobrandingConfig>
+      if (ativo && custom.detail) {
+        setAcpCobranding(custom.detail)
+      } else {
+        carregar()
+      }
+    }
     window.addEventListener('storage', handleStorage)
+    window.addEventListener('orbis_acp_cobranding_change', handleCustomChange)
     return () => {
       ativo = false
       window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('orbis_acp_cobranding_change', handleCustomChange)
     }
   }, [])
 
